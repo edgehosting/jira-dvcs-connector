@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEntity;
 @Polymorphic
 public interface GitHubEntityMapping extends Entity
 {
+    public static String DOMAIN = "DOMAIN";
 
     /**
      * @return {@link GitHubEntity#getDomain()}

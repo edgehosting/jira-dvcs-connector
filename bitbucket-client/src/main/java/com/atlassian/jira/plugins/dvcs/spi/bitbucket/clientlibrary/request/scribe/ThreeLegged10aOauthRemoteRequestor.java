@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
 import org.scribe.extractors.HeaderExtractorImpl;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;
@@ -48,7 +48,7 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
 
 
     @Override
-    protected void onConnectionCreated(DefaultHttpClient client, HttpRequestBase method, Map<String, String> parameters)
+    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> parameters)
             throws IOException
     {
         long start = System.currentTimeMillis();

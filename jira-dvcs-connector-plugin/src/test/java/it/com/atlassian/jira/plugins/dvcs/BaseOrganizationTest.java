@@ -3,17 +3,15 @@ package it.com.atlassian.jira.plugins.dvcs;
 import java.util.List;
 
 import org.openqa.selenium.By;
-
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubOAuthConfigPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
-
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
+import com.atlassian.pageobjects.TestedProductFactory;
 
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
@@ -75,11 +73,6 @@ public abstract class BaseOrganizationTest<T extends BaseConfigureOrganizationsP
         return jira.visit(JiraViewIssuePage.class, issueKey)
                 .openBitBucketPanel()
                 .waitForNumberOfMessages(exectedNumberOfCommits, retryThreshold, maxRetryCount);
-    }
-
-    protected GithubOAuthConfigPage goToGithubOAuthConfigPage()
-    {
-        return jira.visit(GithubOAuthConfigPage.class);
     }
 
     protected BaseConfigureOrganizationsPage goToConfigPage()

@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 /**
@@ -27,6 +30,11 @@ public interface OrganizationService
      * @return list of organizations
      */
     List<Organization> getAll(boolean loadRepositories);
+    
+    /**
+     * @return returns count of all organizations
+     */
+    int getAllCount();
 
     /**
      * returns Organization by ID.
@@ -36,7 +44,7 @@ public interface OrganizationService
      * @return organization
      */
     Organization get(int organizationId, boolean loadRepositories);
-    
+
 
     /**
      * save Organization to storage. If it's new object (without ID) after this operation it will have it assigned.
@@ -51,23 +59,21 @@ public interface OrganizationService
      * @param organizationId id
      */
     void remove(int organizationId);
-    
-    /**
-     * Update credentials.
-     *
-     * @param organizationId the organization id
-     * @param username the username
-     * @param plaintextPassword the password as a plain text
-     */
-    void updateCredentials(int organizationId, String username, String plaintextPassword);
 
 	/**
-	 * Update credentials access token.
-	 *
-	 * @param organizationId the organization id
-	 * @param accessToken the access token
-	 */
-	void updateCredentialsAccessToken(int organizationId, String accessToken);
+	 * Update credentials
+	 * 
+     * @param organizationId
+     * @param credential
+     */
+    public void updateCredentials(int organizationId, Credential credential);
+
+    
+    /**
+     * @param organizationId
+     * @param accessToken
+     */
+    public void updateCredentialsAccessToken(int organizationId, String accessToken);
 
 	/**
 	 * Enable autolink new repos.
@@ -83,7 +89,7 @@ public interface OrganizationService
 	 * @return the auto invitation organizations
 	 */
 	List<Organization> getAutoInvitionOrganizations();
-	
+
 	/**
 	 * Gets the all by ids.
 	 *
@@ -100,7 +106,7 @@ public interface OrganizationService
 	 * @return the all
 	 */
 	List<Organization> getAll(boolean loadRepositories, String type);
-	
+
 	/**
 	 * Enable smartcommits on new repos.
 	 *
@@ -108,14 +114,25 @@ public interface OrganizationService
 	 * @param parseBoolean the parse boolean
 	 */
 	void enableSmartcommitsOnNewRepos(int id, boolean parseBoolean);
-	
-	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
-	
-	Organization findIntegratedAccount();
-	
-	Organization getByHostAndName(final String hostUrl, final String name);
 
-    void updateCredentialsKeySecret(int organizationId, String key, String secret);
+	void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
+
+	Organization findIntegratedAccount();
+
+	Organization getByHostAndName(final String hostUrl, final String name);
+    /**
+     * Returns remote user who is owner of currently used accessToken
+     * 
+     * @param organizationId
+     * @return
+     */
+    DvcsUser getTokenOwner(int organizationId);
+    
+    /**
+     * @param organization
+     * @return returns {@link Group}-s available for provided {@link Organization}
+     */
+    List<Group> getGroupsForOrganization(Organization organization);
 
 }
 

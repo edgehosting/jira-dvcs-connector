@@ -1,54 +1,58 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.web.ContextProvider;
 
-public class DvcsTabPanelContextProvider implements ContextProvider {
+public class DvcsTabPanelContextProvider implements ContextProvider
+{
 
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanelContextProvider.class);
 
-    private static final String DEFAULT_MESSAGE = "There are no commits";
-
-    private final ChangesetService changesetService;
     private final ChangesetRenderer changesetRenderer;
 
-    public DvcsTabPanelContextProvider(ChangesetService changesetService, ChangesetRenderer changesetRenderer) {
-        this.changesetService = changesetService;
+    public DvcsTabPanelContextProvider(ChangesetRenderer changesetRenderer)
+    {
         this.changesetRenderer = changesetRenderer;
     }
 
     @Override
-    public void init(Map<String, String> stringStringMap) throws PluginParseException {
+    public void init(Map<String, String> stringStringMap) throws PluginParseException
+    {
+        // nop
     }
 
     @Override
-    public Map<String, Object> getContextMap(Map<String, Object> context) {
+    public Map<String, Object> getContextMap(Map<String, Object> context)
+    {
         Issue issue = (Issue) context.get("issue");
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         Long items = 0L;
 
         try
         {
-            for (Changeset changeset : changesetService.getByIssueKey(issue.getKey()))
+            final List<IssueAction> actions = changesetRenderer.getAsActions(issue);
+            boolean isNoMessages = isNoMessages(actions);
+            if (isNoMessages)
             {
-                logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issue.getKey());
-
-                String changesetHtml = changesetRenderer.getHtmlForChangeset(changeset);
-
-                sb.append(changesetHtml);
-                items += 1;
+                sb.append("<div class=\"ghx-container\"><p class=\"ghx-fa\">" + ChangesetRenderer.DEFAULT_MESSAGE_GH_TXT + "</p></div>");
+            } else
+            {
+                for (IssueAction issueAction : actions) {
+                    sb.append(issueAction.getHtml());
+                    items += 1;
+                }
             }
         } catch (SourceControlException e)
         {
@@ -57,14 +61,14 @@ public class DvcsTabPanelContextProvider implements ContextProvider {
 
         HashMap<String, Object> params = new HashMap<String, Object>();
 
-        if (sb.length() == 0)
-        {
-        	sb.append("<div class=\"ghx-container\"><p class=\"ghx-fa\">" + DEFAULT_MESSAGE + "</p></div>");
-        }
-
         params.put("renderedChangesetsWithHtml", sb.toString());
         params.put("atl.gh.issue.details.tab.count", items);
 
         return params;
+    }
+
+    private boolean isNoMessages(List<IssueAction> actions)
+    {
+        return actions.isEmpty();
     }
 }

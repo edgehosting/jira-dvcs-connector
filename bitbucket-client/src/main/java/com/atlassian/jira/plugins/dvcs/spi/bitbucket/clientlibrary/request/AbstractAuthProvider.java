@@ -13,9 +13,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
  */
 public abstract class AbstractAuthProvider implements AuthProvider
 {
-	private final String hostUrl;
-	private int apiVersion = 1;
+    private final String hostUrl;
+    private int apiVersion = 1;
     private String userAgent;
+    private boolean cached;
+    private int timeout;
 
     public AbstractAuthProvider(String hostUrl)
 	{
@@ -50,6 +52,30 @@ public abstract class AbstractAuthProvider implements AuthProvider
     public String getUserAgent()
     {
         return userAgent;
+    }
+
+    @Override
+    public boolean isCached()
+    {
+        return cached;
+    }
+
+    @Override
+    public void setCached(boolean cached)
+    {
+        this.cached = cached;
+    }
+
+    @Override
+    public int getTimeout()
+    {
+        return timeout;
+    }
+
+    @Override
+    public void setTimeout(int timeout)
+    {
+        this.timeout = timeout;
     }
 }
 

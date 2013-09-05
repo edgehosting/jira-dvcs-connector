@@ -1,6 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraGithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
@@ -92,7 +91,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     {
         GithubOAuthPage GitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class);
         OAuth result = GitHubOAuthPage.addConsumer(getJiraTestedProduct().getProductInstance().getBaseUrl());
-        getJiraTestedProduct().visit(JiraGithubOAuthPage.class).setCredentials(result.key, result.secret);
+        // getJiraTestedProduct().visit(JiraGithubOAuthPage.class).setCredentials(result.key, result.secret);
         return result;
     }
 
@@ -124,8 +123,8 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     protected void addDVCSOrganizations()
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, getUsername(), false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUB, getOrganization(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, getUsername(), getOAuthCredentials(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, getOrganization(), getOAuthCredentials(), false);
     }
 
     // end of: implementation of abstract methods

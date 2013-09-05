@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -45,7 +45,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     private final Encryptor encryptor;
 
     private final PluginSettingsFactory pluginSettingsFactory;
-    
+
     /**
      * The Constructor.
      *
@@ -79,11 +79,10 @@ public class OrganizationDaoImpl implements OrganizationDao
         log.debug("Organization transformation: [{}]", organizationMapping);
 
         // make credentials
-        Credential credential = new Credential(organizationMapping.getAdminUsername(),
-                organizationMapping.getAdminPassword(), organizationMapping.getAccessToken());
-
-        credential.setOauthKey(organizationMapping.getOauthKey());
-        credential.setOauthSecret(organizationMapping.getOauthSecret());
+        Credential credential = new Credential(
+                organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
+                organizationMapping.getAccessToken(),
+                organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
         //
         Organization organization = new Organization(organizationMapping.getID(), organizationMapping.getHostUrl(),
                 organizationMapping.getName(), organizationMapping.getDvcsType(),
@@ -145,6 +144,15 @@ public class OrganizationDaoImpl implements OrganizationDao
                 });
 
         return transformCollection(organizationMappings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getAllCount()
+    {
+        return activeObjects.count(OrganizationMapping.class);
     }
 
     /**
@@ -239,7 +247,6 @@ public class OrganizationDaoImpl implements OrganizationDao
                     @Override
                     public OrganizationMapping doInTransaction()
                     {
-
                         String adminPassword = organization.getCredential().getAdminPassword();
 
                         OrganizationMapping om = null;
@@ -265,7 +272,7 @@ public class OrganizationDaoImpl implements OrganizationDao
                             map.put(OrganizationMapping.ACCESS_TOKEN, organization.getCredential().getAccessToken());
                             map.put(OrganizationMapping.SMARTCOMMITS_FOR_NEW_REPOS, organization.isSmartcommitsOnNewRepos());
                             map.put(OrganizationMapping.DEFAULT_GROUPS_SLUGS, serializeDefaultGroups(organization.getDefaultGroups()));
-                            
+
                             map.put(OrganizationMapping.OAUTH_KEY, organization.getCredential().getOauthKey());
                             map.put(OrganizationMapping.OAUTH_SECRET, organization.getCredential().getOauthSecret());
 
@@ -279,12 +286,12 @@ public class OrganizationDaoImpl implements OrganizationDao
                             om.setName(organization.getName());
                             om.setDvcsType(organization.getDvcsType());
                             om.setAutolinkNewRepos(organization.isAutolinkNewRepos());
+                            om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
+                            om.setDefaultGroupsSlugs(serializeDefaultGroups(organization.getDefaultGroups()));
+
                             om.setAdminUsername(organization.getCredential().getAdminUsername());
                             om.setAdminPassword(adminPassword);
                             om.setAccessToken(organization.getCredential().getAccessToken());
-                            om.setSmartcommitsForNewRepos(organization.isSmartcommitsOnNewRepos());
-                            om.setDefaultGroupsSlugs(serializeDefaultGroups(organization.getDefaultGroups()));
-                            
                             om.setOauthKey(organization.getCredential().getOauthKey());
                             om.setOauthSecret(organization.getCredential().getOauthSecret());
 
@@ -305,80 +312,11 @@ public class OrganizationDaoImpl implements OrganizationDao
     public void remove(int organizationId)
     {
         activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
-    
+
         // removing organization from invalid organizations list
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organizationId, true);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void updateCredentials(int organizationId, String username, String plaintextPassword, String accessToken,
-            String oauthKey, String oauthSecret)
-    {
-
-        final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
-
-        // username
-        if (StringUtils.isNotBlank(username))
-        {
-            organization.setAdminUsername(username);
-        }
-
-        // password
-        if (StringUtils.isNotBlank(plaintextPassword))
-        {
-            organization.setAdminPassword(encryptor.encrypt(plaintextPassword, organization.getName(),
-                    organization.getHostUrl()));
-        }
-
-        // access token
-        if (StringUtils.isNotBlank(accessToken))
-        {
-            organization.setAccessToken(accessToken);
-        }
-
-        if (StringUtils.isNotBlank(oauthKey) && StringUtils.isNotBlank(oauthSecret))
-        {
-            organization.setOauthKey(oauthKey);
-            organization.setOauthSecret(oauthSecret);
-        }
-
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
-        {
-            @Override
-            public Void doInTransaction()
-            {
-                organization.save();
-                return null;
-            }
-
-        });
-
-    }
-    
-    @Override
-    public void updateCredentialsKeySecret(int organizationId, String oauthKey, String oauthSecret)
-    {
-        final OrganizationMapping organization = activeObjects.get(OrganizationMapping.class, organizationId);
-
-        organization.setOauthKey(oauthKey);
-        organization.setOauthSecret(oauthSecret);
-
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
-        {
-            @Override
-            public Void doInTransaction()
-            {
-                organization.save();
-                return null;
-            }
-
-        });
-    }
-    
 
     /**
      * {@inheritDoc}
@@ -431,20 +369,20 @@ public class OrganizationDaoImpl implements OrganizationDao
     public Organization findIntegratedAccount()
     {
 
-        Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL");
+        Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL AND " + OrganizationMapping.ACCESS_TOKEN + " IS NULL");
         OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, query);
-        
+
         if (organizations != null && organizations.length > 0) {
-        
+
             return transform(organizations [0]);
 
         } else {
-            
+
             return null;
 
         }
     }
 
-    
+
 
 }

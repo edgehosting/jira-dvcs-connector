@@ -1,34 +1,35 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.PluginController;
-import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import static org.fest.assertions.api.Assertions.*;
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.PluginController;
+import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
+import com.atlassian.sal.api.scheduling.PluginScheduler;
 
 public class BitbucketAccountsConfigServiceTest
 {
-
     @Mock
     private OrganizationService organizationService;
 
@@ -100,14 +101,14 @@ public class BitbucketAccountsConfigServiceTest
         verify(organizationService, times(0)).save(organizationCaptor.capture());
 
     }
-    
+
     @Test
     public void testUpdateAccountEmptyConfig()
     {
 
         when(configProvider.provideConfiguration()).thenReturn(null);
-        
-        Organization existingAccount = createSampleAccount("A", "B", "S");
+
+        Organization existingAccount = createSampleAccount("A", "B", "S", "token");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
 
         testedService.reload(false);
@@ -120,19 +121,18 @@ public class BitbucketAccountsConfigServiceTest
     @Test
     public void testUpdateAccountCredentialsWithSuccess()
     {
-
         AccountsConfig correctConfig = createCorrectConfig();
         when(configProvider.provideConfiguration()).thenReturn(correctConfig);
 
-        Organization existingAccount = createSampleAccount("A", "B", "S");
+        Organization existingAccount = createSampleAccount("A", "B", "S", "token");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
-
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
         testedService.reload(false);
 
-        verify(organizationService).updateCredentialsKeySecret(eq(5), eq("K"), eq("S"));
-
+        verify(organizationService).findIntegratedAccount();
+        verify(organizationService).getByHostAndName("https://bitbucket.org", "A");
+        verifyNoMoreInteractions(organizationService);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class BitbucketAccountsConfigServiceTest
 
         when(configProvider.provideConfiguration()).thenReturn(null);
 
-        Organization existingAccount = createSampleAccount("A", "B", "S");
+        Organization existingAccount = createSampleAccount("A", "B", "S", "token");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
 
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
@@ -151,35 +151,35 @@ public class BitbucketAccountsConfigServiceTest
         verify(organizationService).remove(eq(5));
 
     }
-    
+
     //--
-    
+
     @Test
     public void testAddNewAccountWithSuccess_UserAddedAccountExists()
     {
 
-        AccountsConfig correctConfig = createCorrectConfig();
-        when(configProvider.provideConfiguration()).thenReturn(correctConfig);
-        
+        AccountsConfig config = createCorrectConfig();
+        when(configProvider.provideConfiguration()).thenReturn(config);
+
         when(organizationService.findIntegratedAccount()).thenReturn(null);
-        
-        Organization userAddedAccount = createSampleAccount("A", null, null);
+
+        Organization userAddedAccount = createSampleAccount("A", "key", "secret", "token");
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(userAddedAccount);
 
         testedService.reload(false);
-        
-        verify(organizationService).updateCredentialsKeySecret(userAddedAccount.getId(), "K", "S");
+
+        verify(organizationService).updateCredentials(userAddedAccount.getId(), new Credential("K", "S", null));
     }
 
     //--
-    
-    
-    private Organization createSampleAccount(String name, String key, String secret)
+
+
+    private Organization createSampleAccount(String name, String key, String secret, String token)
     {
         Organization org = new Organization();
         org.setId(5);
         org.setName(name);
-        org.setCredential(new Credential(null, null, null, key, secret));
+        org.setCredential(new Credential(key, secret, token));
         return org;
     }
 

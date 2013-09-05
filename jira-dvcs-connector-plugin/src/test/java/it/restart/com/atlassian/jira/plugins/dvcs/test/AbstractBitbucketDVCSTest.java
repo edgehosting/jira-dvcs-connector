@@ -1,11 +1,9 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraBitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,11 +93,6 @@ public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
     
     /**
-     * Bitbucket OAuth for {@link #USERNAME}.
-     */
-    private OAuth bitbucketOAuth;
-
-    /**
      * Map between test repository URI and created repository.
      * 
      * @see #addTestRepository(String)
@@ -118,14 +111,14 @@ public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);
         
         // Creates & adds OAuth settings
-        bitbucketOAuth = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).addConsumer();
+        oAuth = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).addConsumer();
         
-        getJiraTestedProduct().visit(JiraBitbucketOAuthPage.class).setCredentials(bitbucketOAuth.key, bitbucketOAuth.secret);
+        // getJiraTestedProduct().visit(JiraBitbucketOAuthPage.class).setCredentials(bitbucketOAuth.key, bitbucketOAuth.secret);
 
         // adds Bitbucket account into Jira
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.BITBUCKET, ACCOUNT_NAME, false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.BITBUCKET, FORK_ACCOUNT_NAME, false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.BITBUCKET, FORK_ACCOUNT_NAME, getOAuthCredentials(), false);
     }
 
     /**
@@ -139,7 +132,7 @@ public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         rpc.getPage().deleteAllOrganizations();
 
         // removes OAuth from Bitbucket
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).removeConsumer(bitbucketOAuth.applicationId);
+        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
 
         // log out from bitbucket
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
@@ -395,7 +388,7 @@ public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         return owner + "/" + slug;
     }
-    
+
     public static class RepositoryInfo
     {
         private BitbucketRepository repository;

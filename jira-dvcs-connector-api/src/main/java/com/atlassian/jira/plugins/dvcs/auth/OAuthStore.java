@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
+import org.apache.commons.lang.StringUtils;
+
 public interface OAuthStore
 {
     public class Host
@@ -12,7 +14,7 @@ public interface OAuthStore
 
         public Host(String id, String url)
         {
-            this.url = url;
+            this.url = StringUtils.trim(url);
             this.id = id;
         }
     }

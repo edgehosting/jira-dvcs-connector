@@ -15,9 +15,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scrib
  */
 public class URLPathsShouldBeCorrectlyEncodedTest
 {
-    private static final String OAUTH_KEY          = "PEruYUbd3vTdnSPYez";
-    private static final String OAUTH_SECRET       = "hwP4CP9ZtAPMR9UJH59q8mnAWx7NSRpp";
-    private static final String OAUTH_ACCESS_TOKEN = "qUeN7w3cGVwFhgcDtu&T7Ex3kMQ6TzAg8GeskdeD3ERLPQc65sV";
+    private static final String OAUTH_KEY          = "fZwXWrQcrcKPeAJffL";
+    private static final String OAUTH_SECRET       = "QpEPRhpjW6j8q8QkwCDdByDtDAd6FEfG";
+    private static final String OAUTH_ACCESS_TOKEN = "R59tgJZAjPkRMuJasW&YMtyNdna9pjCnTBNjnygsnU9Vexr7jDf";
 
     private static AccountRemoteRestpoint accountRemoteRestpoint;
 
@@ -41,19 +41,19 @@ public class URLPathsShouldBeCorrectlyEncodedTest
         // performing GET with not properly encoded URL used to throw ProtocolException
         accountRemoteRestpoint.getUser("fake User");
     }
-    
+
     @Test(expectedExceptions = BitbucketRequestException.Forbidden_403.class)
     public void performingPUTRequestWithOAuthAuthentication_ShouldNotThrowProtocolException()
     {
         accountRemoteRestpoint.inviteUser("hotovo", "some_email@gmail.com", "hotovo", "binu");
     }
-    
-    
+
+
     /**
-     * If you use encoded email address Bitbucket returns 302 - redirection to log in page (wtf) 
+     * If you use encoded email address Bitbucket returns 401 - Unauthorized (wtf)
      */
-    @Test(expectedExceptions = BitbucketRequestException.class, expectedExceptionsMessageRegExp = "Error response code during the request : 302")
-    public void performingPUTRequestWithOAuthAuthentication_ShouldThrow302Exception()
+    @Test(expectedExceptions = BitbucketRequestException.Unauthorized_401.class)
+    public void performingPUTRequestWithOAuthAuthentication_ShouldThrow401Exception()
     {
         accountRemoteRestpoint.inviteUser("hotovo", "some_email%40gmail.com", "hotovo", "binu");
     }

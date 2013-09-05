@@ -1,47 +1,42 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import java.util.List;
-import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import java.util.List;
+import java.util.Set;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Organization
 {
-	
 	public static final String GROUP_SLUGS_SEPARATOR = ";";
-	  
+
     private int id;
     private String hostUrl;
     private String name;
     private String dvcsType;
     private boolean autolinkNewRepos;
     private boolean smartcommitsOnNewRepos;
-    
     private String organizationUrl;
-    
     private List<Repository> repositories;
-    
     private transient Credential credential;
-    
+
     // 2/ invitation groups - when adding new user as information holder for rendering form extension
-    private transient Set<Group> groups;
-    
+    private transient List<Group> groups;
+
     // 1/ default groups - when configuring default groups
     private transient Set<Group> defaultGroups;
- 
+
     public Organization()
 	{
     	super();
 	}
-    
+
     public Organization(int id, String hostUrl, String name, String dvcsType,
             boolean autolinkNewRepos, Credential credential, String organizationUrl,
             boolean smartcommitsOnNewRepos, Set<Group> defaultGroups)
@@ -88,7 +83,7 @@ public class Organization
         return credential;
     }
 
-    public Set<Group> getGroups()
+    public List<Group> getGroups()
     {
         return groups;
     }
@@ -148,7 +143,7 @@ public class Organization
         this.repositories = repositories;
     }
 
-    public void setGroups(Set<Group> groups)
+    public void setGroups(List<Group> groups)
     {
         this.groups = groups;
     }
@@ -162,12 +157,12 @@ public class Organization
     {
         this.defaultGroups = defaultGroups;
     }
-    
+
     public void setSmartcommitsOnNewRepos(boolean smartcommitsOnNewRepos)
     {
         this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
     }
-    
+
     @Override
     public boolean equals(Object o)
     {
@@ -197,11 +192,11 @@ public class Organization
                 .hashCode();
     }
 
-	
+
     public boolean isIntegratedAccount()
     {
         return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
-                && StringUtils.isNotBlank(credential.getOauthSecret());
+                && StringUtils.isNotBlank(credential.getOauthSecret()) && StringUtils.isBlank(credential.getAccessToken());
     }
 
 }

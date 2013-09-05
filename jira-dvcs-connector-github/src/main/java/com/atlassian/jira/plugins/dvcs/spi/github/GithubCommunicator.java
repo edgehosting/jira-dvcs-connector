@@ -25,6 +25,7 @@ import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.RequestException;
@@ -40,13 +41,13 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchTip;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
@@ -65,22 +66,12 @@ public class GithubCommunicator implements DvcsCommunicator
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     protected final OAuthStore oAuthStore;
     
-    private final GitHubUserService gitHubUserService;
-    
     public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
-            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider, GitHubUserService gitHubUserService)
+            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
-        this.gitHubUserService = gitHubUserService;
-    }
-
-    @Override
-    public boolean isOauthConfigured()
-    {
-        return StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB))
-                && StringUtils.isNotBlank(oAuthStore.getClientId(GITHUB));
     }
 
     @Override
@@ -97,7 +88,7 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             userService.getUser(accountName);
-            return new AccountInfo(GithubCommunicator.GITHUB, !isOauthConfigured());
+            return new AccountInfo(GithubCommunicator.GITHUB);
 
         } catch (IOException e)
         {
@@ -143,7 +134,7 @@ public class GithubCommunicator implements DvcsCommunicator
             while (iterator.hasNext())
             {
                 org.eclipse.egit.github.core.Repository ghRepository = iterator.next();
-                if (StringUtils.equals(ghRepository.getOwner().getLogin(), organization.getName()))
+                if (StringUtils.equalsIgnoreCase(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
                     Repository repository = new Repository();
                     repository.setSlug(ghRepository.getName());
@@ -263,7 +254,7 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<BranchTip> branches = getBranches(repository);
+                List<BranchHead> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
@@ -274,6 +265,12 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+
+	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
+        if (hooksForRepo.containsKey(postCommitUrl))
+        {
+            return;
+        }
 
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
@@ -288,7 +285,32 @@ public class GithubCommunicator implements DvcsCommunicator
             repositoryService.createHook(repositoryId, repositoryHook);
         } catch (IOException e)
         {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. " + e.getMessage(), e);
+            if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
+
+            }
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, RepositoryHook> getHooksForRepo(RepositoryService repositoryService,
+            RepositoryId repositoryId)
+    {
+	    try
+        {
+	        List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
+	        Map<String, RepositoryHook> urlToHooks = new HashMap<String, RepositoryHook>();
+	        for (RepositoryHook repositoryHook : hooks)
+	        {
+	            urlToHooks.put(repositoryHook.getConfig().get("url"), repositoryHook);
+	        }
+	        return urlToHooks;
+        } catch (IOException e)
+        {
+        	log.warn("Problem getting hooks from Github: " + e.getMessage());
+        	return Collections.EMPTY_MAP;
         }
     }
 
@@ -341,29 +363,46 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
-        GitHubUser user = gitHubUserService.getByLogin(username);
-        DvcsUser result;
-        if (user != null) {
-            result = new DvcsUser(user.getLogin(), user.getName(), null, user.getAvatarUrl(), user.getUrl());
-        
-        } else {
-            result = new DvcsUser.UnknownUser(username, username, null);
-            
+        try
+        {
+            UserService userService = githubClientProvider.getUserService(repository);
+            User ghUser = userService.getUser(username);
+            String login = ghUser.getLogin();
+            String name = ghUser.getName();
+            String displayName = StringUtils.isNotBlank(name) ? name : login;
+            String gravatarUrl = ghUser.getAvatarUrl();
+
+            return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl() + "/" + login);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
-        
-        // correct full name to user name, if it is empty
-        if (StringUtils.isEmpty(result.getFullName())) {
-            result.setFullName(username);
-        }
-        
-        return result;
     }
 
-    private List<BranchTip> getBranches(Repository repository)
+    @Override
+    public DvcsUser getTokenOwner(Organization organization)
+    {
+        try
+        {
+            UserService userService = githubClientProvider.getUserService(organization);
+            User ghUser = userService.getUser();
+            String login = ghUser.getLogin();
+            String name = ghUser.getName();
+            String displayName = StringUtils.isNotBlank(name) ? name : login;
+            String gravatarUrl = ghUser.getAvatarUrl();
+
+            return new DvcsUser(login, displayName, null, gravatarUrl, organization.getHostUrl() + "/" + login);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<BranchHead> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<BranchTip> branches = new ArrayList<BranchTip>();
+        List<BranchHead> branches = new ArrayList<BranchHead>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
@@ -372,7 +411,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
             for (RepositoryBranch ghBranch : ghBranches)
             {
-                BranchTip branchTip = new BranchTip(ghBranch.getName(), ghBranch.getCommit().getSha());
+                BranchHead branchTip = new BranchHead(ghBranch.getName(), ghBranch.getCommit().getSha());
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
                     branches.add(0, branchTip);
@@ -423,9 +462,9 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public Set<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(Organization organization)
     {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     @Override

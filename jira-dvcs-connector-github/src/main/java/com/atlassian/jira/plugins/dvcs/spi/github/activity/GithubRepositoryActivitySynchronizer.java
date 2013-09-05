@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.activity;
 
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
@@ -31,7 +32,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestComme
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 
 /**
  * {@link RepositoryActivitySynchronizer} implementation over GitHub repository.
@@ -113,13 +113,6 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
-     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
-     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
-     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
-     */
-    private final ColumnNameResolverService columnNameResolverService;
-
-    /**
      * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubEntityMapping}.
      */
     private final GitHubEntityMapping gitHubEntityMappingDescription;
@@ -175,7 +168,6 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.gitHubCommitLineCommentService = gitHubCommitLineCommentService;
         this.repositoryActivityDao = repositoryActivityDao;
 
-        this.columnNameResolverService = columnNameResolverService;
         gitHubEntityMappingDescription = columnNameResolverService.desc(GitHubEntityMapping.class);
     }
 
@@ -245,8 +237,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             ActiveObjectsUtils.delete(
                     activeObjects,
                     entityToClean,
-                    Query.select().where(columnNameResolverService.column(gitHubEntityMappingDescription.getDomain()) + " = ? ",
-                            gitHubRepository.getId()));
+                    Query.select().where(GitHubEntityMapping.DOMAIN + " = ? ", gitHubRepository.getId()));
         }
 
     }

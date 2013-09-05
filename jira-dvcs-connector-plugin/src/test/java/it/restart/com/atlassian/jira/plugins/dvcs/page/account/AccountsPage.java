@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.Page;
+import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 
 /**
@@ -21,6 +22,20 @@ public class AccountsPage implements Page
      */
     @Inject
     private PageElementFinder pageElementFinder;
+
+    /**
+     * Reference to all accounts.
+     */
+    @ElementBy(className = "dvcs-orgdata-container", pageElementClass = AccountsPageAccount.class)
+    private Iterable<AccountsPageAccount> accounts;
+
+    /**
+     * @return All accounts available on page.
+     */
+    public Iterable<AccountsPageAccount> getAccounts()
+    {
+        return accounts;
+    }
 
     /**
      * Constructor.

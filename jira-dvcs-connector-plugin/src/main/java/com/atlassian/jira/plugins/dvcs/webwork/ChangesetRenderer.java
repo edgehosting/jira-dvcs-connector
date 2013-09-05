@@ -1,13 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
+import java.util.List;
 
-import java.util.Map;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+
 
 public interface ChangesetRenderer {
+    
+    String DEFAULT_MESSAGE_TXT = "No commits found.";
+    String DEFAULT_MESSAGE_GH_TXT = "There are no commits";
+    GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction(DEFAULT_MESSAGE_TXT);
 
-    public String getHtmlForChangeset(Changeset changeset);
 
-    public Map<String, Object> getVelocityContextForChangeset(Changeset changeset, Repository repository);
+    List<IssueAction> getAsActions(Issue issue);
+
 }

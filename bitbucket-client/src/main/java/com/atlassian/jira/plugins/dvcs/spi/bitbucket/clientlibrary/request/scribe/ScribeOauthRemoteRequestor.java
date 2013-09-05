@@ -17,9 +17,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOut
 
 /**
  * ScribeOauthRemoteRequestor
- * 
+ *
  * Created on 13.7.2012, 10:25:16 <br />
- * 
+ *
  * @author jhocman@atlassian.com
  */
 public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
@@ -40,8 +40,8 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
         return new ServiceBuilder().provider(new OAuthBitbucket10aApi(apiProvider.getApiUrl(), isTwoLegged())).apiKey(key)
                 .signatureType(SignatureType.Header).apiSecret(secret).debugStream(new DebugOutputStream(log)).build();
     }
-    
-    protected void addParametersForSigning(OAuthRequest request, Map<String, String> parameters)
+
+    protected void addParametersForSigning(final OAuthRequest request, final Map<String, ? extends Object> parameters)
     {
         if (parameters == null)
         {
@@ -50,10 +50,15 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
         Verb method = request.getVerb();
         if (method == Verb.POST || method == Verb.PUT)
         {
-            for (String paramName : parameters.keySet())
+            processParams(parameters, new ParameterProcessor()
             {
-                request.addBodyParameter(paramName, parameters.get(paramName));
-            }
+                @Override
+                public void process(String key, String value)
+                {
+                    request.addBodyParameter(key, value);
+                }
+
+            });
         }
     }
 

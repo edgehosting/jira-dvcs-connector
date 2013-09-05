@@ -1,7 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
 
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,89 +28,84 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
-	private String url;
-	private String organization;
+    public static final String EVENT_TYPE_GITHUB = "github";
 
-	private String oauthClientId;
-	private String oauthSecret;
-	private String oauthRequired;
+    private String url;
+    private String organization;
+
+    private String oauthClientId;
+    private String oauthSecret;
 
 	// sent by GH on the way back
 	private String code;
 
-	private final OrganizationService organizationService;
-	private final GithubOAuthUtils githubOAuthUtils;
-
+    private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
-	
+    private final ApplicationProperties applicationProperties;
 
-    public AddGithubOrganization(OrganizationService organizationService,
-            OAuthStore oAuthStore, ApplicationProperties applicationProperties)
-	{
-		this.organizationService = organizationService;
+    public AddGithubOrganization(ApplicationProperties applicationProperties,
+                                 EventPublisher eventPublisher,
+                                 OAuthStore oAuthStore,
+                                 OrganizationService organizationService)
+    {
+        super(eventPublisher);
+        this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
-        this.githubOAuthUtils = new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
-	}
+        this.applicationProperties = applicationProperties;
+    }
 
-	@Override
-	@RequiresXsrfCheck
-	protected String doExecute() throws Exception
-	{
-        if (isOAuthConfigurationRequired())
+    @Override
+    @RequiresXsrfCheck
+    protected String doExecute() throws Exception
+    {
+        triggerAddStartedEvent(EVENT_TYPE_GITHUB);
+
+        oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
+
+        // then continue
+        return redirectUserToGithub();
+    }
+
+    private String redirectUserToGithub()
+    {
+        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction!default",
+                url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+
+        // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
+        return SystemUtils.getRedirect(this, githubAuthorizeUrl + urlEncode("&t=2"), true);
+    }
+
+    GithubOAuthUtils getGithubOAuthUtils()
+    {
+        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB), oAuthStore.getSecret(GITHUB));
+    }
+
+    @Override
+    protected void doValidation()
+    {
+
+        if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
-            configureOAuth();
+            addErrorMessage("Please provide both url and organization parameters.");
         }
-		
-		// then continue
-		return redirectUserToGithub();
-	}
-
-	private void configureOAuth()
-	{
-	    oAuthStore.store(Host.GITHUB, oauthClientId, oauthSecret);
-	}
-
-	private String redirectUserToGithub()
-	{
-		String githubAuthorizeUrl = githubOAuthUtils.createGithubRedirectUrl("AddGithubOrganization",
-				url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
-
-		return SystemUtils.getRedirect(this, githubAuthorizeUrl, true);
-	}
-
-	@Override
-	protected void doValidation()
-	{
-		if (StringUtils.isNotBlank(oauthRequired))
-		{
-			if (StringUtils.isBlank(oauthClientId) || StringUtils.isBlank(oauthSecret))
-			{
-				addErrorMessage("Missing credentials.");
-			}
-		}
-		
-		if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
-		{
-			addErrorMessage("Please provide both url and organization parameters.");
-		}
 
         AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization);
         if (accountInfo == null)
         {
             addErrorMessage("Invalid user/team account.");
         }
-	}
-	
-    protected boolean isOAuthConfigurationRequired()
-    {
-        return StringUtils.isNotBlank(oauthRequired);
+
+        if (invalidInput())
+        {
+            triggerAddFailedEvent(FAILED_REASON_VALIDATION);
+        }
     }
 
     public String doFinish()
     {
         try
         {
-            return doAddOrganization(githubOAuthUtils.requestAccessToken(code));
+            return doAddOrganization(getGithubOAuthUtils().requestAccessToken(code));
         } catch (SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
@@ -114,101 +114,101 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
-
         } catch (Exception e)
         {
             addErrorMessage("Error obtain access token.");
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
             return INPUT;
         }
     }
 
-	private String doAddOrganization(String accessToken)
-	{
-		try
-		{
-			Organization newOrganization = new Organization();
-			newOrganization.setName(organization);
-			newOrganization.setHostUrl(url);
-			newOrganization.setDvcsType("github");
-			newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-			newOrganization.setCredential(new Credential(null, null, accessToken));
-			newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
-			
-			organizationService.save(newOrganization);
-			
-		} catch (SourceControlException e)
-		{
-			addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-			log.debug("Failed adding the account: [" + e.getMessage() + "]");
-			return INPUT;
-		}
+    private String doAddOrganization(String accessToken)
+    {
+        try
+        {
+            Organization newOrganization = new Organization();
+            newOrganization.setName(organization);
+            newOrganization.setHostUrl(url);
+            newOrganization.setDvcsType("github");
+            newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
+            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id),
+                    oAuthStore.getSecret(Host.GITHUB.id), accessToken));
+            newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-	}
+            organizationService.save(newOrganization);
 
-	public static String encode(String url)
-	{
-		return CustomStringUtils.encode(url);
-	}
+        } catch (SourceControlException e)
+        {
+            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
+            log.debug("Failed adding the account: [" + e.getMessage() + "]");
+            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
+            return INPUT;
+        }
 
-	public String getCode()
-	{
-		return code;
-	}
+        triggerAddSucceededEvent(EVENT_TYPE_GITHUB);
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
+                            getSourceAsUrlParam());
+    }
 
-	public void setCode(String code)
-	{
-		this.code = code;
-	}
+    public static String encode(String url)
+    {
+        return CustomStringUtils.encode(url);
+    }
 
-	public String getUrl()
-	{
-		return url;
-	}
+    public String getCode()
+    {
+        return code;
+    }
 
-	public void setUrl(String url)
-	{
-		this.url = url;
-	}
+    public void setCode(String code)
+    {
+        this.code = code;
+    }
 
-	public String getOrganization()
-	{
-		return organization;
-	}
+    public String getUrl()
+    {
+        return url;
+    }
 
-	public void setOrganization(String organization)
-	{
-		this.organization = organization;
-	}
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
 
-	public String getOauthClientId()
-	{
-		return oauthClientId;
-	}
+    public String getOrganization()
+    {
+        return organization;
+    }
 
-	public void setOauthClientId(String oauthClientId)
-	{
-		this.oauthClientId = oauthClientId;
-	}
+    public void setOrganization(String organization)
+    {
+        this.organization = organization;
+    }
 
-	public String getOauthSecret()
-	{
-		return oauthSecret;
-	}
+    public String getOauthClientId()
+    {
+        return oauthClientId;
+    }
 
-	public void setOauthSecret(String oauthSecret)
-	{
-		this.oauthSecret = oauthSecret;
-	}
+    public void setOauthClientId(String oauthClientId)
+    {
+        this.oauthClientId = oauthClientId;
+    }
 
-	public String getOauthRequired()
-	{
-		return oauthRequired;
-	}
+    public String getOauthSecret()
+    {
+        return oauthSecret;
+    }
 
-	public void setOauthRequired(String oauthRequired)
-	{
-		this.oauthRequired = oauthRequired;
-	}
+    public void setOauthSecret(String oauthSecret)
+    {
+        this.oauthSecret = oauthSecret;
+    }
+
+    private void triggerAddFailedEvent(String reason)
+    {
+        super.triggerAddFailedEvent(EVENT_TYPE_GITHUB, reason);
+    }
 }

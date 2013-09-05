@@ -1,20 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import net.java.ao.Entity;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
@@ -23,12 +8,26 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v2.ProjectMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.collect.Maps;
+import net.java.ao.Entity;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *  Data migration from jira-github-connector plugin to jira-bitbucket-connector plugin
  *  
  */
-@SuppressWarnings("unchecked")
+// suppressed deprecation - we want to have migrators stable as much as possible
+@SuppressWarnings("deprecation")
 public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_08_ActiveObjectsV3Migrator.class);
@@ -40,7 +39,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
         this.passwordReEncryptor = passwordReEncryptor;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
         log.debug("upgrade [ " + getModelVersion() + " ]");
@@ -178,7 +178,8 @@ public class To_08_ActiveObjectsV3Migrator implements ActiveObjectsUpgradeTask
 
         activeObjects.stream(IssueMapping.class, new EntityStreamCallback<IssueMapping, Integer>()
         {
-            @Override
+
+        	@Override
             public void onRowRead(IssueMapping issueMapping)
             {
                 String projectKey = extractProjectKey(issueMapping.getIssueId());

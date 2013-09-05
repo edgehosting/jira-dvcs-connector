@@ -8,6 +8,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageCo
 import java.util.List;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
@@ -27,14 +28,24 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return page;
     }
 
-    public OrganizationDiv addOrganization(AccountType accountType, String accountName, boolean autosync)
+    public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
-        page.addOrganisation(accountType.index, accountName, autosync);
+        page.addOrganisation(accountType.index, accountName, accountType.hostUrl, oAuthCredentials, autosync);
         assertThat(page.getErrorStatusMessage()).isNull();
-        if (requiresGrantAccess())
+
+        if ("githube".equals(accountType.type))
+        {
+            // Confirm submit for GitHub Enterprise
+            // "Please be sure that you are logged in to GitHub Enterprise before clicking "Continue" button."
+            page.continueAddOrgButton.click();
+        }
+
+        if(requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
+
+        assertThat(page.getErrorStatusMessage()).isNull();
 
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
@@ -48,62 +59,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     }
 
     /**
-     * Enables provided repository.
-     * 
-     * @param accountType
-     *            type of repository
-     * @param accountName
-     *            under which account
-     * @param repositoryName
-     *            name of repository
-     */
-    public void enable(AccountType accountType, String accountName, String repositoryName)
-    {
-        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
-        OrganizationRepositoryRow repository = organization.getRepository(repositoryName);
-        if (!repository.isEnabled()) {
-            repository.enable();
-        }
-    }
-
-    /**
-     * Synchronizes provided repository.
-     * 
-     * @param accountType
-     *            type of repository
-     * @param accountName
-     *            under which account
-     * @param repositoryName
-     *            name of repository
-     */
-    public void synchronize(AccountType accountType, String accountName, String repositoryName)
-    {
-        OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
-        OrganizationRepositoryRow repository = organization.getRepository(repositoryName);
-        repository.synchronize();
-        waitForSyncToFinish(repository);
-    }
-
-    /**
      * Waiting until synchronization is done.
      * 
-     * @param repository
-     *            on which repository we are waiting
+     * @param organization
+     *            on which organization we are waiting
      */
-    private void waitForSyncToFinish(OrganizationRepositoryRow repository)
-    {
-        do
-        {
-            try
-            {
-                Thread.sleep(1000l);
-            } catch (InterruptedException e)
-            {
-                // nothing to do
-            }
-        } while (repository.isSyncing());
-    }
-
     public void waitForSyncToFinish(OrganizationDiv organization)
     {
         do
@@ -120,8 +80,8 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private boolean isSyncFinished(OrganizationDiv organization)
     {
-        List<OrganizationRepositoryRow> repositories = organization.getRepositories();
-        for (OrganizationRepositoryRow repositoryDiv : repositories)
+        List<RepositoryDiv> repositories = organization.getRepositories();
+        for (RepositoryDiv repositoryDiv : repositories)
         {
             if (repositoryDiv.isSyncing())
             {
@@ -142,20 +102,25 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     /**
     *
     */
-    public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", new BitbucketGrantAccessPageController());
-    public static final AccountType GITHUB = new AccountType(1, "github", new GithubGrantAccessPageController());
-    public static final AccountType GITHUBENTERPRISE = new AccountType(2, "githube", new GithubGrantAccessPageController());
-
-    static class AccountType
+    public static class AccountType
     {
+        public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", null, new BitbucketGrantAccessPageController());
+        public static final AccountType GITHUB = new AccountType(1, "github", null, new GithubGrantAccessPageController());
+        public static AccountType getGHEAccountType(String hostUrl)
+        {
+            return new AccountType(2, "githube", hostUrl, new GithubGrantAccessPageController()); // TODO GrantAccessPageController
+        }
+        
         public final int index;
         public final String type;
         public final GrantAccessPageController grantAccessPageController;
+        public final String hostUrl;
 
-        private AccountType(int index, String type, GrantAccessPageController grantAccessPageController)
+        private AccountType(int index, String type, String hostUrl, GrantAccessPageController grantAccessPageController)
         {
             this.index = index;
             this.type = type;
+            this.hostUrl = hostUrl;
             this.grantAccessPageController = grantAccessPageController;
         }
 

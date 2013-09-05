@@ -12,6 +12,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -30,25 +31,27 @@ import com.google.common.collect.Sets;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
- * 
+ *
  * BitbucketAccountsConfigService
  *
- * 
- * <br /><br />
- * Created on 1.8.2012, 13:41:20
- * <br /><br />
+ *
+ * <br />
+ * <br />
+ * Created on 1.8.2012, 13:41:20 <br />
+ * <br />
+ *
  * @author jhocman@atlassian.com
  *
  */
-public class BitbucketAccountsConfigService implements AccountsConfigService//TODO move to BB module
+public class BitbucketAccountsConfigService implements AccountsConfigService, DisposableBean // TODO move to BB module
 {
 
     private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsConfigService.class);
-    
+
     private static final String BITBUCKET_URL = "https://bitbucket.org";
     private static final String APP_SWITCHER_LINK_MODULE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app-switcher-nav-link";
     private static final String DEFAULT_INVITATION_GROUP = "developers";
-        
+
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
     private final PluginScheduler pluginScheduler;
@@ -57,10 +60,9 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     private final ExecutorService executorService;
 
     private volatile boolean firstAsyncReload = true;
-    
-    public BitbucketAccountsConfigService(AccountsConfigProvider configProvider,
-                                          OrganizationService organizationService, PluginScheduler pluginScheduler,
-                                          PluginController pluginController, PluginAccessor pluginAccessor)
+
+    public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
+            PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
@@ -70,6 +72,19 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        executorService.shutdown();
+        if (!executorService.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown queued tasks.");
+        }
+    }
+
     @Override
     public void reload(boolean runAsync)
     {
@@ -89,11 +104,10 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
                 Map<String, Object> data = Maps.newHashMap();
                 data.put("bitbucketAccountsConfigService", this);
                 data.put("pluginScheduler", pluginScheduler);
-                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class,
-                        data, new Date(), TimeUnit.HOURS.toMillis(1));
+                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
+                        TimeUnit.HOURS.toMillis(1));
                 firstAsyncReload = false;
-            }
-            else
+            } else
             {
                 executorService.submit(new Runnable()
                 {
@@ -123,7 +137,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         {
             if (configuration != null)
             {
-                doNewAccount(configuration);
+                if (hasIntegratedAccount(configuration))
+                {
+                    doNewAccount(configuration);
+                } else
+                {
+                    log.debug("No integrated account found in provided configration.");
+                }
             } else
             {
                 // probably not ondemand instance
@@ -148,7 +168,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         enableAppSwitcherLink(info.accountName);
 
         Organization userAddedAccount = getUserAddedAccount(info);
-        
         Organization newOrganization = null;
 
         if (userAddedAccount == null)
@@ -157,7 +176,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
             log.info("Creating new integrated account.");
             newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
-
         } else
         {
             log.info("Found the same user-added account.");
@@ -169,12 +187,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         log.info("Enabling app switcher plugin module");
         pluginController.enablePluginModule(APP_SWITCHER_LINK_MODULE_KEY);
-        ModuleDescriptor descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
+        ModuleDescriptor<?> descriptor = pluginAccessor.getEnabledPluginModule(APP_SWITCHER_LINK_MODULE_KEY);
         // if the descriptor isn't the right type, it's probably because we are on an older version of JIRA that
         // doesn't have the navigation-link plugin module type
         if (descriptor instanceof WebFragmentModuleDescriptor)
         {
-            WebFragmentModuleDescriptor webFragmentModuleDescriptor = (WebFragmentModuleDescriptor) descriptor;
+            WebFragmentModuleDescriptor<?> webFragmentModuleDescriptor = (WebFragmentModuleDescriptor<?>) descriptor;
 
             Document document = DocumentHelper.createDocument();
             Element element = document.addElement("navigation-link");
@@ -198,41 +216,41 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
 
     private void markAsIntegratedAccount(Organization userAddedAccount, AccountInfo info)
     {
-        organizationService.updateCredentialsKeySecret(userAddedAccount.getId(), info.oauthKey, info.oauthSecret);
+        organizationService.updateCredentials(userAddedAccount.getId(), new Credential(info.oauthKey, info.oauthSecret, null));
     }
 
     private Organization getUserAddedAccount(AccountInfo info)
     {
         Organization userAddedAccount = organizationService.getByHostAndName(BITBUCKET_URL, info.accountName);
-        if (userAddedAccount != null && (StringUtils.isBlank(userAddedAccount.getCredential().getOauthKey())
-                                     || StringUtils.isBlank(userAddedAccount.getCredential().getOauthSecret())) ) 
+        if (userAddedAccount != null && StringUtils.isNotBlank(userAddedAccount.getCredential().getAccessToken()))
         {
             return userAddedAccount;
-        } else 
+        } else
         {
             return null;
         }
     }
 
     /**
-     * BL comes from https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285 
+     * BL comes from https://sdog.jira.com/wiki/pages/viewpage.action?pageId=47284285
      */
     private void doUpdateConfiguration(AccountsConfig configuration, Organization existingNotNullAccount)
     {
         AccountInfo providedConfig = toInfoExistingAccount(configuration);
-        
+
         if (providedConfig != null)
         {
             // modify :?
             Organization userAddedAccount = getUserAddedAccount(providedConfig);
-            
+
             // we have no user-added account with the same name
             if (userAddedAccount == null)
             {
                 if (configHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected credentials change.");
-                    organizationService.updateCredentialsKeySecret(existingNotNullAccount.getId(), providedConfig.oauthKey, providedConfig.oauthSecret);
+                    // BBC-513 users probably changed key/secret from UI, ignore
+                    // valuse in ondemand.properties files and keep using existing ones
                 } else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected integrated account name change.");
@@ -260,16 +278,26 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
             //
             removeAccount(existingNotNullAccount);
         }
-        
+
+    }
+
+    /**
+     * @param configuration
+     * @return True if there is an integrated account
+     */
+    private boolean hasIntegratedAccount(AccountsConfig configuration)
+    {
+        Links links = configuration.getSysadminApplicationLinks().isEmpty() ? null : configuration.getSysadminApplicationLinks().get(0);
+        return links != null && links.getBitbucket() != null && !links.getBitbucket().isEmpty();
     }
 
     private boolean configHasChanged(Organization existingNotNullAccount, AccountInfo info)
     {
-        return StringUtils.equals(info.accountName, existingNotNullAccount.getName())
-                && (    !StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey())
-                    ||  !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
+        return StringUtils.equals(info.accountName, existingNotNullAccount.getName()) &&
+                (!StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey()) ||
+                 !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
     }
-    
+
     private boolean accountNameHasChanged(Organization existingNotNullAccount, AccountInfo providedConfig)
     {
         return !StringUtils.equals(providedConfig.accountName, existingNotNullAccount.getName());
@@ -301,13 +329,13 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
             assertNotBlank(info.oauthSecret, "oauthSecret have to be provided for new account");
             //
             return info;
-            
+
         } catch (Exception e)
         {
             throw new IllegalStateException("Wrong configuration.", e);
         }
     }
-    
+
     private AccountInfo toInfoExistingAccount(AccountsConfig configuration)
     {
         //
@@ -322,9 +350,9 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
             log.debug("Bitbucket links not present. " + e + ": " + e.getMessage());
             return null;
         }
-        
+
         BitbucketAccountInfo bitbucketAccountInfo = null;
-        
+
         if (links != null)
         {
             try
@@ -338,7 +366,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         }
 
         AccountInfo info = new AccountInfo();
-        
+
         if (bitbucketAccountInfo != null)
         {
             info.accountName = bitbucketAccountInfo.getAccount();
@@ -376,12 +404,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         return StringUtils.isBlank(string);
     }
-    
+
     private boolean supportsIntegratedAccounts()
     {
         return configProvider.supportsIntegratedAccounts();
     }
-    
+
     private Organization createNewOrganization(AccountInfo info)
     {
         Organization newOrganization = new Organization();
@@ -394,12 +422,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
     {
         organization.setId(0);
         organization.setName(info.accountName);
-        organization.setCredential(new Credential(null, null, null, info.oauthKey, info.oauthSecret));
+        organization.setCredential(new Credential(info.oauthKey, info.oauthSecret, null));
         organization.setHostUrl(BITBUCKET_URL);
         organization.setDvcsType("bitbucket");
         organization.setAutolinkNewRepos(true);
         organization.setSmartcommitsOnNewRepos(true);
-        
+
         return organization;
     }
 
@@ -410,4 +438,3 @@ public class BitbucketAccountsConfigService implements AccountsConfigService//TO
         String oauthSecret;
     }
 }
-

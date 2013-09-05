@@ -105,13 +105,4 @@ public class OrganizationRepositoryRow extends WebDriverElement
 
         return false;
     }
-
-    /**
-     * @return Synchronization message, e.g.: exception message.
-     */
-    public String getMessage()
-    {
-        return synchronizationMessage.getText();
-    }
-
 }

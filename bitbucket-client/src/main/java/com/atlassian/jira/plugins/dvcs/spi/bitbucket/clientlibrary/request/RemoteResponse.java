@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 import java.io.InputStream;
 import java.io.Serializable;
 
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class RemoteResponse implements Serializable
     private InputStream inputStream;
 
     private int httpStatusCode;
-    private DefaultHttpClient client;
+    private HttpClient client;
 
     public RemoteResponse()
     {
@@ -60,11 +60,11 @@ public class RemoteResponse implements Serializable
             
         } finally
         {
-            client.getConnectionManager().shutdown();
+//            client.getConnectionManager().shutdown();
         }
     }
 
-    public void setHttpClient(DefaultHttpClient client)
+    public void setHttpClient(HttpClient client)
     {
         this.client = client;
     }

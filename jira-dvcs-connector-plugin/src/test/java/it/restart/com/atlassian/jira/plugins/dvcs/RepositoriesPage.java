@@ -9,7 +9,10 @@ import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -24,6 +27,11 @@ import com.atlassian.pageobjects.elements.query.Poller;
  */
 public class RepositoriesPage implements Page
 {
+    /**
+     * Logger for this class.
+     */
+    private Logger logger = LoggerFactory.getLogger(RepositoriesPage.class);
+    
     @Inject
     private PageBinder pageBinder;
 
@@ -57,11 +65,35 @@ public class RepositoriesPage implements Page
     @ElementBy(id = "linkRepositoryButton")
     private PageElement linkRepositoryButton;
 
-    @ElementBy(id = "Submit")
+    @ElementBy(className = "button-panel-submit-button")
     private PageElement addOrgButton;
 
-    // @ElementBy(className = "gh_messages")
-    // private PageElement syncStatusDiv;
+    // ------------------ BB ------------------------
+    @ElementBy(id = "oauthBbClientId")
+    private PageElement oauthBbClientId;
+    
+    @ElementBy(id = "oauthBbSecret")
+    private PageElement oauthBbSecret;
+    
+    // ------------------ GH ------------------------
+    @ElementBy(id = "oauthClientId")
+    private PageElement oauthClientId;
+    
+    @ElementBy(id = "oauthSecret")
+    private PageElement oauthSecret;
+    
+    // ------------------ GHE ------------------------
+    @ElementBy(id = "urlGhe")
+    private PageElement urlGhe;
+    
+    @ElementBy(id = "oauthClientIdGhe")
+    private PageElement oauthClientIdGhe;
+    
+    @ElementBy(id = "oauthSecretGhe")
+    private PageElement oauthSecretGhe;
+    
+    @ElementBy(xpath="//button[contains(concat(' ', @class , ' '),' button-panel-submit-button ') and text()='Continue']")
+    PageElement continueAddOrgButton;
 
     @Override
     public String getUrl()
@@ -69,12 +101,32 @@ public class RepositoriesPage implements Page
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
 
-    public void addOrganisation(int accountType, String accountName, boolean autoSync)
+    public void addOrganisation(int accountType, String accountName, String url, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(accountType));
         organization.clear().type(accountName);
+        
+        switch (accountType)
+        {
+        case 0:
+            oauthBbClientId.clear().type(oAuthCredentials.key);
+            oauthBbSecret.clear().type(oAuthCredentials.secret);
+            break;
+        case 1:
+            oauthClientId.clear().type(oAuthCredentials.key);
+            oauthSecret.clear().type(oAuthCredentials.secret);
+            break;
+        case 2:
+            urlGhe.clear().type(url);
+            oauthClientIdGhe.clear().type(oAuthCredentials.key);
+            oauthSecretGhe.clear().type(oAuthCredentials.secret);
+            break;
+        default:
+            break;
+        } 
+        
         if (!autoSync)
         {
             autoLinkNewRepos.click();
@@ -89,12 +141,13 @@ public class RepositoriesPage implements Page
         }
     }
 
-    public OrganizationDiv getOrganization(String repositoryType, String repositoryName)
+    public OrganizationDiv getOrganization(String organizationType, String organizationName)
     {
         List<OrganizationDiv> organizations = getOrganizations();
         for (OrganizationDiv organizationDiv : organizations)
         {
-            if (repositoryType.equals(organizationDiv.getRepositoryType()) && repositoryName.equals(organizationDiv.getRepositoryName()))
+            if (organizationType.equals(organizationDiv.getOrganizationType())
+                    && organizationName.equals(organizationDiv.getOrganizationName()))
             {
                 return organizationDiv;
             }
@@ -118,6 +171,7 @@ public class RepositoriesPage implements Page
         List<OrganizationDiv> orgs;
         while (!(orgs = getOrganizations()).isEmpty())
         {
+            logger.info("Deleting organization: " + orgs.get(0).getOrganizationName() + ":" + orgs.get(0).getOrganizationType());
             orgs.get(0).delete();
         }
     }

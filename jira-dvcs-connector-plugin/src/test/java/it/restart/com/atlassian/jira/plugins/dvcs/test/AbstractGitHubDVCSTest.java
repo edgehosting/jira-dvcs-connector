@@ -68,11 +68,6 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     private GitHubClient gitHubClient;
 
     /**
-     * GitHub OAuth for {@link #getUsername()}.
-     */
-    private OAuth gitHubOAuth;
-
-    /**
      * GitHub {@link RepositoryService}
      */
     private RepositoryService repositoryService;
@@ -133,7 +128,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         super.onTestsEnvironmentSetup();
 
         signInGitHub();
-        this.gitHubOAuth = createOAuthSettings();
+        this.oAuth = createOAuthSettings();
         this.gitHubClient = createGitHubClient();
         addDVCSOrganizations();
 
@@ -174,7 +169,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
         RepositoriesPageController rpc = new RepositoriesPageController(getJiraTestedProduct());
         rpc.getPage().deleteAllOrganizations();
 
-        destroyOAuthSettings(gitHubOAuth);
+        destroyOAuthSettings(oAuth);
         signOutGitHub();
     }
 

@@ -1,6 +1,8 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.CreateIssueDialog;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.DashboardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuesPage;
@@ -37,6 +39,8 @@ public class AbstractDVCSTest
      */
     private Map<String, Map<String, String>> projectKeyAndIssueSummaryToIssueKey = new HashMap<String, Map<String, String>>();
 
+
+    protected OAuth oAuth;
     /**
      * Prepares common test environment.
      */
@@ -145,6 +149,11 @@ public class AbstractDVCSTest
                 projectKeyAndIssueSummaryToIssueKey.clear();
             }
         }
+    }
+
+    protected OAuthCredentials getOAuthCredentials()
+    {
+        return new OAuthCredentials(oAuth.key, oAuth.secret);
     }
 
 }

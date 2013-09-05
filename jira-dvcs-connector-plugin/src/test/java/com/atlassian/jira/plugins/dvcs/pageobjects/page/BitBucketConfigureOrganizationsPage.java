@@ -24,9 +24,14 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     @ElementBy(id = "atlassian-token")
     PageElement atlassianTokenMeta;
 
+    @ElementBy(id = "oauthBbClientId")
+    private PageElement oauthBbClientId;
+
+    @ElementBy(id = "oauthBbSecret")
+    private PageElement oauthBbSecret;
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -34,6 +39,10 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(0));
 
         organization.clear().type(organizationAccount);
+
+        oauthBbClientId.clear().type(oAuthCredentials.key);
+        oauthBbSecret.clear().type(oAuthCredentials.secret);
+
 
         if (!autoSync)
         {
@@ -44,7 +53,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
-        Poller.waitUntilTrue(atlassianTokenMeta.timed().isPresent());
+        Poller.waitUntilTrue(linkRepositoryButton.timed().isPresent());
 
         if (autoSync)
         {
@@ -68,11 +77,10 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         waitFormBecomeVisible();
 
         organization.clear().type(url);
-
         addOrgButton.click();
 
         TimedCondition hasText = messageBarDiv.find(By.tagName("strong")).timed().hasText("Error!");
-        
+
         Poller.waitUntil("Expected Error message while connecting repository", hasText, is(true), Poller.by(30000));
         return this;
     }
@@ -81,7 +89,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addRepoToProjectFailingStep2()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

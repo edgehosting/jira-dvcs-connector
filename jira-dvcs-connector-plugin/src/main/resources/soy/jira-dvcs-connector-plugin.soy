@@ -1,4 +1,84 @@
-{namespace jira.dvcs.connector.plugin.soy}
+{namespace dvcs.connector.plugin.soy}
+
+/**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ * @param isOnDemandLicense
+ */
+{template .repositoryOAuthDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}"> 
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	            <div class="description">
+		       	    {if $isOnDemandLicense}
+		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+		            {else}
+		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+		            {/if}
+		        Help with my key and secret.</a></div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
+	        </div>
+	        <div class="field-group">
+				<label for="d-fname">Authorizing account</label>
+				<div class="static-text" id="tokenUser"><span class="aui-icon aui-icon-wait">Wait</span></div>
+	        </div>
+	    </fieldset>
+	    </form>
+        <div id="aui-message-bar-oauth-dialog"></div>
+	</div>
+{/template}
+
+/**
+ * @param organizationId
+ * @param oAuthKey
+ * @param oAuthSecret
+ * @param isOnDemandLicense
+ */
+{template .OAuthSettingsDialog}
+	<div class="jira-dvcs-connector-plugin repositoryOAuthDialog">
+		<form action="%" method="post" id="updateOAuthForm" class="aui">
+		<input type="hidden" name="organizationId" value="{$organizationId}">
+	    <fieldset>
+	        <div class="field-group">
+	            <label for="d-fname">Key<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="key" name="key" title="first name" value="{$oAuthKey}">
+	            <div class="error">&nbsp;</div>
+	            <div class="description">
+		       	    {if $isOnDemandLicense}
+		                <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+		            {else}
+		                <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+		            {/if}
+		        Help with my key and secret.</a></div>
+	        </div>
+	        <div class="field-group">
+	            <label for="d-fname">Secret<span class="aui-icon icon-required"> required</span></label>
+	            <input class="text long-field" type="text" id="secret" name="secret" title="first name" value="{$oAuthSecret}">
+	            <div class="error">&nbsp;</div>
+	        </div>
+	    </fieldset>
+	    </form>
+        <div id="aui-message-bar-oauth-dialog"></div>
+	</div>
+{/template}
+
+/**
+ * @param fullName
+ * @param url
+ */
+{template .repositoryOAuthDialogTokenOwner}
+	<a href="{$url}">{$fullName}</a>
+{/template}
 
 /**
  * @param repositoryId
@@ -35,8 +115,8 @@
 	<div class="project-key-help">
     	<p>
      		<strong>
-     			The repository has been {if $registering}linked{else}unlinked{/if} successfully, but the post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
-     			{if $registering}The repository will be still synchronized in the scheduled period.{/if}
+     			The repository has been {if $registering}linked{else}unlinked{/if}, but the post commit hook could not be {if $registering}installed{else}uninstalled{/if}.
+     			{if $registering} The repository will be still synchronized in the scheduled period.{/if}
      		</strong>
      	</p>
      	<p>	
@@ -58,17 +138,298 @@
  *	@param dvcsHost
  */
 {template .confirmLoggedIn}
-	<div class="confirmLoggedIn">
-		<div>
-			Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
+	<div>
+		Please be sure that you are logged in to {$dvcsHost} before clicking "Continue" button.
+	</div>
+{/template}
+
+/**
+ */
+{template .advertisement}
+	<div class="dvcs-advertisement">
+		<div class="header">
+			<h3>Connect your code to JIRA</h3>
+			Link every code change to JIRA just by adding an issue keys in commit messages. Bridge the gap back to your source and know which changes fixed which JIRA issues.
 		</div>
-		<div class="buttons">
-			<a href="#" onclick="dvcsSubmitFormHandler(event, true); return false;" class="aui-button aui-button-primary">
-				Continue
-			</a>
-			<a href="#" onclick="return false;" class="aui-button">
-				Cancel
-			</a>
+		<div class="main">
+            {call .advertisementProduct}
+				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_bitbucket.png'}{/param}
+				{param title: 'Git & Mercurial in the cloud' /}
+				{param content}
+					Collaborate across unlimited private code repositories.
+				{/param}
+				{param linkConnect}{contextPath() + '/secure/admin/ConfigureDvcsOrganizations!default.jspa'}{/param}
+				{param linkMore: 'http://www.bitbucket.org/?utm_source=jirafe-bitbucket&utm_medium=website&utm_campaign=jirafe' /}
+			{/call}
+			{call .advertisementProduct}
+				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_stash.png'}{/param}
+				{param title: 'Git behind the firewall' /}
+				{param content}
+					Manage and collaborate on Git repositories behind a firewall.
+				{/param}
+				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
+				{param linkMore: 'http://www.atlassian.com/software/stash/overview?utm_source=jirafe-stash&utm_medium=website&utm_campaign=jirafe' /}
+			{/call}
+			{call .advertisementProduct}
+				{param logoUrl}{contextPath() + '/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/logo_fisheye.png'}{/param}
+				{param title: 'Browse and search code' /}
+				{param content}
+					Browse, search, and track source code repositories.
+				{/param}
+				{param linkConnect}{contextPath() + '/plugins/servlet/applinks/listApplicationLinks'}{/param}
+				{param linkMore: 'http://www.atlassian.com/software/fisheye/overview?utm_source=jirafe-fisheye&utm_medium=website&utm_campaign=jirafe' /}
+			{/call}
+		</div>
+		<div class="bottom">
+			<a href="https://marketplace.atlassian.com/">Find more source code tools on the Atlassian Marketplace</a>
 		</div>
 	</div>
+{/template}
+
+/**
+ *	@param logoUrl
+ *	@param title
+ *	@param content
+ *	@param linkConnect
+ *	@param linkMore
+ */
+{template .advertisementProduct}
+	<div class="product">
+		<div><img src="{$logoUrl}" /></div>
+		<h4>{$title}</h4>
+		<div class="content">
+			{$content}
+		</div>
+		<div class="buttons">
+			<a href="{$linkConnect}" class="aui-button">Connect</a>
+			<a href="{$linkMore}">Find out more</a>
+		</div>
+	</div>
+{/template}
+
+/**
+ * @param isOnDemandLicense
+ * @param atlToken
+ * @param oAuthStore
+ * @param? source the source of the configuration, e.g., jira.devtools.
+ */
+{template .addOrganizationDialog}
+	<form class="aui long-label" id="repoEntry" method="post"  >
+
+	    {if $source}
+    	    <input type="hidden" name="source" id="source" value="{$source}">
+	    {/if}
+	    <input type="hidden" name="atl_token" id="atl_token" value="{$atlToken}">
+	    <input type="hidden" name="isPrivate" id="isPrivate">
+	    <input type="hidden" name="url" id="url" >
+	  	<fieldset>
+		    <div class="field-group" >
+		      <label for="urlSelect">Host</label>
+		      <select id="urlSelect" name="urlSelect" class="select">
+		        <option value="bitbucket">Bitbucket</option>
+		        <option value="github">GitHub</option>
+		        <option value="githube">GitHub Enterprise</option>
+		      </select>
+		      <div class="fieldValue" id="urlReadOnly"></div>
+		      <div id="url-error" class="dvcs-error error">Choose URL.</div>
+		    </div>
+		
+		    <div class="field-group" >
+		      <label for="organization">Team or User Account<span class="aui-icon icon-required">&nbsp;</span></label>
+		      <input class="text" type="text" id="organization" name="organization" value=""/>
+		      <div class="fieldValue" id="organizationReadOnly"></div>
+		      <div id="org-error" class="dvcs-error error">This field is required.</div>
+		    </div>
+		    
+		    // BB form section
+		    <div id="bitbucket-form-section">
+		        <div class="field-group">
+		           <label for="oauthBbClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthBbClientId" name="oauthBbClientId" value="{$oAuthStore.bitbucket.key}"/>
+		           <div id="oauth-bb-client-error" class="dvcs-error error">This field is required.</div>
+		           <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+		        </div>
+		        <div class="field-group">
+		           <label for="oauthBbSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthBbSecret" name="oauthBbSecret" value="{$oAuthStore.bitbucket.secret}"/>
+		           <div id="oauth-bb-secret-error" class="dvcs-error error">This field is required.</div>
+		        </div>
+		    </div>
+		
+		    // GH form section
+		    <div id="github-form-section">
+		        <div class="field-group">
+		           <label for="oauthClientId">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthClientId" name="oauthClientId" value="{$oAuthStore.github.key}"/>
+		           <div id="oauth-gh-client-error" class="dvcs-error error">This field is required.</div>
+		           <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+		        </div>
+		        <div class="field-group">
+		           <label for="oauthSecret">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+		           <input class="text" type="text" id="oauthSecret" name="oauthSecret" value="{$oAuthStore.github.secret}"/>
+		           <div id="oauth-gh-secret-error" class="dvcs-error error">This field is required.</div>
+		        </div>
+		    </div>
+		    
+		    // GHE form section
+	        <div id="githube-form-section">
+	            <div class="field-group">
+	               <label for="urlGhe">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="urlGhe" name="urlGhe" value="{$oAuthStore.githube.url}"/>
+	               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
+	               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+	            </div>
+	            <div class="field-group">
+	                <label for="oauthClientIdGhe">OAuth Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="oauthClientIdGhe" name="oauthClientIdGhe" value="{$oAuthStore.githube.key}"/>
+	               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
+	               <div class="description">
+		           {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/x/kBLSEQ" target="_blank">
+	               {else}
+	                    <a href="https://confluence.atlassian.com/x/vw-uEQ" target="_blank">
+	               {/if}
+		           Help with my key and secret.</a></div>
+	            </div>
+	            <div class="field-group">
+	               <label for="oauthSecretGhe">OAuth Secret<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="{$oAuthStore.githube.secret}"/>
+	               <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
+	            </div>
+	        </div>
+        </fieldset>
+        
+        <fieldset class="group">
+	        <div style="margin-top: 10px;" class="checkbox">
+	            <input class="checkbox" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true" checked="checked" />
+	            <label for="autoLinking">Auto Link New Repositories</label>
+	        </div>
+	           
+	        <div style="margin-top: 10px;" class="checkbox">
+	            <input class="checkbox" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true" checked="checked" />
+	            <label for="autoSmartCommits">Enable Smart Commits</label>
+	            <div class="description">
+	                {if $isOnDemandLicense}
+	                    <a href="https://confluence.atlassian.com/display/AOD/Processing+JIRA+issues+with+commit+messages" target="_blank">
+	                {else}
+	                    <a href="https://confluence.atlassian.com/display/BITBUCKET/Processing+JIRA+issues+with+commit+messages" target="_blank">
+	                {/if}
+	                Transition JIRA issues</a> through commit messages. 
+	            </div>
+	        </div>
+ 		</fieldset>
+ 		
+        <div id="bbCredentials"></div>
+
+        <div id="aui-message-bar"></div>
+
+    </form>
+{/template}
+
+/**
+ *	@param organizationName
+ */
+{template .confirmDelete}
+	<div>
+		<p>
+			Are you sure you want to remove account '{$organizationName}' from JIRA?
+		</p>
+		<p>
+			Deleting an account removes it permanently from JIRA, including all of its repositories and synchronized changesets.
+		</p>
+	</div>
+{/template}
+
+/**
+ *	@param baseUrl
+ *	@param atlToken
+ *	@param organizationIdDefaultGroups
+ */
+{template .defaultGroupsForm}
+    <div>
+        <form id="configureDefaultGroupsForm" class="aui" method="post" action="{$baseUrl}/secure/admin/ConfigureDefaultBitbucketGroups.jspa" >
+             <input type="hidden" name="atl_token" value="{$atlToken}">
+             <input type="hidden" id="organizationIdDefaultGroups" name="organizationIdDefaultGroups" value="{$organizationIdDefaultGroups}" />
+             <div id="configureDefaultGroupsContent"><span class="aui-icon aui-icon-wait">&nbsp;</span></div>
+        </form>
+    </div>
+{/template}
+
+/**
+ *	@param organization
+ *	@param groups
+ */
+{template .defaultGroups}
+	{if $groups.length == 0}
+        <div>There are no <a href="https://bitbucket.org/account/user/{$organization.name}/groups/" target="_blank">Bitbucket groups</a> configured for the selected account.</div>
+	{else}
+		Automatically give newly-added JIRA users access to <strong>{$organization.name}</strong> repositories through these <a href="https://bitbucket.org/account/user/{$organization.name}/groups/" target="_blank">Bitbucket groups</a>:
+		<table class="aui">
+			<tbody>
+				{foreach $group in $groups}
+	         		<tr>
+			 			<td>
+			 				<input type="checkbox" 
+			 					id="default-group-slug-{$group.slug}"
+			 					name="organizationDefaultGroups" value="{$group.slug}"
+			 					{if $group.selected}checked="checked"{/if} /> 
+			 				<label for="default-group-slug-{$group.slug}" >{$group.niceName}</label> 
+			 			</td>
+	         		</tr>
+         		{/foreach}
+			</tbody>
+		</table>
+	{/if}
+{/template}
+
+/**
+ * 
+ */
+{template .adminPermisionWarning}
+	<h2>Post commit hook problem</h2>
+	<div>
+		<div>
+			Error installing post commit hook.<br> 
+            Are you administrator of the repository? Maybe you exceeded maximum number of postcommit hooks?  
+		</div>
+		<div class="description">
+			<a href="https://confluence.atlassian.com/display/BITBUCKET/Linking+Bitbucket+and+GitHub+accounts+to+JIRA" target="_blank">Do you need help?</a>
+		<div>
+	</div>
+{/template}
+
+/**
+ * @param isLinking
+ * @param errorMessage
+ */
+{template .linkingUnlinkingError}
+	<h2>Unable to {if $isLinking}link{else}unlink{/if} selected repository</h2>
+	{if $errorMessage}
+	<div>{$errorMessage}</div>
+	{/if}
+	<div>Please contact the server administrator.</div>
+{/template}
+
+/**
+ * @param smartCommitErrors
+ */
+{template .smartCommitErrors}
+	<h2>Smart commit errors</h2>
+	<ul>
+	{foreach $sce in $smartCommitErrors}
+	    <li><a href='{$sce.commitUrl}' target='_blank'>{$sce.shortChangesetNode}</a>: {$sce.error}</li>
+	{/foreach}
+	</ul>
 {/template}

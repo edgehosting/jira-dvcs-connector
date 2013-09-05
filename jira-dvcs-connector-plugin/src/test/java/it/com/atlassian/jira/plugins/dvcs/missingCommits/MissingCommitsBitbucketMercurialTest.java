@@ -1,21 +1,26 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthConfigPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-
-import org.testng.annotations.BeforeClass;
+import com.google.common.collect.Lists;
 
 /**
  * @author Martin Skurla
@@ -55,7 +60,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     }
 
     @Override
-    void loginToDvcsAndSetJiraOAuthCredentials()
+    OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
     {
         jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
         jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
@@ -64,11 +69,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         bitbucketIntegratedApplicationsPage =
                 jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
 
-        BitbucketIntegratedApplicationsPage.OAuthCredentials oauthCredentials =
-                bitbucketIntegratedApplicationsPage.addConsumer();
-
-        BitbucketOAuthConfigPage oauthConfigPage = jira.getPageBinder().navigateToAndBind(BitbucketOAuthConfigPage.class);
-        oauthConfigPage.setCredentials(oauthCredentials.oauthKey, oauthCredentials.oauthSecret);
+        return bitbucketIntegratedApplicationsPage.addConsumer();
     }
 
     @Override
@@ -79,17 +80,10 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", DVCS_REPO_OWNER,
                                                                                       DVCS_REPO_PASSWORD,
                                                                                       MISSING_COMMITS_REPOSITORY_NAME);
-        String hgCommand = getHgCommand();
-        
-        Process hgPushProcess = new ProcessBuilder(hgCommand, "push", hgPushUrl)
-                                                  .directory(extractedRepoDir)
-                                                  .start();
-
-        hgPushProcess.waitFor();
-
+        executeCommand(extractedRepoDir, getHgCommand(), "push", hgPushUrl);
         FileUtils.deleteDirectory(extractedRepoDir);
     }
-
+    
     @Override
     String getFirstDvcsZipRepoPathToPush()
     {

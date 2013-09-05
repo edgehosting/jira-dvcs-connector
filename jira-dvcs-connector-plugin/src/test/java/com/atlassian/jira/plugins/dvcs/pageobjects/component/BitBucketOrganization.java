@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.hamcrest.Matchers.is;
-
 import javax.inject.Inject;
 
 import org.openqa.selenium.By;
@@ -10,15 +7,11 @@ import org.openqa.selenium.By;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.AtlassianWebDriver;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 
 public class BitBucketOrganization
 {
     private final PageElement row;
-
-    @Inject
-    AtlassianWebDriver driver;
 
     @Inject
     PageElementFinder elementFinder;
@@ -36,26 +29,20 @@ public class BitBucketOrganization
      */
     public void delete()
     {
-        // disable confirm popup
-        driver.executeScript("window.confirm = function(){ return true; }");
-
-        // add marker to wait for post complete
-        driver.executeScript("document.getElementById('Submit').className = '_posting'");
-        
-        PageElement ddButton = row.find(By.className("aui-dd-trigger"));
+        PageElement ddButton = row.find(By.className("aui-dropdown2-trigger"));
         ddButton.click();
         
-        PageElement deleteLink = row.find(By.className("dvcs-control-delete-org"));
+        String dropDownMenuId = ddButton.getAttribute("aria-owns");
+        PageElement deleteLink = elementFinder.find(By.id(dropDownMenuId)).find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
 
-        //wait until marker is gone.
-        Poller.waitUntil(elementFinder.find(By.id("Submit")).timed().hasClass("_posting"), is(false), by(30000));
+        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
+        dialog.confirm();
+        dialog.waitUntilVisible();
     }
 
-	public PageElement getRepositoriesTable()
-	{
-		return repositoriesTable;
-	}
-    
-    
+    public PageElement getRepositoriesTable()
+    {
+        return repositoriesTable;
+    }
 }

@@ -10,7 +10,6 @@ import org.openqa.selenium.By;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -33,7 +32,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     @ElementBy(id = "linkRepositoryButton")
     PageElement linkRepositoryButton;
 
-    @ElementBy(id = "Submit")
+    @ElementBy(className = "button-panel-submit-button")
     PageElement addOrgButton;
 
     @ElementBy(className = "gh_messages")
@@ -68,17 +67,15 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     {
         List<BitBucketOrganization> list = new ArrayList<BitBucketOrganization>();
 
-        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container"))) {
-
-        	 Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
+        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container")))
+        {
+             Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
 
              list.add(pageBinder.bind(BitBucketOrganization.class, orgContainer));
-
-    	}
+        }
 
         return list;
     }
-
 
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
     {
@@ -88,7 +85,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
             orgs.get(0).delete();
         }
 
-    	return this;
+        return this;
     }
 
     public void assertThatErrorMessage(Matcher<String> matcher)
@@ -114,9 +111,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
-    public abstract BaseConfigureOrganizationsPage addRepoToProjectFailingStep2();
+    public abstract BaseConfigureOrganizationsPage addOrganizationFailingOAuth();
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
@@ -159,8 +156,8 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
             if (repositoryName.equals(queriedRepositoryName))
             {
-            	String id = repositoryRow.getAttribute("id");
-            	return id.replaceAll("dvcs-repo-row-", "");
+                String id = repositoryRow.getAttribute("id");
+                return id.replaceAll("dvcs-repo-row-", "");
             }
         }
 

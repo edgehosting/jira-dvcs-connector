@@ -12,7 +12,6 @@ import java.util.Date;
 
 import org.eclipse.egit.github.core.client.DateFormatter;
 import org.eclipse.egit.github.core.client.EventFormatter;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.event.Event;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -21,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientWithTimeout;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -33,18 +33,18 @@ import com.google.gson.JsonSerializer;
 
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
-	public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
+    public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
     {
         super(authenticationFactory, pluginAccessor);
     }
 
     @Override
-    public GitHubClient createClientInternal(String url, String userAgent)
+    public GithubClientWithTimeout createClientInternal(String url, String userAgent)
     {
-    	return createClientForGithubEnteprise(url, userAgent);
+        return createClientForGithubEnteprise(url, userAgent);
     }
 
-    public static GitHubClient createClientForGithubEnteprise(String url, String userAgent)
+    public static GithubClientWithTimeout createClientForGithubEnteprise(String url, String userAgent)
     {
         try
         {
@@ -56,7 +56,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
                 host = HOST_API;
             }
 
-            GitHubClient result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
+            GithubClientWithTimeout result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
         } catch (IOException e)
@@ -66,66 +66,66 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
     }
 
 
-    private static class GitHubEnterpriseClient extends GitHubClient
+    private static class GitHubEnterpriseClient extends GithubClientWithTimeout
     {
-    	public GitHubEnterpriseClient(final String hostname, final int port,
-    			final String scheme)
-    	{
-    		super(hostname,port,scheme);
-    		gson = createGson(true);
-		}
+        public GitHubEnterpriseClient(final String hostname, final int port,
+                final String scheme)
+        {
+            super(hostname,port,scheme);
+            gson = createGson(true);
+        }
 
-    	public static final Gson createGson(final boolean serializeNulls)
-    	{
-    		final GsonBuilder builder = new GsonBuilder();
-    		builder.registerTypeAdapter(Date.class, new ISODateFormatter());
-    		builder.registerTypeAdapter(Event.class, new EventFormatter());
-    		builder.setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES);
-    		if (serializeNulls)
-    			builder.serializeNulls();
-    		return builder.create();
-    	}
+        public static final Gson createGson(final boolean serializeNulls)
+        {
+            final GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(Date.class, new ISODateFormatter());
+            builder.registerTypeAdapter(Event.class, new EventFormatter());
+            builder.setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES);
+            if (serializeNulls)
+                builder.serializeNulls();
+            return builder.create();
+        }
     }
 
-	private static class ISODateFormatter implements JsonDeserializer<Date>, JsonSerializer<Date>
-	{
+    private static class ISODateFormatter implements JsonDeserializer<Date>, JsonSerializer<Date>
+    {
 
-		private final Logger log = LoggerFactory.getLogger(ISODateFormatter.class);
+        private final Logger log = LoggerFactory.getLogger(ISODateFormatter.class);
 
-		private final DateFormatter dateFormatter = new DateFormatter();
+        private final DateFormatter dateFormatter = new DateFormatter();
 
 
-		/**
-		 * Create date formatter
-		 */
-		public ISODateFormatter()
-		{
-		}
+        /**
+         * Create date formatter
+         */
+        public ISODateFormatter()
+        {
+        }
 
-		@Override
+        @Override
         public Date deserialize(JsonElement json, Type typeOfT,
-				JsonDeserializationContext context) throws JsonParseException
-		{
-			final String value = json.getAsString();
+                JsonDeserializationContext context) throws JsonParseException
+        {
+            final String value = json.getAsString();
 
-			DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
-			try
-			{
-				return fmt.parseDateTime(value).toDate();
-			} catch (IllegalArgumentException e)
-			{
-				log.debug("Could not parse '" + value + "'.", e);
-			}
+            DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
+            try
+            {
+                return fmt.parseDateTime(value).toDate();
+            } catch (IllegalArgumentException e)
+            {
+                log.debug("Could not parse '" + value + "'.", e);
+            }
 
-			// let's try eGit dateFormatter
-			return dateFormatter.deserialize(json, typeOfT, context);
-		}
+            // let's try eGit dateFormatter
+            return dateFormatter.deserialize(json, typeOfT, context);
+        }
 
-		@Override
-		public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context)
-		{
+        @Override
+        public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context)
+        {
 
-			return dateFormatter.serialize(src, typeOfSrc, context);
-		}
-	}
+            return dateFormatter.serialize(src, typeOfSrc, context);
+        }
+    }
 }

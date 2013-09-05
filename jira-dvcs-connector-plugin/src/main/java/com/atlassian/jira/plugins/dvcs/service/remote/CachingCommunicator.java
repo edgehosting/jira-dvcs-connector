@@ -80,8 +80,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
             if (this.getClass() != obj.getClass())
                 return false;
             OrganisationKey that = (OrganisationKey) obj;
-            return new EqualsBuilder().append(organization.getHostUrl(), that.organization.getHostUrl())
-                    .append(organization.getName(), that.organization.getName()).isEquals();
+            return new EqualsBuilder()
+                    .append(organization.getHostUrl(), that.organization.getHostUrl())
+                    .append(organization.getName(), that.organization.getName())
+                    .isEquals();
         }
 
         @Override
@@ -99,19 +101,18 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
-
             });
 
-    private final Map<OrganisationKey, Set<Group>> groupsCache = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
-            new Function<OrganisationKey, Set<Group>>()
-            {
-                @Override
-                public Set<Group> apply(OrganisationKey key)
-                {
-                    return delegate.getGroupsForOrganization(key.organization);
-                }
+    private final Map<OrganisationKey, List<Group>> groupsCache =
+            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<OrganisationKey, List<Group>>()
+                    {
+                        @Override
+                        public List<Group> apply(OrganisationKey key)
+                        {
+                            return delegate.getGroupsForOrganization(key.organization);
+                        }
 
-            });
+                    });
 
     public CachingCommunicator(DvcsCommunicator delegate)
     {
@@ -137,13 +138,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public boolean isOauthConfigured()
-    {
-        return delegate.isOauthConfigured();
-    }
-
-    @Override
-    public Set<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(Organization organization)
     {
         try
         {
@@ -236,5 +231,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
     {
         delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
+    }
+
+    @Override
+    public DvcsUser getTokenOwner(Organization organization)
+    {
+        return delegate.getTokenOwner(organization);
     }
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import org.jfree.util.Log;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
@@ -13,7 +14,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMap
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
@@ -35,16 +35,16 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
     private final BitbucketClientRemoteFactory clientFactory;
     private final RepositoryActivityDao dao;
-    private final RepositoryDao repositoryDao;
+    private final RepositoryService repositoryService;
     private final PullRequestContextManager pullRequestContextManager;
 
     public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
-            RepositoryDao repositoryDao, BitbucketPullRequestDao pullRequestDao)
+            RepositoryService repositoryService, BitbucketPullRequestDao pullRequestDao)
     {
         super();
         this.clientFactory = clientFactory;
         this.dao = dao;
-        this.repositoryDao = repositoryDao;
+        this.repositoryService = repositoryService;
         this.pullRequestContextManager = new PullRequestContextManager(pullRequestDao, dao);
     }
 
@@ -121,7 +121,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         } finally
         {
             pullRequestContextManager.clear(forRepository);
-            repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
+            repositoryService.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
         }
     }
 

@@ -1,50 +1,30 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
-import com.atlassian.jira.plugins.dvcs.model.SentData;
+import com.atlassian.jira.plugins.dvcs.model.*;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.webfragments.WebfragmentRenderer;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.*;
 
 /**
  * The Class RootResource.
  */
 @Path("/")
+@Consumes({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON })
 public class RootResource
 {
 
@@ -61,31 +41,27 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    /** The webfragment renderer. */
-    private final WebfragmentRenderer webfragmentRenderer;
-
     private final AccountsConfigService ondemandAccountConfig;
 
     /**
      * The Constructor.
-     * 
+     *
      * @param organizationService
      *            the organization service
      * @param repositoryService
      *            the repository service
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
-            WebfragmentRenderer webfragmentRenderer, AccountsConfigService ondemandAccountConfig)
+            AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.webfragmentRenderer = webfragmentRenderer;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 
     /**
      * Gets the repository.
-     * 
+     *
      * @param id
      *            the id
      * @return the repository
@@ -108,7 +84,7 @@ public class RootResource
 
     /**
      * Gets the all repositories.
-     * 
+     *
      * @return the all repositories
      */
     @GET
@@ -123,7 +99,7 @@ public class RootResource
 
     /**
      * Start repository sync.
-     * 
+     *
      * @param id
      *            the id
      * @param payload
@@ -132,11 +108,13 @@ public class RootResource
      */
     @AnonymousAllowed
     @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
     {
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
+        log.info("Postcommit hook started synchronization for repository [{}].", id);
 
         repositoryService.sync(id,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
@@ -146,7 +124,7 @@ public class RootResource
 
     /**
      * Start repository softsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -173,7 +151,7 @@ public class RootResource
 
     /**
      * Start repository fullsync.
-     * 
+     *
      * @param id
      *            the id
      * @return the response
@@ -237,7 +215,7 @@ public class RootResource
 
     /**
      * Account info.
-     * 
+     *
      * @param server
      *            the server
      * @param account
@@ -266,6 +244,29 @@ public class RootResource
         {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+    }
+
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/organization/{id}/tokenOwner")
+    @AdminOnly
+    public Response getTokenOwner(@PathParam("id") String organizationId)
+    {
+        if (organizationId == null)
+        {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        DvcsUser currentUser;
+        try
+        {
+            currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
+            return Response.ok(currentUser).build();
+        } catch (Exception e)
+        {
+            log.warn("Error retrieving token owner: " + e.getMessage());
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET
@@ -313,6 +314,18 @@ public class RootResource
     }
 
     @POST
+    @Produces({ MediaType.APPLICATION_XML })
+    @Path("/org/{id}/oauth")
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
+    @AdminOnly
+    public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key, @FormParam("secret") String secret)
+    {
+        Organization organization = organizationService.get(id, false);
+        organizationService.updateCredentials(id, new Credential(key, secret, organization.getCredential().getAccessToken()));
+        return Response.ok(organization).build();
+    }
+
+    @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repo/{id}/autolink")
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -336,40 +349,106 @@ public class RootResource
     }
 
     @GET
-    @Produces({ MediaType.TEXT_HTML })
-    @Path("/fragment/{id}/defaultgroups")
+    @Path("/organization/{id}/defaultgroups")
     @AdminOnly
-    public Response renderDefaultGroupsFragment(@PathParam("id") int orgId)
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response getDefaultGroups(@PathParam("id") int orgId)
     {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        Organization organization = organizationService.get(orgId, false);
         try
         {
-            String html = webfragmentRenderer.renderDefaultGroupsFragment(orgId);
-            return Response.ok(html).build();
+            // organization
+            Map<String, Object> organizationResult = new HashMap<String, Object>();
+            result.put("organization", organizationResult);
+            organizationResult.put("id", organization.getId());
+            organizationResult.put("name", organization.getName());
 
-        } catch (IOException e)
+            // groups
+            List<Map<String, Object>> groupsResult = new LinkedList<Map<String, Object>>();
+            result.put("groups", groupsResult);
+            for (Group group : organizationService.getGroupsForOrganization(organization))
+            {
+                Map<String, Object> groupView = new HashMap<String, Object>();
+                groupView.put("slug", group.getSlug());
+                groupView.put("niceName", group.getNiceName());
+                groupView.put("selected", organization.getDefaultGroups().contains(group));
+                groupsResult.add(groupView);
+            }
+
+            return Response.ok(result).build();
+
+        } catch (SourceControlException.Forbidden_403 e)
         {
-            log.error("Failed to get default groups for organization with id " + orgId, e);
-            return Response.serverError().build();
+            return Status.forbidden().message("Unable to access Bitbucket").response();
 
+        } catch (SourceControlException e)
+        {
+            return Status
+                    .error()
+                    .message(
+                            "Error retrieving list of groups for " + organization.getOrganizationUrl()
+                                    + ". Please check JIRA logs for details.").response();
         }
+
     }
 
     @GET
-    @Produces({ MediaType.TEXT_HTML })
-    @Path("/fragment/groups")
+    @Path("/defaultgroups")
     @AdminOnly
-    public Response renderGroupsFragment()
+    public Response getDefaultGroups()
     {
-        try
-        {
-            String html = webfragmentRenderer.renderGroupsFragmentForAddUser();
-            return Response.ok(html).build();
 
-        } catch (IOException e)
+        List<Map<String, Object>> organizations = new LinkedList<Map<String, Object>>();
+        int groupsCount = 0;
+
+        List<Map<String, Object>> errors = new LinkedList<Map<String, Object>>();
+
+        for (Organization organization : organizationService.getAll(false, "bitbucket"))
         {
-            log.error("Failed to get groups", e);
-            return Response.serverError().build();
+            try
+            {
+                Map<String, Object> organizationView = new HashMap<String, Object>();
+
+                organizationView.put("id", organization.getId());
+                organizationView.put("name", organization.getName());
+                organizationView.put("organizationUrl", organization.getOrganizationUrl());
+
+                List<Map<String, Object>> groups = new LinkedList<Map<String, Object>>();
+                for (Group group : organizationService.getGroupsForOrganization(organization))
+                {
+                    groupsCount++;
+
+                    Map<String, Object> groupView = new HashMap<String, Object>();
+                    groupView.put("slug", group.getSlug());
+                    groupView.put("niceName", group.getNiceName());
+                    groupView.put("selected", organization.getDefaultGroups().contains(group));
+                    groups.add(groupView);
+
+                }
+
+                organizationView.put("groups", groups);
+
+                organizations.add(organizationView);
+
+            } catch (Exception e)
+            {
+                log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
+
+                Map<String, Object> groupView = new HashMap<String, Object>();
+                groupView.put("url", organization.getOrganizationUrl());
+                groupView.put("name", organization.getName());
+                errors.add(groupView);
+            }
         }
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("organizations", organizations);
+        result.put("groupsCount", groupsCount);
+        result.put("errors", errors);
+
+        return Response.ok(result).build();
     }
 
     @POST
@@ -420,13 +499,18 @@ public class RootResource
             return Status.error().message("Failed to delete integrated account.").response();
         }
 
+        if (organizationService.get(id, false) == null)
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         try
         {
             organizationService.remove(id);
-
         } catch (Exception e)
         {
-            log.error("Failed to remove account " + id, e);
+            log.error("Failed to remove account with id " + id, e);
+            return Status.error().message("Failed to delete account.").response();
         }
 
         return Response.noContent().build();

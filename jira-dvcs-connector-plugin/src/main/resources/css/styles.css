@@ -1,94 +1,4 @@
-#gh_oauth_app_screenshot{
-     padding-top: 16px;
- }
 
-.gh_steps li {
-     margin-top: 15px;
- }
-
-#gh_config_link{
-    margin-top: 10px;
-}
-
-#gh_config_link a{
-    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/pencil_icon.jpg');
-    background-repeat: no-repeat;
-    background-position: right center;
-    padding-right: 20px;
-    font-size: 1em;
-}
-
-.gh_config_h4{
-    font-weight: normal;
-    color: #3676B7;
-    background-repeat: no-repeat;
-    background-position: left center;
-    margin-top: 18px;
-}
-
-#gh_post_receive_header{
-    font-weight: normal;
-    font-size: 1em;
-    color: #666;
-    margin-top: 18px;
-    margin-bottom: 10px;
-}
-
-#gh_post_receive_textbox{
-    font-size: 1em;
-    padding: 4px;
-}
-
-#gh_post_receive{
-    margin-bottom: 10px;
-}
-
-.gh_table{
-    margin-left: 15px;
-    margin-bottom: 30px;
-    width: 96%
-}
-
-.gh_table_project_name{
-    font-size: 1.18em;
-    /*color: #5F6262;*/
-    color: #939393;
-    font-weight: bold;
-}
-
-.gh_table_project_key{
-    font-size: 1.18em;
-    color: #707070;
-    padding-left: 10px;
-}
-
-.gh_table th {
-    font-weight: normal;
-    color: #656565;
-    border-bottom: 1px solid #cccccc;
-    font-size: 1em;
-}
-
-.gh_table td.status{
-    border-bottom: 1px solid #cccccc;
-    font-size: 1em;
-    padding:0 20px;
-}
-.error{
-    color:#f66;
-}
-
-.gh_table td{
-    font-size: 1em;
-    vertical-align: middle;
-    padding-bottom: 0;
-}
-
-.gh_table_td_pname{
-    /*border-bottom: none !important;*/
-    padding-top: 20px;
-    border-bottom: 1px solid #cccccc;
-}
 
 .gh_messages{
     font-size: 1em;
@@ -119,6 +29,7 @@
     width:16px;
     /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
     background-repeat: no-repeat;
+    vertical-align: text-bottom;
     display: none;
 }
 
@@ -127,6 +38,7 @@
      height: 16px;
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
      background-repeat: no-repeat;
+     vertical-align: text-bottom;
      display: inline-block;
  }
  
@@ -140,13 +52,6 @@
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
  }
  
- #configureDefaultGroupsContentWorking {
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
-     width: 16px;
-     height: 16px;
- }
-
-
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     display:inline-block;
@@ -279,7 +184,6 @@ a:hover.repositoryNameLink {
 }
 
 .dvcs-error {
-	color: red !important;
 	display: none;
 }
 .dvcs-org-reponame {
@@ -298,11 +202,6 @@ a:hover.repositoryNameLink {
 
 .dvcs-sync-repo {
     width: 100px;
-}
-
-.repo_autolink_check, .repo_smartcommit_check {
-    position: relative;
-    top: 2px;
 }
 
 #dvcs-change-pass-dialog .dialog-button-panel, #dvcs-default-groups-dialog .dialog-button-panel {
@@ -327,10 +226,12 @@ a:hover.repositoryNameLink {
 	text-align: center !important;
 }
 .dvcs-repos-table .dvcs-disabled {
-	color: #959595 !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-repos-table .dvcs-disabled a {
-	color: #A1B9ED !important;
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/
@@ -347,34 +248,11 @@ a:hover.repositoryNameLink {
 select#urlSelect {
 	width: 387px;
 }
-.dvcs-organization-controls {
-}
-.dvcs-org-container .dropdown-item {
-}
 
-.dvcs-org-container .dropdown-item {
-	margin: 9px !important;
-}
-/*
-.dvcs-org-container .dropdown-item.active {
-	background-color: #3C78B5 !important;
-}
-.dvcs-org-container .dropdown-item.active a {
-	color: white !important;
-} */
-
-.dvcs-org-container.aui-toolbar {
+.dvcs-org-container {
 	float: right;
 	width: auto !important;
 	clear: none !important;
-}
-
-.dvcs-org-container.aui-toolbar .aui-dropdown a {
-	margin-left: 0 !important;
-	padding-left: 0 !important;
-}
-.dvcs-org-container.aui-toolbar .aui-dropdown input {
-
 }
 
 .aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo {
@@ -453,17 +331,8 @@ html[xmlns] .dvcs-dclear {
     position:relative;
     font-weight: normal;
     font-size:11px;
-    top: 4px;
-}
-
-.dvcs-wait {
-	background-image:url(../../../../images/icons/wait.gif);
-	background-repeat: no-repeat;
-	background-position: right center;
-	padding-right:25px;
-	min-height:25px;
-	color: #777;
-	font-size: 1.2em;
+    top: 2px;
+    color: #D04437;
 }
 
 /* Force synchronization inline dialog style */
@@ -483,35 +352,81 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 1ex 2.5ex;
 }
 
-/* Confirm logged in dialog style */
-div.confirmLoggedIn {
-	margin: 2.5ex;
-}
-div.confirmLoggedIn .buttons {
-	margin: 1ex 2.5ex;
+.dvcs-organization-controls {
+	min-width: 320px;
 }
 
-.dvcs-organization-controls-tool button.toolbar-trigger.aui-dd-trigger {
-  height: 30px;
-  padding: 0px 12px 0px 2px !important;
-  margin: 0px !important;
+.dvcs-advertisement .product {
+	display: inline-block;
+	width: 30ex;
+	margin: 2ex 2ex;
+	vertical-align: top;
+	border-right: solid 1px #dddddd;
 }
 
-.dvcs-organization-controls-tool .icon-tools-small {
-    height: 14px;
-    width: 16px;
-    padding: 0px !important;
-    margin: 0px 6px 0px 0px !important;
-    float: left;
-}
-.dvcs-organization-controls-tool button:after {
-  border: 4px solid transparent;
-  border-top-color: #111;
-  content: "";
-  position: absolute;
-  margin-top: 3px;
+.dvcs-advertisement .product:last-child {
+	border: none;
 }
 
+.dvcs-advertisement .product h4 {
+	margin: 0ex;
+}
 
+.dvcs-advertisement .product .content {
+	margin: 1ex 0;
+}
 
+.dvcs-advertisement .product .buttons {
+	margin: 1ex 0ex;
+}
 
+.dvcs-advertisement .product .buttons a {
+	margin-right: 1ex;
+}
+
+.repository-error-icon {
+	display: inline-block;
+}
+
+.field-group .static-text {
+	padding-top: 5px;
+}
+
+.aui-icon {
+	vertical-align: text-bottom;
+}
+
+.dvcs-org-container .aui-button.aui-dropdown2-trigger {
+	padding-right: 23px!important;
+	position: relative;
+}
+
+.dvcs-org-container .aui-button.aui-dropdown2-trigger:after {
+	border: 4px solid transparent;
+	border-top-color: #333;
+	content: "";
+	height: 0;
+	left: 100%;
+	margin-left: -18px;
+	margin-top: 0px;
+	opacity: .8;
+	position: absolute;
+	top: 12px;
+	width: 0;
+}
+
+.dialog-help {
+	float: left;
+	margin: 7px;
+}
+
+.aui-dialog .dialog-button-panel a.button-panel-link.dvcs-link-disabled,
+.dvcs-link-disabled {
+	color: gray;
+	pointer-events: none;
+	cursor: default;
+}
+
+.dialog-button-panel span.button-panel-link {
+	margin: 0 10px 0 0;
+}

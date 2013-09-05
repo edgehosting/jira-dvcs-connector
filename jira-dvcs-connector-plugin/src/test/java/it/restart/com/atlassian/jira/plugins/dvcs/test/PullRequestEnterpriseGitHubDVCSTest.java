@@ -24,7 +24,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubEnterpriseOAuthConfigPage;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
 
 /**
@@ -108,7 +107,7 @@ public class PullRequestEnterpriseGitHubDVCSTest extends AbstractGitHubDVCSTest
         GithubOAuthPage gitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class, GIT_HUB_BASE_URL
                 + GIT_HUB_NEW_APPLICATION_URI);
         OAuth result = gitHubOAuthPage.addConsumer(getJiraTestedProduct().getProductInstance().getBaseUrl());
-        getJiraTestedProduct().visit(GithubEnterpriseOAuthConfigPage.class).setCredentials(GIT_HUB_BASE_URL, result.key, result.secret);
+        // getJiraTestedProduct().visit(GithubEnterpriseOAuthConfigPage.class).setCredentials(GIT_HUB_BASE_URL, result.key, result.secret);
         return result;
     }
 
@@ -140,8 +139,8 @@ public class PullRequestEnterpriseGitHubDVCSTest extends AbstractGitHubDVCSTest
     protected void addDVCSOrganizations()
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUBENTERPRISE, getUsername(), false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.GITHUBENTERPRISE, getOrganization(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.getGHEAccountType(GIT_HUB_BASE_URL), getUsername(), getOAuthCredentials(), false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.getGHEAccountType(GIT_HUB_BASE_URL), getOrganization(), getOAuthCredentials(), false);
     }
 
     // end of: implementation of abstract methods

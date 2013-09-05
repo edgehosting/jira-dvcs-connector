@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -21,21 +21,39 @@ import com.google.common.collect.Sets;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
+    
+    private final ConcurrencyService concurrencyService;
     private final ChangesetDao changesetDao;
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
     private final RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, RepositoryDao repositoryDao)
+    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, RepositoryDao repositoryDao)
     {
+        this.concurrencyService = concurrencyService;
         this.changesetDao = changesetDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         this.repositoryDao = repositoryDao;
     }
 
     @Override
-    public Changeset save(Changeset changeset)
+    public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
-        return changesetDao.save(changeset);
+        return concurrencyService.synchronizedBlock(new ConcurrencyService.SynchronizedBlock<Changeset, RuntimeException>()
+        {
+
+            @Override
+            public Changeset perform() throws RuntimeException
+            {
+                return changesetDao.create(changeset, extractedIssues);
+            }
+
+        }, Changeset.class, changeset.getRawNode());
+    }
+
+    @Override
+    public Changeset update(Changeset changeset)
+    {
+        return changesetDao.update(changeset);
     }
 
     @Override
@@ -57,11 +75,11 @@ public class ChangesetServiceImpl implements ChangesetService
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getDetailChangeset(repository, changeset);
     }
-    
+
     @Override
-    public List<Changeset> getByIssueKey(String issueKey)
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys)
     {
-        List<Changeset> changesets = changesetDao.getByIssueKey(issueKey);
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys);
         return checkChangesetVersion(changesets);
     }
 
@@ -106,8 +124,8 @@ public class ChangesetServiceImpl implements ChangesetService
             public Object transform(Object input)
             {
                 Changeset changeset = (Changeset) input;
-                
-                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);                
+
+                return ChangesetServiceImpl.this.checkChangesetVersion(changeset);
             }
         });
     }
@@ -142,7 +160,7 @@ public class ChangesetServiceImpl implements ChangesetService
                 changeset.setAllFileCount(updatedChangeset.getAllFileCount());
                 changeset.setAuthorEmail(updatedChangeset.getAuthorEmail());
 
-                changeset = changesetDao.save(changeset);
+                changeset = changesetDao.update(changeset);
             }
         }
         return changeset;
@@ -159,6 +177,6 @@ public class ChangesetServiceImpl implements ChangesetService
     {
         return changesetDao.findReferencedProjects(repositoryId);
     }
-	
-	
+
+
 }

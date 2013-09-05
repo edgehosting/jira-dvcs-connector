@@ -34,9 +34,9 @@ public class GithubClientProvider
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
     }
 
-    public GitHubClient createClient(Repository repository)
+    public GithubClientWithTimeout createClient(Repository repository)
     {
-        GitHubClient client = createClientInternal(repository.getOrgHostUrl(), userAgent);
+        GithubClientWithTimeout client = createClientInternal(repository.getOrgHostUrl(), userAgent);
         OAuthAuthentication auth = (OAuthAuthentication) authenticationFactory.getAuthentication(repository);
         client.setOAuth2Token(auth.getAccessToken());
 
@@ -47,10 +47,10 @@ public class GithubClientProvider
     {
         return createClientInternal(hostUrl, userAgent);
     }
-    
-    protected GitHubClient createClientInternal(String url, String userAgent)
+
+    protected GithubClientWithTimeout createClientInternal(String url, String userAgent)
     {
-    	return createClient(url, userAgent);
+        return createClient(url, userAgent);
     }
     
     public GitHubClient createClient(Organization organization)
@@ -73,9 +73,16 @@ public class GithubClientProvider
         return new CommitService(createClient(repository));
     }
 
+    public UserService getUserService(Organization organization)
+    {
+        return new UserService(createClient(organization));
+    }
+
     public UserService getUserService(Repository repository)
     {
-        return new UserService(createClient(repository));
+        GithubClientWithTimeout client = createClient(repository);
+        client.setTimeout(2000);
+        return new UserService(client);
     }
 
     public RepositoryService getRepositoryService(Repository repository)
@@ -99,16 +106,16 @@ public class GithubClientProvider
     }
 
     /**
-     * Create a GitHubClient to connect to the api.
+     * Create a GithubClientWithTimeout to connect to the api.
      *
      * It uses the right host in case we're calling the github.com api.
      * It uses the right protocol in case we're calling the GitHub Enterprise api.
      *
      * @param url is the GitHub's oauth host.
-     * @param userAgent 
-     * @return a GitHubClient
+     * @param userAgent
+     * @return a GithubClientWithTimeout
      */
-    public static GitHubClient createClient(String url, String userAgent)
+    public static GithubClientWithTimeout createClient(String url, String userAgent)
     {
         try
         {
@@ -120,7 +127,7 @@ public class GithubClientProvider
                 host = HOST_API;
             }
 
-            GitHubClient result = new GitHubClient(host, -1, urlObject.getProtocol());
+            GithubClientWithTimeout result = new GithubClientWithTimeout(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
         } catch (IOException e)

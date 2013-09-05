@@ -1,2 +1,2 @@
-<a href='$user_url' target='_blank'>$user_name - $login</a> committed changeset <a
+<a href='$user_url' target='_blank'>$user_name#if ($login) - $login#end</a> committed changeset <a
         href="$commit_url">$changeset.getNode()</a> saying:

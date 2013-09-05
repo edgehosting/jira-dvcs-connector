@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +33,8 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
     private final RepositoryActivityDao activityDao;
+    private final IssueManager issueManager;
+    private final ChangeHistoryManager changeHistoryManager;
 
     private final IssueActionFactory issueActionFactory;
 
@@ -51,13 +53,16 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
     public DvcsActivityTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
             RepositoryService repositoryService, RepositoryActivityDao activityDao,
-            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory)
+            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory,
+            IssueManager issueManager, ChangeHistoryManager changeHistoryManager)
     {
         this.permissionManager = permissionManager;
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.activityDao = activityDao;
         this.issueActionFactory = issueActionFactory;
+        this.issueManager = issueManager;
+        this.changeHistoryManager = changeHistoryManager;
     }
 
     @Override
@@ -80,7 +85,9 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
                 }
             }
 
-            for (Changeset changeset : changesetService.getByIssueKey(issueKey))
+            Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
+
+            for (Changeset changeset : changesetService.getByIssueKey(issueKeys))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
                 IssueAction issueAction = issueActionFactory.create(changeset);

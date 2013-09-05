@@ -13,8 +13,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import net.java.ao.Query;
 
+import net.java.ao.RawEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +38,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActiv
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;

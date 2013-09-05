@@ -7,6 +7,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -24,12 +25,6 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
-
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-
 public class RepositoryServiceTest
 {
 
@@ -41,6 +36,9 @@ public class RepositoryServiceTest
 	
 	@Mock
 	private RepositoryActivityDao repositoryActivityDao;
+
+	@Mock
+    private BranchService branchService;
 
 	@Mock
 	private Synchronizer synchronizer;
@@ -73,7 +71,7 @@ public class RepositoryServiceTest
 	{
 		MockitoAnnotations.initMocks(this);
 		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, repositoryActivityDao, synchronizer,
-				changesetService, applicationProperties, settings, activitySyncerMock);
+				changesetService, branchService, applicationProperties, settings, activitySyncerMock);
 	}
 
 	@Test
@@ -93,24 +91,24 @@ public class RepositoryServiceTest
 		Assert.assertFalse(registration.isCallBackUrlInstalled());
 		Assert.assertEquals(registration.getRepository(), sampleRepository);
 	}
-	
-	   @Test
-	    public void testDisableRepositoryWithoutAdminRights()
-	    {
-	        Repository sampleRepository = createSampleRepository();
-	        Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
-	        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-	        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).removePostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
-	        Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
-	        RepositoryRegistration registration = repositoryService.enableRepository(0, false);
+    @Test
+    public void testDisableRepositoryWithoutAdminRights()
+    {
+        Repository sampleRepository = createSampleRepository();
+        Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
+        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).removePostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
+        Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
-	        Mockito.verify(repositoryDao).save(sampleRepository);
-	        Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
-	                Mockito.eq(createPostcommitUrl(sampleRepository)));
-	        Assert.assertTrue(registration.isCallBackUrlInstalled());
-	        Assert.assertEquals(registration.getRepository(), sampleRepository);
-	    }
+        RepositoryRegistration registration = repositoryService.enableRepository(0, false);
+
+        Mockito.verify(repositoryDao).save(sampleRepository);
+        Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
+                Mockito.eq(createPostcommitUrl(sampleRepository)));
+        Assert.assertTrue(registration.isCallBackUrlInstalled());
+        Assert.assertEquals(registration.getRepository(), sampleRepository);
+    }
 
 	@Test
 	public void testEnableRepository()
@@ -130,7 +128,7 @@ public class RepositoryServiceTest
 		Assert.assertNotNull(registration.getCallBackUrl());
 		Assert.assertEquals(registration.getRepository(), sampleRepository);
 	}
-	
+
    @Test
     public void testEnableRepositoryWithoutAdminRights()
     {
@@ -191,7 +189,7 @@ public class RepositoryServiceTest
 		Mockito.when(repositoryDao.save(sampleRepository3)).thenReturn(sampleRepository3);
 		Mockito.when(repositoryDao.save(sampleRepository4)).thenReturn(sampleRepository4);
 		Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
-		
+
 		repositoryService.syncRepositoryList(sampleOrganization);
 
 		// 2 has been updated
@@ -221,7 +219,7 @@ public class RepositoryServiceTest
 		// ... with false linking
 		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository3, createPostcommitUrl(sampleRepository3));
 		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository4, createPostcommitUrl(sampleRepository4));
-		
+
 	}
 
 	@Test
@@ -263,7 +261,7 @@ public class RepositoryServiceTest
 		repository.setSlug("doesnotmatter-repo");
 		return repository;
 	}
-	
+
 	private String createPostcommitUrl(Repository forRepo)
 	{
 		return "https://myjira.org" + "/rest/bitbucket/1.0/repository/" + forRepo.getId() + "/sync";

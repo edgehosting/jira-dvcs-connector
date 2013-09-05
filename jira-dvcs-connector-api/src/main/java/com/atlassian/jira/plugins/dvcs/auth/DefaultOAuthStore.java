@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class DefaultOAuthStore implements OAuthStore
@@ -14,8 +16,8 @@ public class DefaultOAuthStore implements OAuthStore
     @Override
     public void store(Host host, String clientId, String secret)
     {
-        pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".clientId", clientId);
-        pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".secret", secret);
+        pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".clientId", StringUtils.trim(clientId));
+        pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".secret", StringUtils.trim(secret));
         pluginSettingsFactory.createGlobalSettings().put("dvcs.connector." + host.id + ".url", host.url);
     }
 

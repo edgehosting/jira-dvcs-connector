@@ -3,12 +3,17 @@ package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
 
+import javax.inject.Inject;
+
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
+import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 
 /**
  * Container of single account of {@link AccountsPage}.
@@ -31,7 +36,7 @@ public class AccountsPageAccount extends WebDriverElement
          * GitHub account type.
          */
         GIT_HUB("githubLogo"), GIT_HUB_ENTERPRISE("githubeLogo"),
-        
+
         /**
          * Bitbucket account type.
          */
@@ -62,17 +67,28 @@ public class AccountsPageAccount extends WebDriverElement
         }
     }
 
+    @Inject
+    private PageElementFinder elementFinder;
+    
     /**
      * Reference to "Controls" button.
      */
-    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//a")
+    @ElementBy(xpath = ".//button[contains(concat(' ', @class, ' '), ' aui-dropdown2-trigger ')]")
     private PageElement controlsButton;
 
     /**
-     * Reference to "Controls" dialog, which appeared after {@link #controlsButton} fire.
+     * Reference to {@link AccountsPageAccountOAuthDialog}.
+     * 
+     * @see #regenerate()
      */
-    @ElementBy(xpath = ".//li[contains(concat(' ', @class, ' '), 'dvcs-organization-controls-tool')]//ul")
-    private AccountsPageAccountControlsDialog controlsDialog;
+    @ElementBy(xpath = "//div[contains(concat(' ', @class, ' '), ' dialog-components ')]")
+    private AccountsPageAccountOAuthDialog oAuthDialog;
+
+    /**
+     * @see #isOnDemand()
+     */
+    @ElementBy(xpath = ".//span[@title='OnDemand']")
+    private PageElement onDemandDecorator;
 
     /**
      * Constructor.
@@ -82,6 +98,17 @@ public class AccountsPageAccount extends WebDriverElement
     public AccountsPageAccount(By locator)
     {
         super(locator);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param locatable
+     * @param timeoutType
+     */
+    public AccountsPageAccount(WebDriverLocatable locatable, TimeoutType timeoutType)
+    {
+        super(locatable, timeoutType);
     }
 
     /**
@@ -98,12 +125,20 @@ public class AccountsPageAccount extends WebDriverElement
     }
 
     /**
+     * @return True if this account is consider to be OnDemand account.
+     */
+    public boolean isOnDemand()
+    {
+        return onDemandDecorator.isPresent() && onDemandDecorator.isVisible();
+    }
+
+    /**
      * Refreshes repositories of this account.
      */
     public void refresh()
     {
         controlsButton.click();
-        controlsDialog.refresh();
+        findControlDialog().refresh();
         // wait for popup to show up
         try
         {
@@ -114,4 +149,26 @@ public class AccountsPageAccount extends WebDriverElement
         }
         Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
+
+    /**
+     * Regenerates account OAuth.
+     * 
+     * @return OAuth dialog
+     */
+    public AccountsPageAccountOAuthDialog regenerate()
+    {
+        controlsButton.click();
+        findControlDialog().regenerate();
+        return oAuthDialog;
+    }
+    
+    /**
+     * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
+     */
+    private AccountsPageAccountControlsDialog findControlDialog()
+    {
+        String dropDownMenuId = controlsButton.getAttribute("aria-owns");
+        return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
+    }
+    
 }

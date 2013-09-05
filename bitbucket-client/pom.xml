@@ -6,10 +6,11 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.4.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>bitbucket-client</artifactId>
+    <version>1.4.3-SNAPSHOT </version>
     <packaging>jar</packaging>
     <name>Bitbucket Client Java library</name>
     <description>Bitbucket Client Java library</description>
@@ -21,6 +22,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.12.4</version>
                 <configuration>
+                    <skip>${maven.test.unit.skip}</skip>
                     <systemPropertyVariables>
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
@@ -85,10 +87,26 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
+        <dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.1.2</version>
+			<version>4.2.5</version>
+            <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId>
+			<version>4.2.5</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
     </dependencies>
 </project>
