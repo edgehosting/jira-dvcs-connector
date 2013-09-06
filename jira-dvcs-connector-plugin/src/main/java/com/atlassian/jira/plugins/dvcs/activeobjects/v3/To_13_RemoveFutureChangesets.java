@@ -43,9 +43,9 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
             {
                 setChangesetDate(activeObjects, DATE_IN_THE_PAST, changesetMapping);
             }
-        } catch(Throwable t)
+        } catch(RuntimeException e)
         {
-            log.warn("Cleaning of future dates did not finished correctly. This will not affect the behavior, only the changesets from the future will be still there. To fix them run full synchronization.", t);
+            log.warn("Cleaning of future dates did not finished correctly. This will not affect the behavior, only the changesets from the future will be still there. To fix them run full synchronization.", e);
         }
             
     }
