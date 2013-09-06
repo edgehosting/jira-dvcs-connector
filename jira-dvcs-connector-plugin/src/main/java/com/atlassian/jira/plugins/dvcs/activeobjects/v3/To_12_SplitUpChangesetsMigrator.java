@@ -436,8 +436,9 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                 }
 
                 uniqueChangesetNode = uniqueChangeset != null ? resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node) : null;
-                if (StringUtils.isBlank(uniqueChangesetNode)) {
-                    logger.error("There was found chnageset with no 'NODE - changeset hash', it will be deleted ");
+                if (StringUtils.isBlank(uniqueChangesetNode))
+                {
+                    logger.error("The chnageset with no 'NODE - changeset hash' found, it will be deleted ");
                     addDeleteChangesetStatement(deleteChangesetStatement, uniqueChangeset);
                     continue;
                 }
