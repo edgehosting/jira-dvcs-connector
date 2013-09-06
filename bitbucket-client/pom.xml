@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>1.4.3-SNAPSHOT</version>
+        <version>1.4.2.8</version>
     </parent>
 
     <artifactId>bitbucket-client</artifactId>
-  <version>1.4.3-SNAPSHOT </version>
+  <version>1.4.2.8 </version>
     <packaging>jar</packaging>
     <name>Bitbucket Client Java library</name>
     <description>Bitbucket Client Java library</description>
