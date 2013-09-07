@@ -27,6 +27,7 @@ public class BitbucketAccount implements Serializable
 	private String firstName; 
 	private String lastName;
 	private String avatar;
+    private String resourceUri;
 
     public String getUsername()
 	{
@@ -67,4 +68,14 @@ public class BitbucketAccount implements Serializable
 	{
 		this.avatar = avatar;
 	}
+
+    public String getResourceUri()
+    {
+        return resourceUri;
+    }
+
+    public void setResource_uri(String resourceUri)
+    {
+        this.resourceUri = resourceUri;
+    }
 }

@@ -34,7 +34,8 @@ public class ChangesetTransformer
 
         List<Changeset> changesets = new ArrayList<Changeset>();
 
-        for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories()) {
+        for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
+        {
             final Changeset changeset = new Changeset(repositoryMapping.getID(),
                     changesetMapping.getNode(),
                     changesetMapping.getRawAuthor(),

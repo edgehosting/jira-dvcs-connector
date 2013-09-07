@@ -60,7 +60,13 @@ public interface Progress
 	 */
 	boolean isShouldStop();
 
-    public abstract void inPullRequestProgress(int pullRequestActivityCount, int jiraCount);
+    /**
+     * Call this method to update the current status of the pull request progress.
+     *
+     * @param pullRequestActivityCount
+     * @param jiraCount
+     */
+    void inPullRequestProgress(int pullRequestActivityCount, int jiraCount);
 
     /**
      * Indication whether the synchronisation has been finished

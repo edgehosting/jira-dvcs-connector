@@ -249,8 +249,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * @param remoteRepositories the remote repositories
      * @param organization       the organization
      */
-    private Set<String> addNewReposReturnNewSlugs(List<Repository> storedRepositories, List<Repository> remoteRepositories,
-            Organization organization)
+    private Set<String> addNewReposReturnNewSlugs(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
     {
         Set<String> newRepoSlugs = new HashSet<String>();
         Map<String, Repository> remoteRepos = makeRepositoryMap(remoteRepositories);
@@ -339,7 +338,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Updates existing repositories - undelete existing deleted - updates names.
+     * Updates existing repositories
+     * - undelete existing deleted
+     * - updates names.
      * 
      * @param storedRepositories
      *            the stored repositories
@@ -541,7 +542,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * Adds the or remove postcommit hook.
      *
      * @param repository the repository
-     * @param post       commit callback url
+     * @param postCommitCallbackUrl       commit callback url
      */
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
@@ -634,8 +635,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         try
         {
-            repositoryDao.save(repository);
-
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
             String postCommitUrl = getPostCommitUrl(repository);
             communicator.removePostcommitHook(repository, postCommitUrl);
@@ -726,11 +725,4 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
     }
-
-    @Override
-    public void setLastActivitySyncDate(Integer repositoryId, Date date)
-    {
-        repositoryDao.setLastActivitySyncDate(repositoryId, date);
-    }
-
 }

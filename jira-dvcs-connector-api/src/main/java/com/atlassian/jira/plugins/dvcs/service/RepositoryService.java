@@ -150,11 +150,4 @@ public interface RepositoryService
 
     DvcsUser getUser(Repository repository, String author, String raw_author);
 
-    /**
-     * Sets last pull request activity synchronization date
-     *
-     * @param repositoryId repository id
-     * @param date last synchronization date
-     */
-    void setLastActivitySyncDate(Integer repositoryId, Date date);
 }

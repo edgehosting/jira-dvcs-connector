@@ -39,6 +39,7 @@ public class ClientUtilsTest
         
         assertThat(bitbucketAccount.getFirstName())  .isEqualTo("Mehmet S");
         assertThat(bitbucketAccount.getLastName())   .isEqualTo("Catalbas");
+        assertThat(bitbucketAccount.getResourceUri()).isEqualTo("/1.0/users/baratrion");
     }
 
     @Test

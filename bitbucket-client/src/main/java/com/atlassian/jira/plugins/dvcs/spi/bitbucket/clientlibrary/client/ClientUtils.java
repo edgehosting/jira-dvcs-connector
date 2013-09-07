@@ -26,11 +26,11 @@ import com.google.gson.JsonParseException;
 public class ClientUtils
 {
 
-    private static Gson GSON = createGson().create();
+    private static Gson GSON = createGson();
 
     public static final String UTF8 = "UTF-8";
 
-    private static GsonBuilder createGson()
+    private static Gson createGson()
     {
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
@@ -38,7 +38,7 @@ public class ClientUtils
         builder.registerTypeAdapter(BitbucketPullRequestActivityInfo.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
         builder.registerTypeAdapter(BitbucketPullRequestLinks.class, new BitbucketPullRequestLinksDeserializer());
         
-        return builder;
+        return builder.create();
     }
 
     public static String toJson(Object object)

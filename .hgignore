@@ -12,7 +12,6 @@ jira-bitbucket-connector-plugin.iws
 syntax: regexp
 ^jira-dvcs-connector-api/target$
 ^jira-dvcs-connector-bitbucket/target$
-^jira-dvcs-connector-github-enterprise/target$
 ^jira-dvcs-connector-github/target$
 ^jira-dvcs-connector-github-enterprise/target$
 ^jira-dvcs-connector-plugin/target$

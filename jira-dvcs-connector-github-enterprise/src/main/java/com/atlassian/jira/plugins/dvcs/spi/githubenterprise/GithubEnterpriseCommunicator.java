@@ -12,7 +12,6 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {

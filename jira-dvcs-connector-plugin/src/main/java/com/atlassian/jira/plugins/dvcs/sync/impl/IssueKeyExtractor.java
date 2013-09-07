@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -24,7 +26,7 @@ public final class IssueKeyExtractor
     private IssueKeyExtractor() {}
     
     
-    public static Set<String> extractIssueKeys(String message)
+    public static Set<String> extractIssueKeys(String...messages)
     {       
         Set<String> matches = new HashSet<String>();
 
@@ -35,17 +37,27 @@ public final class IssueKeyExtractor
         for (String regex : ISSUE_KEY_REGEXES)
         {
             Pattern projectKeyPattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            Matcher match = projectKeyPattern.matcher(message);
 
-            while (match.find())
+            for (String message : messages)
             {
-                // Get all groups for this match
-                for (int i = 1; i <= match.groupCount(); i++)
+                if (StringUtils.isBlank(message))
                 {
-                    String issueKey = match.group(i);
-                    matches.add(issueKey.toUpperCase());
+                    continue;
+                }
+
+                Matcher match = projectKeyPattern.matcher(message);
+
+                while (match.find())
+                {
+                    // Get all groups for this match
+                    for (int i = 1; i <= match.groupCount(); i++)
+                    {
+                        String issueKey = match.group(i);
+                        matches.add(issueKey.toUpperCase());
+                    }
                 }
             }
+
         }
 
         return matches;

@@ -50,9 +50,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubUser;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService;
 import com.google.common.collect.Iterators;
 
 public class GithubCommunicator implements DvcsCommunicator

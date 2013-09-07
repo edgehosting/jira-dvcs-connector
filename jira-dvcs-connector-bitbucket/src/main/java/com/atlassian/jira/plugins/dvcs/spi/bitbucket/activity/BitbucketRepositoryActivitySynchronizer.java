@@ -4,7 +4,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import org.jfree.util.Log;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
@@ -16,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientRemoteFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -33,18 +34,18 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao
 public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
-    private final BitbucketClientRemoteFactory clientFactory;
+    private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final RepositoryActivityDao dao;
-    private final RepositoryService repositoryService;
+    private RepositoryDao repositoryDao;
     private final PullRequestContextManager pullRequestContextManager;
 
-    public BitbucketRepositoryActivitySynchronizer(BitbucketClientRemoteFactory clientFactory, RepositoryActivityDao dao,
-            RepositoryService repositoryService, BitbucketPullRequestDao pullRequestDao)
+    public BitbucketRepositoryActivitySynchronizer(BitbucketClientBuilderFactory bitbucketClientBuilderFactory, RepositoryActivityDao dao,
+                                                   RepositoryDao repositoryDao, BitbucketPullRequestDao pullRequestDao)
     {
         super();
-        this.clientFactory = clientFactory;
+        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.dao = dao;
-        this.repositoryService = repositoryService;
+        this.repositoryDao = repositoryDao;
         this.pullRequestContextManager = new PullRequestContextManager(pullRequestDao, dao);
     }
 
@@ -60,7 +61,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         int jiraCount = progress.getJiraCount();
         int pullRequestActivityCount = 0;
         
-        BitbucketRemoteClient remoteClient = clientFactory.getForRepository(forRepository, 2);
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(forRepository).apiVersion(2).build();
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
 
         //
@@ -121,7 +122,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         } finally
         {
             pullRequestContextManager.clear(forRepository);
-            repositoryService.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
+            repositoryDao.setLastActivitySyncDate(forRepository.getId(), lastActivitySyncDate);
         }
     }
 

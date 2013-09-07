@@ -40,7 +40,7 @@ public class RepositoryRemoteRestpoint
 		this.requestor = requestor;
 	}
 	
-	public List<BitbucketRepository> getAllRepositories(String owner)
+	public List<BitbucketRepository> getAllRepositories(final String owner)
     {
 		String getAllRepositoriesUrl = URLPathFormatter.format("/users/%s", owner);
         

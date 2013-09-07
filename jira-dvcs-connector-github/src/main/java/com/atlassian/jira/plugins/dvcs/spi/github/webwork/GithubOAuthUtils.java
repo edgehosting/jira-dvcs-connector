@@ -18,12 +18,10 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 
 public class GithubOAuthUtils
 {
-
     private final Logger log = LoggerFactory.getLogger(GithubOAuthUtils.class);
     private final String baseUrl;
     private final String clientId;
     private final String secret;
-
 
     public GithubOAuthUtils(String baseUrl, String clientId, String secret)
     {

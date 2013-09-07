@@ -20,7 +20,6 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.util.IssueKeyExtractor;
 
 public class DefaultSynchronisationOperation implements SynchronisationOperation
 {
@@ -180,7 +179,7 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
     {
         if (!extractedProjectKeys.isEmpty())
         {
-            if (synchronizationFlags.contains(isSoftSync()))
+            if (isSoftSync())
             {
                 communicator.linkRepositoryIncremental(repository, extractedProjectKeys);
             } else
