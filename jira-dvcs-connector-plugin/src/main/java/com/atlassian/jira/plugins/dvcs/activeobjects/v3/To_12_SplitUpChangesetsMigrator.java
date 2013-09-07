@@ -434,7 +434,14 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                 {
                     uniqueChangeset = findUniqueChangesetAfterRestart(activeObjects, currentNode);
                 }
+
                 uniqueChangesetNode = uniqueChangeset != null ? resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node) : null;
+                if (StringUtils.isBlank(uniqueChangesetNode))
+                {
+                    logger.warn("The changeset with no hash found, it will be deleted.");
+                    addDeleteChangesetStatement(deleteChangesetStatement, uniqueChangeset);
+                    continue;
+                }
 
                 // false if current changeset is consider to be unique, otherwise it is duplicate
                 boolean isDuplicate = uniqueChangeset != null && uniqueChangesetNode.equals(currentNode);
