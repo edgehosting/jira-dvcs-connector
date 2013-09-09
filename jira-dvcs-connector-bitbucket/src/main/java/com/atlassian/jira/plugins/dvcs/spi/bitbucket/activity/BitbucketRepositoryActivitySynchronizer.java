@@ -165,7 +165,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
             {
                 remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(), forRepository.getSlug(), info
                     .getPullRequest().getId() + "");
-                pullRequestContext.setCommitsUrl(remotePullRequest.getLinks().getCommitsHref());
+                pullRequestContext.setCommitsUrl(remotePullRequest.getLinks().getCommits().getHref());
             } catch (Exception e)
             {
                 Log.error("Could not retrieve pull request details", e);
@@ -271,12 +271,12 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
-        ret.put(RepositoryPullRequestMapping.URL, repository.getOrgHostUrl() + request.getLinks().getHtmlHref());
+        ret.put(RepositoryPullRequestMapping.URL, repository.getOrgHostUrl() + request.getLinks().getHtml().getHref());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
         // in case that fork has been deleted, the source repository is null
         if (request.getSource().getRepository() != null)
         {
-            String sourceRepositoryUrl = repository.getOrgHostUrl() + request.getSource().getRepository().getLinks().getHtmlHref();
+            String sourceRepositoryUrl = repository.getOrgHostUrl() + request.getSource().getRepository().getLinks().getHtml().getHref();
             ret.put(RepositoryPullRequestMapping.SOURCE_URL, sourceRepositoryUrl);
         }
 

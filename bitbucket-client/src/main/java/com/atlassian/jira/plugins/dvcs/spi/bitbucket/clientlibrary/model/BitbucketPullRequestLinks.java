@@ -7,84 +7,107 @@ import java.io.Serializable;
  * @author mstencel@atlassian.com
  * 
  */
-public class BitbucketPullRequestLinks implements Serializable {
-	private static final long serialVersionUID = -8503751637022859413L;
+public class BitbucketPullRequestLinks implements Serializable
+{
 
-	private String href;
-	private String htmlHref;
-	private String commitsHref;
-	private String approvalsHref;
-	private String diffHref;
-	private String commentsHref;
-	private String activityHref;
 
-	public String getHref()
-	{
-		return href;
-	}
+    private BitbucketPullRequestLink self;
+    private BitbucketPullRequestLink html;
+    private BitbucketPullRequestLink decline;
+    private BitbucketPullRequestLink commits;
+    private BitbucketPullRequestLink comments;
+    private BitbucketPullRequestLink accept;
+    private BitbucketPullRequestLink activity;
+    private BitbucketPullRequestLink diff;
+    private BitbucketPullRequestLink approvals;
 
-	public void setHref(String href)
-	{
-		this.href = href;
-	}
+    public BitbucketPullRequestLink getSelf()
+    {
+        return self;
+    }
 
-	public String getHtmlHref()
-	{
-		return htmlHref;
-	}
+    public void setSelf(final BitbucketPullRequestLink self)
+    {
+        this.self = self;
+    }
 
-	public void setHtmlHref(String htmlHref)
-	{
-		this.htmlHref = htmlHref;
-	}
+    public BitbucketPullRequestLink getHtml()
+    {
+        return html;
+    }
 
-	public String getCommitsHref()
-	{
-		return commitsHref;
-	}
+    public void setHtml(final BitbucketPullRequestLink html)
+    {
+        this.html = html;
+    }
 
-	public void setCommitsHref(String commitsHref)
-	{
-		this.commitsHref = commitsHref;
-	}
+    public BitbucketPullRequestLink getDecline()
+    {
+        return decline;
+    }
 
-	public String getApprovalsHref()
-	{
-		return approvalsHref;
-	}
+    public void setDecline(final BitbucketPullRequestLink decline)
+    {
+        this.decline = decline;
+    }
 
-	public void setApprovalsHref(String approvalsHref)
-	{
-		this.approvalsHref = approvalsHref;
-	}
+    public BitbucketPullRequestLink getCommits()
+    {
+        return commits;
+    }
 
-	public String getDiffHref()
-	{
-		return diffHref;
-	}
+    public void setCommits(final BitbucketPullRequestLink commits)
+    {
+        this.commits = commits;
+    }
 
-	public void setDiffHref(String diffHref)
-	{
-		this.diffHref = diffHref;
-	}
+    public BitbucketPullRequestLink getComments()
+    {
+        return comments;
+    }
 
-	public String getCommentsHref()
-	{
-		return commentsHref;
-	}
+    public void setComments(final BitbucketPullRequestLink comments)
+    {
+        this.comments = comments;
+    }
 
-	public void setCommentsHref(String commentsHref)
-	{
-		this.commentsHref = commentsHref;
-	}
+    public BitbucketPullRequestLink getAccept()
+    {
+        return accept;
+    }
 
-	public String getActivityHref()
-	{
-		return activityHref;
-	}
+    public void setAccept(final BitbucketPullRequestLink accept)
+    {
+        this.accept = accept;
+    }
 
-	public void setActivityHref(String activityHref)
-	{
-		this.activityHref = activityHref;
-	}
+    public BitbucketPullRequestLink getActivity()
+    {
+        return activity;
+    }
+
+    public void setActivity(final BitbucketPullRequestLink activity)
+    {
+        this.activity = activity;
+    }
+
+    public BitbucketPullRequestLink getDiff()
+    {
+        return diff;
+    }
+
+    public void setDiff(final BitbucketPullRequestLink diff)
+    {
+        this.diff = diff;
+    }
+
+    public BitbucketPullRequestLink getApprovals()
+    {
+        return approvals;
+    }
+
+    public void setApprovals(final BitbucketPullRequestLink approvals)
+    {
+        this.approvals = approvals;
+    }
 }

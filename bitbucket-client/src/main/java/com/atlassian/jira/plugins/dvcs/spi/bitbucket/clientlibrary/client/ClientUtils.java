@@ -13,8 +13,6 @@ import java.util.TimeZone;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityEnvelopeDeserializer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinks;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinksDeserializer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -36,8 +34,7 @@ public class ClientUtils
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         builder.registerTypeAdapter(Date.class, new GsonDateTypeAdapter()); //to parse 2011-12-21 15:17:37
         builder.registerTypeAdapter(BitbucketPullRequestActivityInfo.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
-        builder.registerTypeAdapter(BitbucketPullRequestLinks.class, new BitbucketPullRequestLinksDeserializer());
-        
+
         return builder.create();
     }
 
