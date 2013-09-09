@@ -74,7 +74,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     /**
      * The Constructor.
-     *
+     * 
      * @param bitbucketLinker
      * @param pluginAccessor
      * @param oauth
@@ -91,6 +91,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.branchService = branchService;
         this.changesetCache = changesetCache;
     }
+
 
     /**
      * {@inheritDoc}
@@ -181,7 +182,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.InvalidResponseException("Could not get changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -194,7 +195,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
                     repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
-            // merge it all
+            // merge it all 
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
         {
@@ -309,23 +310,23 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         List<BranchHead> branches = new ArrayList<BranchHead>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
-
-            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
-            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+                
+        List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+        for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+        {
+            List<String> heads = bitbucketBranch.getHeads();
+            for (String head : heads)
             {
-                List<String> heads = bitbucketBranch.getHeads();
-                for (String head : heads)
+                // make sure "default" branch is first in the list
+                if ("default".equals(bitbucketBranch.getName()))
                 {
-                    // make sure "default" branch is first in the list
-                    if ("default".equals(bitbucketBranch.getName()))
-                    {
-                        branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
-                    } else
-                    {
-                        branches.add(new BranchHead(bitbucketBranch.getName(), head));
-                    }
+                    branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
+                } else
+                {
+                    branches.add(new BranchHead(bitbucketBranch.getName(), head));
                 }
             }
+        }
 
         return branches;
     }
@@ -341,7 +342,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         });
     }
-
+    
     private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
     {
         try
@@ -359,7 +360,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */

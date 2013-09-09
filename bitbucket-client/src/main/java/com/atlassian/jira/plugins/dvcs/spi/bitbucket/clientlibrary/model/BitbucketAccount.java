@@ -23,13 +23,11 @@ import java.io.Serializable;
  */
 public class BitbucketAccount implements Serializable
 {
-	private static final long serialVersionUID = 8025642439790445876L;
-    
 	private String username;
 	private String firstName; 
 	private String lastName;
 	private String avatar;
-	private String resourceUri;
+    private String resourceUri;
 
     public String getUsername()
 	{
@@ -71,13 +69,13 @@ public class BitbucketAccount implements Serializable
 		this.avatar = avatar;
 	}
 
-	public String getResourceUri()
-	{
-		return resourceUri;
+    public String getResourceUri()
+    {
+        return resourceUri;
     }
 
-	public void setResource_uri(String resourceUri)
-	{
-		this.resourceUri = resourceUri;
-	}
+    public void setResource_uri(String resourceUri)
+    {
+        this.resourceUri = resourceUri;
+    }
 }

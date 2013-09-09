@@ -25,6 +25,13 @@ public class Repository
     private boolean deleted;
     private boolean smartcommitsEnabled;
     
+    private Date activityLastSync;
+    
+    /**
+     * Last activity date, either last commit or last PR activity
+     */
+    private Date lastActivityDate;
+    
     private String repositoryUrl;
     
     private transient Credential credential;
@@ -111,6 +118,16 @@ public class Repository
     public void setLastCommitDate(Date lastCommitDate)
     {
         this.lastCommitDate = lastCommitDate;
+    }
+    
+    public Date getLastActivityDate()
+    {
+        return lastActivityDate;
+    }
+
+    public void setLastActivityDate(Date lastActivityDate)
+    {
+        this.lastActivityDate = lastActivityDate;
     }
 
     public boolean isLinked()
@@ -227,5 +244,15 @@ public class Repository
     public String toString()
     {
         return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
+	}
+
+    public Date getActivityLastSync()
+    {
+        return activityLastSync;
+    }
+
+    public void setActivityLastSync(Date activityLastSync)
+    {
+        this.activityLastSync = activityLastSync;
     }
 }

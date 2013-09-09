@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 
 public class CustomStringUtils
 {
@@ -37,4 +37,5 @@ public class CustomStringUtils
             return ChangesetFileAction.MODIFIED;
         }
     }
+    
 }

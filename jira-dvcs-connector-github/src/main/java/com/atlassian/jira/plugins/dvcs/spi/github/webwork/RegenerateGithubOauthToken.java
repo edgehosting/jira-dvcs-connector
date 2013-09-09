@@ -14,8 +14,10 @@ import com.atlassian.sal.api.ApplicationProperties;
 public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
+
     // sent by GH on the way back
     private String code;
+
     protected final String baseUrl;
 
     public RegenerateGithubOauthToken(EventPublisher eventPublisher,
@@ -56,7 +58,7 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     {
         return getOAuthUtils(getOrganizationObject()).requestAccessToken(getOrganizationObject().getHostUrl(), code);
     }
-
+    
     public String getCode()
     {
         return code;

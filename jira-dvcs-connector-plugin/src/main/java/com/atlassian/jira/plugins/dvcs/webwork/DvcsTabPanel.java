@@ -112,5 +112,4 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
     }
-
 }

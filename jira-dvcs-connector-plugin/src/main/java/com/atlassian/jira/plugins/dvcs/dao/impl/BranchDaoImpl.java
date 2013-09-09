@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import net.java.ao.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;

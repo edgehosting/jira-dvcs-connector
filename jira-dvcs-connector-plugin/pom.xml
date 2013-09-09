@@ -21,7 +21,7 @@
 	</scm>
 
 	<artifactId>jira-dvcs-connector-plugin</artifactId>
-  <version>1.4.3-SNAPSHOT </version>
+    <version>1.4.3-SNAPSHOT </version>
 	<name>JIRA DVCS Connector Plugin</name>
 	<description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
 	<packaging>atlassian-plugin</packaging>
@@ -182,9 +182,27 @@
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>
-			<version>1.3.6</version>
+			<version>2.1.2</version>
 		</dependency>
-		<dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>2.2.0.201212191850-r</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.aragost.javahg</groupId>
+            <artifactId>javahg</artifactId>
+            <version>0.4</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
 			<groupId>com.atlassian.plugins</groupId>
 			<artifactId>atlassian-nav-links-plugin</artifactId>
 			<version>3.2.16</version>

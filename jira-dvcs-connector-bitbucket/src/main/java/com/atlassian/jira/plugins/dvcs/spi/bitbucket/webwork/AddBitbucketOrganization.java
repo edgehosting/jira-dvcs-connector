@@ -34,22 +34,23 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
  */
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
+	private static final long serialVersionUID = 4366205447417138381L;
+
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
     public static final String DEFAULT_INVITATION_GROUP = "developers";
     public static final String EVENT_TYPE_BITBUCKET = "bitbucket";
     public static final String SESSION_KEY_REQUEST_TOKEN = "requestToken";
 
-    private String url;
-    private String organization;
-    private String adminUsername;
-    private String adminPassword;
+	private String url;
+	private String organization;
+	private String adminUsername;
+	private String adminPassword;
 
     private String oauthBbClientId;
     private String oauthBbSecret;
 
-    private final OrganizationService organizationService;
-
+	private final OrganizationService organizationService;
 
     private final com.atlassian.sal.api.ApplicationProperties ap;
 
@@ -169,7 +170,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
             newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
             organizationService.save(newOrganization);
-
         } catch (SourceControlException.UnauthorisedException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");

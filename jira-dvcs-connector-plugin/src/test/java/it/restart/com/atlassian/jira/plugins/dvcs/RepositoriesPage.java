@@ -7,6 +7,8 @@ import javax.inject.Inject;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,12 +38,18 @@ public class RepositoriesPage implements Page
     @Inject
     private PageElementFinder elementFinder;
 
+    /**
+     * Injected {@link WebDriver} dependency.
+     */
+    @Inject
+    private WebDriver webDriver;
+
     @ElementBy(id = "aui-message-bar")
     private PageElement messageBarDiv;
 
     @ElementBy(id = "organization-list")
     private PageElement organizationsElement;
-    
+
     @ElementBy(id = "repoEntry")
     private PageElement repoEntry;
 
@@ -50,13 +58,13 @@ public class RepositoriesPage implements Page
 
     @ElementBy(id = "organization")
     private PageElement organization;
-    
+
     @ElementBy(id = "autoLinking")
     private PageElement autoLinkNewRepos;
-    
+
     @ElementBy(id = "linkRepositoryButton")
     private PageElement linkRepositoryButton;
-    
+
     @ElementBy(className = "button-panel-submit-button")
     private PageElement addOrgButton;
 
@@ -92,7 +100,7 @@ public class RepositoriesPage implements Page
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-    
+
     public void addOrganisation(int accountType, String accountName, String url, OAuthCredentials oAuthCredentials, boolean autoSync)
     {
         linkRepositoryButton.click();
@@ -124,6 +132,13 @@ public class RepositoriesPage implements Page
             autoLinkNewRepos.click();
         }
         addOrgButton.click();
+    
+        // dismiss any information alert
+        try {
+            webDriver.switchTo().alert().accept();
+        } catch (NoAlertPresentException e) {
+            // nothing to do
+        }
     }
 
     public OrganizationDiv getOrganization(String organizationType, String organizationName)
@@ -173,6 +188,7 @@ public class RepositoriesPage implements Page
 
     /**
      * The current error status message
+     * 
      * @return error status message
      */
 

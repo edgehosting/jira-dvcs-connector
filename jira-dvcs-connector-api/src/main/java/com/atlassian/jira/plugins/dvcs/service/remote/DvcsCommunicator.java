@@ -16,30 +16,29 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  */
 public interface DvcsCommunicator
 {
-
     String getDvcsType();
 
-    AccountInfo getAccountInfo(String hostUrl, String accountName);
+	AccountInfo getAccountInfo(String hostUrl, String accountName);
 
-    List<Repository> getRepositories(Organization organization);
+	List<Repository> getRepositories(Organization organization);
 
     Changeset getChangeset(Repository repository, String node);
 
     Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
-    Iterable<Changeset> getChangesets(Repository repository);
+	Iterable<Changeset> getChangesets(Repository repository);
 
-    void setupPostcommitHook(Repository repository, String postCommitUrl);
+	void setupPostcommitHook(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
 
     void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys);
 
-    void removePostcommitHook(Repository repository, String postCommitUrl);
+	void removePostcommitHook(Repository repository, String postCommitUrl);
 
-    String getCommitUrl(Repository repository, Changeset changeset);
+	String getCommitUrl(Repository repository, Changeset changeset);
 
-    String getFileCommitUrl(Repository repository, Changeset changeset, String file,  int index);
+	String getFileCommitUrl(Repository repository, Changeset changeset, String file, int index);
 
     DvcsUser getUser(Repository repository, String author);
 

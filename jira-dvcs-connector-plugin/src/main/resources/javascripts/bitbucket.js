@@ -93,10 +93,10 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
         if (repo.sync.finished) {
-            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
         } else {
             syncRepoIcon = "running";
-            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong> " + repo.sync.pullRequestActivityCount + " </strong> PR activities, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
                 syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
         }
@@ -121,7 +121,8 @@ function updateSyncStatus(repo) {
     }
 
     else {
-        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
+    	if (repo.lastActivityDate)
+        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").addClass(syncRepoIcon);

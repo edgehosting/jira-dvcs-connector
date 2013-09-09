@@ -88,8 +88,8 @@ public class GithubCommunicatorTest
         }
     }
 
-    @BeforeMethod
-    public void initializeMocksAndGithubCommunicator()
+	@BeforeMethod
+	public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
 
@@ -97,10 +97,10 @@ public class GithubCommunicatorTest
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);
-    }
+	}
 
-    @Test
-    public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
+	@Test
+	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         when(repositoryMock.getSlug())   .thenReturn("SLUG");

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -41,4 +42,12 @@ public interface RepositoryDao
      * @param repositoryId
      */
     void remove(int repositoryId);
+
+    /**
+     * Sets last pull request activity synchronization date
+     *
+     * @param repositoryId repository id
+     * @param date last synchronization date
+     */
+    void setLastActivitySyncDate(Integer repositoryId, Date date);
 }

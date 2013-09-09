@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,16 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+        repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
+
+        Date lastDate = repositoryMapping.getLastCommitDate();
+
+        if (lastDate == null || (repositoryMapping.getActivityLastSync() != null && repositoryMapping.getActivityLastSync().after(lastDate)))
+        {
+            lastDate = repositoryMapping.getActivityLastSync();
+        }
+        repository.setLastActivityDate(lastDate);
+
         // set sync progress
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
 
@@ -209,7 +220,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             log.warn("Repository with id {} was not found.", repositoryId);
             return null;
-
         } else
         {
             return transform(repositoryMapping);
@@ -239,6 +249,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.LINKED, repository.isLinked());
                     map.put(RepositoryMapping.DELETED, repository.isDeleted());
                     map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
+                    map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
 
                     rm = activeObjects.create(RepositoryMapping.class, map);
                     rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
@@ -252,6 +263,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setLinked(repository.isLinked());
                     rm.setDeleted(repository.isDeleted());
                     rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
+                    rm.setActivityLastSync(repository.getActivityLastSync());
 
                     rm.save();
                 }
@@ -260,7 +272,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
 
         return transform(repositoryMapping);
-
     }
 
     @Override
@@ -281,4 +292,18 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
     }
 
+    @Override
+    public void setLastActivitySyncDate(final Integer repositoryId, final Date date)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            public Void doInTransaction()
+            {
+                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, repositoryId);
+                repo.setActivityLastSync(date);
+                repo.save();
+                return null;
+            }
+        });
+    }
 }

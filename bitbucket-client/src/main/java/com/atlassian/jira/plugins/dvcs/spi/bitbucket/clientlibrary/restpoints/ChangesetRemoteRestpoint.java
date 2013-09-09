@@ -16,7 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * ChangesetRemoteRestpoint
- *
+ * 
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class ChangesetRemoteRestpoint
@@ -43,12 +43,28 @@ public class ChangesetRemoteRestpoint
         });
     }
 
+    // "/api/1.0/repositories/erik/bitbucket/changesets/4a233e7b8596e5b17dd672f063e40f7c544c2c81"
+    public BitbucketChangeset getChangeset(String urlIncludingApi)
+    {
+        return requestor.get(URLPathFormatter.format(urlIncludingApi), null, new ResponseCallback<BitbucketChangeset>()
+        {
+
+            @Override
+            public BitbucketChangeset onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), BitbucketChangeset.class);
+            }
+
+        });
+
+    }
 
     public List<BitbucketChangesetWithDiffstat> getChangesetDiffStat(String owner, String slug, String node, int limit)
     {
         String getChangesetDiffStatUrl = URLPathFormatter.format("/repositories/%s/%s/changesets/%s/diffstat", owner, slug, node);
 
         Map<String, String> parameters = null;
+        // Requesting one more stat than limit to find out whether there are more stats
         parameters = Collections.singletonMap("limit", "" + (limit + 1));
 
         return requestor.get(getChangesetDiffStatUrl, parameters,
@@ -65,9 +81,8 @@ public class ChangesetRemoteRestpoint
                 });
     }
 
-
     public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
-            final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
+                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
     {
         return new Iterable<BitbucketNewChangeset>()
         {
@@ -78,5 +93,4 @@ public class ChangesetRemoteRestpoint
             }
         };
     }
-
 }

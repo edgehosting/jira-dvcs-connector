@@ -11,6 +11,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -31,6 +33,9 @@ public class RepositoryServiceTest
 
 	@Mock
 	private RepositoryDao repositoryDao;
+	
+	@Mock
+	private RepositoryActivityDao repositoryActivityDao;
 
 	@Mock
     private BranchService branchService;
@@ -49,6 +54,9 @@ public class RepositoryServiceTest
 
 	@Mock
 	private PluginSettingsFactory settings;
+	
+	@Mock
+    private RepositoryActivitySynchronizer activitySyncerMock;
 
 	// tested object
 	private RepositoryService repositoryService;
@@ -58,13 +66,13 @@ public class RepositoryServiceTest
 		super();
 	}
 
-    @BeforeMethod
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-        repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, synchronizer,
-                changesetService, branchService, applicationProperties, settings);
-    }
+	@BeforeMethod
+	public void setup()
+	{
+		MockitoAnnotations.initMocks(this);
+		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, repositoryActivityDao, synchronizer,
+				changesetService, branchService, applicationProperties, settings, activitySyncerMock);
+	}
 
 	@Test
 	public void testDisableRepository()
@@ -84,23 +92,23 @@ public class RepositoryServiceTest
 		Assert.assertEquals(registration.getRepository(), sampleRepository);
 	}
 
-	   @Test
-	    public void testDisableRepositoryWithoutAdminRights()
-	    {
-	        Repository sampleRepository = createSampleRepository();
-	        Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
-	        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-	        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).removePostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
-	        Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
+    @Test
+    public void testDisableRepositoryWithoutAdminRights()
+    {
+        Repository sampleRepository = createSampleRepository();
+        Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
+        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).removePostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
+        Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
-	        RepositoryRegistration registration = repositoryService.enableRepository(0, false);
+        RepositoryRegistration registration = repositoryService.enableRepository(0, false);
 
-	        Mockito.verify(repositoryDao).save(sampleRepository);
-	        Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
-	                Mockito.eq(createPostcommitUrl(sampleRepository)));
-	        Assert.assertTrue(registration.isCallBackUrlInstalled());
-	        Assert.assertEquals(registration.getRepository(), sampleRepository);
-	    }
+        Mockito.verify(repositoryDao).save(sampleRepository);
+        Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
+                Mockito.eq(createPostcommitUrl(sampleRepository)));
+        Assert.assertTrue(registration.isCallBackUrlInstalled());
+        Assert.assertEquals(registration.getRepository(), sampleRepository);
+    }
 
 	@Test
 	public void testEnableRepository()

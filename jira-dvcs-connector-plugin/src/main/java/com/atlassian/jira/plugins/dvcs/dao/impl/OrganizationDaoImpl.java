@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;

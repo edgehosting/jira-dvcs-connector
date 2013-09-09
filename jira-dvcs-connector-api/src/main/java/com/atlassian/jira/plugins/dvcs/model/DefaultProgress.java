@@ -25,6 +25,9 @@ public class DefaultProgress implements Progress
     private int jiraCount = 0;
 
     @XmlAttribute
+    private int pullRequestActivityCount = 0;
+    
+    @XmlAttribute
     private int synchroErrorCount = 0;
 
     @XmlAttribute
@@ -50,6 +53,13 @@ public class DefaultProgress implements Progress
         this.changesetCount = changesetCount;
         this.jiraCount = jiraCount;
         this.synchroErrorCount = synchroErrorCount;
+    }
+    
+    @Override
+    public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
+    {
+        this.pullRequestActivityCount = pullRequestActivityCount;
+        this.jiraCount = jiraCount;
     }
 
     public void queued()
@@ -78,6 +88,12 @@ public class DefaultProgress implements Progress
     public int getJiraCount()
     {
         return jiraCount;
+    }
+    
+    @Override
+    public int getPullRequestActivityCount()
+    {
+        return pullRequestActivityCount;
     }
 
     @Override
@@ -129,6 +145,11 @@ public class DefaultProgress implements Progress
         this.jiraCount = jiraCount;
     }
 
+    public void setPullRequestActivityCount(int pullRequestActivityCount)
+    {
+        this.pullRequestActivityCount = pullRequestActivityCount;
+    }
+    
     public void setSynchroErrorCount(int synchroErrorCount)
     {
         this.synchroErrorCount = synchroErrorCount;

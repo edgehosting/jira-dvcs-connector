@@ -68,7 +68,8 @@ public class SmartcommitOperationTest
 	SmartcommitOperation operation;
     private Synchronizer synchronizer;
 
-    public SmartcommitOperationTest() {
+    public SmartcommitOperationTest()
+    {
 		super();
 	}
 

@@ -10,6 +10,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityEnvelopeDeserializer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinks;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestLinksDeserializer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,7 +35,9 @@ public class ClientUtils
         GsonBuilder builder = new GsonBuilder();
         builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         builder.registerTypeAdapter(Date.class, new GsonDateTypeAdapter()); //to parse 2011-12-21 15:17:37
-
+        builder.registerTypeAdapter(BitbucketPullRequestActivityInfo.class, new BitbucketPullRequestActivityEnvelopeDeserializer ());
+        builder.registerTypeAdapter(BitbucketPullRequestLinks.class, new BitbucketPullRequestLinksDeserializer());
+        
         return builder.create();
     }
 
@@ -84,45 +91,62 @@ public class ClientUtils
 
     private static final class GsonDateTypeAdapter implements JsonDeserializer<Date>
     {
-        private final DateFormat[] dateFormats = new DateFormat[] { 
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                {
-                    {
-                        setTimeZone(TimeZone.getTimeZone("Zulu"));
-                    }
-                },
-                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                {
-                    {
-                        setTimeZone(TimeZone.getTimeZone("Zulu"));
-                    }
-                }
-        };
 
+        private final DateFormat[] dateFormats = new DateFormat[] { 
+        		new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+		        {
+		            {
+		                setTimeZone(TimeZone.getTimeZone("Zulu"));
+		            }
+		        },
+		        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+		        {
+		            {
+		                setTimeZone(TimeZone.getTimeZone("Zulu"));
+		            }
+		        }
+        };
+        
         @Override
-        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException
         {
             String dateString = json.getAsString();
-
+            
             // we need to synchronize SimpleDateFormat as it is not thread-safe
             // we could also use ThreadLocal to improve performance here
             RuntimeException exception = null;
-            for (DateFormat dateFormat : dateFormats)
-            {
-                try
-                {
-                    synchronized (dateFormat)
-                    {
-                        return dateFormat.parse(dateString);
-                    }
-
+            for ( DateFormat dateFormat : dateFormats)
+        	{
+	            try
+	            {
+	                synchronized (dateFormat)
+	                {
+	                    return dateFormat.parse(dateString);
+	                }
+	            	
                 } catch (ParseException e)
                 {
                     exception = new JsonParseException("Not parseable datetime string: '" + dateString + "'");
                 }
-            }
-
+        	}
+            
             throw exception;
         }
+    }
+    
+    public static Date extractActivityDate(BitbucketPullRequestBaseActivity activity)
+    {
+        Date date = activity.getUpdatedOn();
+        // fallbacks - order depends
+        if (date == null)
+        {
+            date = activity.getDate();
+        }
+        if (date == null)
+        {
+            date = activity.getCreatedOn();
+        }
+        return date;
     }
 }

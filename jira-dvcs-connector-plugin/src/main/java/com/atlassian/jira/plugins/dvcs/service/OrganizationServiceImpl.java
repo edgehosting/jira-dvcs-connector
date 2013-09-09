@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import org.apache.commons.collections.CollectionUtils;
 
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;

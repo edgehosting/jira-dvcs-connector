@@ -22,7 +22,7 @@ public class RepositoryDiv
         }
         return false;
     }
-    
+
     public String getMessage()
     {
         return rootElement.find(By.xpath("td[3]/div")).getText();

@@ -44,6 +44,7 @@
         <jira.data.version>6.1-OD-06</jira.data.version>
 
         <ao.version>0.22.1</ao.version>
+
         <streams.version>5.0.1</streams.version>
         <greenhopper.version>6.2.5.1</greenhopper.version>
         <analytics.version>2.25</analytics.version>

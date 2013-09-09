@@ -160,7 +160,7 @@
             <tr>
                 <th>Enabled</th>
                 <th>Repository</th>
-                <th style="text-align: right; white-space: nowrap;" >Last Commit</th>   ## last commit
+                <th style="text-align: right; white-space: nowrap;" >Last Activity</th>   ## last activity
                 <th class="dvcs-centered">Sync Repo</th>   ## sync repo
                 <th class="dvcs-smartcommits-head" style="white-space: nowrap;">Smart Commits</th>
             </tr>

@@ -1,47 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.*;
+import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.plugins.rest.common.Status;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
-import com.atlassian.jira.plugins.dvcs.model.SentData;
-import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
-import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.plugins.rest.common.Status;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.*;
 
 /**
  * The Class RootResource.
@@ -140,7 +116,8 @@ public class RootResource
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
         log.info("Postcommit hook started synchronization for repository [{}].", id);
 
-        repositoryService.sync(id, true);
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         return Response.ok().build();
     }
@@ -160,7 +137,8 @@ public class RootResource
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
-        repositoryService.sync(id, true);
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         // ...
         // redirect to Repository resource - that will contain sync
@@ -186,7 +164,45 @@ public class RootResource
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, false);
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncChangesets")
+    @AdminOnly
+    public Response startRepositoryChangesetsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to changesets fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncPullRequests")
+    @AdminOnly
+    public Response startRepositoryPullRequestsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to pull request fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         // ...
         // redirect to Repository resource - that will contain sync
@@ -265,7 +281,13 @@ public class RootResource
         }
 
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
-        repositoryService.syncRepositoryList(organization);
+        try
+        {
+            repositoryService.syncRepositoryList(organization);
+        } catch (SourceControlException e)
+        {
+            log.error("Could not refresh repository list", e);
+        }
         return Response.noContent().build();
     }
 
@@ -368,7 +390,6 @@ public class RootResource
                     .message(
                             "Error retrieving list of groups for " + organization.getOrganizationUrl()
                                     + ". Please check JIRA logs for details.").response();
-
         }
 
     }
