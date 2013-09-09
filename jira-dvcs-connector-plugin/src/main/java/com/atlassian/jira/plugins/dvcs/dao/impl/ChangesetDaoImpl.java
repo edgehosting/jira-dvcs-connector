@@ -383,7 +383,8 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public void onRowRead(ChangesetMapping mapping)
             {
-                Changeset changeset = getByNode(repositoryId, mapping.getNode());
+                final List<Changeset> changesets = transform(mapping);
+                Changeset changeset =  changesets != null ? filterByRepository(changesets, repositoryId) : null;
                 closure.execute(changeset);
             }
         });
