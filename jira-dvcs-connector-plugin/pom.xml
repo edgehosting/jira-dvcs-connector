@@ -301,8 +301,6 @@
 	                 		</includes>
 	                 		<excludes>
 	                 			<exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
-	                 			<exclude>**/Abstract*</exclude>
-	                 			<exclude>**/*$*</exclude>
 	                 		</excludes>
 	                 	</testGroup>
 	                </testGroups>
