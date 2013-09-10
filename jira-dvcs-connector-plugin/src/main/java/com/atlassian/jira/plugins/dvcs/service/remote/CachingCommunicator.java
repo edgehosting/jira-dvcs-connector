@@ -242,4 +242,10 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getTokenOwner(organization);
     }
+
+    @Override
+    public DvcsCommunicator getDelegate()
+    {
+        return delegate;
+    }
 }

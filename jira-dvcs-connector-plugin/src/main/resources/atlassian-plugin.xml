@@ -228,7 +228,7 @@
     </component>
 
     <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
-               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProviderImpl">
         <description>dvcsCommunicatorProvider</description>
     </component>
 
@@ -323,6 +323,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
 

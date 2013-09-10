@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +32,18 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetConsumer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
+import com.atlassian.jira.util.lang.Pair;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
@@ -443,12 +449,61 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             } else
             {
-                DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
+                MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+                        BitbucketSynchronizeChangesetMessage.class,
+                        BitbucketSynchronizeChangesetConsumer.KEY
+                        );
+                Date synchronizationStartedAt = new Date();
+                Pair<List<BranchHead>, List<String>> filterNodes = getFilterNodes(repository);
+
+                BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository,
+                        synchronizationStartedAt, null, null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
+
+                messagingService.publish(key, message, message.getSynchronizationTag());
+
+                /*DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
                         communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
                         softSync);
-                synchronizer.synchronize(repository, synchronisationOperation, changesetService);
+                synchronizer.synchronize(repository, synchronisationOperation, changesetService);*/
             }
         }
+    }
+
+    protected Pair<List<BranchHead>, List<String>> getFilterNodes(Repository repository)
+    {
+        CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) communicatorProvider
+                .getCommunicator(BitbucketCommunicator.BITBUCKET);
+        BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
+        List<BranchHead> newBranches = communicator.getBranches(repository);
+        List<BranchHead> oldBranches = communicator.getOldBranches(repository);
+        
+        List<String> exclude = extractBranchHeads(oldBranches);
+        
+        return Pair.nicePairOf(newBranches, exclude);
+    }
+
+    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
+    {
+        if (branchHeads == null)
+        {
+            return null;
+        }
+        List<String> result = new ArrayList<String>();
+        for (BranchHead branchHead : branchHeads)
+        {
+            result.add(branchHead.getHead());
+        }
+        return result;
+    }
+    
+    private Map<String, String> asNodeToBranches(List<BranchHead> list)
+    {
+        Map<String, String> changesetBranch = new HashMap<String, String>();
+        for (BranchHead branchHead : list)
+        {
+            changesetBranch.put(branchHead.getHead(), branchHead.getName());
+        }
+        return changesetBranch;
     }
 
     /**

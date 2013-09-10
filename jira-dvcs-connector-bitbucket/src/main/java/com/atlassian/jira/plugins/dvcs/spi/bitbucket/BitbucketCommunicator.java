@@ -33,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -59,10 +60,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
-    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
-
+    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 3);
+    
     /** The Constant BITBUCKET. */
-    private static final String BITBUCKET = "bitbucket";
+    public static final String BITBUCKET = "bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
@@ -289,6 +290,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
+    public BitbucketChangesetPage getChangesetsForPage(int page, Repository repository, List<String> includeNodes, List<String> excludeNodes)
+    {
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+        return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
+                includeNodes, excludeNodes);
+    }
+
+    public List<BranchHead> getOldBranches(Repository repository)
+    {
+        return branchService.getListOfBranchHeads(repository);
+    }
+
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
         if (branchHeads == null)
@@ -318,7 +331,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 for (String head : heads)
                 {
                     // make sure "default" branch is first in the list
-                    if ("default".equals(bitbucketBranch.getName()))
+                    if (bitbucketBranch.isMainbranch())
                     {
                         branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
                     } else
