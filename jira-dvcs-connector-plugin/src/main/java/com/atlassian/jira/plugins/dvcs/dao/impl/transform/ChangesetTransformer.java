@@ -36,27 +36,47 @@ public class ChangesetTransformer
 
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
         {
-            final Changeset changeset = new Changeset(repositoryMapping.getID(),
-                    changesetMapping.getNode(),
-                    changesetMapping.getRawAuthor(),
-                    changesetMapping.getAuthor(),
-                    changesetMapping.getDate(),
-                    changesetMapping.getRawNode(),
-                    changesetMapping.getBranch(),
-                    changesetMapping.getMessage(),
-                    parents,
-                    fileData.getFiles(),
-                    fileData.getFileCount(),
-                    changesetMapping.getAuthorEmail());
-
-            changeset.setId(changesetMapping.getID());
-            changeset.setVersion(changesetMapping.getVersion());
-            changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
+            final Changeset changeset = transform(repositoryMapping.getID(), changesetMapping, fileData, parents);
 
             changesets.add(changeset);
         }
 
         return changesets;
+    }
+
+    public Changeset transform(int repositoryId, ChangesetMapping changesetMapping)
+    {
+        if (changesetMapping == null)
+        {
+            return null;
+        }
+
+        FileData fileData = parseFilesData(changesetMapping.getFilesData());
+        List<String> parents = parseParentsData(changesetMapping.getParentsData());
+
+        return transform(repositoryId, changesetMapping, fileData, parents);
+    }
+
+    private Changeset transform(final int repositoryId, final ChangesetMapping changesetMapping, final FileData fileData, final List<String> parents)
+    {
+        final Changeset changeset = new Changeset(repositoryId,
+                changesetMapping.getNode(),
+                changesetMapping.getRawAuthor(),
+                changesetMapping.getAuthor(),
+                changesetMapping.getDate(),
+                changesetMapping.getRawNode(),
+                changesetMapping.getBranch(),
+                changesetMapping.getMessage(),
+                parents,
+                fileData.getFiles(),
+                fileData.getFileCount(),
+                changesetMapping.getAuthorEmail());
+
+        changeset.setId(changesetMapping.getID());
+        changeset.setVersion(changesetMapping.getVersion());
+        changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
+
+        return changeset;
     }
 
     private List<String> parseParentsData(String parentsData)
