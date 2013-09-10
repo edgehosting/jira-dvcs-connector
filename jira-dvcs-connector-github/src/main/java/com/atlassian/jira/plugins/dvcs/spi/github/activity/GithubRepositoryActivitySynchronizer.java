@@ -113,6 +113,13 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
     private final RepositoryActivityDao repositoryActivityDao;
 
     /**
+     * @see #GithubRepositoryActivitySynchronizer(ActiveObjects, GitHubRepositoryService, GitHubEventService, GitHubPullRequestService,
+     *      GitHubPullRequestCommentService, GitHubPullRequestLineCommentService, GitHubCommitService, GitHubCommitCommentService,
+     *      GitHubCommitLineCommentService, RepositoryActivityDao, ColumnNameResolverService)
+     */
+    private final ColumnNameResolverService columnNameResolverService;
+
+    /**
      * {@link ColumnNameResolverService#desc(Class)} of the {@link GitHubEntityMapping}.
      */
     private final GitHubEntityMapping gitHubEntityMappingDescription;
@@ -168,6 +175,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
         this.gitHubCommitLineCommentService = gitHubCommitLineCommentService;
         this.repositoryActivityDao = repositoryActivityDao;
 
+        this.columnNameResolverService = columnNameResolverService;
         gitHubEntityMappingDescription = columnNameResolverService.desc(GitHubEntityMapping.class);
     }
 
@@ -237,7 +245,7 @@ public class GithubRepositoryActivitySynchronizer implements RepositoryActivityS
             ActiveObjectsUtils.delete(
                     activeObjects,
                     entityToClean,
-                    Query.select().where(GitHubEntityMapping.DOMAIN + " = ? ", gitHubRepository.getId()));
+                    Query.select().where(columnNameResolverService.column(gitHubEntityMappingDescription.getDomain()) + " = ? ", gitHubRepository.getId()));
         }
 
     }
