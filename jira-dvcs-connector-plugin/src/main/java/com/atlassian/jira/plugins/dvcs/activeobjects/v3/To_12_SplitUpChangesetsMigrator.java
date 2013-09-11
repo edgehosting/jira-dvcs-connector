@@ -438,7 +438,8 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                     uniqueChangeset = findUniqueChangesetAfterRestart(activeObjects, currentNode);
                 }
 
-                if (uniqueChangeset != null) {
+                if (uniqueChangeset != null)
+                {
                 	uniqueChangesetNode = resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node);
                 	if (StringUtils.isBlank(uniqueChangesetNode))
                 	{
@@ -446,11 +447,10 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                 		addDeleteChangesetStatement(deleteChangesetStatement, uniqueChangeset);
                 		continue;
                 	
-                	} else if (currentNode.equals(uniqueChangesetNode)) {
+                	} else if (currentNode.equals(uniqueChangesetNode))
+                    {
                 		isDuplicate = true;
-
-                	}
-                
+                    }                
                 }
 
                 // if it is unique changeset - it updates cursor for current valid unique changeset
