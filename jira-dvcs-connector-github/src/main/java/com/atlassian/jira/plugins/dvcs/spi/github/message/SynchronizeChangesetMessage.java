@@ -47,29 +47,6 @@ public class SynchronizeChangesetMessage implements Serializable
     private Progress progress;
 
     /**
-     * @see #getSynchronizationTag()
-     */
-    private final String synchronizationTag;
-
-    /**
-     * Constructor.
-     * 
-     * @param repository
-     *            {@link #getRepository()}
-     * @param branch
-     * @param node
-     *            {@link #getNode()}
-     * @param refreshAfterSynchronizedAt
-     *            {@link #getRefreshAfterSynchronizedAt()}
-     * @param progress
-     *            {@link #getProgress()}
-     */
-    public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt, Progress progress)
-    {
-        this(repository, branch, node, refreshAfterSynchronizedAt, progress, node);
-    }
-
-    /**
      * Constructor.
      * 
      * @param repository
@@ -85,15 +62,13 @@ public class SynchronizeChangesetMessage implements Serializable
      *            {@link #getSynchronizationTag()}
      */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, String synchronizationTag)
+            Progress progress)
     {
         this.repository = repository;
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.progress = progress;
-
-        this.synchronizationTag = synchronizationTag;
     }
 
     /**
@@ -135,13 +110,4 @@ public class SynchronizeChangesetMessage implements Serializable
     {
         return progress;
     }
-
-    /**
-     * @return Tag of synchronization - necessary by progress tracking.
-     */
-    public String getSynchronizationTag()
-    {
-        return synchronizationTag;
-    }
-
 }

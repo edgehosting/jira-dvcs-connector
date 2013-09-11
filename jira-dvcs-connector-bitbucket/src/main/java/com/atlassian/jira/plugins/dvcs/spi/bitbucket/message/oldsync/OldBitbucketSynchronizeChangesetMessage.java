@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -16,7 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  * @author Stanislav Dvorscak
  * 
  */
-public class BitbucketSynchronizeChangesetMessage implements Serializable
+public class OldBitbucketSynchronizeChangesetMessage implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
@@ -27,6 +27,8 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable
 
     private Progress progress;
 
+    private final String synchronizationTag;
+
     private List<BranchHead> newHeads;
 
     private List<String> exclude;
@@ -35,18 +37,19 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable
     
     private Map<String, String> nodesToBranches;
 
-    public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
+    public OldBitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
             Progress progress)
     {
-        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null);
+        this(repository, refreshAfterSynchronizedAt, progress, null, null, null, 1, null);
     }
 
-    public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches)
+    public OldBitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
+            Progress progress, String synchronizationTag, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches)
     {
         this.repository = repository;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.progress = progress;
+        this.synchronizationTag = synchronizationTag;
         this.newHeads = newHeads;
         this.exclude = exclude;
         this.page = page;
@@ -66,6 +69,11 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable
     public Progress getProgress()
     {
         return progress;
+    }
+
+    public String getSynchronizationTag()
+    {
+        return synchronizationTag;
     }
 
     public List<String> getExclude()

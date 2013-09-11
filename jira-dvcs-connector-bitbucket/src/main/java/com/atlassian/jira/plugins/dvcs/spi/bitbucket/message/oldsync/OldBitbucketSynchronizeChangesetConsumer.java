@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,16 +30,16 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 
 /**
- * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
+ * Consumer of {@link OldBitbucketSynchronizeChangesetMessage}-s.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
+public class OldBitbucketSynchronizeChangesetConsumer implements MessageConsumer<OldBitbucketSynchronizeChangesetMessage>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeChangesetConsumer.class);
-    private static final String ID = BitbucketSynchronizeChangesetConsumer.class.getCanonicalName();
-    public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
+    private static final Logger LOGGER = LoggerFactory.getLogger(OldBitbucketSynchronizeChangesetConsumer.class);
+    private static final String ID = OldBitbucketSynchronizeChangesetConsumer.class.getCanonicalName();
+    public static final String KEY = OldBitbucketSynchronizeChangesetMessage.class.getCanonicalName();
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
     @Resource
@@ -53,12 +53,12 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
     @Resource
     private BranchService branchService;
 
-    public BitbucketSynchronizeChangesetConsumer()
+    public OldBitbucketSynchronizeChangesetConsumer()
     {
     }
 
     @Override
-    public void onReceive(int messageId, BitbucketSynchronizeChangesetMessage payload, String [] tags)
+    public void onReceive(int messageId, OldBitbucketSynchronizeChangesetMessage payload, String [] tags)
     {
         CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) dvcsCommunicatorProvider
                 .getCommunicator(BitbucketCommunicator.BITBUCKET);
@@ -72,7 +72,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         //
     }
 
-    private List<String> createInclude(BitbucketSynchronizeChangesetMessage payload)
+    private List<String> createInclude(OldBitbucketSynchronizeChangesetMessage payload)
     {
         List<BranchHead> newHeads = payload.getNewHeads();
         List<String> newHeadsNodes = extractBranchHeads(newHeads);
@@ -83,7 +83,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         return newHeadsNodes;
     }
 
-    private void process(int messageId, BitbucketChangesetPage page, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
+    private void process(int messageId, BitbucketChangesetPage page, OldBitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
@@ -147,7 +147,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         }
     }
 
-    private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
+    private void assignBranch(BitbucketNewChangeset cset, OldBitbucketSynchronizeChangesetMessage originalMessage)
     {
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
 
@@ -166,13 +166,14 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         branchService.updateBranchHeads(repo, newBranchHeads, oldBranchHeads);
     }
 
-    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String [] tags)
+    private void fireNextPage(BitbucketChangesetPage prevPage, OldBitbucketSynchronizeChangesetMessage originalMessage, String [] tags)
     {
         messagingService.publish(getKey(), //
-                new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
+                new OldBitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1,
+                        originalMessage.getSynchronizationTag() //
+                        , originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1,
                         originalMessage.getNodesToBranches()
                 ), tags);
 
@@ -199,9 +200,9 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
     }
 
     @Override
-    public MessageKey<BitbucketSynchronizeChangesetMessage> getKey()
+    public MessageKey<OldBitbucketSynchronizeChangesetMessage> getKey()
     {
-        return messagingService.get(BitbucketSynchronizeChangesetMessage.class, KEY);
+        return messagingService.get(OldBitbucketSynchronizeChangesetMessage.class, KEY);
     }
 
 }

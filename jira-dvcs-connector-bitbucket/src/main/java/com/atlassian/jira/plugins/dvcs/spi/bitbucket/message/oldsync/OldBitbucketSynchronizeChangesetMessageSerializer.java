@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
+package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -29,12 +29,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
- * An implementation of {@link MessagePayloadSerializer} over {@link BitbucketSynchronizeChangesetMessage}.
+ * An implementation of {@link MessagePayloadSerializer} over {@link OldBitbucketSynchronizeChangesetMessage}.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePayloadSerializer<BitbucketSynchronizeChangesetMessage>
+public class OldBitbucketSynchronizeChangesetMessageSerializer implements MessagePayloadSerializer<OldBitbucketSynchronizeChangesetMessage>
 {
 
     /**
@@ -69,7 +69,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
      * {@inheritDoc}
      */
     @Override
-    public String serialize(BitbucketSynchronizeChangesetMessage payload)
+    public String serialize(OldBitbucketSynchronizeChangesetMessage payload)
     {
         try
         {
@@ -101,7 +101,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
      * {@inheritDoc}
      */
     @Override
-    public BitbucketSynchronizeChangesetMessage deserialize(String payload)
+    public OldBitbucketSynchronizeChangesetMessage deserialize(String payload)
     {
         Repository repository;
         Date refreshAfterSynchronizedAt;
@@ -147,7 +147,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
 
         }
 
-        return new BitbucketSynchronizeChangesetMessage(repository, refreshAfterSynchronizedAt, progress, newHeads, exclude,
+        return new OldBitbucketSynchronizeChangesetMessage(repository, refreshAfterSynchronizedAt, progress, null, newHeads, exclude,
                  page, nodesToBranches);
     }
 
@@ -190,9 +190,9 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
      * {@inheritDoc}
      */
     @Override
-    public Class<BitbucketSynchronizeChangesetMessage> getPayloadType()
+    public Class<OldBitbucketSynchronizeChangesetMessage> getPayloadType()
     {
-        return BitbucketSynchronizeChangesetMessage.class;
+        return OldBitbucketSynchronizeChangesetMessage.class;
     }
     
     private String collectionToString(List<String> coll)

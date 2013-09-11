@@ -108,9 +108,8 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
                                 payload.getBranch(), //
                                 parentChangesetNode, //
                                 payload.getRefreshAfterSynchronizedAt(), //
-                                payload.getProgress(), //
-                                payload.getSynchronizationTag() //
-                        ), payload.getSynchronizationTag());
+                                payload.getProgress() //
+                        ), tags);
             }
 
             if (payload.getRepository().getLastCommitDate() == null

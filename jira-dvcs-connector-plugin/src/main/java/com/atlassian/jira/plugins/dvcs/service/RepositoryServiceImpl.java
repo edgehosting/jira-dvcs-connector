@@ -445,7 +445,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                             SynchronizeChangesetMessage.class, //
                             SynchronizeChangesetMessageConsumer.KEY //
                             );
-                    messagingService.publish(key, message, message.getSynchronizationTag());
+                    messagingService.publish(key, message, UUID.randomUUID().toString());
                 }
 
             } else
@@ -457,10 +457,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 Date synchronizationStartedAt = new Date();
                 Pair<List<BranchHead>, List<String>> filterNodes = getFilterNodes(repository);
 
-                BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository,
-                        synchronizationStartedAt, null, UUID.randomUUID().toString(), filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
+                BitbucketSynchronizeChangesetMessage message = 
+                        new BitbucketSynchronizeChangesetMessage(repository,
+                        synchronizationStartedAt, (Progress) null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
 
-                messagingService.publish(key, message, message.getSynchronizationTag());
+                messagingService.publish(key, message, UUID.randomUUID().toString());
 
                 /*DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
                         communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
