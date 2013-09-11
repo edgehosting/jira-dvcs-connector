@@ -356,34 +356,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	min-width: 320px;
 }
 
-.dvcs-advertisement .product {
-	display: inline-block;
-	width: 30ex;
-	margin: 2ex 2ex;
-	vertical-align: top;
-	border-right: solid 1px #dddddd;
-}
-
-.dvcs-advertisement .product:last-child {
-	border: none;
-}
-
-.dvcs-advertisement .product h4 {
-	margin: 0ex;
-}
-
-.dvcs-advertisement .product .content {
-	margin: 1ex 0;
-}
-
-.dvcs-advertisement .product .buttons {
-	margin: 1ex 0ex;
-}
-
-.dvcs-advertisement .product .buttons a {
-	margin-right: 1ex;
-}
-
 .repository-error-icon {
 	display: inline-block;
 }
