@@ -58,7 +58,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
     }
 
     @Override
-    public void onReceive(int messageId, BitbucketSynchronizeChangesetMessage payload)
+    public void onReceive(int messageId, BitbucketSynchronizeChangesetMessage payload, String [] tags)
     {
         CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) dvcsCommunicatorProvider
                 .getCommunicator(BitbucketCommunicator.BITBUCKET);
@@ -68,7 +68,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         int pageNum = payload.getPage();
         
         BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(payload), payload.getExclude());
-        process(messageId, page, payload);
+        process(messageId, page, payload, tags);
         //
     }
 
@@ -83,7 +83,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         return newHeadsNodes;
     }
 
-    private void process(int messageId, BitbucketChangesetPage page, BitbucketSynchronizeChangesetMessage originalMessage)
+    private void process(int messageId, BitbucketChangesetPage page, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
@@ -125,7 +125,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
 
         if (!errorOnPage && StringUtils.isNotBlank(page.getNext()))
         {
-            fireNextPage(page, originalMessage);
+            fireNextPage(page, originalMessage, tags);
             
         } else if (errorOnPage)
         {
@@ -134,7 +134,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         
         if (!errorOnPage)
         {
-            if (messagingService.getQueuedCount(getKey(), originalMessage.getSynchronizationTag()) == 0)
+            if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
             {
                 originalMessage.getProgress().finish();
                 if (page.getPage() == 1)
@@ -166,7 +166,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         branchService.updateBranchHeads(repo, newBranchHeads, oldBranchHeads);
     }
 
-    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage)
+    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String [] tags)
     {
         messagingService.publish(getKey(), //
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
@@ -175,7 +175,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
                         originalMessage.getSynchronizationTag() //
                         , originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1,
                         originalMessage.getNodesToBranches()
-                ), originalMessage.getSynchronizationTag());
+                ), tags);
 
     }
     

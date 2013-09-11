@@ -26,7 +26,7 @@ public interface MessageConsumer<P>
      * @param payload
      *            of message
      */
-    void onReceive(int messageId, P payload);
+    void onReceive(int messageId, P payload, String [] tags);
 
     /**
      * @return key of messages which will be received

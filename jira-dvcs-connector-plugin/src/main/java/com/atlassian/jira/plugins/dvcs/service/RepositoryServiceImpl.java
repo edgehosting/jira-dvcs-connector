@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -457,7 +458,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 Pair<List<BranchHead>, List<String>> filterNodes = getFilterNodes(repository);
 
                 BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository,
-                        synchronizationStartedAt, null, null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
+                        synchronizationStartedAt, null, UUID.randomUUID().toString(), filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
 
                 messagingService.publish(key, message, message.getSynchronizationTag());
 

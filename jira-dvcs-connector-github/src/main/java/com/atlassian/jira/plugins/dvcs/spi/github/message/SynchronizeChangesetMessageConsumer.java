@@ -75,7 +75,7 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
      * {@inheritDoc}
      */
     @Override
-    public void onReceive(int messageId, SynchronizeChangesetMessage payload)
+    public void onReceive(int messageId, SynchronizeChangesetMessage payload, String [] tags)
     {
         try
         {
@@ -120,7 +120,7 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
                 repositoryService.save(payload.getRepository());
             }
 
-            if (messagingService.getQueuedCount(getKey(), payload.getSynchronizationTag()) == 0)
+            if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
             {
                 payload.getProgress().finish();
             }

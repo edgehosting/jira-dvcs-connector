@@ -144,9 +144,9 @@ public class MessageRouterImplTest
 
         // message verification
         Mockito.verify(expectedDataForConsumer1.consumer, Mockito.times(1)).onReceive(expectedDataForConsumer1.messageId,
-                expectedDataForConsumer1.payloadValue);
+                expectedDataForConsumer1.payloadValue, null);
         Mockito.verify(expectedDataForConsumer2.consumer, Mockito.times(1)).onReceive(expectedDataForConsumer2.messageId,
-                expectedDataForConsumer2.payloadValue);
+                expectedDataForConsumer2.payloadValue, null);
     }
 
     /**

@@ -424,7 +424,7 @@ final class MessageConsumerRouter<P> implements Runnable
             try
             {
                 message = messageQueue.take();
-                delegate.onReceive(message.getId(), message.getPayload());
+                delegate.onReceive(message.getId(), message.getPayload(), message.getTags());
 
             } catch (InterruptedException e)
             {
