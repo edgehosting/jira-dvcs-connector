@@ -39,6 +39,8 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetConsumer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer;
@@ -103,6 +105,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private PluginSettingsFactory pluginSettingsFactory;
+    
+    @Resource
+    private ChangesetCache changesetCache;
 
     /**
      * {@inheritDoc}
@@ -425,15 +430,18 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         if (repository.isLinked())
         {
+            if (!softSync)
+            {
+                // we are doing full sync, lets delete all existing changesets
+                // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                changesetService.removeAllInRepository(repository.getId());
+                branchService.removeAllBranchHeadsInRepository(repository.getId());
+                repository.setLastCommitDate(null);
+                save(repository);
+            }
+            
             if (repository.getDvcsType().equals(GithubCommunicator.GITHUB))
             {
-                if (!softSync)
-                {
-                    changesetService.removeAllInRepository(repository.getId());
-                    repository.setLastCommitDate(null);
-                    save(repository);
-                }
-
                 Date synchronizationStartedAt = new Date();
                 for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
                 {
@@ -450,18 +458,38 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             } else
             {
-                MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
-                        BitbucketSynchronizeChangesetMessage.class,
-                        BitbucketSynchronizeChangesetConsumer.KEY
-                        );
-                Date synchronizationStartedAt = new Date();
                 Pair<List<BranchHead>, List<String>> filterNodes = getFilterNodes(repository);
-
-                BitbucketSynchronizeChangesetMessage message = 
-                        new BitbucketSynchronizeChangesetMessage(repository,
-                        synchronizationStartedAt, (Progress) null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
-
-                messagingService.publish(key, message, UUID.randomUUID().toString());
+                List<BranchHead> newBranchHeads = filterNodes.first();
+                if (filterNodes.second().isEmpty() && !changesetCache.isEmpty(repository.getId()))
+                {
+                    log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
+                    Date synchronizationStartedAt = new Date();
+                    for (BranchHead branchHead : newBranchHeads)
+                    {
+                        OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
+                                branchHead.getName(), branchHead.getHead(), //
+                                synchronizationStartedAt, //
+                                null, newBranchHeads);
+                        MessageKey<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
+                                OldBitbucketSynchronizeCsetMsg.class, //
+                                OldBitbucketSynchronizeCsetMsgConsumer.KEY //
+                                );
+                        messagingService.publish(key, message, UUID.randomUUID().toString());
+                    }
+                } else
+                {
+                    MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+                            BitbucketSynchronizeChangesetMessage.class,
+                            BitbucketSynchronizeChangesetConsumer.KEY
+                            );
+                    Date synchronizationStartedAt = new Date();
+    
+                    BitbucketSynchronizeChangesetMessage message = 
+                            new BitbucketSynchronizeChangesetMessage(repository,
+                            synchronizationStartedAt, (Progress) null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()));
+    
+                    messagingService.publish(key, message, UUID.randomUUID().toString());
+                }
 
                 /*DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
                         communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
