@@ -760,17 +760,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     private String table(Class<? extends Entity> entity)
     {
         String tableName = tableNameConverter.getName(entity);
-
-        String quotedTableName;
-        if (!StringUtils.isBlank(quote))
-        {
-            quotedTableName = quote + tableName + quote;
-        } else
-        {
-            quotedTableName = tableName;
-        }
-        
-        return databaseProvider.withSchema(quotedTableName);
+        return databaseProvider.withSchema(tableName);
     }
 
     /**
