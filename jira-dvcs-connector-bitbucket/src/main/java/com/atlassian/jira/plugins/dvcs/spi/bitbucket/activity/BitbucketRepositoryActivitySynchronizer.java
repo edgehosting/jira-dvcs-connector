@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import org.jfree.util.Log;
 
@@ -289,7 +288,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         RepositoryPullRequestUpdateActivityMapping lastUpdateActivity = null;
         if (pullRequestContext.getNextNode() != null)
         {
-            if (activity != null && pullRequestContext.getNextNode().startsWith(activity.getSource().getCommit().getSha()))
+            if (checkSourceCommitIsPresent(activity) && pullRequestContext.getNextNode().startsWith(activity.getSource().getCommit().getSha()))
             {
                 return;
             } else
@@ -307,7 +306,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         for (BitbucketPullRequestCommitMapping commit : pullRequestContextManager.getCommitIterator(pullRequestContext))
         {
-            if (activity != null && commit.getNode().startsWith(activity.getSource().getCommit().getSha()))
+            if (checkSourceCommitIsPresent(activity) && commit.getNode().startsWith(activity.getSource().getCommit().getSha()))
             {
                 // we found first commit for the update activity
                 pullRequestContext.setNextNode(commit.getNode());
@@ -325,6 +324,11 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         {
             dao.updateActivityStatus(domainRepository, lastUpdateActivity.getID(), RepositoryPullRequestUpdateActivityMapping.Status.OPENED);
         }
+    }
+
+    private boolean checkSourceCommitIsPresent(BitbucketPullRequestUpdateActivity activity)
+    {
+        return activity != null && activity.getSource() != null && activity.getSource().getCommit() != null;
     }
 
     private void saveCommit(Repository domainRepository, BitbucketPullRequestCommitMapping commit,

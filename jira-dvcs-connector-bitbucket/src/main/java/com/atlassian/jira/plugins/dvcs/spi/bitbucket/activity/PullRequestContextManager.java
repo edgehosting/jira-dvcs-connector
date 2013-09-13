@@ -165,7 +165,7 @@ public class PullRequestContextManager
             for (BitbucketPullRequestCommit commit : commitsIterator)
             {
                 // checking whether commit is already assigned to previously synchronized activity and stop in this case
-                RepositoryCommitMapping localCommit = dao.getCommitByNode(domainRepository, localPullRequest.getID(), commit.getSha());
+                RepositoryCommitMapping localCommit = dao.getCommitByNode(domainRepository, localPullRequest.getID(), commit.getHash());
                 if (localCommit != null)
                 {
                     pullRequestContext.setExistingUpdateActivity(true);
@@ -174,10 +174,10 @@ public class PullRequestContextManager
     
                 if (lastCommit == null)
                 {
-                    pullRequestContext.setNextNode(commit.getSha());
+                    pullRequestContext.setNextNode(commit.getHash());
                 } else
                 {
-                    saveCommit(domainRepository, lastCommit, commit.getSha(), localPullRequest.getID());
+                    saveCommit(domainRepository, lastCommit, commit.getHash(), localPullRequest.getID());
                 }
                 lastCommit = commit;
             }
@@ -193,7 +193,7 @@ public class PullRequestContextManager
         if (commit != null)
         {
             RepositoryCommitMapping commitMapping = dao.saveCommit(domainRepository, toDaoModelCommit(commit));
-            pullRequestDao.saveCommit(commitMapping.getID(), commit.getSha(), nextNode, localPullRequestId);
+            pullRequestDao.saveCommit(commitMapping.getID(), commit.getHash(), nextNode, localPullRequestId);
         }
     }
 
@@ -209,7 +209,7 @@ public class PullRequestContextManager
         }
         ret.put(RepositoryCommitMapping.RAW_AUTHOR, commit.getAuthor().getRaw());
         ret.put(RepositoryCommitMapping.MESSAGE, commit.getMessage());
-        ret.put(RepositoryCommitMapping.NODE, commit.getSha());
+        ret.put(RepositoryCommitMapping.NODE, commit.getHash());
         ret.put(RepositoryCommitMapping.DATE, commit.getDate());
 
         return ret;

@@ -7,7 +7,14 @@ import java.io.Serializable;
  * <pre>
  *               "user": {
  *                   "username": "erik",
- *                   "href": "/api/1.0/users/erik",
+ *                   "links": {
+ *                      "self": {
+ *                          "links": "https://bitbucket.org/api/1.0/users/erik"
+ *                        },
+ *                      "html": {
+ *                          "links": "https://bitbucket.org/erik"
+ *                        }
+ *                   },
  *                   "display_name": "Erik van Zĳst"
  *               }
  * </pre>
@@ -18,7 +25,7 @@ public class BitbucketPullRequestCommitAuthorInfo implements Serializable
     private static final long serialVersionUID = 8025642439790445876L;
 
     private String username;
-    private String href;
+    private BitbucketPullRequestLinks links;
     private String displayName;
 
     public BitbucketPullRequestCommitAuthorInfo()
@@ -36,14 +43,14 @@ public class BitbucketPullRequestCommitAuthorInfo implements Serializable
         this.username = username;
     }
 
-    public String getHref()
+    public BitbucketPullRequestLinks getLinks()
     {
-        return href;
+        return links;
     }
 
-    public void setHref(String href)
+    public void setLinks(BitbucketPullRequestLinks links)
     {
-        this.href = href;
+        this.links = links;
     }
 
     public String getDisplayName()

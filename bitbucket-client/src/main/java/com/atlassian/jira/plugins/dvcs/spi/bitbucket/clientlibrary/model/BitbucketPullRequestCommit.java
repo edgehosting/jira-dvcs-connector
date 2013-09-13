@@ -18,9 +18,11 @@ public class BitbucketPullRequestCommit implements Serializable
     private static final long serialVersionUID = 8212352604704981087L;
 
     private BitbucketPullRequestCommitAuthor author;
-    private String href;
+    private BitbucketPullRequestLinks links;
     private Date date;
     private String message;
+    private String hash;
+    // Used in BitbucketPullRequestBaseActivity.source.commit
     private String sha;
     
     public BitbucketPullRequestCommit()
@@ -28,14 +30,14 @@ public class BitbucketPullRequestCommit implements Serializable
         super();
     }
 
-    public String getHref()
+    public BitbucketPullRequestLinks getLinks()
     {
-        return href;
+        return links;
     }
 
-    public void setHref(String href)
+    public void setLinks(final BitbucketPullRequestLinks links)
     {
-        this.href = href;
+        this.links = links;
     }
 
     public String getMessage()
@@ -68,12 +70,22 @@ public class BitbucketPullRequestCommit implements Serializable
         this.date = date;
     }
 
-	public String getSha() {
-		return sha;
+	public String getHash() {
+		return hash;
 	}
 
-	public void setSha(String sha) {
-		this.sha = sha;
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
+
+    public String getSha()
+    {
+        return sha;
+    }
+
+    public void setSha(final String sha)
+    {
+        this.sha = sha;
+    }
 }
 
