@@ -28,9 +28,9 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * Routes messages to consumer.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  * @param <K>
  *            key of message
  * @param <P>
@@ -91,9 +91,9 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     /**
      * Responses for message retrieving from database.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      */
     private final class DBQueueFiller implements Runnable
     {
@@ -189,7 +189,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
                 }
             }
         }
-        
+
         private int getRetryCount(MessageMapping foundItem)
         {
             MessageConsumerMapping[] consumers = foundItem.getConsumers();
@@ -205,7 +205,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
         /**
          * Marks messages as queued for processing.
-         * 
+         *
          * @param message
          *            for marking
          */
@@ -225,7 +225,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     /**
      * Constructor.
-     * 
+     *
      * @param activeObjects
      * @param key
      *            key Key of messages for which this consumer listens.
@@ -260,7 +260,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     /**
      * Routes provided message information.
-     * 
+     *
      * @param messageId
      *            identity of message
      * @param payload
@@ -376,7 +376,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
         });
     }
-    
+
     void discard(final int messageId, P payload)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -390,18 +390,20 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
                 {
                    activeObjects.delete(messageConsumer);
                 }
-                
+
                 for (MessageTagMapping tag : message.getTags())
                 {
                     activeObjects.delete(tag);
                 }
-                
+
                 activeObjects.delete(message);
-                
+
                 return null;
             }
         });
+        payload.getProgress().setFinished(true);
     }
+
     /**
      * Stops message consumers - e.g.: when shutdown process happened.
      */
@@ -469,7 +471,13 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
                     delegate.onReceive(message.getId(), message.getPayload(), message.getTags());
                 } else
                 {
-                    delegate.beforeDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
+                    try
+                    {
+                        delegate.beforeDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
+                    } finally
+                    {
+                        discard(message.getId(), message.getPayload());
+                    }
                 }
 
             } catch (InterruptedException e)

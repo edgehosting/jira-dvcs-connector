@@ -25,9 +25,9 @@ import com.google.common.collect.Lists;
 /**
  * An implementation of {@link MessagePayloadSerializer} over
  * {@link OldBitbucketSynchronizeCsetMsg}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadSerializer<OldBitbucketSynchronizeCsetMsg>
 {
@@ -81,6 +81,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
                     return input.getName() + ":" + input.getHead();
                 }
             }));
+            result.put("softSync", payload.isSoftSync());
             return result.toString();
 
         } catch (JSONException e)
@@ -103,6 +104,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
         Date refreshAfterSynchronizedAt;
         Progress progress;
         List<BranchHead> newHeads;
+        boolean softSync;
 
         try
         {
@@ -113,6 +115,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
             node = result.getString("node");
             refreshAfterSynchronizedAt = getDateFormat().parse(result.getString("refreshAfterSynchronizedAt"));
             newHeads = toBranchHeads(result.optJSONArray("newHeads"));
+            softSync = result.getBoolean("softSync");
             new Function<String, BranchHead>()
             {
                 @Override
@@ -139,9 +142,9 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
 
         }
 
-        return new OldBitbucketSynchronizeCsetMsg(repository, branch, node, refreshAfterSynchronizedAt, progress, newHeads);
+        return new OldBitbucketSynchronizeCsetMsg(repository, branch, node, refreshAfterSynchronizedAt, progress, newHeads, softSync);
     }
-    
+
     private List<BranchHead> toBranchHeads(JSONArray optJSONArray)
     {
         List<BranchHead> ret = new ArrayList<BranchHead>();

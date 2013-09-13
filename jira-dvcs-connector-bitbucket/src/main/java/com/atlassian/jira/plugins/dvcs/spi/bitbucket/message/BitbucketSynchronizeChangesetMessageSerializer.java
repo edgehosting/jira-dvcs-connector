@@ -30,9 +30,9 @@ import com.google.common.collect.Lists;
 
 /**
  * An implementation of {@link MessagePayloadSerializer} over {@link BitbucketSynchronizeChangesetMessage}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePayloadSerializer<BitbucketSynchronizeChangesetMessage>
 {
@@ -87,7 +87,8 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
                 }
             }));
             result.put("nodesToBranches", payload.getNodesToBranches());
-            
+            result.put("softSync", payload.isSoftSync());
+
             return result.toString();
 
         } catch (JSONException e)
@@ -110,6 +111,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
         List<String> exclude;
         int page;
         Map<String, String> nodesToBranches;
+        boolean softSync;
 
         try
         {
@@ -120,6 +122,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
             exclude = collectionFromString(result.optString("exclude"));
             page = result.optInt("page");
             newHeads = toBranchHeads(result.optJSONArray("newHeads"));
+            softSync = result.getBoolean("softSync");
             new Function<String, BranchHead>()
             {
                 @Override
@@ -130,7 +133,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
                 }
             };
             nodesToBranches = asMap(result.optJSONObject("nodesToBranches"));
-            
+
             progress = synchronizer.getProgress(repository.getId());
             if (progress == null || progress.isFinished())
             {
@@ -148,7 +151,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
         }
 
         return new BitbucketSynchronizeChangesetMessage(repository, refreshAfterSynchronizedAt, progress, newHeads, exclude,
-                 page, nodesToBranches);
+                 page, nodesToBranches, softSync);
     }
 
     private List<BranchHead> toBranchHeads(JSONArray optJSONArray)
@@ -194,7 +197,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
     {
         return BitbucketSynchronizeChangesetMessage.class;
     }
-    
+
     private String collectionToString(List<String> coll)
     {
         return CollectionUtils.isEmpty(coll) ? null : Joiner.on(",").join(coll);

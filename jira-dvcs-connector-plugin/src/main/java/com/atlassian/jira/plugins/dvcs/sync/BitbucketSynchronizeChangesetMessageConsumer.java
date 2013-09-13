@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
+package com.atlassian.jira.plugins.dvcs.sync;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,19 +27,21 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
-public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
+public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeChangesetConsumer.class);
-    private static final String ID = BitbucketSynchronizeChangesetConsumer.class.getCanonicalName();
+    private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeChangesetMessageConsumer.class);
+    private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
+
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
     @Resource
@@ -49,11 +51,11 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
     @Resource
     private LinkedIssueService linkedIssueService;
     @Resource
-    private MessagingService messagingService;
+    private MessagingService<BitbucketSynchronizeChangesetMessage> messagingService;
     @Resource
     private BranchService branchService;
 
-    public BitbucketSynchronizeChangesetConsumer()
+    public BitbucketSynchronizeChangesetMessageConsumer()
     {
     }
 
@@ -66,7 +68,7 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
 
         Repository repo = payload.getRepository();
         int pageNum = payload.getPage();
-        
+
         BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(payload), payload.getExclude());
         process(messageId, page, payload, tags);
         //
@@ -126,12 +128,12 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         if (!errorOnPage && StringUtils.isNotBlank(page.getNext()))
         {
             fireNextPage(page, originalMessage, tags);
-            
+
         } else if (errorOnPage)
         {
             messagingService.fail(this, messageId);
         }
-        
+
         if (!errorOnPage)
         {
             if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
@@ -173,11 +175,10 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
                         originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1,
-                        originalMessage.getNodesToBranches()
+                        originalMessage.getNodesToBranches(), originalMessage.isSoftSync()
                 ), tags);
-
     }
-    
+
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
         if (branchHeads == null)
@@ -207,13 +208,13 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
     @Override
     public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
     {
-        return false;
+        return true;
     }
 
     @Override
     public void beforeDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
     {
-        
+
     }
-    
+
 }

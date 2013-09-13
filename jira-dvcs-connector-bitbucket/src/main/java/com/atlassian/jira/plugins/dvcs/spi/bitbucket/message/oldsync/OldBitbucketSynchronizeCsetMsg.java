@@ -11,10 +11,10 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 
 /**
  * Message which is fired when a changeset should be synchronized.
- * 
+ *
  * @see #getRefreshAfterSynchronizedAt()
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
 {
@@ -43,7 +43,7 @@ public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
      * @see #getRefreshAfterSynchronizedAt()
      */
     private Date refreshAfterSynchronizedAt;
-    
+
     private List<BranchHead> newHeads;
 
     /**
@@ -51,9 +51,11 @@ public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
      */
     private Progress progress;
 
+    private boolean softSync;
+
     /**
      * Constructor.
-     * 
+     *
      * @param repository
      *            {@link #getRepository()}
      * @param branch
@@ -67,7 +69,7 @@ public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
      *            {@link #getSynchronizationTag()}
      */
     public OldBitbucketSynchronizeCsetMsg(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, List<BranchHead> newHeads)
+            Progress progress, List<BranchHead> newHeads, boolean softSync)
     {
         this.repository = repository;
         this.branch = branch;
@@ -75,6 +77,7 @@ public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.progress = progress;
         this.newHeads = newHeads;
+        this.softSync = softSync;
     }
 
     /**
@@ -120,5 +123,10 @@ public class OldBitbucketSynchronizeCsetMsg implements Serializable, HasProgress
     public List<BranchHead> getNewHeads()
     {
         return newHeads;
+    }
+
+    public boolean isSoftSync()
+    {
+        return softSync;
     }
 }

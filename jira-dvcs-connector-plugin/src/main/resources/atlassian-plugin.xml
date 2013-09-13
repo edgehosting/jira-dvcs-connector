@@ -319,19 +319,19 @@
     <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
     </component>
-    <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageConsumer">
+    <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
-    <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetConsumer">
+    <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="synchronizeBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
-    <component key="synchronizeOldBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgConsumer">
+    <component key="synchronizeOldBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="synchronizeOldBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer">

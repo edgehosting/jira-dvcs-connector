@@ -12,10 +12,10 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 
 /**
  * Message which is fired when a changeset should be synchronized.
- * 
+ *
  * @see #getRefreshAfterSynchronizedAt()
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class BitbucketSynchronizeChangesetMessage implements Serializable, HasProgress
 {
@@ -33,17 +33,20 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable, HasPr
     private List<String> exclude;
 
     private int page;
-    
+
     private Map<String, String> nodesToBranches;
 
+    private boolean softSync;
+
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress)
+            Progress progress, boolean softSync)
     {
-        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null);
+        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null, softSync);
+        this.softSync = softSync;
     }
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches)
+            Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches, boolean softSync)
     {
         this.repository = repository;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
@@ -87,6 +90,11 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable, HasPr
     public Map<String, String> getNodesToBranches()
     {
         return nodesToBranches;
+    }
+
+    public boolean isSoftSync()
+    {
+        return softSync;
     }
 
 }

@@ -9,10 +9,10 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 
 /**
  * Message which is fired when a changeset should be synchronized.
- * 
+ *
  * @see #getRefreshAfterSynchronizedAt()
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class SynchronizeChangesetMessage implements Serializable, HasProgress
 {
@@ -47,9 +47,11 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
      */
     private Progress progress;
 
+    private boolean softSync;
+
     /**
      * Constructor.
-     * 
+     *
      * @param repository
      *            {@link #getRepository()}
      * @param branch
@@ -63,13 +65,14 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
      *            {@link #getSynchronizationTag()}
      */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress)
+            Progress progress, boolean softSync)
     {
         this.repository = repository;
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.progress = progress;
+        this.softSync = softSync;
     }
 
     /**
@@ -110,5 +113,10 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
     public Progress getProgress()
     {
         return progress;
+    }
+
+    public boolean isSoftSync()
+    {
+        return softSync;
     }
 }
