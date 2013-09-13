@@ -81,7 +81,8 @@ public class PullRequestUpdateIssueActionFactory implements IssueActionFactory
         result.put("authorName", author.getFullName());
         result.put("authorUrl", StringUtils.isEmpty(author.getUrl()) ? "#" : author.getUrl());
         result.put("authorAvatar", author.getAvatar());
-        
+        result.put("lastUpdatedOn", pullRequestUpdate.getLastUpdatedOn());
+
         // commits
         List<Map<String, Object>> commits = new LinkedList<Map<String, Object>>();
         for (RepositoryCommitMapping commit : pullRequestUpdate.getCommits())
