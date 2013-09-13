@@ -466,7 +466,7 @@
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsActivityTabPanel">
 
         <description>Show Dvcs Pull Requests activities related to an issue in an issue tab panel.</description>
-        <label>PR</label>
+        <label>DVCS</label>
         <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
