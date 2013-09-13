@@ -27,7 +27,7 @@ public class MessageKeyMock
      *            {@link MessageKey#getPayloadType()}
      * @return created mock
      */
-    public static <P> MessageKey<P> newMessageKey(String id, Class<P> payloadType)
+    public static <P extends HasProgress> MessageKey<P> newMessageKey(String id, Class<P> payloadType)
     {
         @SuppressWarnings("unchecked")
         MessageKey<P> result = Mockito.mock(MessageKey.class);

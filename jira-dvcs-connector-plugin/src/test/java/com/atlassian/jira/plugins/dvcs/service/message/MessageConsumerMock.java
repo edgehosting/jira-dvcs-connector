@@ -27,7 +27,7 @@ public class MessageConsumerMock
      *            {@link MessageConsumer#getKey()}
      * @return created mock
      */
-    public static <P> MessageConsumer<P> newMessageConsumer(String id, MessageKey<P> key)
+    public static <P extends HasProgress> MessageConsumer<P> newMessageConsumer(String id, MessageKey<P> key)
     {
         @SuppressWarnings("unchecked")
         MessageConsumer<P> result = Mockito.mock(MessageConsumer.class);

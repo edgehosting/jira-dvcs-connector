@@ -204,4 +204,16 @@ public class BitbucketSynchronizeChangesetConsumer implements MessageConsumer<Bi
         return messagingService.get(BitbucketSynchronizeChangesetMessage.class, KEY);
     }
 
+    @Override
+    public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
+    {
+        return false;
+    }
+
+    @Override
+    public void beforeDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
+    {
+        
+    }
+    
 }

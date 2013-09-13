@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 
 /**
  * Message which is fired when a changeset should be synchronized.
@@ -13,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  * @author Stanislav Dvorscak
  * 
  */
-public class SynchronizeChangesetMessage implements Serializable
+public class SynchronizeChangesetMessage implements Serializable, HasProgress
 {
 
     /**

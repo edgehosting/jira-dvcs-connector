@@ -15,7 +15,9 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsMock;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMappingMock;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.service.MessageRouterImpl;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumerMock;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
@@ -53,7 +55,7 @@ public class MessageRouterImplTest
      * @param <P>
      *            type of payload
      */
-    private static final class ExpectedData<P>
+    private static final class ExpectedData<P extends HasProgress>
     {
 
         final P payloadValue;
@@ -115,13 +117,14 @@ public class MessageRouterImplTest
     @Test
     public void testPublish() throws Exception
     {
-
-        class PayloadType1
-        {
+        abstract class BaseHasProgress implements HasProgress {
+            public Progress getProgress()
+            {
+                return null;
+            }
         }
-        class PayloadType2
-        {
-        }
+        class PayloadType1 extends BaseHasProgress {}
+        class PayloadType2 extends BaseHasProgress {}
 
         final ExpectedData<PayloadType1> expectedDataForConsumer1 = new ExpectedData<PayloadType1>(1, PayloadType1.class,
                 new PayloadType1());

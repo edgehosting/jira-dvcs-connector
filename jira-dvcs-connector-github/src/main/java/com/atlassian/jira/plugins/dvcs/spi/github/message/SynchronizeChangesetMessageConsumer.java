@@ -153,4 +153,16 @@ public class SynchronizeChangesetMessageConsumer implements MessageConsumer<Sync
         return messagingService.get(SynchronizeChangesetMessage.class, KEY);
     }
 
+    @Override
+    public boolean shouldDiscard(int messageId, int retryCount, SynchronizeChangesetMessage payload, String[] tags)
+    {
+        return false;
+    }
+
+    @Override
+    public void beforeDiscard(int messageId, int retryCount, SynchronizeChangesetMessage payload, String[] tags)
+    {
+        
+    }
+    
 }

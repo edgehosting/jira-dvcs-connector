@@ -31,7 +31,7 @@ public class MessagingServiceImplTest
      * {@link MessageKey} mock.
      */
     @Mock
-    private MessageKey<Void> key;
+    private MessageKey<?> key;
 
     /**
      * {@link MessageRouter} mock.

@@ -7,6 +7,7 @@ import net.java.ao.DBParam;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
@@ -23,7 +24,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * @param <P>
  *            type of message payload
  */
-final class MessageKeyRouter<P>
+final class MessageKeyRouter<P extends HasProgress>
 {
 
     private final ActiveObjects activeObjects;
@@ -36,7 +37,7 @@ final class MessageKeyRouter<P>
     /**
      * @see #getKey()
      */
-    private final MessageKey<?> key;
+    private final MessageKey<P> key;
 
     /**
      * @see #MessageKeyRouter(ActiveObjects, MessageKey, MessagePayloadSerializer)
@@ -74,7 +75,7 @@ final class MessageKeyRouter<P>
     /**
      * @return over which key is realized routing.
      */
-    public MessageKey<?> getKey()
+    public MessageKey<P> getKey()
     {
         return key;
     }

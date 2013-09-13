@@ -27,7 +27,7 @@ public class MessagePayloadSerializerMock
      *            {@link MessagePayloadSerializer#deserialize(String)}
      * @return created mock's serializer
      */
-    public static <P> MessagePayloadSerializer<P> newMessagePayloadSerializer(Class<P> payloadType, P payloadValue)
+    public static <P extends HasProgress> MessagePayloadSerializer<P> newMessagePayloadSerializer(Class<P> payloadType, P payloadValue)
     {
         @SuppressWarnings("unchecked")
         MessagePayloadSerializer<P> result = Mockito.mock(MessagePayloadSerializer.class);

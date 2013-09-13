@@ -125,4 +125,17 @@ public class OldBitbucketSynchronizeCsetMsgConsumer implements MessageConsumer<O
     {
         return messagingService.get(OldBitbucketSynchronizeCsetMsg.class, KEY);
     }
+
+    @Override
+    public boolean shouldDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
+    {
+        return false;
+    }
+
+    @Override
+    public void beforeDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
+    {
+        
+    }
+    
 }

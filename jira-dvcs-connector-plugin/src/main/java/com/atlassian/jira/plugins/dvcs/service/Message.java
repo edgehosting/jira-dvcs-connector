@@ -24,6 +24,8 @@ final class Message<P>
      */
     private final String[] tags;
 
+    private final int retriesCount;
+
     /**
      * Constructor.
      * 
@@ -33,12 +35,14 @@ final class Message<P>
      *            {@link #getPayload()}
      * @param tags
      *            {@link #getTags()}
+     * @param retriesCount 
      */
-    public Message(Integer id, P payload, String[] tags)
+    public Message(Integer id, P payload, String[] tags, int retriesCount)
     {
         this.id = id;
         this.payload = payload;
         this.tags = tags;
+        this.retriesCount = retriesCount;
     }
 
     /**
@@ -65,4 +69,10 @@ final class Message<P>
         return tags;
     }
 
+    public int getRetriesCount()
+    {
+        return retriesCount;
+    }
+
+    
 }

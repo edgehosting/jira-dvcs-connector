@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageRouter;
@@ -16,19 +17,19 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
  * @author Stanislav Dvorscak
  * 
  */
-public class MessagingServiceImpl implements MessagingService
+public class MessagingServiceImpl<P extends HasProgress> implements MessagingService<P>
 {
 
     /**
      * Injected {@link MessageRouter} dependency.
      */
     @Resource
-    private MessageRouter messageRouter;
+    private MessageRouter<P> messageRouter;
 
     /**
      * Maps identity of message key to appropriate message key.
      */
-    private final Map<String, MessageKey<?>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<?>>();
+    private final Map<String, MessageKey<P>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<P>>();
 
     /**
      * Constructor.
@@ -41,7 +42,7 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <P> void publish(MessageKey<P> key, P payload, String... tags)
+    public void publish(MessageKey<P> key, P payload, String... tags)
     {
         messageRouter.publish(key, payload, tags);
     }
@@ -52,7 +53,7 @@ public class MessagingServiceImpl implements MessagingService
      * @param messageId
      */
     @Override
-    public void ok(MessageConsumer<?> consumer, int messageId)
+    public void ok(MessageConsumer<P> consumer, int messageId)
     {
         messageRouter.ok(consumer, messageId);
     }
@@ -61,7 +62,7 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public void fail(MessageConsumer<?> consumer, int messageId)
+    public void fail(MessageConsumer<P> consumer, int messageId)
     {
         messageRouter.fail(consumer, messageId);
     }
@@ -70,7 +71,7 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <K extends MessageKey<?>> int getQueuedCount(K key, String tag)
+    public <K extends MessageKey<P>> int getQueuedCount(K key, String tag)
     {
         return messageRouter.getQueuedCount(key, tag);
     }
@@ -78,11 +79,10 @@ public class MessagingServiceImpl implements MessagingService
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public <P> MessageKey<P> get(final Class<P> payloadType, final String id)
+    public MessageKey<P> get(final Class<P> payloadType, final String id)
     {
-        MessageKey<?> result;
+        MessageKey<P> result;
 
         synchronized (idToMessageKey)
         {

@@ -10,7 +10,7 @@ package com.atlassian.jira.plugins.dvcs.service.message;
  * @param <P>
  *            type of payload
  */
-public interface MessageConsumer<P>
+public interface MessageConsumer<P extends HasProgress>
 {
 
     /**
@@ -32,5 +32,9 @@ public interface MessageConsumer<P>
      * @return key of messages which will be received
      */
     MessageKey<P> getKey();
+    
+    boolean shouldDiscard(int messageId, int retryCount, P payload, String [] tags);
+    
+    void beforeDiscard(int messageId, int retryCount, P payload, String [] tags);
 
 }

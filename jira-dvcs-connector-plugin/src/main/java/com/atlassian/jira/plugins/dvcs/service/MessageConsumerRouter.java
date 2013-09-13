@@ -18,6 +18,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
@@ -35,7 +36,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  * @param <P>
  *            type of message
  */
-final class MessageConsumerRouter<P> implements Runnable
+final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 {
 
     /**
@@ -122,7 +123,7 @@ final class MessageConsumerRouter<P> implements Runnable
 
             while (!stop)
             {
-                MessageMapping[] founded;
+                MessageMapping[] found;
                 synchronized (MESSAGE_TRIGGER)
                 {
                     Query query = Query.select().distinct().from(MessageMapping.class).alias(MessageMapping.class, "message") //
@@ -134,9 +135,9 @@ final class MessageConsumerRouter<P> implements Runnable
                                     + " AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY + " = ? ", //
                             key.getId(), delegate.getId(), false, false //
                             );
-                    founded = activeObjects.find(MessageMapping.class, query);
+                    found = activeObjects.find(MessageMapping.class, query);
 
-                    if (founded.length == 0)
+                    if (found.length == 0)
                     {
                         try
                         {
@@ -155,20 +156,20 @@ final class MessageConsumerRouter<P> implements Runnable
                     }
                 }
 
-                for (MessageMapping foundedItem : founded)
+                for (MessageMapping foundItem : found)
                 {
 
                     try
                     {
-                        P payload = payloadSerializer.deserialize(foundedItem.getPayload());
-                        String tags[] = new String[foundedItem.getTags().length];
+                        P payload = payloadSerializer.deserialize(foundItem.getPayload());
+                        String tags[] = new String[foundItem.getTags().length];
                         for (int i = 0; i < tags.length; i++)
                         {
-                            tags[i] = foundedItem.getTags()[i].getTag();
+                            tags[i] = foundItem.getTags()[i].getTag();
                         }
 
-                        markQueued(foundedItem);
-                        messageQueue.put(new Message<P>(foundedItem.getID(), payload, tags));
+                        markQueued(foundItem);
+                        messageQueue.put(new Message<P>(foundItem.getID(), payload, tags, getRetryCount(foundItem)));
 
                     } catch (InterruptedException e)
                     {
@@ -181,11 +182,25 @@ final class MessageConsumerRouter<P> implements Runnable
                     } catch (Exception e)
                     {
                         LOGGER.error(e.getMessage(), e);
-                        fail(foundedItem.getID());
+                        fail(foundItem.getID());
+                        // TODO what now with progress ?
 
                     }
                 }
             }
+        }
+        
+        private int getRetryCount(MessageMapping foundItem)
+        {
+            MessageConsumerMapping[] consumers = foundItem.getConsumers();
+            for (MessageConsumerMapping consumer : consumers)
+            {
+                if(consumer.getConsumer().equals(delegate.getId()))
+                {
+                    return consumer.getRetriesCount();
+                }
+            }
+            throw new IllegalStateException("No consumers for message configured for this router.");
         }
 
         /**
@@ -361,7 +376,32 @@ final class MessageConsumerRouter<P> implements Runnable
 
         });
     }
+    
+    void discard(final int messageId, P payload)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                MessageMapping message = activeObjects.get(MessageMapping.class, messageId);
 
+                for (MessageConsumerMapping messageConsumer : message.getConsumers())
+                {
+                   activeObjects.delete(messageConsumer);
+                }
+                
+                for (MessageTagMapping tag : message.getTags())
+                {
+                    activeObjects.delete(tag);
+                }
+                
+                activeObjects.delete(message);
+                
+                return null;
+            }
+        });
+    }
     /**
      * Stops message consumers - e.g.: when shutdown process happened.
      */
@@ -424,7 +464,13 @@ final class MessageConsumerRouter<P> implements Runnable
             try
             {
                 message = messageQueue.take();
-                delegate.onReceive(message.getId(), message.getPayload(), message.getTags());
+                if (!delegate.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
+                {
+                    delegate.onReceive(message.getId(), message.getPayload(), message.getTags());
+                } else
+                {
+                    delegate.beforeDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
+                }
 
             } catch (InterruptedException e)
             {
