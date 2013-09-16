@@ -35,16 +35,28 @@ public class BitbucketCreatePullRequestPage implements Page
     
     @Inject
     WebDriver webDriver;
-    
+
+    private String url;
+
     public static String getUrl(String owner, String slug)
     {
         return String.format("https://bitbucket.org/%s/%s/pull-request/new", owner, slug);
     }
 
+    public BitbucketCreatePullRequestPage()
+    {
+
+    }
+
+    public BitbucketCreatePullRequestPage(final String url)
+    {
+        this.url = url;
+    }
+
     @Override
     public String getUrl()
     {
-        return null;
+        return url;
     }
 
     public String createPullRequest(String title, String description, String branch, String base, String toRepository)

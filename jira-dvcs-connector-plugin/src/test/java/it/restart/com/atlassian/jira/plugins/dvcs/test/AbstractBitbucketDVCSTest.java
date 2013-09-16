@@ -28,7 +28,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Re
  * @author Miroslav Stencel <mstencel@atlassian.com>
  * 
  */
-public class AbstractBitbucketDVCSTest extends AbstractDVCSTest
+public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 {
     private final Dvcs dvcs;
 

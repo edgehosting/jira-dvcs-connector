@@ -42,10 +42,21 @@ public class BitbucketPullRequestPage implements Page
     @Inject
     WebDriver webDriver;
 
+    private String url;
+
+    public BitbucketPullRequestPage()
+    {
+    }
+
+    public BitbucketPullRequestPage(final String url)
+    {
+        this.url = url;
+    }
+
     @Override
     public String getUrl()
     {
-        return null;
+        return url;
     }
 
     public String commentPullRequest(String comment)

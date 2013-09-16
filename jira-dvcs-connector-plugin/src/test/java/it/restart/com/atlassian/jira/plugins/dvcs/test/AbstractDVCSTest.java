@@ -26,7 +26,7 @@ import com.atlassian.pageobjects.TestedProductFactory;
  * @author Stanislav Dvorscak
  * 
  */
-public class AbstractDVCSTest
+public abstract class AbstractDVCSTest
 {
 
     /**
@@ -110,8 +110,8 @@ public class AbstractDVCSTest
 
         // gets key of created issue
         IssuesPage issuesPage = getJiraTestedProduct().visit(IssuesPage.class);
-        issuesPage = getJiraTestedProduct().visit(IssuesPage.class);
         issuesPage.fillSearchForm(projectKey, issueSummary);
+        issuesPage.switchLayout();
         List<IssuesPageIssueRow> issueRows = issuesPage.getIssueRows();
         Assert.assertEquals(issueRows.size(), 1);
         String result = issueRows.get(0).getIssueKey();

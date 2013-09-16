@@ -7,6 +7,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -58,10 +60,28 @@ public class IssuesPage implements Page
     private Iterable<IssuesPageIssueRow> issueRows;
 
     /**
+     * Reference to issue table
+     */
+    @ElementBy(xpath = "//table[@id='issuetable']")
+    private PageElement issueTable;
+
+    /**
      * Reference to confirmation delete dialog.
      */
     @ElementBy(id = "delete-issue-dialog")
     private IssuesPageIssueDeleteConfirmationDialog deleteConfirmationDialog;
+
+    /**
+     * Reference to layout switcher button
+     */
+    @ElementBy(id = "layout-switcher-button")
+    private PageElement layoutSwitcherButton;
+
+    /**
+     * Reference to list view menu item
+     */
+    @ElementBy(xpath = "//div[@id='layout-switcher-button_drop']//a[@data-layout-key='list-view']")
+    private PageElement listViewButton;
 
     /**
      * Fills search form by provided values.
@@ -113,6 +133,7 @@ public class IssuesPage implements Page
      */
     public void deleteAll()
     {
+        switchLayout();
         Iterator<IssuesPageIssueRow> issueRowsIterator = issueRows.iterator();
         while (issueRowsIterator.hasNext())
         {
@@ -131,4 +152,20 @@ public class IssuesPage implements Page
         return "/issues";
     }
 
+    public void switchLayout()
+    {
+        if (layoutSwitcherButton.isPresent())
+        {
+            layoutSwitcherButton.click();
+            Poller.waitUntilTrue(listViewButton.timed().isVisible());
+            listViewButton.click();
+            try
+            {
+                Poller.waitUntilTrue(issueTable.timed().isVisible());
+            } catch (AssertionError e)
+            {
+                // no issue table, no results found
+            }
+        }
+    }
 }
