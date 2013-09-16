@@ -46,7 +46,6 @@ import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageCon
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.jira.util.lang.Pair;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
@@ -421,6 +420,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @SuppressWarnings("unchecked")
     private void doSync(Repository repository, boolean softSync)
     {
+        if (skipSync(repository, softSync)) {
+            return;
+        }
+
         if (repository.isLinked())
         {
             if (!softSync)
@@ -451,17 +454,25 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             } else
             {
-                processBitbucketSync(repository, softSync);
+                BranchFilterInfo filterNodes = getFilterNodes(repository);
+                processBitbucketSync(repository, softSync, filterNodes);
+                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected void processBitbucketSync(Repository repository, boolean softSync)
+    private boolean skipSync(Repository repository, boolean softSync)
     {
-        Pair<List<BranchHead>, List<String>> filterNodes = getFilterNodes(repository);
-        List<BranchHead> newBranchHeads = filterNodes.first();
-        if (filterNodes.second().isEmpty() && !changesetCache.isEmpty(repository.getId()))
+        Progress progress = synchronizer.getProgress(repository.getId());
+        return progress != null && !progress.isFinished();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
+    {
+        List<BranchHead> newBranchHeads = filterNodes.newHeads;
+
+        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
         {
             log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
             Date synchronizationStartedAt = new Date();
@@ -486,13 +497,18 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             Date synchronizationStartedAt = new Date();
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, filterNodes.first(), filterNodes.second(), 1, asNodeToBranches(filterNodes.first()), softSync);
+                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync);
 
             messagingService.publish(key, message, UUID.randomUUID().toString());
         }
     }
 
-    protected Pair<List<BranchHead>, List<String>> getFilterNodes(Repository repository)
+    protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads, List<BranchHead> oldHeads)
+    {
+        branchService.updateBranchHeads(repo, newBranchHeads, oldHeads);
+    }
+
+    protected BranchFilterInfo getFilterNodes(Repository repository)
     {
         CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) communicatorProvider
                 .getCommunicator(BitbucketCommunicator.BITBUCKET);
@@ -502,7 +518,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         List<String> exclude = extractBranchHeads(oldBranches);
 
-        return Pair.nicePairOf(newBranches, exclude);
+        BranchFilterInfo filter = new BranchFilterInfo(newBranches, oldBranches, exclude);
+        return filter;
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
@@ -808,6 +825,21 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         {
             log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
             return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
+        }
+    }
+
+    private static class BranchFilterInfo {
+
+        private List<BranchHead> newHeads;
+        private List<BranchHead> oldHeads;
+        private List<String> oldHeadsHashes;
+
+        public BranchFilterInfo(List<BranchHead> newHeads, List<BranchHead> oldHeads, List<String> oldHeadsHashes)
+        {
+            super();
+            this.newHeads = newHeads;
+            this.oldHeads = oldHeads;
+            this.oldHeadsHashes = oldHeadsHashes;
         }
     }
 

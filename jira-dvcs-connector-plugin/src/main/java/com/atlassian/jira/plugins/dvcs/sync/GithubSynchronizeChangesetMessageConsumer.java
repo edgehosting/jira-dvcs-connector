@@ -51,21 +51,15 @@ public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSu
     }
 
     @Override
-    public boolean shouldDiscard(int messageId, int retryCount, SynchronizeChangesetMessage payload, String[] tags)
-    {
-        return false;
-    }
-
-    @Override
-    public void beforeDiscard(int messageId, int retryCount, SynchronizeChangesetMessage payload, String[] tags)
-    {
-
-    }
-
-    @Override
     protected boolean getSoftSync(SynchronizeChangesetMessage payload)
     {
         return payload.isSoftSync();
+    }
+
+    @Override
+    public boolean shouldDiscard(int messageId, int retryCount, SynchronizeChangesetMessage payload, String[] tags)
+    {
+        return retryCount >= 3;
     }
 
 }

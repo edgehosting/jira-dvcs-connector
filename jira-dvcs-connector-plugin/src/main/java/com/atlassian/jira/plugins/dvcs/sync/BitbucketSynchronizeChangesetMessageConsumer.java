@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -54,6 +56,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private MessagingService<BitbucketSynchronizeChangesetMessage> messagingService;
     @Resource
     private BranchService branchService;
+    @Resource
+    private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
 
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
@@ -89,6 +93,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
+        boolean softSync = originalMessage.isSoftSync();
+
         for (BitbucketNewChangeset ncset : csets)
         {
             try
@@ -104,6 +110,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
                 cset.setSynchronizedAt(new Date());
                 Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
+
+                MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
 
                 changesetService.create(cset, issues);
 
@@ -138,7 +146,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         {
             if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
             {
+                smartcCommitsProcessor.startProcess(originalMessage.getProgress(), originalMessage.getRepository(), changesetService);
                 originalMessage.getProgress().finish();
+
                 if (page.getPage() == 1)
                 {
                     updateBranchHeads(originalMessage.getRepository(), originalMessage.getNewHeads());
@@ -208,11 +218,11 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     @Override
     public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
     {
-        return true;
+        return retryCount >= 3;
     }
 
     @Override
-    public void beforeDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
+    public void afterDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
     {
 
     }

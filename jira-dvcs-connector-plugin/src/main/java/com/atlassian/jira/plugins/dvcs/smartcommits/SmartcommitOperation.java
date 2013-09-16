@@ -32,20 +32,21 @@ public class SmartcommitOperation implements Runnable
 
     private final ChangesetDao changesetDao;
 
-    private final Synchronizer synchronizer;
     private final Repository repository;
     private final ChangesetService changesetService;
+
+    private Progress progress;
 
     /**
      * The Constructor.
      */
     public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser,
-                                SmartcommitsService smartcommitsService, Synchronizer synchronizer, Repository repository, ChangesetService changesetService)
+                                SmartcommitsService smartcommitsService, Progress progress, Repository repository, ChangesetService changesetService)
     {
         this.changesetDao = changesetDao;
         this.commitMessageParser = commitMessageParser;
         this.smartcommitsService = smartcommitsService;
-        this.synchronizer = synchronizer;
+        this.progress = progress;
         this.repository = repository;
         this.changesetService = changesetService;
     }
@@ -85,8 +86,6 @@ public class SmartcommitOperation implements Runnable
                             if (changeset != null)
                             {
                                 final String commitUrl = changesetService.getCommitUrl(repository, changeset);
-
-                                final Progress progress = synchronizer.getProgress(repository.getId());
 
                                 List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
                                 for (String error : commandsResults.getAllErrors())

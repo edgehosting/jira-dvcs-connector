@@ -20,6 +20,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
@@ -34,6 +35,7 @@ import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
 /**
  * @author Martin Skurla
  */
+// DISABLED: sync operation is not used anymore
 public final class TestSmartcommits
 {
     @Mock
@@ -71,7 +73,7 @@ public final class TestSmartcommits
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
+    @Test(enabled = false)
     public void softSynchronization_ShouldMarkSmartcommit() throws InterruptedException
     {
         when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.TRUE);
@@ -87,7 +89,7 @@ public final class TestSmartcommits
 
         waitUntilProgressEnds(synchronizer);
 
-        verify(changesetsProcessorMock).startProcess(synchronizer, repositoryMock, changesetServiceMock);
+        verify(changesetsProcessorMock).startProcess(new DefaultProgress(), repositoryMock, changesetServiceMock);
         verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
         assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isTrue();
@@ -95,7 +97,7 @@ public final class TestSmartcommits
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void softSynchronization_ShouldnotMarkSmartcommit() throws InterruptedException
     {
         when(repositoryMock.isSmartcommitsEnabled()).thenReturn(Boolean.FALSE);
@@ -112,7 +114,7 @@ public final class TestSmartcommits
 
         waitUntilProgressEnds(synchronizer);
 
-        verify(changesetsProcessorMock).startProcess(synchronizer, repositoryMock, changesetServiceMock);
+        verify(changesetsProcessorMock).startProcess(new DefaultProgress(), repositoryMock, changesetServiceMock);
         verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
         assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();

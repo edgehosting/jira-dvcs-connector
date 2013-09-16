@@ -60,21 +60,16 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     }
 
     @Override
-    public boolean shouldDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
-    {
-        return false;
-    }
-
-    @Override
-    public void beforeDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
-    {
-
-    }
-
-    @Override
     protected boolean getSoftSync(OldBitbucketSynchronizeCsetMsg payload)
     {
         return payload.isSoftSync();
     }
+
+    @Override
+    public boolean shouldDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
+    {
+        return retryCount >= 3;
+    }
+
 
 }

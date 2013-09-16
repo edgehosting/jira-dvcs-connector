@@ -19,11 +19,12 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 
 public abstract class MessageConsumerSupport<P extends HasProgress> implements MessageConsumer<P>
 {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private final static Logger LOGGER = LoggerFactory.getLogger(MessageConsumerSupport.class);
 
     @Resource
     protected DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -42,6 +43,9 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
     @Resource
     protected BranchService branchService;
+
+    @Resource
+    SmartcommitsChangesetsProcessor smartCommitsProcessor;
 
     @Override
     public void onReceive(int messageId, P payload, String [] tags)
@@ -89,22 +93,35 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 repositoryService.save(repo);
             }
 
-            if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
-            {
-                payload.getProgress().finish();
-            }
-
             messagingService.ok(this, messageId);
 
         } catch (Exception e)
         {
             messagingService.fail(this, messageId);
             LOGGER.error(e.getMessage(), e);
+        } finally
+        {
+            tryEndProgress(payload, tags);
         }
 
     }
 
-    protected void markChangesetForSmartCommit(Repository repo, Changeset changesetForSave, boolean mark)
+    protected void tryEndProgress(P payload, String[] tags)
+    {
+        if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
+        {
+            smartCommitsProcessor.startProcess(payload.getProgress(), getRepository(payload), changesetService);
+            payload.getProgress().finish();
+        }
+    }
+
+    @Override
+    public void afterDiscard(int messageId, int retryCount, P payload, String[] tags)
+    {
+        tryEndProgress(payload, tags);
+    }
+
+    static void markChangesetForSmartCommit(Repository repo, Changeset changesetForSave, boolean mark)
     {
         if (repo.isSmartcommitsEnabled())
         {
@@ -114,6 +131,8 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             LOGGER.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
     }
+
+
 
     protected abstract Repository getRepository(P payload);
     protected abstract String getBranch(P payload);

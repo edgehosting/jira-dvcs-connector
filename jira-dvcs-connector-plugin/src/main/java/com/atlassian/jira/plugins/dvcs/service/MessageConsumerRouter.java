@@ -379,6 +379,12 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     void discard(final int messageId, P payload)
     {
+        delete(messageId);
+        payload.getProgress().setFinished(true);
+    }
+
+    void delete(final int messageId)
+    {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
@@ -401,7 +407,6 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
                 return null;
             }
         });
-        payload.getProgress().setFinished(true);
     }
 
     /**
@@ -466,18 +471,17 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
             try
             {
                 message = messageQueue.take();
+                if (message.getPayload().getProgress().isShouldStop()) {
+                    delete(message.getId(), message.getPayload());
+                    continue;
+                }
                 if (!delegate.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
                 {
                     delegate.onReceive(message.getId(), message.getPayload(), message.getTags());
                 } else
                 {
-                    try
-                    {
-                        delegate.beforeDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
-                    } finally
-                    {
-                        discard(message.getId(), message.getPayload());
-                    }
+                    discard(message.getId(), message.getPayload());
+                    delegate.afterDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
                 }
 
             } catch (InterruptedException e)

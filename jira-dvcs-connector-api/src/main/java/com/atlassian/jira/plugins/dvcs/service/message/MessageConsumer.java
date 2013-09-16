@@ -35,6 +35,6 @@ public interface MessageConsumer<P extends HasProgress>
     
     boolean shouldDiscard(int messageId, int retryCount, P payload, String [] tags);
     
-    void beforeDiscard(int messageId, int retryCount, P payload, String [] tags);
+    void afterDiscard(int messageId, int retryCount, P payload, String [] tags);
 
 }
