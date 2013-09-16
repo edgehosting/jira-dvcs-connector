@@ -472,7 +472,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
             {
                 message = messageQueue.take();
                 if (message.getPayload().getProgress().isShouldStop()) {
-                    delete(message.getId(), message.getPayload());
+                    delete(message.getId());
                     continue;
                 }
                 if (!delegate.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
