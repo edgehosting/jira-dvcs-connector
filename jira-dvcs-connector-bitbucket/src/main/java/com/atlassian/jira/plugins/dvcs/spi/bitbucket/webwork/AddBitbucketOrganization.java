@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.sal.api.ApplicationProperties;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
+
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.SignatureType;
@@ -11,6 +14,7 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -19,15 +23,15 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.collect.Sets;
-
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.*;
 
 /**
  * Webwork action used to configure the bitbucket organization.
@@ -163,7 +167,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             Organization newOrganization = new Organization();
             newOrganization.setName(organization);
             newOrganization.setHostUrl(url);
-            newOrganization.setDvcsType("bitbucket");
+            newOrganization.setDvcsType(BitbucketCommunicator.BITBUCKET);
             newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.BITBUCKET.id), oAuthStore.getSecret(Host.BITBUCKET.id), accessToken));
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
             newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
@@ -208,7 +212,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             }
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
+        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization, BitbucketCommunicator.BITBUCKET);
         // Bitbucket REST API to determine existence of accountInfo accepts valid email associated with BB account, but
         // it is not possible to create an account containing the '@' character.
         // [https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile]
