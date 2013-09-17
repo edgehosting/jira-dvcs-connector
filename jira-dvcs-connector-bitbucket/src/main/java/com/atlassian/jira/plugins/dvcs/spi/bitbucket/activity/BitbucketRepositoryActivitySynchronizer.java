@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import org.jfree.util.Log;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
@@ -15,8 +13,10 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMap
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
+import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -29,7 +29,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao;
 
-// TODO failure recovery + rename to stateful if will be stateful
 public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivitySynchronizer
 {
 
@@ -59,7 +58,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
 
         int jiraCount = progress.getJiraCount();
         int pullRequestActivityCount = 0;
-        
+
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(forRepository).apiVersion(2).build();
         PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
 
@@ -85,9 +84,9 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                 {
                     break;
                 }
-                
+
                 Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
-                
+
                 if (activityDate == null)
                 {
                     Log.info("Date for the activity could not be found.");
@@ -102,7 +101,7 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                         .getPullRequest().getId());
                 processActivity(info, forRepository, pullRestpoint, pullRequestContext);
                 pullRequestContextManager.save(pullRequestContext);
-                
+
                 pullRequestActivityCount++;
                 progress.inPullRequestProgress(pullRequestActivityCount, jiraCount);
             }
@@ -152,7 +151,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
                 && "open".equals(((BitbucketPullRequestUpdateActivity) activity).getStatus());
     }
 
-    // TODO improve performance here [***] , as this is gonna to call often
     private int ensurePullRequestPresent(Repository forRepository, PullRequestRemoteRestpoint pullRestpoint,
             BitbucketPullRequestActivityInfo info, PullRequestContext pullRequestContext)
     {

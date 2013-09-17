@@ -51,27 +51,12 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
-/**
- * The Class BitbucketCommunicator.
- *
- */
 public class BitbucketCommunicator implements DvcsCommunicator
 {
-    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
-    //
-    //
-    //
-    //
-    // TODO 5 or testing, change to 50 
-    //
-    //
-    //
-    //
-    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 5);
-    
-    /** The Constant BITBUCKET. */
+    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
+
     public static final String BITBUCKET = "bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
@@ -82,14 +67,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private final ChangesetCache changesetCache;
 
-    /**
-     * The Constructor.
-     *
-     * @param bitbucketLinker
-     * @param pluginAccessor
-     * @param oauth
-     * @param bitbucketClientBuilder
-     */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
             BranchService branchService,

@@ -3,10 +3,13 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import net.java.ao.Entity;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -62,8 +65,9 @@ public class SmartcommitOperation implements Runnable
             changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(), new ForEachChangesetClosure()
             {
                 @Override
-                public void execute(ChangesetMapping changesetMapping)
+                public void execute(Entity mapping)
                 {
+                    ChangesetMapping changesetMapping = (ChangesetMapping) mapping;
                     log.debug("Processing message \n {} \n for smartcommits. Changeset id = {} node = {}.", new Object[]
                             {changesetMapping.getMessage(), changesetMapping.getID(), changesetMapping.getNode()});
 
@@ -92,14 +96,11 @@ public class SmartcommitOperation implements Runnable
                                     smartCommitErrors.add(sce);
                                 }
                                 progress.setSmartCommitErrors(smartCommitErrors);
-
-
                             }
                         }
                     }
                 }
             });
-
 
         } catch (Exception e)
         {
