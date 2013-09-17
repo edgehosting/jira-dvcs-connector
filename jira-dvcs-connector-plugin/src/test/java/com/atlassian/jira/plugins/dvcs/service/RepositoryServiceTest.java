@@ -66,13 +66,12 @@ public class RepositoryServiceTest
 		super();
 	}
 
-	@BeforeMethod
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, repositoryActivityDao, synchronizer,
-				changesetService, branchService, applicationProperties, settings, activitySyncerMock);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+        repositoryService = new RepositoryServiceImpl();
+    }
 
 	@Test
 	public void testDisableRepository()

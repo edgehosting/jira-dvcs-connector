@@ -15,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.model.SmartCommitError;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -31,20 +30,21 @@ public class SmartcommitOperation implements Runnable
 
     private final ChangesetDao changesetDao;
 
-    private final Synchronizer synchronizer;
     private final Repository repository;
     private final ChangesetService changesetService;
+
+    private Progress progress;
 
     /**
      * The Constructor.
      */
     public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser,
-                                SmartcommitsService smartcommitsService, Synchronizer synchronizer, Repository repository, ChangesetService changesetService)
+                                SmartcommitsService smartcommitsService, Progress progress, Repository repository, ChangesetService changesetService)
     {
         this.changesetDao = changesetDao;
         this.commitMessageParser = commitMessageParser;
         this.smartcommitsService = smartcommitsService;
-        this.synchronizer = synchronizer;
+        this.progress = progress;
         this.repository = repository;
         this.changesetService = changesetService;
     }
@@ -62,17 +62,17 @@ public class SmartcommitOperation implements Runnable
             changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(), new ForEachChangesetClosure()
             {
                 @Override
-                public void execute(Changeset changeset)
+                public void execute(ChangesetMapping changesetMapping)
                 {
                     log.debug("Processing message \n {} \n for smartcommits. Changeset id = {} node = {}.", new Object[]
-                            {changeset.getMessage(), changeset.getId(), changeset.getNode()});
+                            {changesetMapping.getMessage(), changesetMapping.getID(), changesetMapping.getNode()});
 
                     // first mark as processed
-                    changesetDao.markSmartcommitAvailability(changeset.getId(), false);
+                    changesetDao.markSmartcommitAvailability(changesetMapping.getID(), false);
                     // parse message
-                    CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
-                    commands.setCommitDate(changeset.getDate());
-                    commands.setAuthorEmail(changeset.getAuthorEmail());
+                    CommitCommands commands = commitMessageParser.parseCommitComment(changesetMapping.getMessage());
+                    commands.setCommitDate(changesetMapping.getDate());
+                    commands.setAuthorEmail(changesetMapping.getAuthorEmail());
                     // do commands
                     if (CollectionUtils.isNotEmpty(commands.getCommands()))
                     {
@@ -80,21 +80,26 @@ public class SmartcommitOperation implements Runnable
                         if (commandsResults.hasErrors())
                         {
 
-                            final String commitUrl = changesetService.getCommitUrl(repository, changeset);
-
-                            final Progress progress = synchronizer.getProgress(repository.getId());
-
-                            List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
-                            for (String error : commandsResults.getAllErrors())
+                            Changeset changeset = changesetDao.getByNode(repository.getId(), changesetMapping.getNode());
+                            if (changeset != null)
                             {
-                                SmartCommitError sce = new SmartCommitError(changeset.getNode(), commitUrl, error);
-                                smartCommitErrors.add(sce);
+                                final String commitUrl = changesetService.getCommitUrl(repository, changeset);
+
+                                List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
+                                for (String error : commandsResults.getAllErrors())
+                                {
+                                    SmartCommitError sce = new SmartCommitError(changeset.getNode(), commitUrl, error);
+                                    smartCommitErrors.add(sce);
+                                }
+                                progress.setSmartCommitErrors(smartCommitErrors);
+
+
                             }
-                            progress.setSmartCommitErrors(smartCommitErrors);
                         }
                     }
                 }
             });
+
 
         } catch (Exception e)
         {

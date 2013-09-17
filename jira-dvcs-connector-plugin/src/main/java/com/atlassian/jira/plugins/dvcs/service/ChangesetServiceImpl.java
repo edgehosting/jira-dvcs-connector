@@ -62,6 +62,15 @@ public class ChangesetServiceImpl implements ChangesetService
         changesetDao.removeAllInRepository(repositoryId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Changeset getByNode(int repositoryId, String changesetNode)
+    {
+        return changesetDao.getByNode(repositoryId, changesetNode);
+    }
+
     @Override
     public Iterable<Changeset> getChangesetsFromDvcs(Repository repository)
     {

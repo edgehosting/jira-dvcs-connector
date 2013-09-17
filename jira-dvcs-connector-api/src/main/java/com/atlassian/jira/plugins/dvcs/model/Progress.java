@@ -16,6 +16,11 @@ public interface Progress
      * @param synchroErrorCount
      */
     void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
+    
+    /**
+     * Marks progress as finished.
+     */
+    void finish();
 
     /**
      * @return true if the progress is Finished

@@ -1,21 +1,33 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
@@ -23,11 +35,21 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -56,64 +78,41 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
             new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
-    /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
 
-    /** The repository dao. */
-    private final RepositoryDao repositoryDao;
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
-    /**
-     * Injected {@link RepositoryActivityDao} dependency.
-     */
-    private final RepositoryActivityDao repositoryActivityDao;
+    @Resource
+    private RepositoryDao repositoryDao;
 
-    /** The synchronizer. */
-    private final Synchronizer synchronizer;
+    @Resource
+    private RepositoryActivityDao repositoryActivityDao;
 
-    /** The changeset service. */
-    private final ChangesetService changesetService;
+    @Resource
+    private MessagingService messagingService;
 
-    /** The branch service. */
-    private final BranchService branchService;
+    @Resource
+    private Synchronizer synchronizer;
 
-    /** The application properties. */
-    private final ApplicationProperties applicationProperties;
+    @Resource
+    private ChangesetService changesetService;
 
-    private final PluginSettingsFactory pluginSettingsFactory;
+    @Resource
+    private BranchService branchService;
 
-    private final RepositoryActivitySynchronizer activitySynchronizer;
+    @Resource
+    private ApplicationProperties applicationProperties;
 
-    /**
-     * The Constructor.
-     *
-     * @param communicatorProvider
-     *            the communicator provider
-     * @param repositoryDao
-     *            the repository dao
-     * @param repositoryActivityDao
-     *            injected {@link RepositoryActivityDao} dependency
-     * @param synchronizer
-     *            the synchronizer
-     * @param changesetService
-     *            the changeset service
-     * @param applicationProperties
-     *            the application properties
-     */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao,
-            RepositoryActivityDao repositoryActivityDao, Synchronizer synchronizer, ChangesetService changesetService, BranchService branchService,
-            ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory,
-            @Qualifier("delegatingRepositoryActivitySynchronizer") RepositoryActivitySynchronizer activitySynchronizer)
-    {
-        this.communicatorProvider = communicatorProvider;
-        this.repositoryDao = repositoryDao;
-        this.repositoryActivityDao = repositoryActivityDao;
-        this.branchService = branchService;
-        this.synchronizer = synchronizer;
-        this.changesetService = changesetService;
-        this.applicationProperties = applicationProperties;
-        this.pluginSettingsFactory = pluginSettingsFactory;
-        this.activitySynchronizer = activitySynchronizer;
-    }
+    @Resource
+    private PluginSettingsFactory pluginSettingsFactory;
+
+    @Resource
+    private ChangesetCache changesetCache;
+
+    @Resource(name = "delegatingRepositoryActivitySynchronizer")
+    private RepositoryActivitySynchronizer activitySynchronizer;
+
+
 
     /**
      * {@inheritDoc}
@@ -221,7 +220,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes duplicated repositories.
-     * 
+     *
      * @param organization
      * @param storedRepositories
      */
@@ -315,7 +314,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes the deleted repositories.
-     * 
+     *
      * @param storedRepositories
      *            the stored repositories
      * @param remoteRepositories
@@ -341,7 +340,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * Updates existing repositories
      * - undelete existing deleted
      * - updates names.
-     * 
+     *
      * @param storedRepositories
      *            the stored repositories
      * @param remoteRepositories
@@ -367,7 +366,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Converts collection of repository objects into map where key is repository slug and value is repository object.
-     * 
+     *
      * @param repositories
      *            the repositories
      * @return the map< string, repository>
@@ -402,7 +401,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * synchronization of changesets in all repositories which are in given organization
-     * 
+     *
      * @param organizationId
      *            organizationId
      * @param flags
@@ -433,18 +432,152 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      *
      * @param repository
      *            the repository
-     * @param flags
-     *            type/way of synchronization
+     * @param softSync
+     *            the soft sync
      */
+    @SuppressWarnings("unchecked")
     private void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
+        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+
+        if (skipSync(repository, softSync)) {
+            return;
+        }
+
         if (repository.isLinked())
         {
-            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
-                    activitySynchronizer, flags);
-            synchronizer.synchronize(repository, synchronisationOperation, changesetService);
+            if (!softSync)
+            {
+                // we are doing full sync, lets delete all existing changesets
+                // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                changesetService.removeAllInRepository(repository.getId());
+                branchService.removeAllBranchHeadsInRepository(repository.getId());
+                repository.setLastCommitDate(null);
+                save(repository);
+            }
+
+            if (repository.getDvcsType().equals(GithubCommunicator.GITHUB))
+            {
+                Date synchronizationStartedAt = new Date();
+                for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
+                {
+                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
+                            branchHead.getName(), branchHead.getHead(), //
+                            synchronizationStartedAt, //
+                            null, softSync);
+                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                            SynchronizeChangesetMessage.class, //
+                            GithubSynchronizeChangesetMessageConsumer.KEY //
+                            );
+                    messagingService.publish(key, message, UUID.randomUUID().toString());
+                }
+
+            } else
+            {
+                BranchFilterInfo filterNodes = getFilterNodes(repository);
+                processBitbucketSync(repository, softSync, filterNodes);
+                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+            }
         }
+    }
+
+    private boolean skipSync(Repository repository, boolean softSync)
+    {
+        Progress progress = synchronizer.getProgress(repository.getId());
+        return progress != null && !progress.isFinished();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
+    {
+        List<BranchHead> newBranchHeads = filterNodes.newHeads;
+
+        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
+        {
+            log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
+            Date synchronizationStartedAt = new Date();
+            for (BranchHead branchHead : newBranchHeads)
+            {
+                OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
+                        branchHead.getName(), branchHead.getHead(), //
+                        synchronizationStartedAt, //
+                        null, newBranchHeads, softSync);
+                MessageKey<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
+                        OldBitbucketSynchronizeCsetMsg.class, //
+                        OldBitbucketSynchronizeCsetMsgConsumer.KEY //
+                        );
+                messagingService.publish(key, message, UUID.randomUUID().toString());
+            }
+        } else
+        {
+            if (CollectionUtils.isEmpty(getInclude(filterNodes))) {
+                log.debug("No new changesets detected for repository [{}].", repository.getSlug());
+                return;
+            }
+            MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+                    BitbucketSynchronizeChangesetMessage.class,
+                    BitbucketSynchronizeChangesetMessageConsumer.KEY
+                    );
+            Date synchronizationStartedAt = new Date();
+
+            BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
+                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync);
+
+            messagingService.publish(key, message, UUID.randomUUID().toString());
+        }
+    }
+
+    private Collection<String> getInclude(BranchFilterInfo filterNodes)
+    {
+        List<String> newNodes = extractBranchHeads(filterNodes.newHeads);
+        if (newNodes != null && filterNodes.oldHeadsHashes != null)
+        {
+            newNodes.removeAll(filterNodes.oldHeadsHashes);
+        }
+        return newNodes;
+    }
+
+    protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads, List<BranchHead> oldHeads)
+    {
+        branchService.updateBranchHeads(repo, newBranchHeads, oldHeads);
+    }
+
+    protected BranchFilterInfo getFilterNodes(Repository repository)
+    {
+        CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) communicatorProvider
+                .getCommunicator(BitbucketCommunicator.BITBUCKET);
+        BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
+        List<BranchHead> newBranches = communicator.getBranches(repository);
+        List<BranchHead> oldBranches = communicator.getOldBranches(repository);
+
+        List<String> exclude = extractBranchHeads(oldBranches);
+
+        BranchFilterInfo filter = new BranchFilterInfo(newBranches, oldBranches, exclude);
+        return filter;
+    }
+
+    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
+    {
+        if (branchHeads == null)
+        {
+            return null;
+        }
+        List<String> result = new ArrayList<String>();
+        for (BranchHead branchHead : branchHeads)
+        {
+            result.add(branchHead.getHead());
+        }
+        return result;
+    }
+
+    private Map<String, String> asNodeToBranches(List<BranchHead> list)
+    {
+        Map<String, String> changesetBranch = new HashMap<String, String>();
+        for (BranchHead branchHead : list)
+        {
+            changesetBranch.put(branchHead.getHead(), branchHead.getName());
+        }
+        return changesetBranch;
     }
 
     /**
@@ -561,7 +694,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Gets the post commit url.
-     * 
+     *
      * @param repo
      *            the repo
      * @return the post commit url
@@ -627,7 +760,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes the postcommit hook.
-     * 
+     *
      * @param repository
      *            the repository
      */
@@ -640,8 +773,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             communicator.removePostcommitHook(repository, postCommitUrl);
         } catch (Exception e)
         {
-            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
-                    + ", slug = " + repository.getRepositoryUrl(), e);
+            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+                            + repository.getRepositoryUrl(), e);
         }
     }
 
@@ -725,4 +858,19 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
     }
+    private static class BranchFilterInfo {
+
+        private List<BranchHead> newHeads;
+        private List<BranchHead> oldHeads;
+        private List<String> oldHeadsHashes;
+
+        public BranchFilterInfo(List<BranchHead> newHeads, List<BranchHead> oldHeads, List<String> oldHeadsHashes)
+        {
+            super();
+            this.newHeads = newHeads;
+            this.oldHeads = oldHeads;
+            this.oldHeadsHashes = oldHeadsHashes;
+        }
+    }
+
 }

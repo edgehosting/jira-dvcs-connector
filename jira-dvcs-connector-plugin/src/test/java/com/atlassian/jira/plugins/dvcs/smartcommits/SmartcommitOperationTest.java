@@ -1,20 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
-import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.Executors;
 
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -27,14 +20,22 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.concurrent.Executors;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
+import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 @SuppressWarnings("all")
 public class SmartcommitOperationTest
@@ -53,7 +54,7 @@ public class SmartcommitOperationTest
 
     @Mock
     private ActiveObjects activeObjectsMock;
-    
+
     @Mock
     private QueryHelper queryHelper;
 
@@ -82,7 +83,6 @@ public class SmartcommitOperationTest
 		changesetDao = new ChangesetDaoImpl(activeObjectsMock, queryHelper);
 
         synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-		operation = new SmartcommitOperation(changesetDao, commitMessageParser, smartcommitsServiceMock, synchronizer, repositoryMock, changesetServiceMock);
 
         final ChangesetMapping sampleChangesetMapping = (ChangesetMapping) sampleChangesetMapping();
 
@@ -115,6 +115,8 @@ public class SmartcommitOperationTest
 	@Test
 	public void testRunOperation ()
     {
+	    operation = new SmartcommitOperation(changesetDao, commitMessageParser, smartcommitsServiceMock, new DefaultProgress(), repositoryMock, changesetServiceMock);
+
         when(smartcommitsServiceMock.doCommands(any(CommitCommands.class))).thenReturn(new CommandsResults());
 
 		operation.run();
@@ -134,6 +136,8 @@ public class SmartcommitOperationTest
         when(smartcommitsServiceMock.doCommands(any(CommitCommands.class))).thenReturn(commandsResults);
 
         final DefaultProgress progress = new DefaultProgress();
+        operation = new SmartcommitOperation(changesetDao, commitMessageParser, smartcommitsServiceMock, progress, repositoryMock, changesetServiceMock);
+
         synchronizer.putProgress(repositoryMock, progress);
 
         when(changesetServiceMock.getCommitUrl((Repository) any(), (Changeset) any())).thenReturn("http://host/path");

@@ -84,7 +84,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
                     // at the end of execution
                     if (operation.isSoftSync())
                     {
-                        smartcommitsChangesetsProcessor.startProcess(DefaultSynchronizer.this, repository, changesetService);
+                       // smartcommitsChangesetsProcessor.startProcess(DefaultSynchronizer.this, repository, changesetService);
                     }
                     //
 

@@ -73,6 +73,7 @@ public class DefaultProgress implements Progress
         smartCommitErrors.clear();
     }
 
+    @Override
     public void finish()
     {
         finished = true;

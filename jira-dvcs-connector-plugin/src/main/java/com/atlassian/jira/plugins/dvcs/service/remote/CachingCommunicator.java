@@ -11,6 +11,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -26,7 +27,7 @@ import com.google.common.collect.MapMaker;
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    private final DvcsCommunicator delegate;
+    private DvcsCommunicator delegate;
 
     private class UserKey
     {
@@ -113,8 +114,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         }
 
                     });
-
-    public CachingCommunicator(DvcsCommunicator delegate)
+    
+    public CachingCommunicator()
+    {
+    }
+    
+    public void setDelegate(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
     }
@@ -178,6 +183,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getRepositories(organization);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<BranchHead> getBranches(Repository repository)
+    {
+        return delegate.getBranches(repository);
+    }
 
     @Override
     public Changeset getChangeset(Repository repository, String node)
@@ -237,5 +251,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public DvcsUser getTokenOwner(Organization organization)
     {
         return delegate.getTokenOwner(organization);
+    }
+
+    @Override
+    public DvcsCommunicator getDelegate()
+    {
+        return delegate;
     }
 }

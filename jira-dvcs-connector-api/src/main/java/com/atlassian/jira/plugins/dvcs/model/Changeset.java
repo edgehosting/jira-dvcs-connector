@@ -10,8 +10,11 @@ import java.util.List;
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-
+    
     private int id;
+    
+    private Date synchronizedAt;
+    
     private int repositoryId;
     private String node;
     private String rawAuthor;
@@ -52,6 +55,16 @@ public class Changeset
         this.files = files;
         this.allFileCount = allFileCount;
         this.authorEmail = authorEmail;
+    }
+    
+    public Date getSynchronizedAt()
+    {
+        return synchronizedAt;
+    }
+    
+    public void setSynchronizedAt(Date synchronizedAt)
+    {
+        this.synchronizedAt = synchronizedAt;
     }
 
     public int getRepositoryId()

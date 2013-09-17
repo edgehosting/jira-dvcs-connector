@@ -19,6 +19,7 @@ public class BitbucketBranch
     private String changeset;
     private List<String> heads;
     private String name;
+    private boolean mainbranch;
     
     public String getName()
     {
@@ -43,5 +44,13 @@ public class BitbucketBranch
     public void setHeads(List<String> heads)
     {
         this.heads = heads;
+    }
+    public boolean isMainbranch()
+    {
+        return mainbranch;
+    }
+    public void setMainbranch(boolean mainbranch)
+    {
+        this.mainbranch = mainbranch;
     }
 }

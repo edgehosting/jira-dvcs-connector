@@ -33,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -59,10 +60,19 @@ public class BitbucketCommunicator implements DvcsCommunicator
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
-    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
-
+    //
+    //
+    //
+    //
+    // TODO 5 or testing, change to 50 
+    //
+    //
+    //
+    //
+    private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 5);
+    
     /** The Constant BITBUCKET. */
-    private static final String BITBUCKET = "bitbucket";
+    public static final String BITBUCKET = "bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
@@ -74,7 +84,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     /**
      * The Constructor.
-     * 
+     *
      * @param bitbucketLinker
      * @param pluginAccessor
      * @param oauth
@@ -91,7 +101,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.branchService = branchService;
         this.changesetCache = changesetCache;
     }
-
 
     /**
      * {@inheritDoc}
@@ -182,7 +191,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.InvalidResponseException("Could not get changeset [" + node + "] from " + repository.getRepositoryUrl(), e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -195,7 +204,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(repository.getOrgName(),
                     repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
-            // merge it all 
+            // merge it all
             return DetailedChangesetTransformer.fromChangesetAndBitbucketDiffstats(changeset, changesetDiffStat);
         } catch (BitbucketRequestException e)
         {
@@ -217,7 +226,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             //remote branch head list
-            final List<BranchHead> newBranchHeads = getBranchHeads(repository);
+            final List<BranchHead> newBranchHeads = getBranches(repository);
             log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
             if (newBranchHeads.isEmpty())
             {
@@ -290,6 +299,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
+    public BitbucketChangesetPage getChangesetsForPage(int page, Repository repository, List<String> includeNodes, List<String> excludeNodes)
+    {
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+        return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
+                includeNodes, excludeNodes);
+    }
+
+    public List<BranchHead> getOldBranches(Repository repository)
+    {
+        return branchService.getListOfBranchHeads(repository);
+    }
+
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
         if (branchHeads == null)
@@ -306,27 +327,28 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return result;
     }
 
-    private List<BranchHead> getBranchHeads(Repository repository)
+    @Override
+    public List<BranchHead> getBranches(Repository repository)
     {
         List<BranchHead> branches = new ArrayList<BranchHead>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
-                
-        List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
-        for (BitbucketBranch bitbucketBranch : bitbucketBranches)
-        {
-            List<String> heads = bitbucketBranch.getHeads();
-            for (String head : heads)
+
+            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
             {
-                // make sure "default" branch is first in the list
-                if ("default".equals(bitbucketBranch.getName()))
+                List<String> heads = bitbucketBranch.getHeads();
+                for (String head : heads)
                 {
-                    branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
-                } else
-                {
-                    branches.add(new BranchHead(bitbucketBranch.getName(), head));
+                    // make sure "default" branch is first in the list
+                    if (bitbucketBranch.isMainbranch())
+                    {
+                        branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
+                    } else
+                    {
+                        branches.add(new BranchHead(bitbucketBranch.getName(), head));
+                    }
                 }
             }
-        }
 
         return branches;
     }
@@ -342,7 +364,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         });
     }
-    
+
     private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
     {
         try
@@ -360,7 +382,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */

@@ -93,6 +93,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetToChangesetMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping</entity>
@@ -121,7 +122,12 @@
         <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping</entity>
         
-        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
+         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
+        
+        <!-- Messaging -->
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
 
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -373,7 +379,7 @@
     </component>
 
     <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
-               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProviderImpl">
         <description>dvcsCommunicatorProvider</description>
     </component>
 
@@ -439,6 +445,10 @@
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory</interface>
     </component>
+    
+    <component key="linkedIssueService" class="com.atlassian.jira.plugins.dvcs.service.LinkedIssueServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.LinkedIssueService</interface>
+    </component>
 
     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
                class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
@@ -452,6 +462,32 @@
 
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
+
+	 <!-- Messaging -->
+    <component key="messageRouter" class="com.atlassian.jira.plugins.dvcs.service.MessageRouterImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessageRouter</interface>
+    </component>
+    <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
+    </component>
+    <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeOldBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeOldBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">
