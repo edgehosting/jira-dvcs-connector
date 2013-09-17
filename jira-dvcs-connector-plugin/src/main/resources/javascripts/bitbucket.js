@@ -137,6 +137,7 @@ function updateSyncStatus(repo) {
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").removeClass("syncrepoiconqueue").addClass(syncRepoIcon);
+    syncRepoIconElement.tooltip({aria:true});
     syncStatusDiv.html(syncStatusHtml);
 }
 
