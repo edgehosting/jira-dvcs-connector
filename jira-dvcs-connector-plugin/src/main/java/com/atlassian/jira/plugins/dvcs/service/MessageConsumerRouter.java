@@ -104,22 +104,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
         @Override
         public void run()
         {
-            // FIXME: AO can not be access immediately - it is available lazy
-            try
-            {
-                activeObjects.count(MessageMapping.class);
-
-            } catch (PluginException e)
-            {
-                try
-                {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ie)
-                {
-                    // nothing to do
-                }
-
-            }
+            waitForAo();
 
             while (!stop)
             {
@@ -188,6 +173,32 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
                     }
                 }
             }
+        }
+
+        protected void waitForAo()
+        {
+            // FIXME: AO can not be access immediately - it is available lazy
+            boolean aoInitialized = false;
+            do
+            {
+                try
+                {
+                    LOGGER.debug("Attempting to wait for AO.");
+                    activeObjects.count(MessageMapping.class);
+                    aoInitialized = true;
+                } catch (PluginException e)
+                {
+                    try
+                    {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ie)
+                    {
+                        // nothing to do
+                    }
+
+                }
+            } while (!aoInitialized);
+            LOGGER.debug("Attempting to wait for AO - DONE.");
         }
 
         private int getRetryCount(MessageMapping foundItem)

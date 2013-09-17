@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.model.SmartCommitError;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.

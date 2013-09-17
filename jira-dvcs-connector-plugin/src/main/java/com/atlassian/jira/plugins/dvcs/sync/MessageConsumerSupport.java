@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -98,6 +99,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         } catch (Exception e)
         {
             messagingService.fail(this, messageId);
+            ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
             LOGGER.error(e.getMessage(), e);
         } finally
         {

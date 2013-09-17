@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -490,6 +491,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             }
         } else
         {
+            if (CollectionUtils.isEmpty(getInclude(filterNodes))) {
+                log.debug("No new changesets detected for repository [{}].", repository.getSlug());
+                return;
+            }
             MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
                     BitbucketSynchronizeChangesetMessage.class,
                     BitbucketSynchronizeChangesetMessageConsumer.KEY
@@ -501,6 +506,16 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             messagingService.publish(key, message, UUID.randomUUID().toString());
         }
+    }
+
+    private Collection<String> getInclude(BranchFilterInfo filterNodes)
+    {
+        List<String> newNodes = extractBranchHeads(filterNodes.newHeads);
+        if (newNodes != null && filterNodes.oldHeadsHashes != null)
+        {
+            newNodes.removeAll(filterNodes.oldHeadsHashes);
+        }
+        return newNodes;
     }
 
     protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads, List<BranchHead> oldHeads)
