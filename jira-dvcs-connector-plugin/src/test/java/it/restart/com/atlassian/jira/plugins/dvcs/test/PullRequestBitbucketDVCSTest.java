@@ -366,7 +366,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         // Give a time to Bitbucket after creation of pullRequest
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException e)
         {
             // nop

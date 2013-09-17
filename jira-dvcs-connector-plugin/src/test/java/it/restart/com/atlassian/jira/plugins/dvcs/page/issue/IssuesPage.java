@@ -107,7 +107,10 @@ public class IssuesPage implements Page
         moreCriteriaButton.click();
         moreCriteriaDialog.add("summary", "Summary");
 
-        summaryCriteriaButton.click();
+        if (!summaryCriteriaDialog.isVisible())
+        {
+            summaryCriteriaButton.click();
+        }
         summaryCriteriaDialog.fill(summary);
         summaryCriteriaDialog.update();
     }
@@ -139,6 +142,7 @@ public class IssuesPage implements Page
         {
             IssuesPageIssueRow nextIssueRow = issueRowsIterator.next();
             nextIssueRow.delete();
+            Poller.waitUntilTrue(deleteConfirmationDialog.timed().isVisible());
             deleteConfirmationDialog.confirm();
         }
     }

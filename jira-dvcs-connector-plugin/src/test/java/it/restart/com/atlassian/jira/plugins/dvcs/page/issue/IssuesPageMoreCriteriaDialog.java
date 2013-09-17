@@ -51,6 +51,10 @@ public class IssuesPageMoreCriteriaDialog extends WebDriverElement
         if (!checkbox.isSelected())
         {
             checkbox.select();
+        } else
+        {
+            checkbox.uncheck();
+            checkbox.select();
         }
     }
 
