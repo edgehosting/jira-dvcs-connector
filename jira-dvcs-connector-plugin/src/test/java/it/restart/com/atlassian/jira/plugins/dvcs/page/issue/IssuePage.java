@@ -67,9 +67,6 @@ public class IssuePage implements Page
     {
         prTabLink.click();
 
-        // refreshing the page because of https://jdog.atlassian.net/browse/JDEV-24925
-        webDriver.navigate().refresh();
-
         // AJAX progress bar displaying takes some time
         try
         {
@@ -99,6 +96,9 @@ public class IssuePage implements Page
         {
             // nothing to do
         }
+
+        // refreshing the page because of https://jdog.atlassian.net/browse/JDEV-24925
+        webDriver.navigate().refresh();
     }
 
     /**
