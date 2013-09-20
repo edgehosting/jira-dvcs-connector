@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -300,7 +301,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         final Set<String> result = new HashSet<String>();
         for (String issueKey : issueKeys)
         {
-            result.addAll(SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issueManager.getIssueObject(issueKey)));
+            MutableIssue issue = issueManager.getIssueObject(issueKey);
+            if (issue == null)
+            {
+                // the issue has not been found, but we will use the issueKey
+                result.add(issueKey);
+            } else
+            {
+                result.addAll(SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue));
+            }
         }
         return result;
     }
