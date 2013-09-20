@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -112,7 +113,7 @@ public final class TestSmartcommits
 
         waitUntilProgressEnds(synchronizer);
 
-        verify(changesetsProcessorMock).startProcess(synchronizer, repositoryMock, changesetServiceMock);
+        verify(changesetsProcessorMock, never()).startProcess(synchronizer, repositoryMock, changesetServiceMock);
         verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
 
         assertThat(savedChangesetCaptor.getAllValues().get(0).isSmartcommitAvaliable()).isNull();
