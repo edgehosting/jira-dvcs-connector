@@ -233,7 +233,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         // Give a time to Bitbucket after creation of pullRequest
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         } catch (InterruptedException e)
         {
             // nop
@@ -274,7 +274,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         // Give a time to Bitbucket after declining of pullRequest
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         } catch (InterruptedException e)
         {
             // nop
@@ -315,7 +315,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         // Give a time to Bitbucket after merging of pullRequest
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         } catch (InterruptedException e)
         {
             // nop
@@ -334,7 +334,18 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     protected String commentPullRequest(String pullRequestUrl, String comment)
     {
         BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-        return pullRequestPage.commentPullRequest(comment);
+        String url = pullRequestPage.commentPullRequest(comment);
+
+        // Give a time to Bitbucket after commenting of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+
+        return url;
     }
 
     protected String getDefaultBranchName()
