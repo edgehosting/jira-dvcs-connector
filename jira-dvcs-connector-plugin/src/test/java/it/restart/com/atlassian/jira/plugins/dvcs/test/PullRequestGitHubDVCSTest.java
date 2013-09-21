@@ -101,7 +101,7 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Override
     protected void destroyOAuthSettings(OAuth oAuth)
     {
-        GithubOAuthPage gitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class, oAuth.applicationId);
+        GithubOAuthPage gitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(oAuth.applicationId, GithubOAuthPage.class);
         gitHubOAuthPage.removeConsumer();
     }
 
