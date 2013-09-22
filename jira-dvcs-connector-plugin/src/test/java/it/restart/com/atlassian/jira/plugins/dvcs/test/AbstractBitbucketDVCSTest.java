@@ -216,6 +216,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
         String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
         return url;
     }
     
@@ -224,6 +232,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(forkOwner, repositoryName));
         String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
 
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
         return url;
     }
     
@@ -256,6 +272,15 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
         pullRequestPage.declinePullRequest();
+
+        // Give a time to Bitbucket after declining of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
     }
     
     /**
@@ -288,6 +313,15 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
         pullRequestPage.mergePullRequest();
+
+        // Give a time to Bitbucket after merging of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
     }
     
     /**
@@ -303,6 +337,15 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
         String url = pullRequestPage.commentPullRequest(comment);
+
+        // Give a time to Bitbucket after commenting of pullRequest
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
 
         return url;
     }
