@@ -517,7 +517,7 @@ public class RootResource
 
     @GET
     @Path("/jira-dev/detail")
-    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({ MediaType.APPLICATION_JSON })
     public Response commits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
     {
         if (type != null && !"repository".equals(type))
