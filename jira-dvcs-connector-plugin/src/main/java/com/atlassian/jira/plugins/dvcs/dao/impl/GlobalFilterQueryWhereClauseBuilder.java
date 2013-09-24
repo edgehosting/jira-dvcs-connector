@@ -121,6 +121,7 @@ public class GlobalFilterQueryWhereClauseBuilder
         builder.append(" ").append(operator).append(" (");
         final Iterator<String> valuesIterator = values.iterator();
         int valuesInQuery = 0;
+        boolean overThousandValues = false;
         while(valuesIterator.hasNext())
         {
             final String value = valuesIterator.next();
@@ -134,12 +135,13 @@ public class GlobalFilterQueryWhereClauseBuilder
                 ++valuesInQuery;
                 if (valuesInQuery >= 1000)
                 {
+                    overThousandValues = true;
                     valuesInQuery = 0;
                     builder.append(") ").append(joinWithOperator).append(" ").append(column).append(" ").append(operator).append(" (");
                 }
             }
         }
         builder.append(")");
-        return builder;
+        return overThousandValues ? builder.insert(0, "(").append(")") : builder;
     }
 }
