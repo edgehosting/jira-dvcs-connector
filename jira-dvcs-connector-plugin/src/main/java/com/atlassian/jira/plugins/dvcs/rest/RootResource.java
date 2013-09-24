@@ -1,10 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -21,6 +23,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestObject;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestOrganization;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestType;
+import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +51,7 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.plugins.rest.common.Status;
@@ -65,7 +79,11 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
+    private final ChangesetService changesetService;
+
     private final AccountsConfigService ondemandAccountConfig;
+
+    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     /**
      * The Constructor.
@@ -75,11 +93,13 @@ public class RootResource
      * @param repositoryService
      *            the repository service
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService,
-            AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, ChangesetService changesetService,
+            IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
+        this.changesetService = changesetService;
+        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 
@@ -493,5 +513,61 @@ public class RootResource
         }
 
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/commits/{key}")
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response commits(@PathParam("key") String issueKey)
+    {
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
+        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys);
+
+        ListMultimap<Integer, RestChangeset> changesetTorepositoryMapping = ArrayListMultimap.create();
+
+        for (Changeset changeset : changesets)
+        {
+            RestChangeset restChangeset = new RestChangeset();
+            restChangeset.setAuthor(new RestAuthor(changeset.getAuthor(), changeset.getAuthorEmail()));
+            restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
+            restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
+            restChangeset.setId(changeset.getRawNode());
+            restChangeset.setMessage(changeset.getMessage());
+
+            for (int repositoryId : changeset.getRepositoryIds())
+            {
+                changesetTorepositoryMapping.put(repositoryId, restChangeset);
+            }
+        }
+
+        List<RestObject> restObjects = new ArrayList<RestObject>();
+        for (int repositoryId : changesetTorepositoryMapping.keySet())
+        {
+            Repository repository = repositoryService.get(repositoryId);
+
+            RestRepository restRepository = new RestRepository();
+            restRepository.setId(repositoryId);
+            restRepository.setName(repository.getName());
+            restRepository.setSlug(repository.getSlug());
+            restRepository.setUrl(repository.getRepositoryUrl());
+
+            RestOrganization restOrganization = new RestOrganization();
+
+            Organization organization = organizationService.get(repository.getOrganizationId(), false);
+
+            restOrganization.setName(organization.getName());
+            restOrganization.setDvcsType(organization.getDvcsType());
+            restOrganization.setId(organization.getId());
+            restRepository.setOrganization(restOrganization);
+
+            restObjects.add(new RestObject(restRepository, new ArrayList<RestChangeset>(changesetTorepositoryMapping.get(repositoryId))));
+        }
+
+        RestChangesets result = new RestChangesets();
+        result.setType(new RestType("repository"));
+        result.setCount(changesetTorepositoryMapping.size());
+        result.setObjects(restObjects);
+        return Response.ok(result).build();
+
     }
 }

@@ -13,6 +13,7 @@ public class Changeset
 
     private int id;
     private int repositoryId;
+    private List<Integer> repositoryIds;
     private String node;
     private String rawAuthor;
     private String author;
@@ -62,6 +63,16 @@ public class Changeset
     public void setRepositoryId(int repositoryId)
     {
         this.repositoryId = repositoryId;
+    }
+
+    public List<Integer> getRepositoryIds()
+    {
+        return repositoryIds;
+    }
+
+    public void setRepositoryIds(final List<Integer> repositoryIds)
+    {
+        this.repositoryIds = repositoryIds;
     }
 
     public String getNode()
@@ -251,5 +262,4 @@ public class Changeset
 	{
 		this.id = id;
 	}
-
 }

@@ -48,9 +48,14 @@ public class ChangesetDaoImpl implements ChangesetDao
         this.queryHelper = queryHelper;
     }
 
-    private List<Changeset> transform(ChangesetMapping changesetMapping)
+    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
     {
-        return transformer.transform(changesetMapping);
+        return transformer.transform(changesetMapping, defaultRepositoryId);
+    }
+
+    private Changeset transform(ChangesetMapping changesetMapping)
+    {
+        return transformer.transform(changesetMapping, 0);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
@@ -59,7 +64,11 @@ public class ChangesetDaoImpl implements ChangesetDao
 
         for (ChangesetMapping changesetMapping : changesetMappings)
         {
-            changesets.addAll(transform(changesetMapping));
+            Changeset changeset = transform(changesetMapping);
+            if (changeset != null)
+            {
+                changesets.add(changeset);
+            }
         }
 
         return changesets;
@@ -241,19 +250,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         chm.save();
     }
 
-    private Changeset filterByRepository(List<Changeset> changesets, int repositoryId)
-    {
-        for (Changeset changeset : changesets)
-        {
-            if (changeset.getRepositoryId() == repositoryId)
-            {
-                return changeset;
-            }
-        }
-
-        return null;
-    }
-
     private void associateIssuesToChangeset(ChangesetMapping changesetMapping, Set<String> extractedIssues)
     {
         // remove all assoc issues-changeset
@@ -318,8 +314,9 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
         });
 
-        final List<Changeset> changesets = transform(changesetMapping);
-        return changesets != null ? filterByRepository(changesets, repositoryId) : null;
+        final Changeset changeset = transform(changesetMapping, repositoryId);
+
+        return changeset;
     }
 
     @Override
