@@ -516,10 +516,15 @@ public class RootResource
     }
 
     @GET
-    @Path("/commits/{key}")
+    @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response commits(@PathParam("key") String issueKey)
+    public Response commits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
     {
+        if (type != null && !"repository".equals(type))
+        {
+            return Status.badRequest().message("Type '" + type + "' is not supported.").response();
+        }
+
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys);
 
