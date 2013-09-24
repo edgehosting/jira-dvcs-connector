@@ -167,7 +167,7 @@ public class SmartcommitOperationTest
         RepositoryMapping repositoryMappingMock = Mockito.mock(RepositoryMapping.class);
 
         when(repositoryMappingMock.getID()).thenReturn(REPOSITORY_ID);
-
+        when(repositoryMappingMock.isLinked()).thenReturn(true);
         return repositoryMappingMock;
     }
 }
