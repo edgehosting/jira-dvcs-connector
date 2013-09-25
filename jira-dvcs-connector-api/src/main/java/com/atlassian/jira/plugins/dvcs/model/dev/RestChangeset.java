@@ -15,6 +15,8 @@ public class RestChangeset
     private long authorTimestamp;
     private String message;
     private List<RestChangeset> parents;
+    private String branch;
+    private int fileCount;
 
     public RestChangeset()
     {
@@ -78,5 +80,25 @@ public class RestChangeset
     public void setParents(final List<RestChangeset> parents)
     {
         this.parents = parents;
+    }
+
+    public String getBranch()
+    {
+        return branch;
+    }
+
+    public void setBranch(final String branch)
+    {
+        this.branch = branch;
+    }
+
+    public int getFileCount()
+    {
+        return fileCount;
+    }
+
+    public void setFileCount(final int fileCount)
+    {
+        this.fileCount = fileCount;
     }
 }

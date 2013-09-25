@@ -550,6 +550,8 @@ public class RootResource
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
             restChangeset.setId(changeset.getRawNode());
             restChangeset.setMessage(changeset.getMessage());
+            restChangeset.setBranch(changeset.getBranch());
+            restChangeset.setFileCount(changeset.getAllFileCount());
 
             for (int repositoryId : changeset.getRepositoryIds())
             {
