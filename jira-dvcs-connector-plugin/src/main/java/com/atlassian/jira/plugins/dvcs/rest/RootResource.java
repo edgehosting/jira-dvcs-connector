@@ -1,5 +1,41 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
+import com.atlassian.jira.plugins.dvcs.model.SentData;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestObject;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestOrganization;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestType;
+import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.atlassian.plugins.rest.common.Status;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -22,40 +57,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestObject;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestOrganization;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestType;
-import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
-import com.atlassian.jira.plugins.dvcs.model.SentData;
-import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
-import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.plugins.rest.common.Status;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
  * The Class RootResource.
@@ -529,11 +530,22 @@ public class RootResource
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys);
 
         ListMultimap<Integer, RestChangeset> changesetTorepositoryMapping = ArrayListMultimap.create();
+        Cache<Integer, Repository> repositories = CacheBuilder.newBuilder().build(new CacheLoader<Integer, Repository>()
+        {
+            public Repository load(Integer repositoryId)
+            {
+                return repositoryService.get(repositoryId);
+            }
+        });
 
         for (Changeset changeset : changesets)
         {
+            Repository repository = null;
+            repository = repositories.getUnchecked(changeset.getRepositoryId());
+
+            DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
             RestChangeset restChangeset = new RestChangeset();
-            restChangeset.setAuthor(new RestAuthor(changeset.getAuthor(), changeset.getAuthorEmail()));
+            restChangeset.setAuthor(new RestAuthor(user.getFullName(), user.getUsername(), changeset.getAuthorEmail(), user.getAvatar(), user.getUrl()));
             restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
             restChangeset.setId(changeset.getRawNode());
@@ -548,7 +560,8 @@ public class RootResource
         List<RestObject> restObjects = new ArrayList<RestObject>();
         for (int repositoryId : changesetTorepositoryMapping.keySet())
         {
-            Repository repository = repositoryService.get(repositoryId);
+            Repository repository = null;
+            repository = repositories.getUnchecked(repositoryId);
 
             RestRepository restRepository = new RestRepository();
             restRepository.setId(repositoryId);
