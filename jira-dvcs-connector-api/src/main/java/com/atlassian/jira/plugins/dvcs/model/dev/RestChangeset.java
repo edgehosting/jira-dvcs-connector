@@ -17,6 +17,8 @@ public class RestChangeset
     private List<RestChangeset> parents;
     private String branch;
     private int fileCount;
+    private String url;
+    private boolean isMerge;
 
     public RestChangeset()
     {
@@ -100,5 +102,25 @@ public class RestChangeset
     public void setFileCount(final int fileCount)
     {
         this.fileCount = fileCount;
+    }
+
+    public String getUrl()
+    {
+        return url;
+    }
+
+    public void setUrl(final String url)
+    {
+        this.url = url;
+    }
+
+    public boolean isMerge()
+    {
+        return isMerge;
+    }
+
+    public void setMerge(final boolean merge)
+    {
+        isMerge = merge;
     }
 }

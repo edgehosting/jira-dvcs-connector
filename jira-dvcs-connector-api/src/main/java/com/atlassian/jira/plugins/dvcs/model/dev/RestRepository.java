@@ -18,6 +18,7 @@ public class RestRepository
 //    private boolean forkable;
     private RestOrganization organization;
     private String url;
+    private String avatar;
 
     public RestRepository()
     {
@@ -91,5 +92,15 @@ public class RestRepository
     public void setUrl(final String url)
     {
         this.url = url;
+    }
+
+    public String getAvatar()
+    {
+        return avatar;
+    }
+
+    public void setAvatar(final String avatar)
+    {
+        this.avatar = avatar;
     }
 }

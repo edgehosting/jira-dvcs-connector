@@ -553,6 +553,17 @@ public class RootResource
             restChangeset.setBranch(changeset.getBranch());
             restChangeset.setFileCount(changeset.getAllFileCount());
 
+            restChangeset.setUrl(changesetService.getCommitUrl(repository, changeset));
+
+            if (changeset.getParents() == null)
+            {
+                // no parents are set, it means that the length of the parent json is too long, so it was large merge (e.g Octopus merge)
+                restChangeset.setMerge(true);
+            } else
+            {
+                restChangeset.setMerge(changeset.getParents().size() > 1);
+            }
+
             for (int repositoryId : changeset.getRepositoryIds())
             {
                 changesetTorepositoryMapping.put(repositoryId, restChangeset);
@@ -570,6 +581,7 @@ public class RootResource
             restRepository.setName(repository.getName());
             restRepository.setSlug(repository.getSlug());
             restRepository.setUrl(repository.getRepositoryUrl());
+            restRepository.setAvatar(repository.getLogo());
 
             RestOrganization restOrganization = new RestOrganization();
 
