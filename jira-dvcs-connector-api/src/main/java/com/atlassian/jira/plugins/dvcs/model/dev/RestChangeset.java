@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -9,39 +8,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class RestChangeset
 {
-    private String id;
-    private String displayId;
     private RestAuthor author;
     private long authorTimestamp;
-    private String message;
-    private List<RestChangeset> parents;
-    private String branch;
+    private String displayId;
+    private String id;
     private int fileCount;
+    private String message;
     private String url;
-    private boolean isMerge;
+    private boolean merge;
 
     public RestChangeset()
     {
-    }
-
-    public String getId()
-    {
-        return id;
-    }
-
-    public void setId(final String id)
-    {
-        this.id = id;
-    }
-
-    public String getDisplayId()
-    {
-        return displayId;
-    }
-
-    public void setDisplayId(final String displayId)
-    {
-        this.displayId = displayId;
     }
 
     public RestAuthor getAuthor()
@@ -64,34 +41,24 @@ public class RestChangeset
         this.authorTimestamp = authorTimestamp;
     }
 
-    public String getMessage()
+    public String getDisplayId()
     {
-        return message;
+        return displayId;
     }
 
-    public void setMessage(final String message)
+    public void setDisplayId(final String displayId)
     {
-        this.message = message;
+        this.displayId = displayId;
     }
 
-    public List<RestChangeset> getParents()
+    public String getId()
     {
-        return parents;
+        return id;
     }
 
-    public void setParents(final List<RestChangeset> parents)
+    public void setId(final String id)
     {
-        this.parents = parents;
-    }
-
-    public String getBranch()
-    {
-        return branch;
-    }
-
-    public void setBranch(final String branch)
-    {
-        this.branch = branch;
+        this.id = id;
     }
 
     public int getFileCount()
@@ -102,6 +69,16 @@ public class RestChangeset
     public void setFileCount(final int fileCount)
     {
         this.fileCount = fileCount;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(final String message)
+    {
+        this.message = message;
     }
 
     public String getUrl()
@@ -116,11 +93,11 @@ public class RestChangeset
 
     public boolean isMerge()
     {
-        return isMerge;
+        return merge;
     }
 
     public void setMerge(final boolean merge)
     {
-        isMerge = merge;
+        this.merge = merge;
     }
 }

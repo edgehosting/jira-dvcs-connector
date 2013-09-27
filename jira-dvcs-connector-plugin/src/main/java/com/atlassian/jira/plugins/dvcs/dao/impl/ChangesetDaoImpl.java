@@ -320,7 +320,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys)
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);
@@ -336,7 +336,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
                                 .where(baseWhereClause)
-                                .order(ChangesetMapping.DATE));
+                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC": " ASC")));
 
                 return Arrays.asList(mappings);
             }

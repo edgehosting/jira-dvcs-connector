@@ -14,10 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestObject;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestOrganization;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestType;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -527,7 +524,7 @@ public class RootResource
         }
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
-        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys);
+        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
 
         ListMultimap<Integer, RestChangeset> changesetTorepositoryMapping = ArrayListMultimap.create();
         Cache<Integer, Repository> repositories = CacheBuilder.newBuilder().build(new CacheLoader<Integer, Repository>()
@@ -545,12 +542,11 @@ public class RootResource
 
             DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
             RestChangeset restChangeset = new RestChangeset();
-            restChangeset.setAuthor(new RestAuthor(user.getFullName(), user.getUsername(), changeset.getAuthorEmail(), user.getAvatar(), user.getUrl()));
+            restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
             restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
             restChangeset.setId(changeset.getRawNode());
             restChangeset.setMessage(changeset.getMessage());
-            restChangeset.setBranch(changeset.getBranch());
             restChangeset.setFileCount(changeset.getAllFileCount());
 
             restChangeset.setUrl(changesetService.getCommitUrl(repository, changeset));
@@ -570,35 +566,23 @@ public class RootResource
             }
         }
 
-        List<RestObject> restObjects = new ArrayList<RestObject>();
+        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
         for (int repositoryId : changesetTorepositoryMapping.keySet())
         {
             Repository repository = null;
             repository = repositories.getUnchecked(repositoryId);
 
             RestRepository restRepository = new RestRepository();
-            restRepository.setId(repositoryId);
             restRepository.setName(repository.getName());
-            restRepository.setSlug(repository.getSlug());
             restRepository.setUrl(repository.getRepositoryUrl());
             restRepository.setAvatar(repository.getLogo());
+            restRepository.setCommits(new ArrayList<RestChangeset>(changesetTorepositoryMapping.get(repositoryId)));
 
-            RestOrganization restOrganization = new RestOrganization();
-
-            Organization organization = organizationService.get(repository.getOrganizationId(), false);
-
-            restOrganization.setName(organization.getName());
-            restOrganization.setDvcsType(organization.getDvcsType());
-            restOrganization.setId(organization.getId());
-            restRepository.setOrganization(restOrganization);
-
-            restObjects.add(new RestObject(restRepository, new ArrayList<RestChangeset>(changesetTorepositoryMapping.get(repositoryId))));
+            restRepositories.add(restRepository);
         }
 
         RestChangesets result = new RestChangesets();
-        result.setType(new RestType("repository"));
-        result.setCount(changesetTorepositoryMapping.size());
-        result.setObjects(restObjects);
+        result.setRepositories(restRepositories);
         return Response.ok(result).build();
 
     }

@@ -14,41 +14,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class RestChangesets
 {
-    private int count;
-    private List<RestObject> objects;
-    private RestType type;
+    private List<RestRepository> repositories;
 
     public RestChangesets()
     {
     }
 
-    public int getCount()
+    public List<RestRepository> getRepositories()
     {
-        return count;
+        return repositories;
     }
 
-    public void setCount(final int count)
+    public void setRepositories(final List<RestRepository> repositories)
     {
-        this.count = count;
-    }
-
-    public List<RestObject> getObjects()
-    {
-        return objects;
-    }
-
-    public void setObjects(final List<RestObject> objects)
-    {
-        this.objects = objects;
-    }
-
-    public RestType getType()
-    {
-        return type;
-    }
-
-    public void setType(final RestType type)
-    {
-        this.type = type;
+        this.repositories = repositories;
     }
 }
