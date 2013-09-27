@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>1.4.2-SNAPSHOT</version>
+        <version>1.4.2.12-rc2</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
-  <version>1.4.2-SNAPSHOT </version>
+  <version>1.4.2.12-rc2 </version>
     <packaging>jar</packaging>
     <name>Jira DVCS Connector Api</name>
     <description>Jira DVCS Connector Api</description>
