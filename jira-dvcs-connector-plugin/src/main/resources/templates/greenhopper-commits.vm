@@ -1,1 +1,1 @@
-${renderedChangesetsWithHtml}.call()
+${renderingChangesetsHtmlCallback}.call()

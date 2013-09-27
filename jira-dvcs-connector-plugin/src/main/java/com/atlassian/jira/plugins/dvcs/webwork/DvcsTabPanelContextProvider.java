@@ -70,7 +70,7 @@ public class DvcsTabPanelContextProvider implements ContextProvider
 
         HashMap<String, Object> params = new HashMap<String, Object>();
 
-        params.put("renderedChangesetsWithHtml", new Callable<String>()
+        params.put("renderingChangesetsHtmlCallback", new Callable<String>()
         {
             @Override
             public String call()
