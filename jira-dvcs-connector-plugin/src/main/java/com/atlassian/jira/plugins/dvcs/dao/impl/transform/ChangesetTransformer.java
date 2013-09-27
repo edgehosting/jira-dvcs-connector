@@ -8,6 +8,9 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +22,7 @@ public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
 
-    public List<Changeset> transform(ChangesetMapping changesetMapping)
+    public Changeset transform(ChangesetMapping changesetMapping, int repositoryId)
     {
 
         if (changesetMapping == null)
@@ -32,30 +35,45 @@ public class ChangesetTransformer
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        List<Changeset> changesets = new ArrayList<Changeset>();
+        final Changeset changeset = new Changeset(repositoryId,
+                changesetMapping.getNode(),
+                changesetMapping.getRawAuthor(),
+                changesetMapping.getAuthor(),
+                changesetMapping.getDate(),
+                changesetMapping.getRawNode(),
+                changesetMapping.getBranch(),
+                changesetMapping.getMessage(),
+                parents,
+                fileData.getFiles(),
+                fileData.getFileCount(),
+                changesetMapping.getAuthorEmail());
 
-        for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories()) {
-            final Changeset changeset = new Changeset(repositoryMapping.getID(),
-                    changesetMapping.getNode(),
-                    changesetMapping.getRawAuthor(),
-                    changesetMapping.getAuthor(),
-                    changesetMapping.getDate(),
-                    changesetMapping.getRawNode(),
-                    changesetMapping.getBranch(),
-                    changesetMapping.getMessage(),
-                    parents,
-                    fileData.getFiles(),
-                    fileData.getFileCount(),
-                    changesetMapping.getAuthorEmail());
+        changeset.setId(changesetMapping.getID());
+        changeset.setVersion(changesetMapping.getVersion());
+        changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
 
-            changeset.setId(changesetMapping.getID());
-            changeset.setVersion(changesetMapping.getVersion());
-            changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
+        for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
+        {
+            if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
+            {
+                continue;
+            }
 
-            changesets.add(changeset);
+            List<Integer> repositories = changeset.getRepositoryIds();
+            if (repositories == null)
+            {
+                repositories = new ArrayList<Integer>();
+                changeset.setRepositoryIds(repositories);
+                if (changeset.getRepositoryId() == 0)
+                {
+                    changeset.setRepositoryId(repositoryMapping.getID());
+                }
+            }
+
+            repositories.add(repositoryMapping.getID());
         }
 
-        return changesets;
+        return CollectionUtils.isEmpty(changeset.getRepositoryIds())? null : changeset;
     }
 
     private List<String> parseParentsData(String parentsData)

@@ -7,13 +7,13 @@ com.atlassian.jira.dvcs.showChangesetByFork = function(node, repoId, repoName, r
 
     // hide all changesets CommitPanels
     AJS.$('#' + node + ' .CommitPanel').each(function(n, el) {
-        $(el).hide();
+        AJS.$(el).hide();
     });
 
     // show only that which is from given repository
     AJS.$('#' + node + '-' + repoId).show();
-    
-    registerForksTooltip(node, repoName, repoUrl);
+
+    com.atlassian.jira.dvcs.registerForksTooltip(node, repoName, repoUrl);
 };
 
 com.atlassian.jira.dvcs.registerForksTooltip = function(node, repoName, repoUrl) {

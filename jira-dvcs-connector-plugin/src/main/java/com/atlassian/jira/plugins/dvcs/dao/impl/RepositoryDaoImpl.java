@@ -51,6 +51,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+        repository.setLogo(repositoryMapping.getLogo());
         // set sync progress
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
 
@@ -239,6 +240,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.LINKED, repository.isLinked());
                     map.put(RepositoryMapping.DELETED, repository.isDeleted());
                     map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
+                    map.put(RepositoryMapping.LOGO, repository.getLogo());
 
                     rm = activeObjects.create(RepositoryMapping.class, map);
                     rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
@@ -252,6 +254,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setLinked(repository.isLinked());
                     rm.setDeleted(repository.isDeleted());
                     rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
+                    rm.setLogo(repository.getLogo());
 
                     rm.save();
                 }
