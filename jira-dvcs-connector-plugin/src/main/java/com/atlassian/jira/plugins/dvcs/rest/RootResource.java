@@ -23,9 +23,6 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang.BooleanUtils;
@@ -516,7 +513,7 @@ public class RootResource
     @GET
     @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response commits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
+    public Response getCommits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
     {
         if (type != null && !"repository".equals(type))
         {
@@ -527,21 +524,16 @@ public class RootResource
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
 
         ListMultimap<Integer, RestChangeset> changesetTorepositoryMapping = ArrayListMultimap.create();
-        Cache<Integer, Repository> repositories = CacheBuilder.newBuilder().build(new CacheLoader<Integer, Repository>()
-        {
-            public Repository load(Integer repositoryId)
-            {
-                return repositoryService.get(repositoryId);
-            }
-        });
+        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
 
         for (Changeset changeset : changesets)
         {
-            Repository repository = null;
-            repository = repositories.getUnchecked(changeset.getRepositoryId());
+            Repository repository = getRepository(repositories, changeset.getRepositoryId());
 
             DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
             RestChangeset restChangeset = new RestChangeset();
+            // if changeset is present in two repositories (e.g. Github and Bibucket-git),
+            // then avatar and username of the main repository will be used for all changesets
             restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
             restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
@@ -569,8 +561,7 @@ public class RootResource
         List<RestRepository> restRepositories = new ArrayList<RestRepository>();
         for (int repositoryId : changesetTorepositoryMapping.keySet())
         {
-            Repository repository = null;
-            repository = repositories.getUnchecked(repositoryId);
+            Repository repository = getRepository(repositories, repositoryId);
 
             RestRepository restRepository = new RestRepository();
             restRepository.setName(repository.getName());
@@ -584,6 +575,18 @@ public class RootResource
         RestChangesets result = new RestChangesets();
         result.setRepositories(restRepositories);
         return Response.ok(result).build();
+    }
 
+    private Repository getRepository(Map<Integer, Repository> repositories, int repositoryId)
+    {
+        Repository repository = repositories.get(repositoryId);
+
+        if (repository == null)
+        {
+            repository = repositoryService.get(repositoryId);
+            repositories.put(repositoryId, repository);
+        }
+
+        return repository;
     }
 }

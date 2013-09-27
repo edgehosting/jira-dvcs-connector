@@ -12,7 +12,9 @@ public class Changeset
     public static final int MAX_VISIBLE_FILES = 5;
 
     private int id;
+    // the main repository
     private int repositoryId;
+    // list of all repositories the changeset is in
     private List<Integer> repositoryIds;
     private String node;
     private String rawAuthor;
