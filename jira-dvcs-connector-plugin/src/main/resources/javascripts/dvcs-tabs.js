@@ -36,7 +36,7 @@ AJS.$(document).on('click', '#dvcs-commits-tabpanel.ajax-activity-content', func
 });
 
 AJS.$(document).on('click', '.dvcs-link', function(e) {
-    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.linkclick', data: {type: AJS.$(this).attr("data-link-type")}});
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.linkclick', data: {type: AJS.$(this).attr('data-link-type')}});
 });
 
 
