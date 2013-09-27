@@ -1,22 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsIssueAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.plugin.PluginParseException;
+import com.atlassian.plugin.web.ContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.plugin.PluginParseException;
-import com.atlassian.plugin.web.ContextProvider;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DvcsTabPanelContextProvider implements ContextProvider
 {
@@ -70,10 +67,10 @@ public class DvcsTabPanelContextProvider implements ContextProvider
 
         HashMap<String, Object> params = new HashMap<String, Object>();
 
-        params.put("renderingChangesetsHtmlCallback", new Callable<String>()
+        params.put("renderingChangesetsCallbackWithHtml", new Object()
         {
             @Override
-            public String call()
+            public String toString()
             {
                 if (!repositoryService.existsLinkedRepositories())
                 {
