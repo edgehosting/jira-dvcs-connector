@@ -523,24 +523,56 @@ public class RootResource
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
 
-        ListMultimap<Integer, RestChangeset> changesetTorepositoryMapping = ArrayListMultimap.create();
+        ListMultimap<Integer, Changeset> changesetTorepositoryMapping = ArrayListMultimap.create();
         Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
 
+        // group changesets by repository
         for (Changeset changeset : changesets)
         {
-            Repository repository = getRepository(repositories, changeset.getRepositoryId());
+            for (int repositoryId : changeset.getRepositoryIds())
+            {
+                changesetTorepositoryMapping.put(repositoryId, changeset);
+            }
+        }
 
+        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
+        for (int repositoryId : changesetTorepositoryMapping.keySet())
+        {
+            Repository repository = repositories.get(repositoryId);
+
+            if (repository == null)
+            {
+                repository = repositoryService.get(repositoryId);
+                repositories.put(repositoryId, repository);
+            }
+
+            RestRepository restRepository = new RestRepository();
+            restRepository.setName(repository.getName());
+            restRepository.setUrl(repository.getRepositoryUrl());
+            restRepository.setAvatar(repository.getLogo());
+            restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repositoryId)));
+
+            restRepositories.add(restRepository);
+        }
+
+        RestChangesets result = new RestChangesets();
+        result.setRepositories(restRepositories);
+        return Response.ok(result).build();
+    }
+
+    private List<RestChangeset> createCommits(Repository repository, List<Changeset> changesets)
+    {
+        List<RestChangeset> restChangesets = new ArrayList<RestChangeset>();
+        for (Changeset changeset : changesets)
+        {
             DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
             RestChangeset restChangeset = new RestChangeset();
-            // if changeset is present in two repositories (e.g. Github and Bibucket-git),
-            // then avatar and username of the main repository will be used for all changesets
             restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
             restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
             restChangeset.setId(changeset.getRawNode());
             restChangeset.setMessage(changeset.getMessage());
             restChangeset.setFileCount(changeset.getAllFileCount());
-
             restChangeset.setUrl(changesetService.getCommitUrl(repository, changeset));
 
             if (changeset.getParents() == null)
@@ -552,41 +584,9 @@ public class RootResource
                 restChangeset.setMerge(changeset.getParents().size() > 1);
             }
 
-            for (int repositoryId : changeset.getRepositoryIds())
-            {
-                changesetTorepositoryMapping.put(repositoryId, restChangeset);
-            }
+            restChangesets.add(restChangeset);
         }
 
-        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
-        for (int repositoryId : changesetTorepositoryMapping.keySet())
-        {
-            Repository repository = getRepository(repositories, repositoryId);
-
-            RestRepository restRepository = new RestRepository();
-            restRepository.setName(repository.getName());
-            restRepository.setUrl(repository.getRepositoryUrl());
-            restRepository.setAvatar(repository.getLogo());
-            restRepository.setCommits(new ArrayList<RestChangeset>(changesetTorepositoryMapping.get(repositoryId)));
-
-            restRepositories.add(restRepository);
-        }
-
-        RestChangesets result = new RestChangesets();
-        result.setRepositories(restRepositories);
-        return Response.ok(result).build();
-    }
-
-    private Repository getRepository(Map<Integer, Repository> repositories, int repositoryId)
-    {
-        Repository repository = repositories.get(repositoryId);
-
-        if (repository == null)
-        {
-            repository = repositoryService.get(repositoryId);
-            repositories.put(repositoryId, repository);
-        }
-
-        return repository;
+        return restChangesets;
     }
 }
