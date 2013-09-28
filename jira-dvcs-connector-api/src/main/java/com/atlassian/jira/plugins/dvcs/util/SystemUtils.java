@@ -116,22 +116,17 @@ public class SystemUtils
     {
         if (GET_ALL_ISSUE_KEYS_EXISTS)
         {
-            if (issue == null)
-            {
-                return Collections.emptySet();
-            }
-            
             return issueManager.getAllIssueKeys(issue.getId());
         }
         else
         {
-            // Adding previous issue keys
-            Set<String> allIssueKeys = new HashSet<String>(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
-            // adding current issue key
-            
+            Set<String> allIssueKeys = new HashSet<String>();
             if (issue != null)
             {
+                // adding current issue key
                 allIssueKeys.add(issue.getKey());
+                // Adding previous issue keys
+                allIssueKeys.addAll(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
             }
             return allIssueKeys;
         }

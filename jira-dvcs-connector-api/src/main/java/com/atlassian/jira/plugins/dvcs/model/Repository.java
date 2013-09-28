@@ -33,6 +33,7 @@ public class Repository
     private Date lastActivityDate;
     
     private String repositoryUrl;
+    private String logo;
     
     private transient Credential credential;
     private transient String orgHostUrl;
@@ -188,6 +189,16 @@ public class Repository
     public void setSync(DefaultProgress sync)
     {
         this.sync = sync;
+    }
+
+    public String getLogo()
+    {
+        return logo;
+    }
+
+    public void setLogo(final String logo)
+    {
+        this.logo = logo;
     }
 
     @Override

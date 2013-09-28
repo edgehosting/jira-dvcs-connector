@@ -33,7 +33,7 @@ public final class RepositoryTransformer {
 
                 repository.setName(bitbucketRepository.getName());
                 repository.setSlug(bitbucketRepository.getSlug());
-
+                repository.setLogo(bitbucketRepository.getLogo());
                 return repository;
             }
         });

@@ -359,6 +359,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 localRepo.setName(remoteRepo.getName());
                 localRepo.setDeleted(false); // it could be deleted before and
                 // now will be revived
+                localRepo.setLogo(remoteRepo.getLogo());
                 log.debug("Updating repository [{}]", localRepo);
                 repositoryDao.save(localRepo);
             }
