@@ -20,6 +20,7 @@ import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
@@ -121,6 +122,7 @@ public class DvcsAddUserListener
             	userInvitations = Joiner.on(
 	                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
 	                    organizationIdsAndGroupSlugs);
+            	eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
             } else
             {
             	// setting blank String to be sure that the crowd will not return null 

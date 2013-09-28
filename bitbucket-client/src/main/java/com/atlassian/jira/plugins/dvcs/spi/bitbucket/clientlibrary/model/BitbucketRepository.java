@@ -32,6 +32,7 @@ public class BitbucketRepository implements Serializable
 	private String website;
 	private String description;
 	private String scm;
+    private String logo;
 
 	public String getSlug()
 	{
@@ -102,4 +103,14 @@ public class BitbucketRepository implements Serializable
 	{
 		this.scm = scm;
 	}
+
+    public String getLogo()
+    {
+        return logo;
+    }
+
+    public void setLogo(final String logo)
+    {
+        this.logo = logo;
+    }
 }

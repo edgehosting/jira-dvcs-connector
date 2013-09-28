@@ -301,6 +301,11 @@
         <interface>com.atlassian.jira.plugins.dvcs.webwork.ChangesetRenderer</interface>
     </component>
 
+    <component key="issueAndProjectKeyManager" name="issueAndProjectKeyManager"
+               class="com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager</interface>
+    </component>
+
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
 

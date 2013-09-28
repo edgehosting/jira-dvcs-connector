@@ -28,7 +28,7 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     @Override
     public List<Changeset> getChangesets(Iterable<String> issueKeys)
     {
-        return ImmutableList.copyOf(changesetService.getByIssueKey(issueKeys));
+        return ImmutableList.copyOf(changesetService.getByIssueKey(issueKeys, false));
     }
 
     @Override

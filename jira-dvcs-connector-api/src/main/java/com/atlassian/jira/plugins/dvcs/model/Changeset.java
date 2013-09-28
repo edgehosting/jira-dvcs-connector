@@ -12,7 +12,10 @@ public class Changeset
     public static final int MAX_VISIBLE_FILES = 5;
 
     private int id;
+    // the main repository
     private int repositoryId;
+    // list of all repositories the changeset is in
+    private List<Integer> repositoryIds;
     private String node;
     private String rawAuthor;
     private String author;
@@ -62,6 +65,16 @@ public class Changeset
     public void setRepositoryId(int repositoryId)
     {
         this.repositoryId = repositoryId;
+    }
+
+    public List<Integer> getRepositoryIds()
+    {
+        return repositoryIds;
+    }
+
+    public void setRepositoryIds(final List<Integer> repositoryIds)
+    {
+        this.repositoryIds = repositoryIds;
     }
 
     public String getNode()
@@ -251,5 +264,4 @@ public class Changeset
 	{
 		this.id = id;
 	}
-
 }

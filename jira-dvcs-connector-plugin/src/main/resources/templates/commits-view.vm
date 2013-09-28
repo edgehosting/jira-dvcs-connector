@@ -1,7 +1,7 @@
 <div class="CommitContainer issue-data-block" id="$changeset.getNode()">
     <!-- Gravatar -->
     <div class="CommitContainerMargin">
-        <a href="$user_url" target="_blank">
+        <a class="dvcs-link" data-link-type="user" href="$user_url" target="_blank">
             <div class="ComiterImage">
                 <img src="$gravatar_url" alt="" title="" width="32" height="32"/>
             </div>
@@ -10,7 +10,7 @@
         <div class="CommiterBody" >
             <!-- name and date -->
             <div class="CommiterInfoPanel">
-                <a href="$user_url" target="_blank">
+                <a class="dvcs-link" data-link-type="user" href="$user_url" target="_blank">
                     <div class="CommitUser">$user_name</div>
                 </a>
 
@@ -48,7 +48,7 @@
 
                 <div class="CommitPanel" id="$changeset.getNode()-$repository.getId()" #if ( $repo_counter > 1 ) style="display: none;" #end >
                     <div class="CommitHeader">
-                        <a href='$commit_url' target='_blank'>
+                        <a class="dvcs-link" data-link-type="commit" href="$commit_url" target="_blank">
                             <div class="CommitButton">View full commit</div>
                         </a>
 
@@ -83,7 +83,7 @@
                                                 #if ( $deletions == 0 )-#else -$deletions #end
                                             </div>
                                         </div>
-                                        <a href="${file_commit_url}" target="_blank">
+                                        <a class="dvcs-link" data-link-type="file" href="${file_commit_url}" target="_blank">
                                             <div class="CommitHrefDATA">${file_name}</div>
                                         </a>
                                     </div>
@@ -92,7 +92,7 @@
                                         <div class="CommitCount">
                                             <div class="CommitCountAdded">Added</div>
                                         </div>
-                                        <a href="${file_commit_url}" target="_blank">
+                                        <a class="dvcs-link" data-link-type="file" href="${file_commit_url}" target="_blank">
                                             <div class="CommitHrefDATA">${file_name}</div>
                                         </a>
                                     </div>
@@ -101,7 +101,7 @@
                                         <div class="CommitCount">
                                             <div class="CommitCountRemoved">Deleted</div>
                                         </div>
-                                        <a href="${file_commit_url}" target="_blank">
+                                        <a class="dvcs-link" data-link-type="file" href="${file_commit_url}" target="_blank">
                                             <div class="CommitHrefDATA">${file_name}</div>
                                         </a>
                                     </div>
@@ -110,7 +110,7 @@
                                 <!--  -->
                             #end
                             #if ( $changeset.getAllFileCount() gt $max_visible_files )
-                                <a href="$commit_url" target="_blank">
+                                <a class="dvcs-link" data-link-type="morefiles" href="$commit_url" target="_blank">
                                     <div class="CommitRows">... see more changes 
 									#set ($dvcstype = $repository.getDvcsType())  
 									#if ($dvcstype == "bitbucket")
