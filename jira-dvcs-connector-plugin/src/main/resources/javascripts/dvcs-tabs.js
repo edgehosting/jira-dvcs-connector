@@ -30,3 +30,13 @@ com.atlassian.jira.dvcs.registerInlineDialogTooltip = function (element, body) {
             {onHover : true, hideDelay : 200, showDelay : 1000, arrowOffsetX : -8, offsetX : -80, addActiveClass : false}
         );
 };
+
+AJS.$(document).on('click', '#dvcs-commits-tabpanel.ajax-activity-content', function(e) {
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.tabclick'});
+});
+
+AJS.$(document).on('click', '.dvcs-link', function(e) {
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.linkclick', data: {type: AJS.$(this).attr('data-link-type')}});
+});
+
+
