@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -73,16 +75,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final ProjectManager projectManager;
     private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
-    private final IssueManager issueManager;
-    private final ChangeHistoryManager changeHistoryManager;
+    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
                                        UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
                                        TemplateRenderer templateRenderer, PermissionManager permissionManager,
                                        JiraAuthenticationContext jiraAuthenticationContext,
                                        ProjectManager projectManager, ChangesetService changesetService,
-                                       RepositoryService repositoryService, IssueManager issueManager,
-                                       ChangeHistoryManager changeHistoryManager)
+                                       RepositoryService repositoryService,
+                                       IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
@@ -94,8 +95,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.projectManager = projectManager;
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
-        this.issueManager = issueManager;
-        this.changeHistoryManager = changeHistoryManager;
+        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
     private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
@@ -290,7 +290,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         final Set<String> result = new HashSet<String>();
         for (String projectKey : projectKeys)
         {
-            result.addAll(SystemUtils.getAllProjectKeys(projectManager, projectManager.getProjectObjByKey(projectKey)));
+            result.addAll(issueAndProjectKeyManager.getAllProjectKeys(projectKey));
         }
         return result;
     }
@@ -300,7 +300,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         final Set<String> result = new HashSet<String>();
         for (String issueKey : issueKeys)
         {
-            result.addAll(SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issueManager.getIssueObject(issueKey)));
+            result.addAll(issueAndProjectKeyManager.getAllIssueKeys(issueKey));
         }
         return result;
     }

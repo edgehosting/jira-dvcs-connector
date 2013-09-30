@@ -87,7 +87,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
             Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
 
-            for (Changeset changeset : changesetService.getByIssueKey(issueKeys))
+            for (Changeset changeset : changesetService.getByIssueKey(issueKeys, false))
             {
                 logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
                 IssueAction issueAction = issueActionFactory.create(changeset);

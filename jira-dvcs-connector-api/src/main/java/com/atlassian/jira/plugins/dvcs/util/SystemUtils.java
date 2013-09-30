@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -119,10 +120,14 @@ public class SystemUtils
         }
         else
         {
-            // Adding previous issue keys
-            Set<String> allIssueKeys = new HashSet<String>(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
-            // adding current issue key
-            allIssueKeys.add(issue.getKey());
+            Set<String> allIssueKeys = new HashSet<String>();
+            if (issue != null)
+            {
+                // adding current issue key
+                allIssueKeys.add(issue.getKey());
+                // Adding previous issue keys
+                allIssueKeys.addAll(changeHistoryManager.getPreviousIssueKeys(issue.getId()));
+            }
             return allIssueKeys;
         }
     }
