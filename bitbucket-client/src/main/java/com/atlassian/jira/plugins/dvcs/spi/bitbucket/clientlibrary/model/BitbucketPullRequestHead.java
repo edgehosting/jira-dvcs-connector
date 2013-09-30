@@ -6,7 +6,7 @@ import java.io.Serializable;
  *
  * @author mstencel@atlassian.com
  */
-public class BitbucketPullRequestHead extends BitbucketPullRequestBaseActivity implements Serializable
+public class BitbucketPullRequestHead implements Serializable
 {
     private static final long serialVersionUID = -5134849227580638384L;
 
