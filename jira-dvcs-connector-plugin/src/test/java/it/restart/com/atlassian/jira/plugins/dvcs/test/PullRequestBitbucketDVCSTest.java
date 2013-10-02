@@ -116,8 +116,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -177,8 +184,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -241,8 +255,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -311,8 +332,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -366,7 +394,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         // Give a time to Bitbucket after creation of pullRequest
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException e)
         {
             // nop
@@ -379,8 +407,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -447,8 +482,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();
@@ -465,12 +507,20 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[1]);
         assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[0]);
 
-        // Assert PR declined activity information
-        IssuePagePullRequestTabActivityUpdate declinedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(1);
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestState(), "MERGED");
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertTrue(pullRequestUrl.startsWith(declinedPullRequestActivity.getPullRequestUrl()));
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestCommits().size(), 0);
+        // Assert PR merged activity information
+        IssuePagePullRequestTabActivityUpdate mergedPullRequestActivity;
+        // commit activity can be first, check it
+        if (activities.get(1) instanceof IssuePagePullRequestTabActivityUpdate)
+        {
+            mergedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(1);
+        } else
+        {
+            mergedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(2);
+        }
+        Assert.assertEquals(mergedPullRequestActivity.getPullRequestState(), "MERGED");
+        Assert.assertEquals(mergedPullRequestActivity.getPullRequestName(), pullRequestName);
+        Assert.assertTrue(pullRequestUrl.startsWith(mergedPullRequestActivity.getPullRequestUrl()));
+        Assert.assertEquals(mergedPullRequestActivity.getPullRequestCommits().size(), 0);
     }
     
     /**
@@ -510,8 +560,15 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         account.refresh();
 
         AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
-        repository.enable();
-        repository.synchronize();
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
 
         IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
         issuePage.openPRTab();

@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
 
-    public List<Changeset> transform(ChangesetMapping changesetMapping)
+    public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId)
     {
 
         if (changesetMapping == null)
@@ -32,16 +33,30 @@ public class ChangesetTransformer
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
+        final Changeset changeset = transform(mainRepositoryId, changesetMapping, fileData, parents);
+        
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
         {
-            final Changeset changeset = transform(repositoryMapping.getID(), changesetMapping, fileData, parents);
+            if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
+            {
+                continue;
+            }
 
-            changesets.add(changeset);
+            List<Integer> repositories = changeset.getRepositoryIds();
+            if (repositories == null)
+            {
+                repositories = new ArrayList<Integer>();
+                changeset.setRepositoryIds(repositories);
+                if (changeset.getRepositoryId() == 0)
+                {
+                    changeset.setRepositoryId(repositoryMapping.getID());
+                }
+            }
+
+            repositories.add(repositoryMapping.getID());
         }
 
-        return changesets;
+        return CollectionUtils.isEmpty(changeset.getRepositoryIds())? null : changeset;
     }
 
     public Changeset transform(int repositoryId, ChangesetMapping changesetMapping)

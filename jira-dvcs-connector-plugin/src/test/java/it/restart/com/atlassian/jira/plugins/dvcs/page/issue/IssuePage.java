@@ -96,6 +96,9 @@ public class IssuePage implements Page
         {
             // nothing to do
         }
+
+        // refreshing the page because of https://jdog.atlassian.net/browse/JDEV-24925
+        webDriver.navigate().refresh();
     }
 
     /**

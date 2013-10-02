@@ -1,19 +1,23 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.rest.api.issue.IssueCreateResponse;
+import com.atlassian.jira.testkit.client.Backdoor;
+import com.atlassian.jira.testkit.client.restclient.Issue;
+import com.atlassian.jira.testkit.client.restclient.SearchRequest;
+import com.atlassian.jira.testkit.client.restclient.SearchResult;
+import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.CreateIssueDialog;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.DashboardPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuesPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuesPageIssueRow;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
@@ -41,12 +45,16 @@ public abstract class AbstractDVCSTest
 
 
     protected OAuth oAuth;
+
+    protected Backdoor testKit;
+
     /**
      * Prepares common test environment.
      */
     @BeforeClass
     public void onTestsEnvironmentSetup()
     {
+        testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(),"."));
         jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
         new JiraLoginPageController(jiraTestedProduct).login();
     }
@@ -102,19 +110,15 @@ public abstract class AbstractDVCSTest
     private String createTestIssue(String projectKey, String issueSummary)
     {
         // creates issue for testing
+        final IssueCreateResponse issue = testKit.issues().createIssue(projectKey, issueSummary, JiraLoginPage.USER_ADMIN);
+
         DashboardPage dashboardPage = getJiraTestedProduct().visit(DashboardPage.class);
         dashboardPage.createIssue();
         CreateIssueDialog issueDialog = dashboardPage.getCreateIssueDialog();
         issueDialog.fill(issueSummary);
         issueDialog.create();
 
-        // gets key of created issue
-        IssuesPage issuesPage = getJiraTestedProduct().visit(IssuesPage.class);
-        issuesPage.fillSearchForm(projectKey, issueSummary);
-        issuesPage.switchLayout();
-        List<IssuesPageIssueRow> issueRows = issuesPage.getIssueRows();
-        Assert.assertEquals(issueRows.size(), 1);
-        String result = issueRows.get(0).getIssueKey();
+        String result = issue.key();
 
         Map<String, String> byProjectKey = projectKeyAndIssueSummaryToIssueKey.get(projectKey);
         if (byProjectKey == null)
@@ -136,9 +140,11 @@ public abstract class AbstractDVCSTest
     private void deleteTestIssue(String projectKey, String issueSummary)
     {
         // deletes obsolete test issues
-        IssuesPage issuesPage = getJiraTestedProduct().visit(IssuesPage.class);
-        issuesPage.fillSearchForm(projectKey, issueSummary);
-        issuesPage.deleteAll();
+        final SearchResult search = testKit.search().getSearch(new SearchRequest().jql("summary ~ \"" + issueSummary + "\""));
+        for (Issue issue : search.issues)
+        {
+            testKit.issues().deleteIssue(issue.key, true);
+        }
 
         Map<String, String> byProjectKey = projectKeyAndIssueSummaryToIssueKey.get(projectKey);
         if (byProjectKey != null)

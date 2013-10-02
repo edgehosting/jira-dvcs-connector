@@ -49,9 +49,10 @@ public interface ChangesetDao
      * Returns all changesets related to given issue keys
      *
      * @param issueKeys
+     * @param newestFirst
      * @return
      */
-    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst);
 
     /**
      * Returns latest changesets. Used by activity stream.

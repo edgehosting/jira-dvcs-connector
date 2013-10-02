@@ -35,9 +35,10 @@ public interface ChangesetService
     /**
      * returns all changesets for given issues
      * @param issueKeys set of issue keys
+     * @param newestFirst if true the newest changesets will be the first
      * @return changesets
      */
-    List<Changeset> getByIssueKey(Iterable<String> issueKeys);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst);
 
     String getCommitUrl(Repository repository, Changeset changeset);
 

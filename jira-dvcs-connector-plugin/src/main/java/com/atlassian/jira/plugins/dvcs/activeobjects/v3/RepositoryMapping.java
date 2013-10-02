@@ -18,6 +18,7 @@ public interface RepositoryMapping extends Entity
     public static final String DELETED = "DELETED";
     public static final String SMARTCOMMITS_ENABLED = "SMARTCOMMITS_ENABLED";
     public static final String ACTIVITY_LAST_SYNC = "ACTIVITY_LAST_SYNC";
+    public static final String LOGO = "LOGO";
 
     int getOrganizationId();
     String getSlug();
@@ -29,6 +30,7 @@ public interface RepositoryMapping extends Entity
     boolean isDeleted();
     boolean isSmartcommitsEnabled();
     Date getActivityLastSync();
+    String getLogo();
 
     void setOrganizationId(int organizationId);
     void setSlug(String slug);
@@ -40,4 +42,5 @@ public interface RepositoryMapping extends Entity
     void setDeleted(boolean deleted);
     void setSmartcommitsEnabled(boolean enabled);
     void setActivityLastSync(Date dateOrNull);
+    void setLogo(String logo);
 }

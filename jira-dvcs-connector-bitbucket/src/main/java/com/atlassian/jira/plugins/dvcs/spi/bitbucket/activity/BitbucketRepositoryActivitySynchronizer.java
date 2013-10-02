@@ -157,7 +157,6 @@ public class BitbucketRepositoryActivitySynchronizer implements RepositoryActivi
         BitbucketPullRequest remotePullRequest = null;
         if (pullRequestContext.getLocalPullRequestId() == null)
         {
-            // go for pull request details [***]
             try
             {
                 remotePullRequest = pullRestpoint.getPullRequestDetail(forRepository.getOrgName(), forRepository.getSlug(), info
