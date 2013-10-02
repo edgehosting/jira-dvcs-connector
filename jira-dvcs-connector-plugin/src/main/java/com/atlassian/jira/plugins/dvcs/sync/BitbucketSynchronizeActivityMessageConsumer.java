@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActi
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -28,9 +28,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.PullRequestContext;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.PullRequestContextManager;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -81,8 +78,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     @Override
-    public void onReceive(int messageId, BitbucketSynchronizeActivityMessage payload, String[] tags)
+    public void onReceive(Message<BitbucketSynchronizeActivityMessage> message)
     {
+        BitbucketSynchronizeActivityMessage payload = message.getPayload();
         try
         {
             Repository repo = payload.getRepository();
@@ -122,7 +120,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         } catch (Exception e)
         {
             LOGGER.error("Failed to process " + payload.getPageUrl(), e);
-            messagingService.fail(this, messageId);
+            messagingService.fail(message, this);
         }
 
     }
