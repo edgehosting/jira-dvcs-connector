@@ -19,7 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * ChangesetRemoteRestpoint
- * 
+ *
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class ChangesetRemoteRestpoint
@@ -107,24 +107,6 @@ public class ChangesetRemoteRestpoint
                 return new BitbucketChangesetIterator(requestor, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit);
             }
         };
-    }
-    @Deprecated // TODO<jhocman> remove
-    public BitbucketChangesetPage getChangesetsForFirstPage(String owner, String slug, List<String> includeNodes,
-            List<String> excludeNodes, Map<String, String> changesetBranch, int changesetsLimit)
-    {
-        String url = String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", owner, slug, changesetsLimit);
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        if (includeNodes != null)
-        {
-            parameters.put("include", new ArrayList<String>(includeNodes));
-        }
-
-        if (excludeNodes != null)
-        {
-            parameters.put("exclude", new ArrayList<String>(excludeNodes));
-        }
-
-        return requestor.post(url, parameters, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
     }
 
     public BitbucketChangesetPage getChangesetsForPage(final int page, final String owner, final String slug,

@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPull
 
 public interface BitbucketPullRequestDao
 {
-    void saveCommit(final int localId, final String node, final String nextNode, final int pullRequestId);
+    BitbucketPullRequestCommitMapping saveCommit(final int localId, final String node, final String nextNode, final int pullRequestId);
 
     BitbucketPullRequestCommitMapping getCommitForPullRequest(int pullRequestId, String node);
     void deleteCommit(BitbucketPullRequestCommitMapping commit);
