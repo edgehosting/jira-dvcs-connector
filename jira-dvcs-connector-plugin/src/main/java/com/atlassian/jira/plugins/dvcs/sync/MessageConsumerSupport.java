@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.Resource;
 
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -26,6 +28,12 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MessageConsumerSupport.class);
+
+    /**
+     * Injected {@link ExecutorService} dependency.
+     */
+    @Resource
+    private ExecutorService executorService;
 
     @Resource
     protected DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -49,8 +57,11 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     SmartcommitsChangesetsProcessor smartCommitsProcessor;
 
     @Override
-    public void onReceive(int messageId, P payload, String [] tags)
+    public void onReceive(final Message<P> message)
     {
+        P payload = message.getPayload();
+        String[] tags = message.getTags();
+
         try
         {
             Repository repo = getRepository(payload);
@@ -58,47 +69,42 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             String branch = getBranch(payload);
             boolean softSync = getSoftSync(payload);
 
-            Changeset fromDB = changesetService.getByNode(repo.getId(), node);
-            if (fromDB != null)
+            if (changesetService.getByNode(repo.getId(), node) == null)
             {
-                return;
+                Date synchronizedAt = new Date();
+                Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
+                changeset.setSynchronizedAt(synchronizedAt);
+                changeset.setBranch(branch);
+
+                Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
+                markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
+
+                changesetService.create(changeset, issues);
+
+                payload.getProgress().inProgress( //
+                        payload.getProgress().getChangesetCount() + 1, //
+                        payload.getProgress().getJiraCount() + issues.size(), //
+                        0 //
+                        );
+
+                for (String parentChangesetNode : changeset.getParents())
+                {
+                    if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
+                        messagingService.publish(getKey(), createNextMessage(payload, parentChangesetNode), tags);
+                    }
+                }
+
+                if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(changeset.getDate()))
+                {
+                    repo.setLastCommitDate(changeset.getDate());
+                    repositoryService.save(repo);
+                }
             }
-
-            Date synchronizedAt = new Date();
-            Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(
-                    repo, node);
-            changeset.setSynchronizedAt(synchronizedAt);
-            changeset.setBranch(branch);
-
-            Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
-            markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
-
-            changesetService.create(changeset, issues);
-
-            payload.getProgress().inProgress( //
-                    payload.getProgress().getChangesetCount() + 1, //
-                    payload.getProgress().getJiraCount() + issues.size(), //
-                    0 //
-                    );
-
-            for (String parentChangesetNode : changeset.getParents())
-            {
-                messagingService.publish(getKey(),
-                        createNextMessage(payload, parentChangesetNode), tags);
-            }
-
-            if (repo.getLastCommitDate() == null
-                    || repo.getLastCommitDate().before(changeset.getDate()))
-            {
-                repo.setLastCommitDate(changeset.getDate());
-                repositoryService.save(repo);
-            }
-
-            messagingService.ok(this, messageId);
+            messagingService.ok(message, this);
 
         } catch (Exception e)
         {
-            messagingService.fail(this, messageId);
+            messagingService.fail(message, this);
             ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
             LOGGER.error(e.getMessage(), e);
         } finally
@@ -129,17 +135,20 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         {
             LOGGER.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getNode());
             changesetForSave.setSmartcommitAvaliable(mark);
-        } else {
+        } else
+        {
             LOGGER.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
     }
 
-
-
     protected abstract Repository getRepository(P payload);
+
     protected abstract String getBranch(P payload);
+
     protected abstract String getNode(P payload);
+
     protected abstract boolean getSoftSync(P payload);
+
     protected abstract P createNextMessage(P payload, String parentChangesetNode);
 
 }

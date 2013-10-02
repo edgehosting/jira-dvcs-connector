@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
+import com.atlassian.jira.plugins.dvcs.model.Message;
+
 /**
  * Provides services related to messaging.
  * 
@@ -19,27 +21,27 @@ public interface MessagingService<P extends HasProgress>
      * @param tags
      *            of messages
      */
-     void publish(MessageKey<P> key, P payload, String... tags);
+    void publish(MessageKey<P> key, P payload, String... tags);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
      * 
+     * @param message
+     *            for marking
      * @param consumer
      *            of message
-     * @param messageId
-     *            message for marking
      */
-    void ok(MessageConsumer<P> consumer, int messageId);
+    void ok(Message<P> message, MessageConsumer<P> consumer);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
      * 
+     * @param message
+     *            for marking
      * @param consumer
      *            of message
-     * @param messageId
-     *            message for marking
      */
-    void fail(MessageConsumer<P> consumer, int messageId);
+    void fail(Message<P> message, MessageConsumer<P> consumer);
 
     /**
      * Returns count of queued messages with provided publication key and marked by provided tag.
@@ -61,6 +63,6 @@ public interface MessagingService<P extends HasProgress>
      *            of route
      * @return created message key
      */
-     MessageKey<P> get(Class<P> payloadType, String id);
+    MessageKey<P> get(Class<P> payloadType, String id);
 
 }

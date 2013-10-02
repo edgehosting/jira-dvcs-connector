@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
+import com.atlassian.jira.plugins.dvcs.model.Message;
+
 /**
  * Consumes a received message.
  * 
@@ -21,20 +23,18 @@ public interface MessageConsumer<P extends HasProgress>
     /**
      * Called when a payload.
      * 
-     * @param messageId
+     * @param message
      *            identity of message
-     * @param payload
-     *            of message
      */
-    void onReceive(int messageId, P payload, String [] tags);
+    void onReceive(Message<P> message);
 
     /**
      * @return key of messages which will be received
      */
     MessageKey<P> getKey();
-    
-    boolean shouldDiscard(int messageId, int retryCount, P payload, String [] tags);
-    
-    void afterDiscard(int messageId, int retryCount, P payload, String [] tags);
+
+    boolean shouldDiscard(int messageId, int retryCount, P payload, String[] tags);
+
+    void afterDiscard(int messageId, int retryCount, P payload, String[] tags);
 
 }

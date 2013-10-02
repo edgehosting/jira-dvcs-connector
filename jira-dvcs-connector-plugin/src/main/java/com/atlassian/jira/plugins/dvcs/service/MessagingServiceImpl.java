@@ -2,13 +2,18 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageRouter;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 
 /**
@@ -21,10 +26,22 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
 {
 
     /**
-     * Injected {@link MessageRouter} dependency.
+     * Injected {@link ActiveObjects} dependency.
      */
     @Resource
-    private MessageRouter<P> messageRouter;
+    private ActiveObjects activeObjects;
+
+    /**
+     * Injected {@link MessageDao} dependency.
+     */
+    @Resource
+    private MessageDao messageDao;
+
+    /**
+     * Injected {@link MessageConsumer}-s dependency.
+     */
+    @Resource
+    private MessageConsumer<P>[] consumers;
 
     /**
      * Maps identity of message key to appropriate message key.
@@ -32,10 +49,49 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
     private final Map<String, MessageKey<P>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<P>>();
 
     /**
-     * Constructor.
+     * Holds key based messages routers.
      */
-    public MessagingServiceImpl()
+    private final ConcurrentMap<MessageKey<P>, Map<String, MessageConsumerRouter<P>>> keyToConsumerIdToMessageConsumerRouter = new ConcurrentHashMap<MessageKey<P>, Map<String, MessageConsumerRouter<P>>>();
+
+    /**
+     * Initializes this bean.
+     */
+    @PostConstruct
+    public void init()
     {
+        for (MessageConsumer<P> consumer : consumers)
+        {
+            Map<String, MessageConsumerRouter<P>> byKey = keyToConsumerIdToMessageConsumerRouter.get(consumer.getKey());
+            if (byKey == null)
+            {
+                keyToConsumerIdToMessageConsumerRouter.put(consumer.getKey(),
+                        byKey = new ConcurrentHashMap<String, MessageConsumerRouter<P>>());
+            }
+
+            byKey.put(consumer.getId(), new MessageConsumerRouter<P>( //
+                    activeObjects, //
+                    messageDao, //
+                    (MessageKey<P>) consumer.getKey(), //
+                    (MessageConsumer<P>) consumer //
+                    ));
+        }
+    }
+
+    /**
+     * Destroys this bean.
+     * 
+     * @throws Exception
+     */
+    @PreDestroy
+    public void destroy() throws Exception
+    {
+        for (Map<String, MessageConsumerRouter<P>> messageRouters : keyToConsumerIdToMessageConsumerRouter.values())
+        {
+            for (MessageConsumerRouter<P> messageRouter : messageRouters.values())
+            {
+                messageRouter.stop();
+            }
+        }
     }
 
     /**
@@ -44,7 +100,17 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
     @Override
     public void publish(MessageKey<P> key, P payload, String... tags)
     {
-        messageRouter.publish(key, payload, tags);
+        Message<P> message = new Message<P>();
+        message.setKey(key);
+        message.setPayload(payload);
+        message.setPayloadType(key.getPayloadType());
+        message.setTags(tags);
+        messageDao.save(message);
+
+        for (MessageConsumerRouter<P> consumer : keyToConsumerIdToMessageConsumerRouter.get(message.getKey()).values())
+        {
+            consumer.route(message);
+        }
     }
 
     /**
@@ -53,18 +119,18 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
      * @param messageId
      */
     @Override
-    public void ok(MessageConsumer<P> consumer, int messageId)
+    public void ok(Message<P> message, MessageConsumer<P> consumer)
     {
-        messageRouter.ok(consumer, messageId);
+        messageDao.markOk(message, consumer);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void fail(MessageConsumer<P> consumer, int messageId)
+    public void fail(Message<P> message, MessageConsumer<P> consumer)
     {
-        messageRouter.fail(consumer, messageId);
+        messageDao.markFail(message, consumer);
     }
 
     /**
@@ -73,7 +139,7 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
     @Override
     public <K extends MessageKey<P>> int getQueuedCount(K key, String tag)
     {
-        return messageRouter.getQueuedCount(key, tag);
+        return messageDao.getMessagesForConsumingCount(key.getId(), tag);
     }
 
     /**

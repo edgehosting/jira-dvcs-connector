@@ -22,6 +22,16 @@ public interface MessageMapping extends Entity
     String KEY = "KEY";
 
     /**
+     * @see #getPriority()
+     */
+    String PRIORITY = "PRIORITY";
+    
+    /**
+     * @see #getPayloadType()
+     */
+    String PAYLOAD_TYPE = "PAYLOAD_TYPE";
+
+    /**
      * @see #getPayload()
      */
     String PAYLOAD = "PAYLOAD";
@@ -36,6 +46,28 @@ public interface MessageMapping extends Entity
      *            {@link #getKey()}
      */
     void setKey(String key);
+
+    /**
+     * @return Priority of message.
+     */
+    int getPriority();
+
+    /**
+     * @param priority
+     *            {@link #getPriority()}
+     */
+    void setPriority(int priority);
+
+    /**
+     * @return Type of payload.
+     */
+    String getPayloadType();
+
+    /**
+     * @param payloadType
+     *            {@link #getPayloadType()}
+     */
+    void setPayloadType(String payloadType);
 
     /**
      * @return Payload of message.
