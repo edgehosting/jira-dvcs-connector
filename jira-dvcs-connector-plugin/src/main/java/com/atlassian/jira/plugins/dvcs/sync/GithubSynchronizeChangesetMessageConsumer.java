@@ -42,12 +42,8 @@ public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSu
     @Override
     protected SynchronizeChangesetMessage createNextMessage(SynchronizeChangesetMessage payload, String parentChangesetNode)
     {
-        return new SynchronizeChangesetMessage(payload.getRepository(),
-                payload.getBranch(),
-                parentChangesetNode,
-                payload.getRefreshAfterSynchronizedAt(),
-                payload.getProgress(), payload.isSoftSync()
-        );
+        return new SynchronizeChangesetMessage(payload.getRepository(), payload.getBranch(), parentChangesetNode,
+                payload.getRefreshAfterSynchronizedAt(), payload.getProgress(), payload.isSoftSync());
     }
 
     @Override

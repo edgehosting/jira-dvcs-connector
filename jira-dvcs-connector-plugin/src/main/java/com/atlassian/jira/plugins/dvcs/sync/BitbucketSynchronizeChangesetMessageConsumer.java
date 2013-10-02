@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -35,9 +36,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTrans
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
- *
+ * 
  * @author Stanislav Dvorscak
- *
+ * 
  */
 public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
@@ -65,17 +66,18 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     }
 
     @Override
-    public void onReceive(int messageId, BitbucketSynchronizeChangesetMessage payload, String [] tags)
+    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message)
     {
         CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) dvcsCommunicatorProvider
                 .getCommunicator(BitbucketCommunicator.BITBUCKET);
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        Repository repo = payload.getRepository();
-        int pageNum = payload.getPage();
+        Repository repo = message.getPayload().getRepository();
+        int pageNum = message.getPayload().getPage();
 
-        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(payload), payload.getExclude());
-        process(messageId, page, payload, tags);
+        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(message.getPayload()), message
+                .getPayload().getExclude());
+        process(message, page);
         //
     }
 
@@ -90,23 +92,23 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         return newHeadsNodes;
     }
 
-    private void process(int messageId, BitbucketChangesetPage page, BitbucketSynchronizeChangesetMessage payload, String[] tags)
+    private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketChangesetPage page)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
-        boolean softSync = payload.isSoftSync();
+        boolean softSync = message.getPayload().isSoftSync();
 
         for (BitbucketNewChangeset ncset : csets)
         {
             try
             {
-                Repository repo = payload.getRepository();
+                Repository repo = message.getPayload().getRepository();
                 Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
                 if (fromDB != null)
                 {
                     continue;
                 }
-                assignBranch(ncset, payload);
+                assignBranch(ncset, message.getPayload());
                 Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
                 cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
                 cset.setSynchronizedAt(new Date());
@@ -118,46 +120,47 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
                 if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(cset.getDate()))
                 {
-                    payload.getRepository().setLastCommitDate(cset.getDate());
-                    repositoryService.save(payload.getRepository());
+                    message.getPayload().getRepository().setLastCommitDate(cset.getDate());
+                    repositoryService.save(message.getPayload().getRepository());
                 }
 
-                payload.getProgress().inProgress( //
-                        payload.getProgress().getChangesetCount() + 1, //
-                        payload.getProgress().getJiraCount() + issues.size(), //
+                message.getPayload().getProgress().inProgress( //
+                        message.getPayload().getProgress().getChangesetCount() + 1, //
+                        message.getPayload().getProgress().getJiraCount() + issues.size(), //
                         0 //
                         );
             } catch (Exception e)
             {
                 errorOnPage = true;
-                ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
+                ((DefaultProgress) message.getPayload().getProgress()).setError("Error during sync. See server logs.");
                 LOGGER.error(e.getMessage(), e);
             }
         }
 
         if (!errorOnPage && StringUtils.isNotBlank(page.getNext()))
         {
-            fireNextPage(page, payload, tags);
+            fireNextPage(page, message.getPayload(), message.getTags());
 
         } else if (errorOnPage)
         {
-            messagingService.fail(this, messageId);
+            messagingService.fail(message, this);
         }
 
         if (!errorOnPage)
         {
-            if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
+            if (messagingService.getQueuedCount(getKey(), message.getTags()[0]) == 0)
             {
-                smartcCommitsProcessor.startProcess(payload.getProgress(), payload.getRepository(), changesetService);
-                payload.getProgress().finish();
+                smartcCommitsProcessor.startProcess(message.getPayload().getProgress(), message.getPayload().getRepository(),
+                        changesetService);
+                message.getPayload().getProgress().finish();
 
                 if (page.getPage() == 1)
                 {
-                    updateBranchHeads(payload.getRepository(), payload.getNewHeads());
+                    updateBranchHeads(message.getPayload().getRepository(), message.getPayload().getNewHeads());
                 }
             }
 
-            messagingService.ok(this, messageId);
+            messagingService.ok(message, this);
         }
     }
 
@@ -180,15 +183,15 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         branchService.updateBranchHeads(repo, newBranchHeads, oldBranchHeads);
     }
 
-    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String [] tags)
+    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
     {
-        messagingService.publish(getKey(), //
+        messagingService.publish(
+                getKey(), //
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1,
-                        originalMessage.getNodesToBranches(), originalMessage.isSoftSync()
-                ), tags);
+                        originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
+                                .getNodesToBranches(), originalMessage.isSoftSync()), tags);
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
