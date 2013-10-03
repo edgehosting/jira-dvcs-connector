@@ -33,6 +33,9 @@ public class BitbucketRepository implements Serializable
 	private String description;
 	private String scm;
     private String logo;
+    private boolean isFork;
+    private BitbucketRepository forkOf;
+    private String owner;
 
 	public String getSlug()
 	{
@@ -112,5 +115,35 @@ public class BitbucketRepository implements Serializable
     public void setLogo(final String logo)
     {
         this.logo = logo;
+    }
+
+    public boolean isFork()
+    {
+        return isFork;
+    }
+
+    public void setFork(final boolean isFork)
+    {
+        this.isFork = isFork;
+    }
+
+    public BitbucketRepository getForkOf()
+    {
+        return forkOf;
+    }
+
+    public void setForkOf(final BitbucketRepository forkOf)
+    {
+        this.forkOf = forkOf;
+    }
+
+    public String getOwner()
+    {
+        return owner;
+    }
+
+    public void setOwner(final String owner)
+    {
+        this.owner = owner;
     }
 }

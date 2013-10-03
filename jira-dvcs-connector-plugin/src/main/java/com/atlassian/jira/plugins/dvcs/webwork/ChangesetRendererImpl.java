@@ -108,10 +108,13 @@ public class ChangesetRendererImpl implements ChangesetRenderer
                 continue;
             }
 
-            repositories.add(repository);
             if (repositoryId == changeset.getRepositoryId())
             {
                 firstRepository = repository;
+                repositories.add(0,repository);
+            } else
+            {
+                repositories.add(repository);
             }
 
             String commitUrl = changesetService.getCommitUrl(repository, changeset);
