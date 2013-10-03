@@ -33,6 +33,7 @@ public interface RepositoryMapping extends Entity
     boolean isLinked();
     boolean isDeleted();
     boolean isSmartcommitsEnabled();
+    @StringLength (StringLength.UNLIMITED)
     String getLogo();
     boolean isFork();
     String getForkOfName();
@@ -48,6 +49,7 @@ public interface RepositoryMapping extends Entity
     void setLinked(boolean linked);
     void setDeleted(boolean deleted);
     void setSmartcommitsEnabled(boolean enabled);
+    @StringLength(StringLength.UNLIMITED)
     void setLogo(String logo);
     void setFork(boolean isFork);
     void setForkOfSlug(String slug);
