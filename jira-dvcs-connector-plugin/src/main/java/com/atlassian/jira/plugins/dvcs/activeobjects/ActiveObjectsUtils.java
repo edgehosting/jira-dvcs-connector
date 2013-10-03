@@ -78,4 +78,14 @@ public class ActiveObjectsUtils
         }
         return query;
     }
+
+    public static String stripToLimit(String s, int limit)
+    {
+        if (s != null && s.length() > limit)
+        {
+            s = s.substring(0,limit);
+        }
+
+        return s;
+    }
 }
