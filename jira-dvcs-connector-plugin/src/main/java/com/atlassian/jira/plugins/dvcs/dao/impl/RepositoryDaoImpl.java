@@ -64,7 +64,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             forkOfRepository.setOwner(repositoryMapping.getForkOfOwner());
             if (organizationMapping != null)
             {
-                forkOfRepository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
+                forkOfRepository.setRepositoryUrl(createForkOfRepositoryUrl(repositoryMapping, organizationMapping));
             }
             repository.setForkOf(forkOfRepository);
         }
