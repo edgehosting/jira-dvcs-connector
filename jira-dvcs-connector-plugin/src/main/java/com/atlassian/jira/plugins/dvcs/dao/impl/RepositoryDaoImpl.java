@@ -54,6 +54,20 @@ public class RepositoryDaoImpl implements RepositoryDao
         repository.setLogo(repositoryMapping.getLogo());
         // set sync progress
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
+        repository.setFork(repositoryMapping.isFork());
+
+        if (repository.isFork())
+        {
+            Repository forkOfRepository = new Repository();
+            forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());
+            forkOfRepository.setName(repositoryMapping.getForkOfName());
+            forkOfRepository.setOwner(repositoryMapping.getForkOfOwner());
+            if (organizationMapping != null)
+            {
+                forkOfRepository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
+            }
+            repository.setForkOf(forkOfRepository);
+        }
 
         if (organizationMapping != null)
         {
@@ -76,13 +90,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 
     private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
     {
-        String hostUrl = organizationMapping.getHostUrl();
+        return createRepositoryUrl(organizationMapping.getHostUrl(), organizationMapping.getName(), repositoryMapping.getSlug());
+    }
+
+    private String createForkOfRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
+    {
+        return createRepositoryUrl(organizationMapping.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
+    }
+
+    private String createRepositoryUrl(String hostUrl, String owner, String slug)
+    {
         // normalize
         if (hostUrl != null && hostUrl.endsWith("/"))
         {
             hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
         }
-        return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
+        return hostUrl + "/" + owner + "/" + slug;
     }
 
     @SuppressWarnings("unchecked")
@@ -241,7 +264,13 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.DELETED, repository.isDeleted());
                     map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
                     map.put(RepositoryMapping.LOGO, repository.getLogo());
-
+                    map.put(RepositoryMapping.IS_FORK, repository.isFork());
+                    if (repository.getForkOf() != null)
+                    {
+                        map.put(RepositoryMapping.FORK_OF_NAME, repository.getForkOf().getName());
+                        map.put(RepositoryMapping.FORK_OF_SLUG, repository.getForkOf().getSlug());
+                        map.put(RepositoryMapping.FORK_OF_OWNER, repository.getForkOf().getOwner());
+                    }
                     rm = activeObjects.create(RepositoryMapping.class, map);
                     rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
                 } else
@@ -255,7 +284,18 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setDeleted(repository.isDeleted());
                     rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
                     rm.setLogo(repository.getLogo());
-
+                    rm.setFork(repository.isFork());
+                    if (repository.getForkOf() != null)
+                    {
+                        rm.setForkOfName(repository.getForkOf().getName());
+                        rm.setForkOfSlug(repository.getForkOf().getSlug());
+                        rm.setForkOfOwner(repository.getForkOf().getOwner());
+                    } else
+                    {
+                        rm.setForkOfName(null);
+                        rm.setForkOfSlug(null);
+                        rm.setForkOfOwner(null);
+                    }
                     rm.save();
                 }
                 return rm;

@@ -138,6 +138,17 @@ public class GithubCommunicator implements DvcsCommunicator
                     Repository repository = new Repository();
                     repository.setSlug(ghRepository.getName());
                     repository.setName(ghRepository.getName());
+                    repository.setFork(ghRepository.isFork());
+                    if (ghRepository.getParent() != null)
+                    {
+                        org.eclipse.egit.github.core.Repository parentRepository = ghRepository.getParent();
+                        Repository forkOf = new Repository();
+                        forkOf.setSlug(parentRepository.getName());
+                        forkOf.setName(parentRepository.getName());
+                        forkOf.setRepositoryUrl(parentRepository.getHtmlUrl());
+                        forkOf.setOwner(parentRepository.getOwner().getLogin());
+                        repository.setForkOf(forkOf);
+                    }
                     repositories.add(repository);
                 }
             }
