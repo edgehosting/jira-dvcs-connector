@@ -84,21 +84,18 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         try
         {
             Repository repo = payload.getRepository();
-            if (!payload.isSoftSync())
-            {
-                dao.removeAll(repo);
-                repo.setActivityLastSync(null);
-            }
 
             int jiraCount = payload.getProgress().getJiraCount();
             int pullRequestActivityCount = 0;
 
             BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
             PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
-            BitbucketPullRequestBaseActivityEnvelope activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageUrl(),
+            BitbucketPullRequestBaseActivityEnvelope activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(),
                     repo.getOrgName(), repo.getSlug(), repo.getActivityLastSync());
 
             List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
+            boolean isLastPage = isLastPage(infos);
+
             Date lastActivitySyncDate = repo.getActivityLastSync();
 
             for (BitbucketPullRequestActivityInfo info : infos)
@@ -115,17 +112,69 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                     lastActivitySyncDate = activityDate;
                 }
 
-                payload.getProgress().inPullRequestProgress(++pullRequestActivityCount, jiraCount);
+                int localPrId = processActivity(info, repo, pullRestpoint);
+                markProcessed(payload, info, localPrId);
+
+                payload.getProgress().inPullRequestProgress(++pullRequestActivityCount, jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
+            }
+            if (!isLastPage) {
+                fireNextPage(message, activityPage.getNext());
+            } else {
+                finalizeSync(message, lastActivitySyncDate);
             }
         } catch (Exception e)
         {
-            LOGGER.error("Failed to process " + payload.getPageUrl(), e);
+            LOGGER.error("Failed to process " + payload.getRepository().getName(), e);
             messagingService.fail(message, this);
         }
 
     }
 
-    private void processActivity(BitbucketPullRequestActivityInfo info, Repository repo, PullRequestRemoteRestpoint pullRestpoint)
+    protected void markProcessed(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info, Integer prLocalId)
+    {
+        if (!payload.getProcessedPullRequests().contains(info.getPullRequest().getId().intValue()))
+        {
+            payload.getProcessedPullRequests().add(info.getPullRequest().getId().intValue());
+            payload.getProcessedPullRequestsLocal().add(prLocalId);
+        }
+    }
+
+    private void finalizeSync(Message<BitbucketSynchronizeActivityMessage> message, Date lastActivitySyncDate)
+    {
+        try
+        {
+            List<Integer> processedPullRequests = message.getPayload().getProcessedPullRequestsLocal();
+            for (Integer localPrId : processedPullRequests)
+            {
+                RepositoryPullRequestUpdateActivityMapping oldestUpdateActivity = dao.getLatestOrOldestUpdateActivity(message.getPayload()
+                        .getRepository(), localPrId, false);
+                dao.updateActivityStatus(message.getPayload().getRepository(), oldestUpdateActivity.getID(),
+                        RepositoryPullRequestUpdateActivityMapping.Status.OPENED);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Failed to mark pull request to OPEN state: " + e.getMessage());
+        }
+        finally {
+            message.getPayload().getProgress().finish();
+            repositoryDao.setLastActivitySyncDate(message.getPayload().getRepository().getId(), lastActivitySyncDate);
+            messagingService.ok(message, this);
+        }
+    }
+
+    private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl)
+    {
+        BitbucketSynchronizeActivityMessage payload = message.getPayload();
+
+        messagingService.publish(getKey(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
+                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal()), message.getTags());
+    }
+
+    private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)
+    {
+        return infos.isEmpty() || infos.size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE;
+    }
+
+    private int processActivity(BitbucketPullRequestActivityInfo info, Repository repo, PullRequestRemoteRestpoint pullRestpoint)
     {
         int localPullRequestId = ensurePullRequestPresent(repo, pullRestpoint, info);
 
@@ -135,15 +184,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (isUpdateActivity(info.getActivity()))
         {
             loadPullRequestCommits(repo, pullRestpoint, localPullRequestId, (BitbucketPullRequestUpdateActivity) info.getActivity(),
-                    (RepositoryPullRequestUpdateActivityMapping) savedActivity, info.getPullRequest().getCommits().getHref());
+                    (RepositoryPullRequestUpdateActivityMapping) savedActivity, info.getPullRequest().getLinks().getCommits().getHref());
 
         }
+        return localPullRequestId;
     }
 
     private int ensurePullRequestPresent(Repository repo, PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info)
     {
         BitbucketPullRequest remotePullRequest = null;
-        Long remoteId = info.getPullRequest().getId();
+        Integer remoteId = info.getPullRequest().getId().intValue();
         RepositoryPullRequestMapping storedRequest = dao.findRequestByRemoteId(repo, remoteId);
 
         if (storedRequest == null)

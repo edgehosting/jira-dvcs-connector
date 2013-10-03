@@ -15,16 +15,16 @@ public interface RepositoryActivityDao
 
     /**
      * Updates issue keys related to commits of provided repository.
-     * 
+     *
      * @param domain
      */
     void updateCommitIssueKeys(Repository domain);
 
     /**
      * Updates issue keys related to the provided pull request to reflect current state.
-     * 
+     *
      * @param pullRequestId
-     * 
+     *
      * @return Number of found issues keys
      */
     int updatePullRequestIssueKeys(Repository domain, int pullRequestId);
@@ -42,6 +42,8 @@ public interface RepositoryActivityDao
     // R
     List<RepositoryActivityMapping> getRepositoryActivityForIssue(String issueKey);
 
+    RepositoryPullRequestUpdateActivityMapping getLatestOrOldestUpdateActivity(Repository domain, int localId, boolean latest);
+
     RepositoryPullRequestMapping findRequestById(int localId);
 
     RepositoryPullRequestMapping findRequestByRemoteId(Repository domain, long remoteId);
@@ -53,7 +55,7 @@ public interface RepositoryActivityDao
     RepositoryCommitMapping getCommitByNode(Repository domain, int pullRequestId, String node);
 
     RepositoryCommitMapping getCommitByNode(Repository domain, String node);
-    
+
     List<RepositoryCommitCommentActivityMapping> getCommitComments(Repository domain, RepositoryCommitMapping commit);
 
     RepositoryPullRequestUpdateActivityMapping getPullRequestActivityByRemoteId(Repository domain,

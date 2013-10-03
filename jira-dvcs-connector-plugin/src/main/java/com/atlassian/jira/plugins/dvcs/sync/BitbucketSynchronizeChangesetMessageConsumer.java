@@ -96,19 +96,20 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
-        boolean softSync = message.getPayload().isSoftSync();
+        BitbucketSynchronizeChangesetMessage payload = message.getPayload();
+        boolean softSync = payload.isSoftSync();
 
         for (BitbucketNewChangeset ncset : csets)
         {
             try
             {
-                Repository repo = message.getPayload().getRepository();
+                Repository repo = payload.getRepository();
                 Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
                 if (fromDB != null)
                 {
                     continue;
                 }
-                assignBranch(ncset, message.getPayload());
+                assignBranch(ncset, payload);
                 Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
                 cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
                 cset.setSynchronizedAt(new Date());
@@ -120,26 +121,26 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
                 if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(cset.getDate()))
                 {
-                    message.getPayload().getRepository().setLastCommitDate(cset.getDate());
-                    repositoryService.save(message.getPayload().getRepository());
+                    payload.getRepository().setLastCommitDate(cset.getDate());
+                    repositoryService.save(payload.getRepository());
                 }
 
-                message.getPayload().getProgress().inProgress( //
-                        message.getPayload().getProgress().getChangesetCount() + 1, //
-                        message.getPayload().getProgress().getJiraCount() + issues.size(), //
+                payload.getProgress().inProgress( //
+                        payload.getProgress().getChangesetCount() + 1, //
+                        payload.getProgress().getJiraCount() + issues.size(), //
                         0 //
                         );
             } catch (Exception e)
             {
                 errorOnPage = true;
-                ((DefaultProgress) message.getPayload().getProgress()).setError("Error during sync. See server logs.");
+                ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
                 LOGGER.error(e.getMessage(), e);
             }
         }
 
         if (!errorOnPage && StringUtils.isNotBlank(page.getNext()))
         {
-            fireNextPage(page, message.getPayload(), message.getTags());
+            fireNextPage(page, payload, message.getTags());
 
         } else if (errorOnPage)
         {
@@ -150,13 +151,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         {
             if (messagingService.getQueuedCount(getKey(), message.getTags()[0]) == 0)
             {
-                smartcCommitsProcessor.startProcess(message.getPayload().getProgress(), message.getPayload().getRepository(),
+                smartcCommitsProcessor.startProcess(payload.getProgress(), payload.getRepository(),
                         changesetService);
-                message.getPayload().getProgress().finish();
+                payload.getProgress().finish();
 
                 if (page.getPage() == 1)
                 {
-                    updateBranchHeads(message.getPayload().getRepository(), message.getPayload().getNewHeads());
+                    updateBranchHeads(payload.getRepository(), payload.getNewHeads());
                 }
             }
 

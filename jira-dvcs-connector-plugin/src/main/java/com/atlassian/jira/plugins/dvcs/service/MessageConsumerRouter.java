@@ -15,9 +15,9 @@ import com.atlassian.plugin.PluginException;
 
 /**
  * Routes messages to consumer.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  * @param <K>
  *            key of message
  * @param <P>
@@ -63,7 +63,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     /**
      * Constructor.
-     * 
+     *
      * @param activeObjects
      * @param messageDao
      * @param key
@@ -90,7 +90,7 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     /**
      * Routes provided message information.
-     * 
+     *
      * @param message
      *            for processing
      */
@@ -192,7 +192,6 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
     private void waitForAo()
     {
-        // FIXME: AO can not be access immediately - it is available lazy
         boolean aoInitialized = false;
         do
         {

@@ -45,9 +45,9 @@ public class PullRequestRemoteRestpoint
 
     }
 
-    public BitbucketPullRequestBaseActivityEnvelope getRepositoryActivityPage(String url, String owner, String repoSlug, final Date upToDate) {
+    public BitbucketPullRequestBaseActivityEnvelope getRepositoryActivityPage(int page, String owner, String repoSlug, final Date upToDate) {
 
-        String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s", owner, repoSlug, REPO_ACTIVITY_PAGESIZE);
+        String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s&page=%s", owner, repoSlug, REPO_ACTIVITY_PAGESIZE, page);
         ResponseCallback<BitbucketPullRequestBaseActivityEnvelope> callback = new ResponseCallback<BitbucketPullRequestBaseActivityEnvelope>()
         {
             @Override
@@ -71,7 +71,7 @@ public class PullRequestRemoteRestpoint
                 for (BitbucketPullRequestActivityInfo info : values)
                 {
                     Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
-                    if (activityDate != null && activityDate.after(upToDate))
+                    if (upToDate == null || activityDate != null && activityDate.after(upToDate))
                     {
                         fine.add(info);
                     }

@@ -13,8 +13,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import net.java.ao.Query;
 
 import org.slf4j.Logger;
@@ -38,6 +36,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActiv
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -45,17 +45,17 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
- * 
+ *
  * DefaultRepositoryActivityDao
- * 
- * 
+ *
+ *
  * <br />
  * <br />
  * Created on 15.1.2013, 15:17:03 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
+ *
  */
 public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 {
@@ -266,7 +266,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                                     + " = ? AND " + RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ? ", domain.getId(),
                             repositoryPullRequestMapping.getID(), issueKeyToRemove)));
         }
-        
+
         return currentIssueKeys.size();
     }
 
@@ -571,6 +571,18 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return Arrays.asList(activeObjects.find(RepositoryPullRequestUpdateActivityMapping.class, query));
     }
 
+    @Override
+    public RepositoryPullRequestUpdateActivityMapping getLatestOrOldestUpdateActivity(Repository domain, int localPrId, boolean latest)
+    {
+        Query query = Query.select().from(RepositoryPullRequestUpdateActivityMapping.class);
+        query.where(RepositoryDomainMapping.DOMAIN + " = ? AND " + RepositoryPullRequestUpdateActivityMapping.PULL_REQUEST_ID + " = ? ",
+                domain.getId(), localPrId);
+        query.order(RepositoryPullRequestUpdateActivityMapping.LAST_UPDATED_ON + (latest ? " DESC" : " ASC"));
+        query.setLimit(1);
+        RepositoryPullRequestUpdateActivityMapping[] found = activeObjects.find(RepositoryPullRequestUpdateActivityMapping.class, query);
+        return found.length == 1 ? found[0] : null;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -685,4 +697,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         return sortable;
     }
+
+
 }

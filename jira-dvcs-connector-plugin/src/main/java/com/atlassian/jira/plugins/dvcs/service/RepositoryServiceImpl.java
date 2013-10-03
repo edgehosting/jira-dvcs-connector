@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -41,10 +40,12 @@ import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
@@ -108,11 +109,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private ChangesetCache changesetCache;
-
-    @Resource(name = "delegatingRepositoryActivitySynchronizer")
-    private RepositoryActivitySynchronizer activitySynchronizer;
-
-
 
     /**
      * {@inheritDoc}
@@ -454,6 +450,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 changesetService.removeAllInRepository(repository.getId());
                 branchService.removeAllBranchHeadsInRepository(repository.getId());
                 repository.setLastCommitDate(null);
+                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+                {
+                    repositoryActivityDao.removeAll(repository);
+                    repository.setActivityLastSync(null);
+                }
                 save(repository);
             }
 
@@ -475,9 +476,18 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             } else
             {
-                BranchFilterInfo filterNodes = getFilterNodes(repository);
+                /*BranchFilterInfo filterNodes = getFilterNodes(repository);
                 processBitbucketSync(repository, softSync, filterNodes);
-                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
+            }
+
+            if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+            {
+                MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                        BitbucketSynchronizeActivityMessage.class, //
+                        BitbucketSynchronizeActivityMessageConsumer.KEY //
+                        );
+                messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
             }
         }
     }

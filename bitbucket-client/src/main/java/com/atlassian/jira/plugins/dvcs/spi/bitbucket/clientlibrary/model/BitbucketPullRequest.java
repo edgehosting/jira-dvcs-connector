@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 /**
  * BitbucketPullRequest
- * 
- * 
+ *
+ *
  * <br />
  * <br />
  * Created on 11.12.2012, 14:02:57 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
+ *
  */
 public class BitbucketPullRequest implements Serializable
 {
@@ -22,7 +22,6 @@ public class BitbucketPullRequest implements Serializable
     private String title;
     private String description;
     private BitbucketAccount user;
-    private BitbucketPullRequestCommitInfo commits;
     private BitbucketPullRequestLinks links;
     private BitbucketPullRequestHead source;
 
@@ -59,16 +58,6 @@ public class BitbucketPullRequest implements Serializable
     public void setUser(BitbucketAccount user)
     {
         this.user = user;
-    }
-
-    public BitbucketPullRequestCommitInfo getCommits()
-    {
-        return commits;
-    }
-
-    public void setCommits(BitbucketPullRequestCommitInfo commits)
-    {
-        this.commits = commits;
     }
 
     public String getDescription()
