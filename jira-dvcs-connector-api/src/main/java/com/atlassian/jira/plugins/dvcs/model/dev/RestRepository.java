@@ -11,9 +11,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestRepository
 {
     private String name;
+    private String slug;
     private String url;
     private String avatar;
     private List<RestChangeset> commits;
+    private Boolean fork;
+    private RestRepository forkOf;
 
     public RestRepository()
     {
@@ -57,5 +60,35 @@ public class RestRepository
     public void setCommits(final List<RestChangeset> commits)
     {
         this.commits = commits;
+    }
+
+    public Boolean isFork()
+    {
+        return fork;
+    }
+
+    public void setFork(final boolean fork)
+    {
+        this.fork = fork;
+    }
+
+    public RestRepository getForkOf()
+    {
+        return forkOf;
+    }
+
+    public void setForkOf(final RestRepository forkOf)
+    {
+        this.forkOf = forkOf;
+    }
+
+    public String getSlug()
+    {
+        return slug;
+    }
+
+    public void setSlug(final String slug)
+    {
+        this.slug = slug;
     }
 }

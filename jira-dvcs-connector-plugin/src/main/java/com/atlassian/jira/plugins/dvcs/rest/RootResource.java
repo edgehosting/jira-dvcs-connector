@@ -597,9 +597,19 @@ public class RootResource
 
             RestRepository restRepository = new RestRepository();
             restRepository.setName(repository.getName());
+            restRepository.setSlug(repository.getSlug());
             restRepository.setUrl(repository.getRepositoryUrl());
             restRepository.setAvatar(repository.getLogo());
             restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repositoryId)));
+                        restRepository.setFork(repository.isFork());
+            if (repository.isFork() && repository.getForkOf() != null)
+            {
+                RestRepository forkOfRepository = new RestRepository();
+                forkOfRepository.setName(repository.getForkOf().getName());
+                forkOfRepository.setSlug(repository.getForkOf().getSlug());
+                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
+                restRepository.setForkOf(forkOfRepository);
+            }
 
             restRepositories.add(restRepository);
         }

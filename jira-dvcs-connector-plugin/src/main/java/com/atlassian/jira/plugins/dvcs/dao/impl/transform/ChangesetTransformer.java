@@ -35,6 +35,9 @@ public class ChangesetTransformer
 
         final Changeset changeset = transform(mainRepositoryId, changesetMapping, fileData, parents);
         
+        List<Integer> repositories = changeset.getRepositoryIds();
+        int firstRepository = 0;
+
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
         {
             if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
@@ -42,20 +45,29 @@ public class ChangesetTransformer
                 continue;
             }
 
-            List<Integer> repositories = changeset.getRepositoryIds();
             if (repositories == null)
             {
                 repositories = new ArrayList<Integer>();
                 changeset.setRepositoryIds(repositories);
-                if (changeset.getRepositoryId() == 0)
-                {
-                    changeset.setRepositoryId(repositoryMapping.getID());
-                }
+
+                // mark first repository
+                firstRepository = repositoryMapping.getID();
+            }
+
+            // we found repository that is not fork and no main repository is set on changeset,let's use it
+            if (changeset.getRepositoryId() == 0 && !repositoryMapping.isFork())
+            {
+                changeset.setRepositoryId(repositoryMapping.getID());
             }
 
             repositories.add(repositoryMapping.getID());
         }
 
+        // no main repository was assigned, let's use the first one
+        if (changeset.getRepositoryId() == 0)
+        {
+            changeset.setRepositoryId(firstRepository);
+        }
         return CollectionUtils.isEmpty(changeset.getRepositoryIds())? null : changeset;
     }
 

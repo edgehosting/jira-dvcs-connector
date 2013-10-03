@@ -55,7 +55,7 @@ public class BranchDaoImpl implements BranchDao
                 log.debug("adding branch head {} for repository with id = [ {} ]", new Object[]{branchHead, repositoryId});
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
-                map.put(BranchHeadMapping.BRANCH_NAME, branchHead.getName());
+                map.put(BranchHeadMapping.BRANCH_NAME, ActiveObjectsUtils.stripToLimit(branchHead.getName(), 255));
                 map.put(BranchHeadMapping.HEAD, branchHead.getHead());
 
                 activeObjects.create(BranchHeadMapping.class, map);

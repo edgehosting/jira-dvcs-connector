@@ -24,6 +24,7 @@ public class Repository
     private boolean linked;
     private boolean deleted;
     private boolean smartcommitsEnabled;
+    private String owner;
     
     private Date activityLastSync;
     
@@ -34,6 +35,8 @@ public class Repository
     
     private String repositoryUrl;
     private String logo;
+    private boolean fork;
+    private Repository forkOf;
     
     private transient Credential credential;
     private transient String orgHostUrl;
@@ -251,6 +254,36 @@ public class Repository
         this.smartcommitsEnabled = smartcommitsEnabled;
     }
 
+    public boolean isFork()
+    {
+        return fork;
+    }
+
+    public void setFork(final boolean fork)
+    {
+        this.fork = fork;
+    }
+
+    public Repository getForkOf()
+    {
+        return forkOf;
+    }
+
+    public void setForkOf(final Repository forkOf)
+    {
+        this.forkOf = forkOf;
+    }
+
+    public String getOwner()
+    {
+        return owner;
+    }
+
+    public void setOwner(final String owner)
+    {
+        this.owner = owner;
+    }
+
     @Override
     public String toString()
     {
@@ -266,4 +299,5 @@ public class Repository
     {
         this.activityLastSync = activityLastSync;
     }
+
 }
