@@ -5,7 +5,6 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
-import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
@@ -73,25 +72,26 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     }
 
     @Override
-    public void checkIssuePermission(Permissions.Permission permission, String issueKey)
+    public boolean hasIssuePermission(Permissions.Permission permission, String issueKey)
     {
         MutableIssue issue = issueManager.getIssueObject(issueKey);
-        User loggedInUser = authenticationContext.getLoggedInUser();
-        if (!permissionManager.hasPermission(permission.getId(), issue, loggedInUser))
+        if (issue == null)
         {
-            throw new AuthorizationException();
+            return true;
         }
+        User loggedInUser = authenticationContext.getLoggedInUser();
+        return permissionManager.hasPermission(permission.getId(), issue, loggedInUser);
     }
 
     @Override
-    public void checkProjectPermission(Permissions.Permission permission, String projectKey)
+    public boolean hasProjectPermission(Permissions.Permission permission, String projectKey)
     {
         Project project = projectManager.getProjectObjByKey(projectKey);
-        User loggedInUser = authenticationContext.getLoggedInUser();
-        if (!permissionManager.hasPermission(permission.getId(), project, loggedInUser))
+        if (project == null)
         {
-            throw new AuthorizationException();
+            return true;
         }
-
+        User loggedInUser = authenticationContext.getLoggedInUser();
+        return permissionManager.hasPermission(permission.getId(), project, loggedInUser);
     }
 }
