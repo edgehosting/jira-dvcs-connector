@@ -1,25 +1,21 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
+import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubRegisterOAuthAppPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
-import com.atlassian.plugin.util.zip.FileUnzipper;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * @author Miroslav Stencel
@@ -34,8 +30,6 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     private static final String _2ND_GIT_REPO_ZIP_TO_PUSH = "missingCommits/git/git_2nd_push_after_merge.zip";
 
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
-
-    private static OAuth oAuth;
 
     @BeforeClass
     public static void initializeGithubRepositoriesREST()
@@ -60,14 +54,12 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     }
 
     @Override
-    OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
+    OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
         // log in to github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from github
-        oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
-
-        return new OAuthCredentials(oAuth.key, oAuth.secret);
+        return new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
     }
 
     @Override
@@ -138,13 +130,9 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOAuth()
     {
-        jira.getTester().gotoUrl(oAuth.applicationId);
-
-        GithubRegisterOAuthAppPage registerAppPage = jira.getPageBinder().bind(GithubRegisterOAuthAppPage.class);
-        registerAppPage.deleteOAuthApp(jira, DVCS_REPO_PASSWORD);
-
-        jira.getTester().gotoUrl(GithubLoginPage.PAGE_URL);
-        GithubLoginPage ghLoginPage = jira.getPageBinder().bind(GithubLoginPage.class);
-        ghLoginPage.doLogout();
+        // remove OAuth in github
+        new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+        // log out from github
+        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
 }

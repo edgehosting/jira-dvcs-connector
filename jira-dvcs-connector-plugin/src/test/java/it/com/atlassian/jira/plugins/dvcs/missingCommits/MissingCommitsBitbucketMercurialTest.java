@@ -1,26 +1,20 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketIntegratedApplicationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-import com.google.common.collect.Lists;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import org.apache.commons.io.FileUtils;
+import org.testng.annotations.BeforeClass;
+
+import java.io.File;
 
 /**
  * @author Martin Skurla
@@ -31,8 +25,6 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     private static final String _2ND_HG_REPO_ZIP_TO_PUSH = "missingCommits/mercurial/hg_2nd_push_after_merge.zip";
 
     private static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
-
-    private BitbucketIntegratedApplicationsPage bitbucketIntegratedApplicationsPage;
 
     @BeforeClass
     public static void initializeBitbucketRepositoriesREST()
@@ -60,16 +52,12 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     }
 
     @Override
-    OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials()
+    OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
-        jira.getTester().gotoUrl(BitbucketLoginPage.LOGIN_PAGE);
-        jira.getPageBinder().bind(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
-
-        jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        bitbucketIntegratedApplicationsPage =
-                jira.getPageBinder().bind(BitbucketIntegratedApplicationsPage.class);
-
-        return bitbucketIntegratedApplicationsPage.addConsumer();
+        // log in to Bitbucket
+        new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
+        // setup up OAuth from bitbucket
+        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
     }
 
     @Override
@@ -122,7 +110,12 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     @Override
     void removeOAuth()
     {
-        jira.getTester().gotoUrl("https://bitbucket.org/account/user/dvcsconnectortest/api");
-        bitbucketIntegratedApplicationsPage.removeLastAdddedConsumer();
+        // delete all organizations
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.getPage().deleteAllOrganizations();
+        // remove OAuth in bitbucket
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+        // log out from bitbucket
+        new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogout();
     }
 }
