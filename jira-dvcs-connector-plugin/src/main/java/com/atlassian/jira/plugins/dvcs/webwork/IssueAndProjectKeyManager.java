@@ -29,14 +29,18 @@ public interface IssueAndProjectKeyManager
      *
      * @param permission Permission to be checked
      * @param issueKey issue key
+     *
+     * @return true if the logged in user has required permision, false otherwise
      */
-    void checkIssuePermission(Permissions.Permission permission, String issueKey);
+    boolean hasIssuePermission(Permissions.Permission permission, String issueKey);
 
     /**
      * Checks permissions on a project for the logged in user
      *
      * @param permission Permission to be checked
      * @param projectKey project key
+     *
+     * @return true if the logged in user has required permision, false otherwise
      */
-    void checkProjectPermission(Permissions.Permission permission, String projectKey);
+    boolean hasProjectPermission(Permissions.Permission permission, String projectKey);
 }

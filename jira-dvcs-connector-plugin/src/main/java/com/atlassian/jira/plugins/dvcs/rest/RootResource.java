@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -516,7 +517,10 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON })
     public Response getCommits( @QueryParam("issue") String issueKey)
     {
-        issueAndProjectKeyManager.checkIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey);
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey))
+        {
+           throw new AuthorizationException();
+        }
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
