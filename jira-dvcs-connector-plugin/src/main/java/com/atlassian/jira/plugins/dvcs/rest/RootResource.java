@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import com.google.common.collect.ArrayListMultimap;
@@ -513,12 +514,9 @@ public class RootResource
     @GET
     @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
+    public Response getCommits( @QueryParam("issue") String issueKey)
     {
-        if (type != null && !"repository".equals(type))
-        {
-            return Status.badRequest().message("Type '" + type + "' is not supported.").response();
-        }
+        issueAndProjectKeyManager.checkIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey);
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
