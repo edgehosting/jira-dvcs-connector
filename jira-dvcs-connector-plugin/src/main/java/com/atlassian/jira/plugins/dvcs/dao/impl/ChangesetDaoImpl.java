@@ -197,13 +197,13 @@ public class ChangesetDaoImpl implements ChangesetDao
         // characters
         // todo: remove NULL Chars before call setters
         chm.setNode(changeset.getNode());
-        chm.setRawAuthor(changeset.getRawAuthor());
+        chm.setRawAuthor(ActiveObjectsUtils.stripToLimit(changeset.getRawAuthor(), 255));
         chm.setAuthor(changeset.getAuthor());
         chm.setDate(changeset.getDate());
         chm.setRawNode(changeset.getRawNode());
-        chm.setBranch(changeset.getBranch());
+        chm.setBranch(ActiveObjectsUtils.stripToLimit(changeset.getBranch(), 255));
         chm.setMessage(changeset.getMessage());
-        chm.setAuthorEmail(changeset.getAuthorEmail());
+        chm.setAuthorEmail(ActiveObjectsUtils.stripToLimit(changeset.getAuthorEmail(), 255));
         chm.setSmartcommitAvailable(changeset.isSmartcommitAvaliable());
 
         JSONArray parentsJson = new JSONArray();
