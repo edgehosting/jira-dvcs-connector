@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
- * 
+ *
  * <pre>
  * {
  *   "changeset": "43b3aa22e47d01ce0087fbea9f6e047651595f0d",
@@ -14,13 +15,15 @@ import java.util.List;
  * }
  * </pre>
  */
-public class BitbucketBranch
+public class BitbucketBranch implements Serializable
 {
+    private static final long serialVersionUID = 980662238990762018L;
+
     private String changeset;
     private List<String> heads;
     private String name;
     private boolean mainbranch;
-    
+
     public String getName()
     {
         return name;

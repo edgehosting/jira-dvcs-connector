@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -164,7 +165,6 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
             try
             {
-
                 messageDao.markQueued(message);
                 if (message.getPayload().getProgress().isShouldStop())
                 {
@@ -183,9 +183,9 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
-                messageDao.markFail(message, delegate);
-                // TODO what now with progress ?
-
+                messageDao.delete(message);
+                ((DefaultProgress) message.getPayload().getProgress()).setError("Error during sync. See server logs.");
+                message.getPayload().getProgress().setFinished(true);
             }
         }
     }

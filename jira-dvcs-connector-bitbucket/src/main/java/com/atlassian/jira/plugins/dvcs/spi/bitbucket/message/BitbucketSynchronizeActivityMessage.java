@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -17,8 +17,8 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
 
     private Repository repository;
     private Progress progress;
-    private List<Integer> processedPullRequests;
-    private List<Integer> processedPullRequestsLocal;
+    private Set<Integer> processedPullRequests;
+    private Set<Integer> processedPullRequestsLocal;
 
     private int pageNum;
 
@@ -26,8 +26,8 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
                                                Progress progress,
                                                boolean softSync,
                                                int pageNum,
-                                               List<Integer> processedPullRequests,
-                                               List<Integer> processedPullRequestsLocal)
+                                               Set<Integer> processedPullRequests,
+                                               Set<Integer> processedPullRequestsLocal)
     {
         this.repository = repository;
         this.progress = progress;
@@ -39,7 +39,7 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
 
     public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync)
     {
-        this(repository, null, softSync, 1, new ArrayList<Integer>(), new ArrayList<Integer>());
+        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>());
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
         return softSync;
     }
 
-    public List<Integer> getProcessedPullRequests()
+    public Set<Integer> getProcessedPullRequests()
     {
         return processedPullRequests;
     }
@@ -68,7 +68,7 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
         return pageNum;
     }
 
-    public List<Integer> getProcessedPullRequestsLocal()
+    public Set<Integer> getProcessedPullRequestsLocal()
     {
         return processedPullRequestsLocal;
     }

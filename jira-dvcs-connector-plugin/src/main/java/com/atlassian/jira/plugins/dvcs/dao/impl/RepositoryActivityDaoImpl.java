@@ -150,6 +150,25 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         });
     }
 
+    @Override
+    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch)
+    {
+      final RepositoryPullRequestMapping request = findRequestById(localId);
+      request.setName(name);
+      request.setSourceBranch(sourceBranch);
+      request.setDestinationBranch(dstBranch);
+      activeObjects.executeInTransaction(new TransactionCallback<Void>()
+      {
+          @Override
+          public Void doInTransaction()
+          {
+              request.save();
+              return null;
+          }
+      });
+      return request;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -390,6 +409,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         }
 
         return sort(ret);
+    }
+
+    @Override
+    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(String issueKey)
+    {
+        return null;
     }
 
     // FIXME: in progress it is not finished yet
@@ -697,6 +722,5 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
         return sortable;
     }
-
 
 }

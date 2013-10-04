@@ -13,6 +13,8 @@ public interface RepositoryActivityDao
 
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
 
+    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch);
+
     /**
      * Updates issue keys related to commits of provided repository.
      *
@@ -41,6 +43,8 @@ public interface RepositoryActivityDao
 
     // R
     List<RepositoryActivityMapping> getRepositoryActivityForIssue(String issueKey);
+
+    List<RepositoryPullRequestMapping> getPullRequestsForIssue(String issueKey);
 
     RepositoryPullRequestUpdateActivityMapping getLatestOrOldestUpdateActivity(Repository domain, int localId, boolean latest);
 

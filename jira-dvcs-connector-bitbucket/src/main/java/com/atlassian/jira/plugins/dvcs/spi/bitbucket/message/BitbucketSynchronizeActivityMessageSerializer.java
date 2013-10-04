@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -55,8 +55,8 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         Progress progress;
         Repository repository;
         boolean softSync = false;
-        List<Integer> processedPullRequests;
-        List<Integer> processedPullRequestsLocal;
+        Set<Integer> processedPullRequests;
+        Set<Integer> processedPullRequestsLocal;
         int page = 1;
 
         try
@@ -66,8 +66,8 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             repository = repositoryService.get(result.optInt("repository"));
             softSync = result.optBoolean("softSync");
             page = result.optInt("page");
-            processedPullRequests = asList(result.optJSONArray("processedPullRequests"));
-            processedPullRequestsLocal = asList(result.optJSONArray("processedPullRequestsLocal"));
+            processedPullRequests = asSet(result.optJSONArray("processedPullRequests"));
+            processedPullRequestsLocal = asSet(result.optJSONArray("processedPullRequestsLocal"));
 
             progress = synchronizer.getProgress(repository.getId());
             if (progress == null || progress.isFinished())
@@ -84,9 +84,9 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         return new BitbucketSynchronizeActivityMessage(repository, progress, softSync, page, processedPullRequests, processedPullRequestsLocal);
     }
 
-    private List<Integer> asList(JSONArray optJSONArray)
+    private Set<Integer> asSet(JSONArray optJSONArray)
     {
-        List<Integer> ret = new ArrayList<Integer>();
+        Set<Integer> ret = new HashSet<Integer>();
         if (optJSONArray == null)
         {
             return ret;

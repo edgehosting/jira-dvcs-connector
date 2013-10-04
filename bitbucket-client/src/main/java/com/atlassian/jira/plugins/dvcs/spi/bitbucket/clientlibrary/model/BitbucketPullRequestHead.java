@@ -11,6 +11,7 @@ public class BitbucketPullRequestHead implements Serializable
     private static final long serialVersionUID = -5134849227580638384L;
 
     private BitbucketPullRequestCommit commit;
+    private BitbucketBranch branchName;
     private BitbucketPullRequestRepository repository;
 
     public BitbucketPullRequestCommit getCommit()
@@ -31,5 +32,15 @@ public class BitbucketPullRequestHead implements Serializable
     public void setRepository(BitbucketPullRequestRepository repository)
     {
         this.repository = repository;
+    }
+
+    public BitbucketBranch getBranchName()
+    {
+        return branchName;
+    }
+
+    public void setBranchName(BitbucketBranch branchName)
+    {
+        this.branchName = branchName;
     }
 }
