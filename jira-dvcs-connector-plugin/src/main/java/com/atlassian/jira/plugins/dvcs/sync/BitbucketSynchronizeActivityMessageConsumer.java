@@ -232,7 +232,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (hasChanged(local, remote) && remote != null)
         {
             dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                    .getBranchName().getName(), remote.getDestination().getBranchName().getName());
+                    .getBranchName().getName(), remote.getDestination().getBranchName().getName(), remote.getStatus());
         }
 
         return local.getID();
