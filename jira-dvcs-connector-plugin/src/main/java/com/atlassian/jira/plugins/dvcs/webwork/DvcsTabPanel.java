@@ -5,8 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsIssueAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +99,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         // make advertisement, if plug-in is not using
         if (!repositoryService.existsLinkedRepositories())
         {
-            eventPublisher.publish(new DvcsIssueAnalyticsEvent("issue", "tabshowing", false));
+            eventPublisher.publish(new DvcsCommitsAnalyticsEvent("issue", "tabshowing", false));
             return Collections.<IssueAction> singletonList(new AdvertisementAction());
         }
 
@@ -110,7 +109,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
             actions.add(ChangesetRenderer.DEFAULT_MESSAGE);
         }
 
-        eventPublisher.publish(new DvcsIssueAnalyticsEvent("issue", "tabshowing", true));
+        eventPublisher.publish(new DvcsCommitsAnalyticsEvent("issue", "tabshowing", true));
         return actions;
     }
 
