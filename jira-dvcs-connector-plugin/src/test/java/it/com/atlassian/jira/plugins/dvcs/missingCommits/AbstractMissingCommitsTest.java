@@ -10,6 +10,7 @@ import com.atlassian.jira.testkit.client.Backdoor;
 import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
 import com.google.common.collect.Lists;
 import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -56,13 +57,16 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     @BeforeClass
     public void beforeClass()
     {
+        // log in to JIRA
+        new JiraLoginPageController(jira).login();
+
         oAuth = loginToDvcsAndGetJiraOAuthCredentials();
     }
 
     @AfterClass(alwaysRun = true)
     public void afterClass()
     {
-       removeOAuth();
+        removeOAuth();
     }
 
     abstract void removeRemoteDvcsRepository();

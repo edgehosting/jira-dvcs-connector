@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthP
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -58,7 +57,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
         // log in to Bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from bitbucket
-        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).addConsumer();
     }
 
     @Override
@@ -118,11 +117,8 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     @Override
     void removeOAuth()
     {
-        // delete all organizations
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.getPage().deleteAllOrganizations();
         // remove OAuth in bitbucket
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(oAuth.applicationId);
         // log out from bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }

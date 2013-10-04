@@ -110,11 +110,8 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     @Override
     void removeOAuth()
     {
-        // delete all organizations
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.getPage().deleteAllOrganizations();
         // remove OAuth in bitbucket
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(oAuth.applicationId);
         // log out from bitbucket
         new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogout();
     }
