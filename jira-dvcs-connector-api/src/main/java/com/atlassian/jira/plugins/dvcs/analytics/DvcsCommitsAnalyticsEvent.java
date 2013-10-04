@@ -9,14 +9,14 @@ import com.atlassian.analytics.api.annotations.EventName;
  * 'Commit' tab is rendered and showing.
  * Possible sources are 'issue' for tab in issue and 'agile' for Jira Agile tab.
  */
-public class DvcsIssueAnalyticsEvent
+public class DvcsCommitsAnalyticsEvent
 {
 
     private final String eventName;
     private final boolean isAuthenticated;
     private final String source;
 
-    public DvcsIssueAnalyticsEvent(final String source, final String eventName, final boolean isAuthenticated)
+    public DvcsCommitsAnalyticsEvent(final String source, final String eventName, final boolean isAuthenticated)
     {
         this.eventName = eventName;
         this.isAuthenticated = isAuthenticated;
@@ -26,7 +26,7 @@ public class DvcsIssueAnalyticsEvent
     @EventName
     public String determineEventName()
     {
-        return "jira.dvcsconnector.issue." + eventName;
+        return "jira.dvcsconnector.commit." + eventName;
     }
 
     public boolean isAuthenticated()
