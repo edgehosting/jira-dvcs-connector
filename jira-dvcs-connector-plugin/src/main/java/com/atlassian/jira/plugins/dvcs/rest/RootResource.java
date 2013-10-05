@@ -17,10 +17,12 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import com.google.common.collect.ArrayListMultimap;
@@ -513,11 +515,11 @@ public class RootResource
     @GET
     @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits(@QueryParam("type") String type, @QueryParam("issue") String issueKey)
+    public Response getCommits( @QueryParam("issue") String issueKey)
     {
-        if (type != null && !"repository".equals(type))
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey))
         {
-            return Status.badRequest().message("Type '" + type + "' is not supported.").response();
+           throw new AuthorizationException();
         }
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
