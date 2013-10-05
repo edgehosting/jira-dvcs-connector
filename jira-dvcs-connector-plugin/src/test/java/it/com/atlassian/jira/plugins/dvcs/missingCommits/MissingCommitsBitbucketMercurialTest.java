@@ -57,7 +57,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         // log in to Bitbucket
         new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from bitbucket
-        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class,DVCS_REPO_OWNER).addConsumer();
     }
 
     @Override
