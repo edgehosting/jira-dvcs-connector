@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsIssueAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.plugin.PluginParseException;
@@ -74,10 +74,10 @@ public class DvcsTabPanelContextProvider implements ContextProvider
             {
                 if (!repositoryService.existsLinkedRepositories())
                 {
-                    eventPublisher.publish(new DvcsIssueAnalyticsEvent("agile", "tabshowing", false));
+                    eventPublisher.publish(new DvcsCommitsAnalyticsEvent("agile", "tabshowing", false));
                 } else
                 {
-                    eventPublisher.publish(new DvcsIssueAnalyticsEvent("agile", "tabshowing", true));
+                    eventPublisher.publish(new DvcsCommitsAnalyticsEvent("agile", "tabshowing", true));
 
                 }
 

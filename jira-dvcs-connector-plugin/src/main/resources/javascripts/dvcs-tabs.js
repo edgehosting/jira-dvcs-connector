@@ -32,11 +32,15 @@ com.atlassian.jira.dvcs.registerInlineDialogTooltip = function (element, body) {
 };
 
 AJS.$(document).on('click', '#dvcs-commits-tabpanel.ajax-activity-content', function(e) {
-    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.tabclick'});
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.commit.tabclick', data: {source: 'issue'}});
 });
 
 AJS.$(document).on('click', '.dvcs-link', function(e) {
-    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.issue.linkclick', data: {type: AJS.$(this).attr('data-link-type')}});
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.commit.linkclick', data: {type: AJS.$(this).attr('data-link-type')}});
 });
 
+AJS.$(document).on("click", 'a[href="#ghx-tab-com-atlassian-jira-plugins-'
+        + 'jira-bitbucket-connector-plugin-dvcs-commits-greenhopper-tab"]',function(e) {
+    AJS.trigger('analyticsEvent', {name: 'jira.dvcsconnector.commit.tabclick', data: {source: 'agile'}});
+});
 
