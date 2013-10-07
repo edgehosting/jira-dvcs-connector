@@ -48,15 +48,22 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     }
 
     @Override
+    public Issue getIssue(String issueKey)
+    {
+        return issueManager.getIssueObject(issueKey);
+    }
+
+    @Override
+    public Project getProject(String projectKey)
+    {
+        return projectManager.getProjectObjByKey(projectKey);
+    }
+
+    @Override
     public Set<String> getAllIssueKeys(String issueKey)
     {
         MutableIssue issue = issueManager.getIssueObject(issueKey);
-        if (issue == null)
-        {
-            // the issue has not been found, but we will use the issueKey
-            return Collections.singleton(issueKey);
-        }
-        return SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
+        return getAllIssueKeys(issue);
     }
 
     @Override
@@ -72,24 +79,22 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     }
 
     @Override
-    public boolean hasIssuePermission(Permissions.Permission permission, String issueKey)
+    public boolean hasIssuePermission(Permissions.Permission permission, Issue issue)
     {
-        MutableIssue issue = issueManager.getIssueObject(issueKey);
         if (issue == null)
         {
-            return true;
+            throw new NullPointerException("The issue cannot be null");
         }
         User loggedInUser = authenticationContext.getLoggedInUser();
         return permissionManager.hasPermission(permission.getId(), issue, loggedInUser);
     }
 
     @Override
-    public boolean hasProjectPermission(Permissions.Permission permission, String projectKey)
+    public boolean hasProjectPermission(Permissions.Permission permission, Project project)
     {
-        Project project = projectManager.getProjectObjByKey(projectKey);
         if (project == null)
         {
-            return true;
+            throw new NullPointerException("The project cannot be null");
         }
         User loggedInUser = authenticationContext.getLoggedInUser();
         return permissionManager.hasPermission(permission.getId(), project, loggedInUser);

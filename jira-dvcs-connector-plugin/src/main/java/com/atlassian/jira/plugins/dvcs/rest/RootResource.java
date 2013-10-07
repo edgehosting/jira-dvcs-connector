@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -515,9 +516,15 @@ public class RootResource
     @GET
     @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits( @QueryParam("issue") String issueKey)
+    public Response getCommits(@QueryParam("issue") String issueKey)
     {
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey))
+        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
+        if (issue == null)
+        {
+            return Status.notFound().message("Issue with key '" + issueKey + "' not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issue))
         {
            throw new AuthorizationException();
         }
