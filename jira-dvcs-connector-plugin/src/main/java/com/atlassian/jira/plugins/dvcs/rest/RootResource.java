@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -23,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -564,11 +566,29 @@ public class RootResource
     @GET
     @Path("/jira-dev/detail")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits( @QueryParam("issue") String issueKey)
+    public Response getCommits(@QueryParam("issue") String issueKey)
     {
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issueKey))
+        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
+        if (issue == null)
         {
-           throw new AuthorizationException();
+            return Status.notFound().message("Issue not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+        {
+            throw new AuthorizationException();
+        }
+
+        Project project = issue.getProjectObject();
+
+        if (project == null)
+        {
+            return Status.notFound().message("Project was not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+        {
+            throw new AuthorizationException();
         }
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);

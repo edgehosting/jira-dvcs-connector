@@ -1,13 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import java.util.ArrayList;
-import java.util.List;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -32,6 +33,9 @@ public class DefaultProgress implements Progress
 
     @XmlAttribute
     private long startTime = 0;
+
+    @XmlAttribute
+    private long finishTime = 0;
 
     @XmlAttribute
     private String error;
@@ -75,6 +79,7 @@ public class DefaultProgress implements Progress
 
     public void finish()
     {
+        finishTime = System.currentTimeMillis();
         finished = true;
     }
 
@@ -129,6 +134,16 @@ public class DefaultProgress implements Progress
         this.startTime = startTime;
     }
 
+    public long getFinishTime()
+    {
+        return finishTime;
+    }
+
+    public void setFinishTime(long finishTime)
+    {
+        this.finishTime = finishTime;
+    }
+
     @Override
     public void setFinished(boolean finished)
     {
@@ -155,11 +170,13 @@ public class DefaultProgress implements Progress
         this.synchroErrorCount = synchroErrorCount;
     }
 
+    @Override
     public List<SmartCommitError> getSmartCommitErrors()
     {
         return smartCommitErrors;
     }
 
+    @Override
     public void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors)
     {
         this.smartCommitErrors = smartCommitErrors;

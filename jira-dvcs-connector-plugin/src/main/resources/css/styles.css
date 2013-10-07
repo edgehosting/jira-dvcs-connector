@@ -41,8 +41,9 @@
      vertical-align: text-bottom;
      display: inline-block;
  }
+
  
-  .syncrepoicon:ACTIVE {
+.syncrepoicon:ACTIVE {
   	top: 1px;
   	left: 1px;
   	position: relative;
@@ -50,8 +51,12 @@
 
  .syncrepoicon.running {
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+     cursor: default;
  }
- 
+ .syncrepoicon.syncrepoiconqueue {
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/queued.png);
+     cursor: default;
+ }
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     display:inline-block;

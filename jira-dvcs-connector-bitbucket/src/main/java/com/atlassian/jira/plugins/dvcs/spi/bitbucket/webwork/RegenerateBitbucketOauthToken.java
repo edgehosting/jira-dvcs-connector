@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
+import org.scribe.exceptions.OAuthConnectionException;
 import org.scribe.model.SignatureType;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
@@ -104,7 +106,15 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         request.getSession().removeAttribute("requestToken");
 
         OAuthService service = createOAuthScribeService();
-        Token accessTokenObj = service.getAccessToken(requestToken, verifier);
+        Token accessTokenObj = null;
+        try
+        {
+            accessTokenObj = service.getAccessToken(requestToken, verifier);
+        } catch (OAuthConnectionException e)
+        {
+            Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
+            throw new SourceControlException("Error obtaining access token. Cannot access " + organizationInstance.getHostUrl() + " from Jira.", e);
+        }
         return BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
     }
 }

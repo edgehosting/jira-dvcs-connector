@@ -73,6 +73,7 @@ public class SmartcommitOperation implements Runnable
                     CommitCommands commands = commitMessageParser.parseCommitComment(changeset.getMessage());
                     commands.setCommitDate(changeset.getDate());
                     commands.setAuthorEmail(changeset.getAuthorEmail());
+                    commands.setAuthorName(changeset.getAuthor());
                     // do commands
                     if (CollectionUtils.isNotEmpty(commands.getCommands()))
                     {

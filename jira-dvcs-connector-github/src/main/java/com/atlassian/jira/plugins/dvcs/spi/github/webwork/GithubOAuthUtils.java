@@ -130,7 +130,7 @@ public class GithubOAuthUtils
             throw new InvalidResponseException("Error obtaining access token. Response is invalid.");
         }
 
-        return result.replaceAll("access_token=(.*)&token_type.*", "$1");
+        return result.replaceAll("access_token=([^&]*).*", "$1");
     }
 
     private String githubUrl(String githubHostUrl)
