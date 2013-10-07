@@ -522,7 +522,7 @@ public class RootResource
         Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
         if (issue == null)
         {
-            return Status.notFound().message("Issue with key '" + issueKey + "' not found").response();
+            return Status.notFound().message("Issue not found").response();
         }
 
         if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
@@ -534,7 +534,7 @@ public class RootResource
 
         if (project == null)
         {
-            return Status.notFound().message("Project was not provided").response();
+            return Status.notFound().message("Project was not found").response();
         }
 
         if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))

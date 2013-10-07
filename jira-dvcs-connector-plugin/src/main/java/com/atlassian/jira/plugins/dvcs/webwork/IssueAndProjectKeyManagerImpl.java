@@ -83,7 +83,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     {
         if (issue == null)
         {
-            throw new NullPointerException("The issue cannot be null");
+            throw new IllegalArgumentException("The issue cannot be null");
         }
         User loggedInUser = authenticationContext.getLoggedInUser();
         return permissionManager.hasPermission(permission.getId(), issue, loggedInUser);
@@ -94,7 +94,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     {
         if (project == null)
         {
-            throw new NullPointerException("The project cannot be null");
+            throw new IllegalArgumentException("The project cannot be null");
         }
         User loggedInUser = authenticationContext.getLoggedInUser();
         return permissionManager.hasPermission(permission.getId(), project, loggedInUser);
