@@ -112,7 +112,8 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
             accessTokenObj = service.getAccessToken(requestToken, verifier);
         } catch (OAuthConnectionException e)
         {
-            throw new SourceControlException("Error obtaining access token. Cannot access " + ap.getBaseUrl() + " from Jira.", e);
+            Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
+            throw new SourceControlException("Error obtaining access token. Cannot access " + organizationInstance.getHostUrl() + " from Jira.", e);
         }
         return BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
     }
