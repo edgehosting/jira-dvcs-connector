@@ -23,6 +23,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -524,9 +525,21 @@ public class RootResource
             return Status.notFound().message("Issue with key '" + issueKey + "' not found").response();
         }
 
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.VIEW_VERSION_CONTROL, issue))
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
         {
-           throw new AuthorizationException();
+            throw new AuthorizationException();
+        }
+
+        Project project = issue.getProjectObject();
+
+        if (project == null)
+        {
+            return Status.notFound().message("Project was not provided").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+        {
+            throw new AuthorizationException();
         }
 
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
