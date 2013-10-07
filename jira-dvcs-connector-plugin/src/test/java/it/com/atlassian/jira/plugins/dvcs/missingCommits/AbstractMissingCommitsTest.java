@@ -1,20 +1,5 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Properties;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
@@ -24,6 +9,24 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.jira.testkit.client.Backdoor;
 import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
 import com.google.common.collect.Lists;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.Properties;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * @author Martin Skurla
@@ -37,6 +40,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
     protected Backdoor testKit;
+    protected OAuth oAuth;
 
     @BeforeMethod
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
@@ -50,10 +54,25 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         createJiraProjectWithIssue();
     }
 
+    @BeforeClass
+    public void beforeClass()
+    {
+        // log in to JIRA
+        new JiraLoginPageController(jira).login();
+
+        oAuth = loginToDvcsAndGetJiraOAuthCredentials();
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void afterClass()
+    {
+        removeOAuth();
+    }
+
     abstract void removeRemoteDvcsRepository();
     abstract void createRemoteDvcsRepository();
 
-    abstract OAuthCredentials loginToDvcsAndGetJiraOAuthCredentials();
+    abstract OAuth loginToDvcsAndGetJiraOAuthCredentials();
     abstract void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception;
 
     abstract String getFirstDvcsZipRepoPathToPush();
@@ -66,9 +85,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         pushToRemoteDvcsRepository(getFirstDvcsZipRepoPathToPush());
 
-        OAuthCredentials oAuthCredentials = loginToDvcsAndGetJiraOAuthCredentials();
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
-        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, oAuthCredentials, true);
+        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), true);
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
@@ -82,8 +100,6 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         // Remove all organizations
         jira.goTo(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
-
-        removeOAuth();
     }
 
     public String getGitCommand()
