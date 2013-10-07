@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.core.util.map.EasyMap;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
@@ -16,13 +17,16 @@ import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.templaterenderer.TemplateRenderer;
 
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
@@ -35,8 +39,8 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     private final RepositoryActivityDao activityDao;
     private final IssueManager issueManager;
     private final ChangeHistoryManager changeHistoryManager;
-
     private final IssueActionFactory issueActionFactory;
+    private final TemplateRenderer templateRenderer;
 
     private static final Comparator<? super IssueAction> ISSUE_ACTION_COMPARATOR = new Comparator<IssueAction>()
     {
@@ -54,7 +58,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     public DvcsActivityTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
             RepositoryService repositoryService, RepositoryActivityDao activityDao,
             @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory,
-            IssueManager issueManager, ChangeHistoryManager changeHistoryManager)
+            IssueManager issueManager, ChangeHistoryManager changeHistoryManager, TemplateRenderer templateRenderer)
     {
         this.permissionManager = permissionManager;
         this.changesetService = changesetService;
@@ -63,6 +67,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         this.issueActionFactory = issueActionFactory;
         this.issueManager = issueManager;
         this.changeHistoryManager = changeHistoryManager;
+        this.templateRenderer = templateRenderer;
     }
 
     @Override
@@ -73,6 +78,12 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
         try
         {
+            //
+            //
+            List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKey);
+            issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", EasyMap.build("prs", prs), new Date()));
+            //
+            //
             List<RepositoryActivityMapping> activities = activityDao.getRepositoryActivityForIssue(issueKey);
 
             for (RepositoryActivityMapping activity : activities)

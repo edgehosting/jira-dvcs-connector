@@ -1,0 +1,3 @@
+#foreach($pr in $prs)
+   $pr.id
+#end

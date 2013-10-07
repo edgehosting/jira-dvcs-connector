@@ -232,7 +232,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (hasChanged(local, remote) && remote != null)
         {
             dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                    .getBranchName().getName(), remote.getDestination().getBranchName().getName(), remote.getStatus());
+                    .getBranch().getName(), remote.getDestination().getBranch().getName(), remote.getStatus());
         }
 
         return local.getID();
@@ -243,8 +243,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return !StringUtils.equals(local.getName(), remote.getTitle()) ||
                !StringUtils.equals(local.getLastStatus(), remote.getStatus()) ||
                !StringUtils.equals(local.getLastStatus(), RepositoryPullRequestMapping.Status.fromBbString(remote.getDescription()).name()) ||
-               !StringUtils.equals(local.getDestinationBranch(), remote.getDestination().getBranchName().getName()) ||
-               !StringUtils.equals(local.getSourceBranch(), remote.getSource().getBranchName().getName());
+               !StringUtils.equals(local.getDestinationBranch(), remote.getDestination().getBranch().getName()) ||
+               !StringUtils.equals(local.getSourceBranch(), remote.getSource().getBranch().getName());
     }
 
     public void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
@@ -327,9 +327,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         ret.put(RepositoryPullRequestMapping.AUTHOR, request.getUser().getUsername());
         ret.put(RepositoryPullRequestMapping.CREATED_ON, request.getCreatedOn());
-        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranchName().getName());
-        ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranchName().getName());
-        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranchName().getName());
+        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
+        ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
+        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, repository.getId());
         // in case that fork has been deleted, the source repository is null
         if (request.getSource().getRepository() != null)
