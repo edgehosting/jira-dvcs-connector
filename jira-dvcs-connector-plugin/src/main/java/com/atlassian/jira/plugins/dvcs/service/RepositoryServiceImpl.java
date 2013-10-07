@@ -43,7 +43,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
@@ -460,7 +459,21 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 save(repository);
             }
 
-            if (repository.getDvcsType().equals(GithubCommunicator.GITHUB))
+            if (repository.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
+            {
+                /*BranchFilterInfo filterNodes = getFilterNodes(repository);
+                processBitbucketSync(repository, softSync, filterNodes);
+                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
+                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+                {
+                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                            BitbucketSynchronizeActivityMessage.class, //
+                            BitbucketSynchronizeActivityMessageConsumer.KEY //
+                            );
+                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
+                }
+
+            } else
             {
                 Date synchronizationStartedAt = new Date();
                 for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
@@ -476,21 +489,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                     messagingService.publish(key, message, UUID.randomUUID().toString());
                 }
 
-            } else
-            {
-                /*BranchFilterInfo filterNodes = getFilterNodes(repository);
-                processBitbucketSync(repository, softSync, filterNodes);
-                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
             }
 
-            if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
-            {
-                MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
-                        BitbucketSynchronizeActivityMessage.class, //
-                        BitbucketSynchronizeActivityMessageConsumer.KEY //
-                        );
-                messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
-            }
         }
     }
 

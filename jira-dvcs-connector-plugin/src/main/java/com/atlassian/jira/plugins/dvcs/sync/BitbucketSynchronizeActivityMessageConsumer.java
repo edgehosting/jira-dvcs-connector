@@ -325,6 +325,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtml().getHref());
         ret.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
 
+        ret.put(RepositoryPullRequestMapping.AUTHOR, request.getUser().getUsername());
         ret.put(RepositoryPullRequestMapping.CREATED_ON, request.getCreatedOn());
         ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranchName().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranchName().getName());

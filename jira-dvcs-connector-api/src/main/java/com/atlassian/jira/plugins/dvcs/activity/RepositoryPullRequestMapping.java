@@ -14,6 +14,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String DESCRIPTION = "DESCRIPTION";
     String URL = "URL";
 
+    String AUTHOR = "AUTHOR";
     String SOURCE_URL = "SOURCE_URL";
     String SOURCE_BRANCH = "SOURCE_BRANCH";
     String DESTINATION_BRANCH = "DESTINATION_BRANCH";
@@ -70,6 +71,8 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     Date getCreatedOn();
 
+    String getAuthor();
+
     //
     // setters
     //
@@ -92,4 +95,6 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     void setLastStatus(String status);
 
     void setCreatedOn(Date date);
+
+    void setAuthor(String author);
 }

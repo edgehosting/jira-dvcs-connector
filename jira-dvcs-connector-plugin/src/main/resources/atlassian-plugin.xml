@@ -509,7 +509,7 @@
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
     
-    <issue-tabpanel key="dvcs-pullrequets-tabpanel" name="Dvcs PullRequestss Tab Panel"
+    <issue-tabpanel key="dvcs-pullrequests-tabpanel" name="Dvcs PullRequests Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsActivityTabPanel">
 
         <description>Show Dvcs Pull Requests activities related to an issue in an issue tab panel.</description>
@@ -537,7 +537,6 @@
         <description>
         </description>
         <actions>
-
             <action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
@@ -698,7 +697,7 @@
     <component key="commitCommentIssueActionFactory"
         class="com.atlassian.jira.plugins.dvcs.webwork.render.CommitCommentIssueActionFactory"
         interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
+
     <!--  -->
     <component key="columnNameResolverService" name="Column Name Resolver Service"
         class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">
