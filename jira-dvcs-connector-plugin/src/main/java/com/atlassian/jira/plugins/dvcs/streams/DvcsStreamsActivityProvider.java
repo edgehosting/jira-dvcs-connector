@@ -222,11 +222,14 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
         if (user != null && user.getAvatar() != null && user.getAvatar().startsWith("https"))
         {
-            try {
+            try
+            {
                 URI uri = new URI(user.getAvatar());
                 userProfile = new UserProfile.Builder("").profilePictureUri(Option.option(uri)).build();
-            } catch (URISyntaxException e) {
-                // do nothing. we use anonymous gravatar
+            } catch (URISyntaxException e)
+            {
+                // we use anonymous profile
+                userProfile = userProfileAccessor.getAnonymousUserProfile();
             }
         } else
         {
