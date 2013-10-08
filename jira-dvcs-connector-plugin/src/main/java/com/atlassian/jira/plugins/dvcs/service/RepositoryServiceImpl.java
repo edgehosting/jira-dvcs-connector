@@ -769,6 +769,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         branchService.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
+        // remove pull requests things
+        repositoryActivityDao.removeAll(repository);
     }
 
     /**
