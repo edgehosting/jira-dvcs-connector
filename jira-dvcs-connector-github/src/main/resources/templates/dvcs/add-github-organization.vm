@@ -114,7 +114,7 @@
 	    });
 	 	ddialog.addLink("Cancel",  function (dialog) {
 	 	   return true;
-	 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}}#if($source)&source=$textutils.htmlEncode(${source})#end");
+	 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}#if($source)&source=$textutils.htmlEncode(${source})#end");
 	 	ddialog.show();
 	 	ddialog.updateHeight();
 	 	

@@ -33,12 +33,30 @@ public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)
+        return getAccountInfo(hostUrl, accountName, null);
+    }
+
+    public AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType)
+    {
+        // known DVCS type
+        if (dvcsType != null)
         {
-            AccountInfo accountInfo = dvcsCommunicator.getAccountInfo(hostUrl, accountName);
-            if (accountInfo != null)
+            for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)
             {
-                return accountInfo;
+                if (dvcsType.equalsIgnoreCase(dvcsCommunicator.getDvcsType()))
+                {
+                    return dvcsCommunicator.getAccountInfo(hostUrl, accountName);
+                }
+            }
+          // unknown DVCS type, let the guess it anyway
+        } else {
+            for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)
+            {
+                AccountInfo accountInfo = dvcsCommunicator.getAccountInfo(hostUrl, accountName);
+                if (accountInfo != null)
+                {
+                    return accountInfo;
+                }
             }
         }
         return null;

@@ -1,5 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.ws.rs.core.CacheControl;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.search.EntityDescriptor;
@@ -21,13 +32,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.ws.rs.core.CacheControl;
-import java.util.Iterator;
+import com.google.common.collect.Lists;
 
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
@@ -75,20 +80,28 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		// recognise user and auth user by email
 		//
 		String authorEmail = commands.getAuthorEmail();
+		String authorName = commands.getAuthorName();
 		if (StringUtils.isBlank(authorEmail))
 		{
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
 			return results;
 		}
+
 		//
 		// Fetch user by email
 		//
-		User user = getUserByEmailOrNull(authorEmail);
-		if (user == null)
+		List<User> users = getUserByEmailOrNull(authorEmail, authorName);
+		if (users.isEmpty())
 		{
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
 			return results;
+		} else if (users.size() > 1)
+		{
+		    results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
+		    return results;
 		}
+		
+		User user = users.get(0);
 
 		//
 		// Authenticate user
@@ -105,9 +118,9 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		// finally we can process commands
 		//
 		log.debug("Processing commands : " + commands);
-		
+
 		processCommands(commands, results, user);
-		
+
 		log.debug("Processing commands results : " + results);
 
 		return results;
@@ -176,30 +189,42 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		}
 	}
 
-	private User getUserByEmailOrNull(String email)
+	private List<User> getUserByEmailOrNull(String email, String name)
 	{
 		try
 		{
+		    List<User> users  = Lists.newArrayList();
 			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
 					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
-			
+
 			Iterable<User> user = crowdService.search(query);
 			Iterator<User> iterator = user.iterator();
 			User firstShouldBeOneUser = iterator.next();
+			users.add(firstShouldBeOneUser);
 			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
-			
-			if (iterator.hasNext()) {
-				User nextUser = iterator.next();
-				log.warn("Found more than one user by email {} with username {} - assuming can not recognise.", new Object [] { email, nextUser.getName() });
-				return null;
+
+			if (iterator.hasNext())
+			{
+			    // try to find map user according the name
+				while (iterator.hasNext())
+				{
+				    User nextUser = iterator.next();
+				    if (nextUser.getName().equals(name))
+				    {
+				        return Collections.singletonList(nextUser);
+				    }
+				    users.add(nextUser);
+				}
+				log.warn("Found more than one user by email {} but no one is {}.", new Object [] { email, name });
+				return users;
 			}
-			
-			return firstShouldBeOneUser;
-			
+
+			return Collections.singletonList(firstShouldBeOneUser);
+
 		} catch (Exception e)
 		{
 			log.warn("User not found by email {}.", email);
-			return null;
+			return Collections.EMPTY_LIST;
 		}
 	}
 }
