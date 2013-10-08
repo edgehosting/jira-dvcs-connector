@@ -9,4 +9,6 @@ public interface DvcsCommunicatorProvider
 
     public abstract AccountInfo getAccountInfo(String hostUrl, String accountName);
 
+    public abstract AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType);
+
 }
