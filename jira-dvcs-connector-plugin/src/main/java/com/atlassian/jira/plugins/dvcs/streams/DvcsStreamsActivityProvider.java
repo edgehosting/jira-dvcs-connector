@@ -218,7 +218,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
         };
 
-        UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
+        UserProfile userProfile = null;
 
         if (user != null && user.getAvatar() != null && user.getAvatar().startsWith("https"))
         {
@@ -228,9 +228,10 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             } catch (URISyntaxException e) {
                 // do nothing. we use anonymous gravatar
             }
+        } else
+        {
+            userProfile = userProfileAccessor.getAnonymousUserProfile();
         }
-
-
 
         return new StreamsEntry(StreamsEntry.params()
                 .id(URI.create(""))
