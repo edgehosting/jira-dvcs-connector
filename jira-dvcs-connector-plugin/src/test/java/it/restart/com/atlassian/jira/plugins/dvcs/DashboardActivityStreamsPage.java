@@ -21,7 +21,7 @@ public class DashboardActivityStreamsPage implements Page
     @ElementBy(className = "CommitRowsMore")
     private PageElement moreFilesLink;
 
-    @ElementBy(xpath = "//div[@class='activity-item-summary']//a[starts-with(.,'QA-5')]")
+    @ElementBy(linkText = "QA-5")
     private PageElement linkIssueQAElm;
 
     @ElementBy(id = "10001")
@@ -29,9 +29,6 @@ public class DashboardActivityStreamsPage implements Page
 
     @ElementBy(id = "config-form")
     private PageElement configForm;
-
-    @ElementBy(id = "activity-stream-show-more")
-    private PageElement showMore;
 
     @Override
     public String getUrl()
@@ -41,14 +38,6 @@ public class DashboardActivityStreamsPage implements Page
 
     public void checkIssueActivityPresentedForQA5()
     {
-        try
-        {
-            Poller.waitUntilTrue(showMore.timed().isVisible());
-            showMore.click();
-        } catch (AssertionError e)
-        {
-            // The show more button is not displayed, we don't have to click it
-        }
         Poller.waitUntilTrue("Expected acitivity at issue QA-5", linkIssueQAElm.timed().isVisible());
     }
 
