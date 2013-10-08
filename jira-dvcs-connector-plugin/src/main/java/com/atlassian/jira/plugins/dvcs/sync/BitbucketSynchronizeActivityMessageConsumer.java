@@ -13,12 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -33,15 +29,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivityEnvelope;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommentActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 
 /**
@@ -70,8 +63,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private RepositoryActivityDao dao;
     @Resource
     private RepositoryDao repositoryDao;
-    @Resource
-    private BitbucketPullRequestDao pullRequestDao;
 
     public BitbucketSynchronizeActivityMessageConsumer()
     {
@@ -172,20 +163,18 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     {
         BitbucketSynchronizeActivityMessage payload = message.getPayload();
         Repository repo = payload.getRepository();
-        int localPullRequestId = ensurePullRequestPresent(repo, pullRestpoint, info, payload);
 
-        RepositoryActivityMapping savedActivity = dao.saveActivity(repo,
-                toDaoModelActivity(info.getActivity(), repo.getId(), localPullRequestId));
+        RepositoryPullRequestMapping localPullRequest = ensurePullRequestPresent(repo, pullRestpoint, info, payload);
 
-        if (isUpdateActivity(info.getActivity()) && !payload.getProcessedPullRequestsLocal().contains(localPullRequestId))
+        if (isUpdateActivity(info.getActivity()) && !payload.getProcessedPullRequestsLocal().contains(localPullRequest.getID()))
         {
-            loadPullRequestCommits(repo, pullRestpoint, localPullRequestId, (BitbucketPullRequestUpdateActivity) info.getActivity(),
-                    (RepositoryPullRequestUpdateActivityMapping) savedActivity, info.getPullRequest().getLinks().getCommits().getHref());
+            loadPullRequestCommits(repo, pullRestpoint, localPullRequest.getID(), (BitbucketPullRequestUpdateActivity) info.getActivity(),
+                     localPullRequest, info.getPullRequest().getLinks().getCommits().getHref());
         }
-        return localPullRequestId;
+        return localPullRequest.getID();
     }
 
-    private int ensurePullRequestPresent(Repository repo, PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info, BitbucketSynchronizeActivityMessage payload)
+    private RepositoryPullRequestMapping ensurePullRequestPresent(Repository repo, PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info, BitbucketSynchronizeActivityMessage payload)
     {
         BitbucketPullRequest remote = null;
         Integer remoteId = info.getPullRequest().getId().intValue();
@@ -218,7 +207,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                     .getBranch().getName(), remote.getDestination().getBranch().getName(), remote.getStatus());
         }
 
-        return local.getID();
+        return local;
     }
 
     private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote)
@@ -231,7 +220,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     public void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
-            int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestUpdateActivityMapping savedActivity, String commitsUrl)
+            int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestMapping savedPullRequest, String commitsUrl)
     {
         try
         {
@@ -243,7 +232,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 if (localCommit == null)
                 {
                     localCommit = saveCommit(repo, commit, null, localPullRequestId);
-                    linkCommit(repo, localCommit, savedActivity);
+                    linkCommit(repo, localCommit, savedPullRequest);
                 } else {
                     break;
                 }
@@ -255,9 +244,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     private void linkCommit(Repository domainRepository, RepositoryCommitMapping commitMapping,
-            RepositoryPullRequestUpdateActivityMapping withActivity)
+            RepositoryPullRequestMapping request)
     {
-        dao.linkCommit(domainRepository, withActivity, commitMapping);
+        dao.linkCommit(domainRepository, request, commitMapping);
         commitMapping.save();
     }
 
@@ -289,16 +278,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return ret;
     }
 
-    private HashMap<String, Object> getAsCommonProperties(BitbucketPullRequestBaseActivity activity, int repositoryId, Integer pullRequestId)
-    {
-        HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryPullRequestActivityMapping.LAST_UPDATED_ON, ClientUtils.extractActivityDate(activity));
-        ret.put(RepositoryPullRequestActivityMapping.AUTHOR, activity.getUser().getUsername());
-        ret.put(RepositoryPullRequestActivityMapping.RAW_AUTHOR, activity.getUser().getDisplayName());
-        ret.put(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID, pullRequestId);
-        ret.put(RepositoryPullRequestActivityMapping.REPOSITORY_ID, repositoryId);
-        return ret;
-    }
 
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository)
     {
@@ -322,64 +301,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
 
         return ret;
-    }
-
-    private Map<String, Object> toDaoModelActivity(BitbucketPullRequestBaseActivity activity, int repositoryId, Integer pullRequestId)
-    {
-        Map<String, Object> ret = getAsCommonProperties(activity, repositoryId, pullRequestId);
-
-        if (activity instanceof BitbucketPullRequestCommentActivity)
-        {
-            BitbucketPullRequestCommentActivity commentActivity = (BitbucketPullRequestCommentActivity) activity;
-            ret.put(RepositoryPullRequestActivityMapping.ENTITY_TYPE, RepositoryPullRequestCommentActivityMapping.class);
-            ret.put(RepositoryPullRequestCommentActivityMapping.REMOTE_ID, new Long(commentActivity.getId()));
-            if (commentActivity.getParent() != null)
-            {
-                ret.put(RepositoryPullRequestCommentActivityMapping.REMOTE_PARENT_ID, commentActivity.getParent().getId());
-            }
-            if (commentActivity.getContent() != null)
-            {
-                ret.put(RepositoryPullRequestCommentActivityMapping.MESSAGE, commentActivity.getContent().getRaw());
-            }
-            if (commentActivity.getInline() != null)
-            {
-                ret.put(RepositoryPullRequestCommentActivityMapping.FILE, commentActivity.getInline().getPath());
-            }
-        } else if (activity instanceof BitbucketPullRequestApprovalActivity)
-        {
-            ret.put(RepositoryPullRequestActivityMapping.ENTITY_TYPE, RepositoryPullRequestUpdateActivityMapping.class);
-            ret.put(RepositoryPullRequestUpdateActivityMapping.STATUS, RepositoryPullRequestUpdateActivityMapping.Status.APPROVED);
-
-        } else if (activity instanceof BitbucketPullRequestUpdateActivity)
-        {
-            ret.put(RepositoryPullRequestActivityMapping.ENTITY_TYPE, RepositoryPullRequestUpdateActivityMapping.class);
-            ret.put(RepositoryPullRequestUpdateActivityMapping.STATUS, transformUpdateStatus((BitbucketPullRequestUpdateActivity) activity));
-        }
-        return ret;
-    }
-
-    private RepositoryPullRequestUpdateActivityMapping.Status transformUpdateStatus(BitbucketPullRequestUpdateActivity activity)
-    {
-        String status = activity.getStatus();
-        if ("open".equals(status))
-        {
-            // we save all updates with status updated, first update will be updated to opened
-            return RepositoryPullRequestUpdateActivityMapping.Status.UPDATED;
-        }
-        if ("update".equals(status))
-        {
-            return RepositoryPullRequestUpdateActivityMapping.Status.UPDATED;
-        }
-        if ("fulfilled".equals(status))
-        {
-            return RepositoryPullRequestUpdateActivityMapping.Status.MERGED;
-        }
-        if ("rejected".equals(status))
-        {
-            return RepositoryPullRequestUpdateActivityMapping.Status.DECLINED;
-        }
-
-        return null;
     }
 
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)

@@ -2,9 +2,6 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import java.util.Date;
 
-import net.java.ao.ManyToMany;
-import net.java.ao.OneToMany;
-import net.java.ao.OneToOne;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -45,15 +42,6 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
      */
     @NotNull
     Date getDate();
-
-    @ManyToMany(RepositoryPullRequestUpdateActivityToCommitMapping.class)
-    RepositoryPullRequestUpdateActivityMapping[] getPRUpdateActivities();
-
-    @OneToOne
-    RepositoryCommitCommitActivityMapping getCommitActivity();
-    
-    @OneToMany
-    RepositoryCommitCommentActivityMapping[] getCommitCommentActivities();
 
     /**
      * @return Author's avatar URL, useful if the {@link #getAuthor()} username is not available. Can be null, then internal resolver will

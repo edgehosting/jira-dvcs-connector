@@ -9,8 +9,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 public interface RepositoryActivityDao
 {
     // C-U-D
-    RepositoryActivityMapping saveActivity(Repository domain, Map<String, Object> activity);
-
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
 
     RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, String remoteStatus);
@@ -35,18 +33,13 @@ public interface RepositoryActivityDao
 
     RepositoryCommitMapping saveCommit(Repository domain, Map<String, Object> commit);
 
-    void updateActivityStatus(Repository domain, int activityId, RepositoryPullRequestUpdateActivityMapping.Status status);
+    void linkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit);
 
-    void linkCommit(Repository domain, RepositoryPullRequestUpdateActivityMapping activity, RepositoryCommitMapping commit);
-
-    void unlinkCommit(Repository domain, RepositoryPullRequestUpdateActivityMapping activity, RepositoryCommitMapping commit);
+    void unlinkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit);
 
     // R
-    List<RepositoryActivityMapping> getRepositoryActivityForIssue(String issueKey);
 
     List<RepositoryPullRequestMapping> getPullRequestsForIssue(String issueKey);
-
-    RepositoryPullRequestUpdateActivityMapping getLatestOrOldestUpdateActivity(Repository domain, int localId, boolean latest);
 
     RepositoryPullRequestMapping findRequestById(int localId);
 
@@ -60,14 +53,5 @@ public interface RepositoryActivityDao
 
     RepositoryCommitMapping getCommitByNode(Repository domain, String node);
 
-    List<RepositoryCommitCommentActivityMapping> getCommitComments(Repository domain, RepositoryCommitMapping commit);
-
-    RepositoryPullRequestUpdateActivityMapping getPullRequestActivityByRemoteId(Repository domain,
-            RepositoryPullRequestMapping pullRequest, String remoteId);
-
-    List<RepositoryPullRequestUpdateActivityMapping> getPullRequestActivityByStatus(Repository domain,
-            RepositoryPullRequestMapping pullRequest, RepositoryPullRequestUpdateActivityMapping.Status status);
-
-    List<RepositoryPullRequestCommentActivityMapping> getPullRequestComments(Repository domain, RepositoryPullRequestMapping pullRequest);
 
 }

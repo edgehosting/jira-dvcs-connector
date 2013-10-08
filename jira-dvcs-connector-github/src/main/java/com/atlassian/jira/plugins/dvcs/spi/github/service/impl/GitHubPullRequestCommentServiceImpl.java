@@ -1,13 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestActivityMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -19,9 +16,9 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestServi
 
 /**
  * The implementation of the {@link GitHubPullRequestService}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCommentService
 {
@@ -43,7 +40,7 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
 
     /**
      * Constructor.
-     * 
+     *
      * @param gitHubPullRequestCommentDAO
      *            injected {@link GitHubPullRequestCommentDAO} dependency
      * @param repositoryActivityDao
@@ -114,49 +111,49 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
         {
             return;
         }
-        
+
         RepositoryPullRequestMapping repositoryPullRequest = repositoryActivityDao.findRequestByRemoteId(domainRepository,
                 pullRequest.getGitHubId());
 
-        Map<Long, RepositoryPullRequestCommentActivityMapping> idToLoaded = new HashMap<Long, RepositoryPullRequestCommentActivityMapping>();
-        for (RepositoryPullRequestCommentActivityMapping loaded : repositoryActivityDao.getPullRequestComments(domainRepository,
-                repositoryPullRequest))
-        {
-            idToLoaded.put(loaded.getRemoteId(), loaded);
-        }
-
-        for (GitHubPullRequestComment comment : getByPullRequest(pullRequest))
-        {
-            if (progress.isShouldStop())
-            {
-                return;
-            }
-            
-            Map<String, Object> activity = new HashMap<String, Object>();
-            if (!idToLoaded.containsKey(comment.getGitHubId()))
-            {
-                map(activity, repositoryPullRequest, comment);
-                repositoryActivityDao.saveActivity(domainRepository, activity);
-                activity.clear();
-
-            } else
-            {
-                idToLoaded.remove(comment.getGitHubId());
-
-            }
-        }
-
-        // removes comments which are not already propagated
-        for (RepositoryPullRequestCommentActivityMapping toDelete : idToLoaded.values())
-        {
-            activeObjects.delete(toDelete);
-        }
+//        Map<Long, RepositoryPullRequestCommentActivityMapping> idToLoaded = new HashMap<Long, RepositoryPullRequestCommentActivityMapping>();
+//        for (RepositoryPullRequestCommentActivityMapping loaded : repositoryActivityDao.getPullRequestComments(domainRepository,
+//                repositoryPullRequest))
+//        {
+//            idToLoaded.put(loaded.getRemoteId(), loaded);
+//        }
+//
+//        for (GitHubPullRequestComment comment : getByPullRequest(pullRequest))
+//        {
+//            if (progress.isShouldStop())
+//            {
+//                return;
+//            }
+//
+//            Map<String, Object> activity = new HashMap<String, Object>();
+//            if (!idToLoaded.containsKey(comment.getGitHubId()))
+//            {
+//                map(activity, repositoryPullRequest, comment);
+//                repositoryActivityDao.saveActivity(domainRepository, activity);
+//                activity.clear();
+//
+//            } else
+//            {
+//                idToLoaded.remove(comment.getGitHubId());
+//
+//            }
+//        }
+//
+//        // removes comments which are not already propagated
+//        for (RepositoryPullRequestCommentActivityMapping toDelete : idToLoaded.values())
+//        {
+//            activeObjects.delete(toDelete);
+//        }
 
     }
 
     /**
      * Re-maps provided comment into the appropriate comment activity.
-     * 
+     *
      * @param target
      *            activity
      * @param pullRequest
@@ -166,15 +163,15 @@ public class GitHubPullRequestCommentServiceImpl implements GitHubPullRequestCom
      */
     private void map(Map<String, Object> target, RepositoryPullRequestMapping pullRequest, GitHubPullRequestComment source)
     {
-        target.put(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID, pullRequest.getID());
-        target.put(RepositoryPullRequestActivityMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
-
-        target.put(RepositoryPullRequestCommentActivityMapping.ENTITY_TYPE, RepositoryPullRequestCommentActivityMapping.class);
-        target.put(RepositoryPullRequestCommentActivityMapping.REMOTE_ID, source.getGitHubId());
-        target.put(RepositoryPullRequestCommentActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
-        target.put(RepositoryPullRequestCommentActivityMapping.AUTHOR, source.getCreatedBy().getLogin());
-        target.put(RepositoryPullRequestCommentActivityMapping.RAW_AUTHOR, source.getCreatedBy().getName());
-        target.put(RepositoryPullRequestCommentActivityMapping.MESSAGE, source.getText());
+//        target.put(RepositoryPullRequestActivityMapping.PULL_REQUEST_ID, pullRequest.getID());
+//        target.put(RepositoryPullRequestActivityMapping.REPOSITORY_ID, pullRequest.getToRepositoryId());
+//
+//        target.put(RepositoryPullRequestCommentActivityMapping.ENTITY_TYPE, RepositoryPullRequestCommentActivityMapping.class);
+//        target.put(RepositoryPullRequestCommentActivityMapping.REMOTE_ID, source.getGitHubId());
+//        target.put(RepositoryPullRequestCommentActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
+//        target.put(RepositoryPullRequestCommentActivityMapping.AUTHOR, source.getCreatedBy().getLogin());
+//        target.put(RepositoryPullRequestCommentActivityMapping.RAW_AUTHOR, source.getCreatedBy().getName());
+//        target.put(RepositoryPullRequestCommentActivityMapping.MESSAGE, source.getText());
     }
 
 }
