@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
+import com.atlassian.pageobjects.Page;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
@@ -25,4 +26,8 @@ public class JiraLoginPageController implements PageController<JiraLoginPage>
         page.loginAsSystemAdminAndFollowRedirect(RepositoriesPage.class);
     }
 
+    public <M extends Page>  void login(Class<M> followRedirect)
+    {
+        page.loginAsSystemAdminAndFollowRedirect(followRedirect);
+    }
 }
