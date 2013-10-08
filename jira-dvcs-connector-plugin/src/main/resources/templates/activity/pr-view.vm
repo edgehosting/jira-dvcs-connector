@@ -1,3 +1,29 @@
-#foreach($pr in $prs)
-   $pr.id
-#end
+<table class="aui">
+  <thead>
+    <tr>
+      <th id="">Author</th>
+      <th id="">ID</th>
+      <th id="">Status</th>
+      <th id="">Title</th>
+      <th id="">Reviewers</th>
+      <th id="">Source</th>
+      <th id="">Destination</th>
+      <th id="">Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    #foreach($pr in $prs)
+    <tr>
+      <td headers="">$pr.author</td>
+      <td headers=""><a>#$pr.remoteId</a></td>
+      <td headers=""><span class="aui-lozenge pull-request-state #if($pr.lastStatus == "OPEN") aui-lozenge-complete #elseif($pr.lastStatus == "MERGED") aui-lozenge-success #elseif($pr.lastStatus == "DECLINED") aui-lozenge-error #end">$pr.lastStatus</span></td>
+      <td headers="">$pr.name</td>
+      <td headers="">?</td>
+      <td headers="">$pr.sourceBranch</td>
+      <td headers="">$pr.destinationBranch</td>
+      <td headers="">$pr.createdOn</td>
+    </tr>
+    #end
+  </tbody>
+</table>
+

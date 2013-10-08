@@ -520,7 +520,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
             @Override
             public Integer apply(@Nullable RepositoryPullRequestIssueKeyMapping input)
             {
-                return input.getID();
+                return input.getPullRequestId();
             }
         });
     }
