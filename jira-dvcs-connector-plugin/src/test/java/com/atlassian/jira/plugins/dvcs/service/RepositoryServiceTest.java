@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mockito.ArgumentMatcher;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -33,7 +34,7 @@ public class RepositoryServiceTest
 
 	@Mock
 	private RepositoryDao repositoryDao;
-	
+
 	@Mock
 	private RepositoryActivityDao repositoryActivityDao;
 
@@ -54,12 +55,16 @@ public class RepositoryServiceTest
 
 	@Mock
 	private PluginSettingsFactory settings;
-	
+
 	@Mock
     private RepositoryActivitySynchronizer activitySyncerMock;
 
+	@Mock
+	private Synchronizer synchroizerMock;
+
 	// tested object
-	private RepositoryService repositoryService;
+	//private RepositoryService repositoryService;
+	@InjectMocks RepositoryService repositoryService = new RepositoryServiceImpl();
 
 	public RepositoryServiceTest()
 	{
@@ -70,7 +75,6 @@ public class RepositoryServiceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        repositoryService = new RepositoryServiceImpl();
     }
 
 	@Test
@@ -231,6 +235,7 @@ public class RepositoryServiceTest
 
 		Mockito.verify(changesetService).removeAllInRepository(8);
 		Mockito.verify(repositoryDao).remove(8);
+		Mockito.verify(repositoryActivityDao).removeAll(sampleRepository);
 	}
 
 	@Test
