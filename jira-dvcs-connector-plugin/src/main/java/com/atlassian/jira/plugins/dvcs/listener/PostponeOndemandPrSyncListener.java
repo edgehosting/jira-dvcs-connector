@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
+import java.util.Date;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -44,7 +45,11 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
             if (savedSetting == null)
             {
                 long postpone = randomPostponeTimeWithinTimeWindow();
-                pluginSettings.put(POSTPONE_PR_SYNC_UNTIL, (postpone + System.currentTimeMillis()) + "");
+                long posponeUntil = postpone + System.currentTimeMillis();
+
+                pluginSettings.put(POSTPONE_PR_SYNC_UNTIL, posponeUntil + "");
+
+                log.info("Pull request synchronization will be postponed until " + new Date(posponeUntil));
             }
         }
     }
