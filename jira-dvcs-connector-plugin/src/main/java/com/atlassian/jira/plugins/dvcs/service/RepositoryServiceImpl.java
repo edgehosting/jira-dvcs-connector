@@ -26,6 +26,7 @@ import org.springframework.beans.factory.DisposableBean;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -108,6 +109,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private ChangesetCache changesetCache;
+
+    @Resource
+    private PostponeOndemandPrSyncListener posponePrSyncHelper;
 
     /**
      * {@inheritDoc}
@@ -464,7 +468,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 /*BranchFilterInfo filterNodes = getFilterNodes(repository);
                 processBitbucketSync(repository, softSync, filterNodes);
                 updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
-                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
                 {
                     MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
                             BitbucketSynchronizeActivityMessage.class, //
