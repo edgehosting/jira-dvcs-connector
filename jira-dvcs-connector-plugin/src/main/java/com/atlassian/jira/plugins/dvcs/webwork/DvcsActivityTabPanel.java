@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.collections.Maps;
 
-import com.atlassian.core.util.map.EasyMap;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
@@ -24,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import com.google.common.collect.ImmutableMap;
 
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
@@ -70,7 +72,8 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
         //
         List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKey);
-        issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", EasyMap.build("prs", prs), new Date()));
+        Map<String, Object> ctxt = Maps.newHashMap(new  ImmutableMap.Builder<String, Object>().put("prs", prs).build());
+        issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
         //
         //
         if (issueActions.isEmpty())
