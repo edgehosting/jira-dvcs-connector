@@ -133,7 +133,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     {
         if (repo.isSmartcommitsEnabled())
         {
-            LOGGER.debug("Marking changeset node = {} to be processed by smart commits", changesetForSave.getNode());
+            LOGGER.debug("Marking changeset node = {} to be processed by smart commits with value = " + mark, changesetForSave.getNode());
             changesetForSave.setSmartcommitAvaliable(mark);
         } else
         {
