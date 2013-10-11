@@ -465,9 +465,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             if (repository.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
             {
-                /*BranchFilterInfo filterNodes = getFilterNodes(repository);
+                // sync csets
+                BranchFilterInfo filterNodes = getFilterNodes(repository);
                 processBitbucketSync(repository, softSync, filterNodes);
-                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
+                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+                // sync pull requests
                 if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
                 {
                     MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
