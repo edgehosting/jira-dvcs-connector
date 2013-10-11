@@ -10,7 +10,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.testng.collections.Maps;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
@@ -26,6 +25,7 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
