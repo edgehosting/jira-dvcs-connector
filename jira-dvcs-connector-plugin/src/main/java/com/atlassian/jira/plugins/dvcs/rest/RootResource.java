@@ -542,7 +542,7 @@ public class RootResource
             throw new AuthorizationException();
         }
 
-        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issueKey);
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
         List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
 
         ListMultimap<Integer, Changeset> changesetTorepositoryMapping = ArrayListMultimap.create();
