@@ -2,15 +2,16 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 import com.atlassian.sal.api.message.Message;
 
 /**
  * DB version of {@link Message}
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 @Table("MESSAGE")
 public interface MessageMapping extends Entity
@@ -25,7 +26,7 @@ public interface MessageMapping extends Entity
      * @see #getPriority()
      */
     String PRIORITY = "PRIORITY";
-    
+
     /**
      * @see #getPayloadType()
      */
@@ -72,12 +73,14 @@ public interface MessageMapping extends Entity
     /**
      * @return Payload of message.
      */
+    @StringLength(StringLength.UNLIMITED)
     String getPayload();
 
     /**
      * @param payload
      *            {@link #getPayload()}
      */
+    @StringLength(StringLength.UNLIMITED)
     void setPayload(String payload);
 
     /**

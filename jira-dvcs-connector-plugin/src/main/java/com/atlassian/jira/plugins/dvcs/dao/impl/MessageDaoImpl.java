@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -31,9 +32,9 @@ import com.google.common.collect.Lists;
 
 /**
  * An implementation of {@link MessageDao}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class MessageDaoImpl implements MessageDao
 {
@@ -65,6 +66,8 @@ public class MessageDaoImpl implements MessageDao
      * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
      */
     private final Map<Class<?>, MessagePayloadSerializer<?>> payloadTypeToPayloadSerializer = new ConcurrentHashMap<Class<?>, MessagePayloadSerializer<?>>();
+
+    private String quoteString = null;
 
     /**
      * Initializes been.
@@ -261,29 +264,48 @@ public class MessageDaoImpl implements MessageDao
     @Override
     public <P extends HasProgress> Message<P> getNextMessageForConsuming(String key, String consumerId)
     {
-        Query query = Query.select("ID, " + MessageMapping.PRIORITY).distinct().from(MessageMapping.class)
-                .alias(MessageMapping.class, "message") //
-                .join(MessageConsumerMapping.class, "message.ID = consumer." + MessageConsumerMapping.MESSAGE) //
-                .alias(MessageConsumerMapping.class, "consumer") //
-                .where( //
-                "message." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? " //
-                        + " AND consumer." + MessageConsumerMapping.QUEUED + " = ?  " //
-                        + " AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY + " = ? ", //
-                key, consumerId, false, false //
-                ).order("message." + MessageMapping.PRIORITY + " desc").limit(1);
-
-        MessageMapping[] foudned = activeObjects.find(MessageMapping.class, query);
-        if (foudned.length == 0)
+        Query query = queryForMessageByConsumer(key, consumerId, "");
+        MessageMapping[] found = activeObjects.find(MessageMapping.class, query);
+        if (found.length == 0)
         {
             return null;
 
         } else
         {
-            Message<P> result = new Message<P>();
-            map(result, foudned[0]);
-            return result;
-
+            maybeInitQuoteString(found[0]);
+            // hack, cause AO incorrectly escapes -> ORDER BY "msg".priority
+            query = queryForMessageByConsumer(key, consumerId, " order by msg." + quoteString + MessageMapping.PRIORITY + quoteString + " desc");
+            found = activeObjects.find(MessageMapping.class, query);
+            return found.length == 0 ? null : map(new Message<P>(), found[0]);
         }
+    }
+
+    private void maybeInitQuoteString(MessageMapping entity)
+    {
+        if (quoteString == null)
+        {
+            try
+            {
+                quoteString = entity.getEntityManager().getProvider().getConnection().getMetaData().getIdentifierQuoteString();
+            } catch (SQLException e)
+            {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    private Query queryForMessageByConsumer(String key, String consumerId, String orderBy)
+    {
+        return Query.select("ID, " + MessageMapping.PRIORITY).distinct().from(MessageMapping.class)
+                .alias(MessageMapping.class, "msg") //
+                .join(MessageConsumerMapping.class, "msg.ID = consumer." + MessageConsumerMapping.MESSAGE) //
+                .alias(MessageConsumerMapping.class, "consumer") //
+                .where( //
+                "msg." + MessageMapping.KEY + " = ? AND consumer." + MessageConsumerMapping.CONSUMER + " = ? " //
+                        + " AND consumer." + MessageConsumerMapping.QUEUED + " = ?  " //
+                        + " AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY + " = ? " + orderBy, //
+                key, consumerId, false, false //
+                ).limit(1);
     }
 
     /**
@@ -307,14 +329,14 @@ public class MessageDaoImpl implements MessageDao
 
     /**
      * Re-maps provided {@link MessageMapping} into the {@link Message}.
-     * 
+     *
      * @param target
      *            of mapping
      * @param source
      *            of mapping
      */
     @SuppressWarnings("unchecked")
-    private <P extends HasProgress> void map(Message<P> target, MessageMapping source)
+    private <P extends HasProgress> Message<P> map(Message<P> target, MessageMapping source)
     {
         Class<P> payloadType;
         try
@@ -341,11 +363,12 @@ public class MessageDaoImpl implements MessageDao
                     }
 
                 }), String.class));
+        return target;
     }
 
     /**
      * Re-maps provided {@link Message} to the {@link DBParam}-s.
-     * 
+     *
      * @param source
      *            of mapping
      * @return mapped entity
@@ -366,7 +389,7 @@ public class MessageDaoImpl implements MessageDao
 
     /**
      * Re-maps provided {@link Message} to the {@link MessageMapping}.
-     * 
+     *
      * @param target
      *            of mapping
      * @param source
@@ -385,7 +408,7 @@ public class MessageDaoImpl implements MessageDao
 
     /**
      * Updates {@link MessageMapping#getTags()} according to current state of {@link Message#getTags()}.
-     * 
+     *
      * @param messageMapping
      *            target of update
      * @param message
@@ -442,7 +465,7 @@ public class MessageDaoImpl implements MessageDao
 
     /**
      * Queues provided {@link MessageMapping message} to consumers DB's side queue.
-     * 
+     *
      * @param message
      */
     private <P extends HasProgress> void addToConsumersQueues(MessageMapping message)
