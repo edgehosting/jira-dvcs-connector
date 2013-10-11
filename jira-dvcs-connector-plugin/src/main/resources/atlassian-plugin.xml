@@ -96,13 +96,9 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetToChangesetMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping</entity>
-		<entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommitActivityMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommentActivityMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
         
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
@@ -255,10 +251,6 @@
     </component>
     
     <!-- Bitbucket -->
-    <component key="bitbucketPRDao" name="Bitbucket PR DAO"
-        class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.impl.BitbucketPullRequestDaoImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao</interface>
-    </component>
     
     <!-- GitHub -->
     
@@ -467,6 +459,7 @@
 
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
+    <component key="postponeOndemandPrSyncListener" class="com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener" />
 
 	 <!-- Messaging -->
     <component key="messageDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageDaoImpl">
@@ -624,7 +617,7 @@
         <resource type="download" name="javascripts/dvcs-tabs.js" location="javascripts/dvcs-tabs.js"/>
     </web-resource>
 
-	<web-resource key="soy-templates-admin-context">
+	<web-resource key="soy-templates-admin-">
 		<context>atl.admin</context>
 	    <dependency>com.atlassian.soy.soy-template-plugin:soy-deps</dependency>
 	    
@@ -687,16 +680,6 @@
         class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
         interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
         
-    <component key="pullRequestUpdateIssueActionFactory" name="PullRequestUpdateIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestUpdateIssueActionFactory" 
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
-    <component key="pullRequestCommentIssueActionFactory" name="PullRequestCommentIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestCommentIssueActionFactory" 
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-    <component key="commitCommentIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.CommitCommentIssueActionFactory"
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
 
     <!--  -->
     <component key="columnNameResolverService" name="Column Name Resolver Service"

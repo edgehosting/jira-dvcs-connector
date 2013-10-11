@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
@@ -11,16 +10,16 @@ import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Defines {@link GitHubCommit}'s related services.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public interface GitHubCommitService
 {
 
     /**
      * Saves or updates provided {@link GitHubCommit}.
-     * 
+     *
      * @param gitHubCommit
      *            to save/update
      */
@@ -28,7 +27,7 @@ public interface GitHubCommitService
 
     /**
      * Deletes provided {@link GitHubCommit}.
-     * 
+     *
      * @param gitHubCommit
      *            to delete
      */
@@ -85,7 +84,7 @@ public interface GitHubCommitService
 
     /**
      * Synchronizes all commits of provided repository with {@link RepositoryPullRequestUpdateActivityToCommitMapping}.
-     * 
+     *
      * @param domainRepository
      *            for repository
      * @param domain
@@ -95,7 +94,7 @@ public interface GitHubCommitService
 
     /**
      * Synchronizes {@link GitHubPullRequest#getCommits()} with {@link RepositoryPullRequestUpdateActivityToCommitMapping} holder.
-     * 
+     *
      * @param domainRepository
      *            for repository
      * @param domain

@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import java.util.Date;
 
+import net.java.ao.ManyToMany;
 import net.java.ao.schema.Table;
 
 @Table("PULL_REQUEST")
@@ -72,6 +73,9 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     Date getCreatedOn();
 
     String getAuthor();
+
+    @ManyToMany(RepositoryPullRequestToCommitMapping.class)
+    RepositoryCommitMapping[] getCommits();
 
     //
     // setters
