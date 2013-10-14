@@ -322,7 +322,7 @@ public class MessageDaoImpl implements MessageDao
                 .join(MessageTagMapping.class, "message.ID = tag." + MessageTagMapping.MESSAGE)
                 .alias(MessageConsumerMapping.class, "consumer")
                 .alias(MessageTagMapping.class, "tag")
-                .where("message." + MessageMapping.KEY + " = ? AND tag.tag = ? AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY
+                .where("message." + MessageMapping.KEY + " = ? AND tag." + MessageTagMapping.TAG +  " = ? AND consumer." + MessageConsumerMapping.WAIT_FOR_RETRY
                         + "  = ?", key, tag, false);
         return activeObjects.count(MessageMapping.class, query);
     }

@@ -442,7 +442,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
 
-        if (skipSync(repository, softSync)) {
+        if (!softSync && skipSync(repository)) {
             return;
         }
 
@@ -463,6 +463,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 save(repository);
             }
 
+            startProgress(repository);
             if (repository.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
             {
                 // sync csets
@@ -500,7 +501,14 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         }
     }
 
-    private boolean skipSync(Repository repository, boolean softSync)
+    protected void startProgress(Repository repository)
+    {
+        DefaultProgress progress = new DefaultProgress();
+        progress.start();
+        synchronizer.putProgress(repository, progress);
+    }
+
+    private boolean skipSync(Repository repository)
     {
         Progress progress = synchronizer.getProgress(repository.getId());
         return progress != null && !progress.isFinished();
