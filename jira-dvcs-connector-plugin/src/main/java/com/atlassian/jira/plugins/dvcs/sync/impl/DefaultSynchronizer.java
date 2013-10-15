@@ -16,6 +16,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -47,7 +48,7 @@ import com.google.common.collect.MapMaker;
 /**
  * Synchronization service
  */
-public class DefaultSynchronizer implements Synchronizer, DisposableBean
+public class DefaultSynchronizer implements Synchronizer, DisposableBean, InitializingBean
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
@@ -257,8 +258,19 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
         Progress progress = SynchronizationProgessHolder.progressMap.get(repository.getId());
         if (progress != null)
         {
-            progress.setShouldStop(true);
+            progress.setShouldCancel(true);
         }
+    }
+
+    @Override
+    public void pauseSynchronization(Repository repository, boolean pause)
+    {
+        Progress progress = SynchronizationProgessHolder.progressMap.get(repository.getId());
+        if (progress != null)
+        {
+            // TODO
+        }
+
     }
 
     @Override
@@ -281,6 +293,12 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
 
     @Override
     public void destroy() throws Exception
+    {
+        // TODO
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
     {
         // TODO
     }
@@ -315,4 +333,5 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
             return progressMap.get(id);
         }
     }
+
 }
