@@ -55,7 +55,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     @Resource
     private LinkedIssueService linkedIssueService;
     @Resource
-    private MessagingService<BitbucketSynchronizeChangesetMessage> messagingService;
+    private MessagingService messagingService;
     @Resource
     private BranchService branchService;
     @Resource
@@ -219,6 +219,12 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     public MessageKey<BitbucketSynchronizeChangesetMessage> getKey()
     {
         return messagingService.get(BitbucketSynchronizeChangesetMessage.class, KEY);
+    }
+    
+    @Override
+    public int getParallelThreads()
+    {
+        return 1;
     }
 
     @Override

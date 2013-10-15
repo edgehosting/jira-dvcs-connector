@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.Message;
  * @author Stanislav Dvorscak
  * 
  */
-public interface MessagingService<P extends HasProgress>
+public interface MessagingService
 {
 
     /**
@@ -21,7 +21,7 @@ public interface MessagingService<P extends HasProgress>
      * @param tags
      *            of messages
      */
-    void publish(MessageKey<P> key, P payload, String... tags);
+    <P extends HasProgress> void publish(MessageKey<P> key, P payload, String... tags);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
@@ -31,7 +31,7 @@ public interface MessagingService<P extends HasProgress>
      * @param consumer
      *            of message
      */
-    void ok(Message<P> message, MessageConsumer<P> consumer);
+    <P extends HasProgress> void ok(Message<P> message, MessageConsumer<P> consumer);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
@@ -41,7 +41,7 @@ public interface MessagingService<P extends HasProgress>
      * @param consumer
      *            of message
      */
-    void fail(Message<P> message, MessageConsumer<P> consumer);
+    <P extends HasProgress> void fail(Message<P> message, MessageConsumer<P> consumer);
 
     /**
      * Returns count of queued messages with provided publication key and marked by provided tag.
@@ -52,7 +52,7 @@ public interface MessagingService<P extends HasProgress>
      *            of message
      * @return count of queued messages
      */
-    <K extends MessageKey<P>> int getQueuedCount(K key, String tag);
+    <K extends MessageKey<P>, P extends HasProgress> int getQueuedCount(K key, String tag);
 
     /**
      * Creates message key, necessary by publishing and routing.
@@ -63,6 +63,6 @@ public interface MessagingService<P extends HasProgress>
      *            of route
      * @return created message key
      */
-    MessageKey<P> get(Class<P> payloadType, String id);
+    <P extends HasProgress> MessageKey<P> get(Class<P> payloadType, String id);
 
 }

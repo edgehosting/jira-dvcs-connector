@@ -2,10 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
@@ -22,7 +19,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
  * @author Stanislav Dvorscak
  * 
  */
-public class MessagingServiceImpl<P extends HasProgress> implements MessagingService<P>
+public class MessagingServiceImpl implements MessagingService
 {
 
     /**
@@ -41,64 +38,24 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
      * Injected {@link MessageConsumer}-s dependency.
      */
     @Resource
-    private MessageConsumer<P>[] consumers;
+    private MessageConsumer<?>[] consumers;
+
+    /**
+     * Injected {@link MessageExecutor} dependency.
+     */
+    @Resource
+    private MessageExecutor messageExecutor;
 
     /**
      * Maps identity of message key to appropriate message key.
      */
-    private final Map<String, MessageKey<P>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<P>>();
-
-    /**
-     * Holds key based messages routers.
-     */
-    private final ConcurrentMap<MessageKey<P>, Map<String, MessageConsumerRouter<P>>> keyToConsumerIdToMessageConsumerRouter = new ConcurrentHashMap<MessageKey<P>, Map<String, MessageConsumerRouter<P>>>();
-
-    /**
-     * Initializes this bean.
-     */
-    @PostConstruct
-    public void init()
-    {
-        for (MessageConsumer<P> consumer : consumers)
-        {
-            Map<String, MessageConsumerRouter<P>> byKey = keyToConsumerIdToMessageConsumerRouter.get(consumer.getKey());
-            if (byKey == null)
-            {
-                keyToConsumerIdToMessageConsumerRouter.put(consumer.getKey(),
-                        byKey = new ConcurrentHashMap<String, MessageConsumerRouter<P>>());
-            }
-
-            byKey.put(consumer.getId(), new MessageConsumerRouter<P>( //
-                    activeObjects, //
-                    messageDao, //
-                    (MessageKey<P>) consumer.getKey(), //
-                    (MessageConsumer<P>) consumer //
-                    ));
-        }
-    }
-
-    /**
-     * Destroys this bean.
-     * 
-     * @throws Exception
-     */
-    @PreDestroy
-    public void destroy() throws Exception
-    {
-        for (Map<String, MessageConsumerRouter<P>> messageRouters : keyToConsumerIdToMessageConsumerRouter.values())
-        {
-            for (MessageConsumerRouter<P> messageRouter : messageRouters.values())
-            {
-                messageRouter.stop();
-            }
-        }
-    }
+    private final Map<String, MessageKey<?>> idToMessageKey = new ConcurrentHashMap<String, MessageKey<?>>();
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void publish(MessageKey<P> key, P payload, String... tags)
+    public <P extends HasProgress> void publish(MessageKey<P> key, P payload, String... tags)
     {
         Message<P> message = new Message<P>();
         message.setKey(key);
@@ -107,10 +64,7 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
         message.setTags(tags);
         messageDao.save(message);
 
-        for (MessageConsumerRouter<P> consumer : keyToConsumerIdToMessageConsumerRouter.get(message.getKey()).values())
-        {
-            consumer.route(message);
-        }
+        messageExecutor.notify(key);
     }
 
     /**
@@ -119,7 +73,7 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
      * @param messageId
      */
     @Override
-    public void ok(Message<P> message, MessageConsumer<P> consumer)
+    public <P extends HasProgress> void ok(Message<P> message, MessageConsumer<P> consumer)
     {
         messageDao.markOk(message, consumer);
     }
@@ -128,7 +82,7 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
      * {@inheritDoc}
      */
     @Override
-    public void fail(Message<P> message, MessageConsumer<P> consumer)
+    public <P extends HasProgress> void fail(Message<P> message, MessageConsumer<P> consumer)
     {
         messageDao.markFail(message, consumer);
     }
@@ -137,7 +91,7 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
      * {@inheritDoc}
      */
     @Override
-    public <K extends MessageKey<P>> int getQueuedCount(K key, String tag)
+    public <K extends MessageKey<P>, P extends HasProgress> int getQueuedCount(K key, String tag)
     {
         return messageDao.getMessagesForConsumingCount(key.getId(), tag);
     }
@@ -145,14 +99,15 @@ public class MessagingServiceImpl<P extends HasProgress> implements MessagingSer
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public MessageKey<P> get(final Class<P> payloadType, final String id)
+    public <P extends HasProgress> MessageKey<P> get(final Class<P> payloadType, final String id)
     {
         MessageKey<P> result;
 
         synchronized (idToMessageKey)
         {
-            result = idToMessageKey.get(id);
+            result = (MessageKey<P>) idToMessageKey.get(id);
             if (result == null)
             {
                 idToMessageKey.put(id, result = new MessageKey<P>()
