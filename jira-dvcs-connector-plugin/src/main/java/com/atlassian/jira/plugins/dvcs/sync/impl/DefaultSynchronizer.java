@@ -52,7 +52,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     @Resource
-    @SuppressWarnings("rawtypes")
     private MessagingService messagingService;
 
     @Resource
@@ -82,7 +81,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
         super();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
@@ -119,7 +117,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
                 // sync pull requests
                 if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
                 {
-                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                    MessageKey<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
@@ -160,7 +158,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
         return progress != null && !progress.isFinished();
     }
 
-    @SuppressWarnings("unchecked")
     protected void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
     {
         List<BranchHead> newBranchHeads = filterNodes.newHeads;

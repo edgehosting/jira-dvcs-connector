@@ -32,6 +32,11 @@ public interface MessageConsumer<P extends HasProgress>
      * @return key of messages which will be received
      */
     MessageKey<P> getKey();
+    
+    /**
+     * @return Count of parallel threads, which can be used for processing.
+     */
+    int getParallelThreads();
 
     boolean shouldDiscard(int messageId, int retryCount, P payload, String[] tags);
 

@@ -56,7 +56,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Resource
     private RepositoryService repositoryService;
     @Resource
-    private MessagingService<BitbucketSynchronizeActivityMessage> messagingService;
+    private MessagingService messagingService;
     @Resource
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     @Resource
@@ -318,6 +318,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public MessageKey<BitbucketSynchronizeActivityMessage> getKey()
     {
         return messagingService.get(BitbucketSynchronizeActivityMessage.class, KEY);
+    }
+    
+    @Override
+    public int getParallelThreads()
+    {
+        return 1;
     }
 
     @Override
