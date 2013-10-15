@@ -459,10 +459,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         {
             registration.setRepository(repository);
 
-            if (!linked)
-            {
-                // TODO sync
-            }
+            // un/pause possible synchronization
+            synchronizer.pauseSynchronization(repository, linked);
 
             repository.setLinked(linked);
 
@@ -547,13 +545,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
-        // we stop all synchronizations first to prevent starting a new redundant synchronization
-        for (Repository repository : repositories)
-        {
-            synchronizer.getProgress(repository.getId()).setShouldCancel(true);
-            synchronizer.getProgress(repository.getId()).setFinished(true);
-        }
-
         for (Repository repository : repositories)
         {
             markForRemove(repository);
@@ -570,7 +561,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     private void markForRemove(Repository repository)
     {
-    	synchronizer.removeProgress(repository);
+        // we stop all synchronizations first to prevent starting a new redundant synchronization
+    	synchronizer.stopSynchronization(repository);
         repository.setDeleted(true);
     }
 
