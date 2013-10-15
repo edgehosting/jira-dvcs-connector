@@ -96,10 +96,10 @@ public final class TestSmartcommits
                 activitySyncerMock,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
-        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-        synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
+        //Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+       // synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
 
-        waitUntilProgressEnds(synchronizer);
+        //waitUntilProgressEnds(synchronizer);
 
         verify(changesetsProcessorMock).startProcess(new DefaultProgress(), repositoryMock, changesetServiceMock);
         verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));
@@ -127,10 +127,10 @@ public final class TestSmartcommits
                 activitySyncerMock,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
-        Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
-        synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
+        //Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
+        //synchronizer.synchronize(repositoryMock, synchronisationOperation, changesetServiceMock);
 
-        waitUntilProgressEnds(synchronizer);
+        //waitUntilProgressEnds(synchronizer);
 
         verify(changesetsProcessorMock).startProcess(new DefaultProgress(), repositoryMock, changesetServiceMock);
         verify(changesetServiceMock, times(2)).create(savedChangesetCaptor.capture(), anySetOf(String.class));

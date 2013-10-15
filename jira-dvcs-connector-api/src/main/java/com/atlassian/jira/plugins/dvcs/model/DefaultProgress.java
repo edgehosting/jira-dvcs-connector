@@ -27,7 +27,7 @@ public class DefaultProgress implements Progress
 
     @XmlAttribute
     private int pullRequestActivityCount = 0;
-    
+
     @XmlAttribute
     private int synchroErrorCount = 0;
 
@@ -46,6 +46,9 @@ public class DefaultProgress implements Progress
     @XmlTransient
     private boolean hasAdminPermission = true;
 
+    @XmlTransient
+    private boolean shouldCancel;
+
     public DefaultProgress()
     {
     }
@@ -58,7 +61,7 @@ public class DefaultProgress implements Progress
         this.jiraCount = jiraCount;
         this.synchroErrorCount = synchroErrorCount;
     }
-    
+
     @Override
     public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
     {
@@ -95,7 +98,7 @@ public class DefaultProgress implements Progress
     {
         return jiraCount;
     }
-    
+
     @Override
     public int getPullRequestActivityCount()
     {
@@ -165,7 +168,7 @@ public class DefaultProgress implements Progress
     {
         this.pullRequestActivityCount = pullRequestActivityCount;
     }
-    
+
     public void setSynchroErrorCount(int synchroErrorCount)
     {
         this.synchroErrorCount = synchroErrorCount;
@@ -205,5 +208,17 @@ public class DefaultProgress implements Progress
     public void setAdminPermission(boolean hasAdminPermission)
     {
         this.hasAdminPermission = hasAdminPermission;
+    }
+
+    @Override
+    public boolean isShouldCancel()
+    {
+        return this.shouldCancel;
+    }
+
+    @Override
+    public void setShouldCancel(boolean cancelled)
+    {
+        this.shouldCancel = cancelled;
     }
 }

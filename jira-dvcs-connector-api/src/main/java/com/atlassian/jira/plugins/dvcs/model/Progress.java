@@ -16,7 +16,7 @@ public interface Progress
      * @param synchroErrorCount
      */
     void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
-    
+
     /**
      * Marks progress as finished.
      */
@@ -43,7 +43,7 @@ public interface Progress
     int getSynchroErrorCount();
 
     int getPullRequestActivityCount();
-    
+
 	/**
 	 * @return error messages
 	 */
@@ -52,18 +52,20 @@ public interface Progress
 	/**
 	 * Indication that the synchronisation should stop.
 	 * Used when repository is unlinked or organisation and its repositories are deleted.
-	 * 
+	 *
 	 * @param shouldStop
 	 */
 	void setShouldStop(boolean shouldStop);
 
 	/**
-	 * Indication that the synchronisation should stop 
+	 * Indication that the synchronisation should pause
 	 * Used when repository is unlinked or organisation and its repositories are deleted.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isShouldStop();
+
+	boolean isShouldCancel();
 
     /**
      * Call this method to update the current status of the pull request progress.
@@ -79,6 +81,8 @@ public interface Progress
      * @param finished
      */
     void setFinished(boolean finished);
+
+    void setShouldCancel(boolean cancelled);
 
     /**
      * Indication that the repository has administration permission

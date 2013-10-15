@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import java.util.EnumSet;
+
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 
 /**
  * Synchronization services
@@ -10,14 +11,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 public interface Synchronizer
 {
 
-    /**
-     * Perform a sync on the specified dvcs repostiory from last already saved changeset
-     *
-     * @param repository
-     * @param synchronisationOperation
-     * @param changesetService
-     */
-    public void synchronize(Repository repository, SynchronisationOperation synchronisationOperation, ChangesetService changesetService);
+    void doSync(Repository repository, EnumSet<SynchronizationFlag> flags);
 
     /**
      * This tells that any runnnig or queued synchronisation for this repository should be canceled.

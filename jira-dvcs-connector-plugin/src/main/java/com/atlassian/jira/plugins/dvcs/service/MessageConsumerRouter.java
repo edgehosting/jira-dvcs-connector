@@ -165,12 +165,12 @@ final class MessageConsumerRouter<P extends HasProgress> implements Runnable
 
             try
             {
-                messageDao.markQueued(message);
-                if (message.getPayload().getProgress().isShouldStop())
+                if (message.getPayload().getProgress().isShouldCancel())
                 {
                     messageDao.delete(message);
                     continue;
                 }
+                messageDao.markQueued(message);
                 if (!delegate.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
                 {
                     delegate.onReceive(message);
