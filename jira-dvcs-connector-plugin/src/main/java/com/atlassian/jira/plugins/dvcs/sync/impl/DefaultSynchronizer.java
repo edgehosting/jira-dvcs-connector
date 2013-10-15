@@ -88,7 +88,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
 
-        if (!softSync && skipSync(repository)) {
+        if (skipSync(repository)) {
             return;
         }
 
