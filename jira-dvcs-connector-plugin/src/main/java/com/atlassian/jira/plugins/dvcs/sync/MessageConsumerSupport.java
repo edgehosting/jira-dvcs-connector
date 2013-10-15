@@ -48,7 +48,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     protected LinkedIssueService linkedIssueService;
 
     @Resource
-    protected MessagingService<P> messagingService;
+    protected MessagingService messagingService;
 
     @Resource
     protected BranchService branchService;
@@ -139,6 +139,12 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         {
             LOGGER.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
+    }
+    
+    @Override
+    public int getParallelThreads()
+    {
+        return 2;
     }
 
     protected abstract Repository getRepository(P payload);

@@ -470,11 +470,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
                 if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
                 {
-                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                    MessageKey<BitbucketSynchronizeActivityMessage> key = messagingService.<BitbucketSynchronizeActivityMessage>get( //
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
-                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
+                    messagingService.<BitbucketSynchronizeActivityMessage>publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
                 }
 
             } else

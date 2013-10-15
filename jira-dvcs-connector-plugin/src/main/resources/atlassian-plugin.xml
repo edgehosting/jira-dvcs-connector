@@ -468,6 +468,9 @@
     <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
     </component>
+    <component key="messageExecutor" class="com.atlassian.jira.plugins.dvcs.service.MessageExecutor">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.MessageExecutor</interface>
+    </component>
     <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
