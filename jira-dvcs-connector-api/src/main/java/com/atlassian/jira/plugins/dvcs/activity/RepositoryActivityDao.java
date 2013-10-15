@@ -39,7 +39,7 @@ public interface RepositoryActivityDao
 
     // R
 
-    List<RepositoryPullRequestMapping> getPullRequestsForIssue(String issueKey);
+    List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys);
 
     RepositoryPullRequestMapping findRequestById(int localId);
 

@@ -1,21 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
@@ -24,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
@@ -31,6 +16,19 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  *
@@ -57,7 +55,6 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
      * Injected {@link ActiveObjects} dependency.
      */
     private final ActiveObjects activeObjects;
-
 
     public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
     {
@@ -285,9 +282,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(String issueKey)
+    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys)
     {
-        Collection<Integer> prIds = findRelatedPullRequests(issueKey);
+        Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
         if (prIds.isEmpty())
         {
             return Lists.newArrayList();
@@ -312,9 +309,9 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         return prIds;
     }
 
-    private Collection<Integer> findRelatedPullRequests(String issueKey)
+    private Collection<Integer> findRelatedPullRequests(final Iterable<String> issueKeys)
     {
-        return Collections2.transform(findRelatedPullRequestsObjects(issueKey), new Function<RepositoryPullRequestIssueKeyMapping, Integer>()
+        return Collections2.transform(findRelatedPullRequestsObjects(issueKeys), new Function<RepositoryPullRequestIssueKeyMapping, Integer>()
         {
             @Override
             public Integer apply(@Nullable RepositoryPullRequestIssueKeyMapping input)
@@ -324,10 +321,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         });
     }
 
-    private List<RepositoryPullRequestIssueKeyMapping> findRelatedPullRequestsObjects(String issueKey)
+    private List<RepositoryPullRequestIssueKeyMapping> findRelatedPullRequestsObjects(final Iterable<String> issueKeys)
     {
+        String whereClause = ActiveObjectsUtils.renderListStringsOperator(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+
         final Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY + " = ?", issueKey.toUpperCase());
+                .where(whereClause);
 
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         return Arrays.asList(mappings);
