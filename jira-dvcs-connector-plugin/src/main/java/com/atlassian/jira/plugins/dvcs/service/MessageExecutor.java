@@ -10,18 +10,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 
 /**
  * Is responsible for message execution.
@@ -54,10 +53,10 @@ public class MessageExecutor
     };
 
     /**
-     * Injected {@link MessagingService} dependency.
+     * Injected {@link MessageDao} dependency.
      */
     @Resource
-    private MessagingService messagingService;
+    private MessageDao messageDao;
 
     /**
      * Injected {@link MessageConsumer} dependencies.
@@ -66,19 +65,14 @@ public class MessageExecutor
     private MessageConsumer<?>[] consumers;
 
     /**
-     * {@link MessageAddress} to appropriate consumers listeners.
+     * {@link MessageKey} to appropriate consumers listeners.
      */
-    private final ConcurrentMap<MessageAddress<?>, List<MessageConsumer<?>>> messageKeyToConsumers = new ConcurrentHashMap<MessageAddress<?>, List<MessageConsumer<?>>>();
+    private final ConcurrentMap<MessageKey<?>, List<MessageConsumer<?>>> messageKeyToConsumers = new ConcurrentHashMap<MessageKey<?>, List<MessageConsumer<?>>>();
 
     /**
      * {@link MessageConsumer} to free tokens.
      */
     private final ConcurrentMap<MessageConsumer<?>, AtomicInteger> consumerToRemainingTokens = new ConcurrentHashMap<MessageConsumer<?>, AtomicInteger>();
-
-    /**
-     * Is messaging stopped?
-     */
-    private boolean stop;
 
     /**
      * Initializes this bean.
@@ -88,10 +82,10 @@ public class MessageExecutor
     {
         for (MessageConsumer<?> consumer : consumers)
         {
-            List<MessageConsumer<?>> byKey = messageKeyToConsumers.get(consumer.getAddress());
+            List<MessageConsumer<?>> byKey = messageKeyToConsumers.get(consumer.getKey());
             if (byKey == null)
             {
-                messageKeyToConsumers.putIfAbsent(consumer.getAddress(), byKey = new CopyOnWriteArrayList<MessageConsumer<?>>());
+                messageKeyToConsumers.putIfAbsent(consumer.getKey(), byKey = new CopyOnWriteArrayList<MessageConsumer<?>>());
             }
             byKey.add(consumer);
             consumerToRemainingTokens.put(consumer, new AtomicInteger(consumer.getParallelThreads()));
@@ -114,15 +108,6 @@ public class MessageExecutor
             });
         }
     }
-    
-    /**
-     * Stops messaging executor.
-     */
-    @PreDestroy
-    public void destroy() {
-        stop = true;
-        executor.shutdown();
-    }
 
     /**
      * Notifies that new message with provided key was added into the queues. It is necessary because of consumers' weak-up, which can be
@@ -131,7 +116,7 @@ public class MessageExecutor
      * @param messageKey
      *            key of new message
      */
-    public void notify(MessageAddress<?> messageKey)
+    public void notify(MessageKey<?> messageKey)
     {
         for (MessageConsumer<?> byMessageKey : messageKeyToConsumers.get(messageKey))
         {
@@ -148,14 +133,10 @@ public class MessageExecutor
      */
     private <P extends HasProgress> void tryToProcessNextMessage(MessageConsumer<P> consumer)
     {
-        if (stop) {
-            return;
-        }
-        
         Message<P> message;
         synchronized (this)
         {
-            message = messagingService.getNextMessageForConsuming(consumer, consumer.getAddress().getId());
+            message = messageDao.getNextMessageForConsuming(consumer.getKey().getId(), consumer.getId());
             if (message == null)
             {
                 // no other message for processing
@@ -169,7 +150,7 @@ public class MessageExecutor
             }
 
             // we have token and message - message is going to be marked that is queued / busy - and can be proceed
-            messagingService.queued(consumer, message);
+            messageDao.markQueued(message);
         }
 
         // process message itself
@@ -259,6 +240,12 @@ public class MessageExecutor
         {
             try
             {
+                if (message.getPayload().getProgress().isShouldStop())
+                {
+                    messageDao.delete(message);
+                    return;
+                }
+
                 if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
                 {
                     consumer.onReceive(message);
@@ -271,7 +258,7 @@ public class MessageExecutor
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
-                messagingService.fail(consumer, message);
+                messageDao.markFail(message, consumer);
                 ((DefaultProgress) message.getPayload().getProgress()).setError("Error during sync. See server logs.");
                 message.getPayload().getProgress().setFinished(true);
             }
@@ -279,7 +266,7 @@ public class MessageExecutor
 
         private void discard(Message<P> message, P payload)
         {
-            // FIXME<MSG>
+            messageDao.delete(message);
             payload.getProgress().setFinished(true);
         }
 

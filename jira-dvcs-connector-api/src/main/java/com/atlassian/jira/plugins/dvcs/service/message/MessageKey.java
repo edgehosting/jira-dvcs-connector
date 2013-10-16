@@ -8,7 +8,7 @@ package com.atlassian.jira.plugins.dvcs.service.message;
  * @param <P>
  *            type of message payload
  */
-public interface MessageAddress<P extends HasProgress>
+public interface MessageKey<P extends HasProgress>
 {
 
     /**

@@ -18,7 +18,7 @@ public interface MessageConsumer<P extends HasProgress>
     /**
      * @return Identity of consumer resp. consumer queue.
      */
-    String getQueue();
+    String getId();
 
     /**
      * Called when a payload.
@@ -29,9 +29,9 @@ public interface MessageConsumer<P extends HasProgress>
     void onReceive(Message<P> message);
 
     /**
-     * @return address of messages, which will be received
+     * @return key of messages which will be received
      */
-    MessageAddress<P> getAddress();
+    MessageKey<P> getKey();
     
     /**
      * @return Count of parallel threads, which can be used for processing.

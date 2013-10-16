@@ -20,7 +20,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -86,7 +86,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         } catch (Exception e)
         {
             LOGGER.error("Failed to process " + payload.getRepository().getName(), e);
-            messagingService.fail(this, message);
+            messagingService.fail(message, this);
             return;
         }
 
@@ -141,14 +141,14 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     {
         message.getPayload().getProgress().finish();
         repositoryDao.setLastActivitySyncDate(message.getPayload().getRepository().getId(), lastActivitySyncDate);
-        messagingService.ok(this, message);
+        messagingService.ok(message, this);
     }
 
     private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl)
     {
         BitbucketSynchronizeActivityMessage payload = message.getPayload();
 
-        messagingService.publish(getAddress(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
+        messagingService.publish(getKey(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
                 payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal()), message.getTags());
     }
 
@@ -305,21 +305,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     @Override
-    public String getQueue()
+    public String getId()
     {
         return ID;
     }
 
     @Override
-    public MessageAddress<BitbucketSynchronizeActivityMessage> getAddress()
+    public MessageKey<BitbucketSynchronizeActivityMessage> getKey()
     {
         return messagingService.get(BitbucketSynchronizeActivityMessage.class, KEY);
-    }
-    
-    @Override
-    public int getParallelThreads()
-    {
-        return 1;
     }
 
     @Override

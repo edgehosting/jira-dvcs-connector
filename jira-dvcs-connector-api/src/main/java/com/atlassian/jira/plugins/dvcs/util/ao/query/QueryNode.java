@@ -21,8 +21,9 @@ public interface QueryNode
     void buildJoin(QueryContext context);
 
     /**
+     * 
      * @param context
-     * @return join on
+     * @return
      */
     String joinOn(QueryContext context);
 
@@ -35,10 +36,5 @@ public interface QueryNode
      *            part
      */
     void buildWhere(QueryContext context, StringBuilder where);
-
-    /**
-     * @param context
-     */
-    String buildOrder(QueryContext context);
 
 }

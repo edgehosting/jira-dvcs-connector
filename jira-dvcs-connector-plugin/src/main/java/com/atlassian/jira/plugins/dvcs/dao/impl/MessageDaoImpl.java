@@ -1,30 +1,34 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-<<<<<<< mine
-import java.util.Collections;
-=======
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
->>>>>>> theirs
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import net.java.ao.DBParam;
-import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
-import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
-import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
-import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * An implementation of {@link MessageDao}.
@@ -42,8 +46,6 @@ public class MessageDaoImpl implements MessageDao
     private ActiveObjects activeObjects;
 
     /**
-<<<<<<< mine
-=======
      * Injected {@link MessagePayloadSerializer}-s dependency.
      */
     @Resource
@@ -94,37 +96,10 @@ public class MessageDaoImpl implements MessageDao
     }
 
     /**
->>>>>>> theirs
      * {@inheritDoc}
      */
     @Override
-    public MessageMapping create(final Map<String, Object> message, final String[] tags)
-    {
-        return activeObjects.executeInTransaction(new TransactionCallback<MessageMapping>()
-        {
-
-            @Override
-            public MessageMapping doInTransaction()
-            {
-                MessageMapping result = activeObjects.create(MessageMapping.class, message);
-                for (String tag : tags)
-                {
-                    activeObjects.create(MessageTagMapping.class, //
-                            new DBParam(MessageTagMapping.MESSAGE, result.getID()), //
-                            new DBParam(MessageTagMapping.TAG, tag) //
-                            );
-                }
-                return result;
-            }
-
-        });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void delete(final MessageMapping message)
+    public <P extends HasProgress> void save(final Message<P> message)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
@@ -132,10 +107,49 @@ public class MessageDaoImpl implements MessageDao
             @Override
             public Void doInTransaction()
             {
-                for (MessageTagMapping tag : message.getTags()) {
+                MessageMapping messageMapping;
+                if (message.getId() == null)
+                {
+                    messageMapping = activeObjects.create(MessageMapping.class, map(message));
+                    addToConsumersQueues(messageMapping);
+
+                } else
+                {
+                    messageMapping = activeObjects.get(MessageMapping.class, message.getId());
+                    map(messageMapping, message);
+                    messageMapping.save();
+
+                }
+                updateMessageTags(messageMapping, message);
+
+                map(message, messageMapping);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <P extends HasProgress> void delete(final Message<P> message)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                MessageMapping messageMapping = activeObjects.get(MessageMapping.class, message.getId());
+                for (MessageConsumerMapping consumer : messageMapping.getConsumers())
+                {
+                    activeObjects.delete(consumer);
+                }
+                for (MessageTagMapping tag : messageMapping.getTags())
+                {
                     activeObjects.delete(tag);
                 }
-                activeObjects.delete(message);
+                activeObjects.delete(messageMapping);
                 return null;
             }
 
@@ -146,40 +160,88 @@ public class MessageDaoImpl implements MessageDao
      * {@inheritDoc}
      */
     @Override
-    public MessageMapping getById(int id)
+    public <P extends HasProgress> void markQueued(final Message<P> message)
     {
-        return activeObjects.get(MessageMapping.class, id);
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+
+            @Override
+            public Void doInTransaction()
+            {
+                MessageMapping messageMapping = activeObjects.get(MessageMapping.class, message.getId());
+                for (MessageConsumerMapping consumer : messageMapping.getConsumers())
+                {
+                    if (!consumer.isQueued())
+                    {
+                        consumer.setQueued(true);
+                        consumer.save();
+                    }
+                }
+
+                return null;
+            }
+        });
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void getByTag(String tag, final StreamCallback<MessageMapping> messagesStream)
+    public <P extends HasProgress> void markOk(final Message<P> message, final MessageConsumer<P> consumer)
     {
-        activeObjects.stream(MessageMapping.class, new QueryTemplate()
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
 
             @Override
-            protected void build()
+            public Void doInTransaction()
             {
-                alias(MessageMapping.class, "message");
-                alias(MessageTagMapping.class, "messageTag");
+                Query query = Query
+                        .select()
+                        .from(MessageConsumerMapping.class)
+                        .where(MessageConsumerMapping.MESSAGE + " = ? AND " + MessageConsumerMapping.CONSUMER + " = ?", message.getId(),
+                                consumer.getId());
+                activeObjects.delete(activeObjects.find(MessageConsumerMapping.class, query));
+                MessageMapping messageMapping = activeObjects.get(MessageMapping.class, message.getId());
+                if (messageMapping.getConsumers().length == 0)
+                {
+                    for (MessageTagMapping messageTagMapping : messageMapping.getTags())
+                    {
+                        activeObjects.delete(messageTagMapping);
+                    }
+                    activeObjects.delete(messageMapping);
+                }
 
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
-
-                where(eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")));
+                return null;
             }
 
-        }.toQuery(Collections.<String, Object> singletonMap("tag", tag)), new EntityStreamCallback<MessageMapping, Integer>()
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <P extends HasProgress> void markFail(final Message<P> message, final MessageConsumer<P> consumer)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
 
             @Override
-            public void onRowRead(MessageMapping message)
+            public Void doInTransaction()
             {
-                messagesStream.callback(message);
-            }
+                Query query = Query
+                        .select()
+                        .from(MessageConsumerMapping.class)
+                        .where(MessageConsumerMapping.MESSAGE + " = ? AND " + MessageConsumerMapping.CONSUMER + " = ?", message.getId(),
+                                consumer.getId());
 
+                MessageConsumerMapping messageConsumerMapping = activeObjects.find(MessageConsumerMapping.class, query)[0];
+                messageConsumerMapping.setLastFailed(new Date());
+                messageConsumerMapping.setWaitForRetry(true);
+                messageConsumerMapping.setRetriesCount(messageConsumerMapping.getRetriesCount() + 1);
+                messageConsumerMapping.save();
+                return null;
+            }
         });
 
     }
@@ -188,11 +250,8 @@ public class MessageDaoImpl implements MessageDao
      * {@inheritDoc}
      */
     @Override
-    public int getMessagesForConsumingCount(String address, String tag)
+    public <P extends HasProgress> Message<P> getById(int id)
     {
-<<<<<<< mine
-        Query query = new QueryTemplate()
-=======
         MessageMapping messageMapping = activeObjects.get(MessageMapping.class, id);
         Message<P> result = new Message<P>();
         map(result, messageMapping);
@@ -371,29 +430,29 @@ public class MessageDaoImpl implements MessageDao
                 }));
 
         Iterable<MessageTagMapping> toRemove = Iterables.filter(Arrays.asList(messageMapping.getTags()), new Predicate<MessageTagMapping>()
->>>>>>> theirs
         {
 
             @Override
-            protected void build()
+            public boolean apply(MessageTagMapping input)
             {
-                alias(MessageMapping.class, "message");
-                alias(MessageTagMapping.class, "messageTag");
-                alias(MessageQueueItemMapping.class, "messageQueueItem");
-
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
-                join(MessageQueueItemMapping.class, column(MessageMapping.class, "ID"), MessageQueueItemMapping.MESSAGE);
-
-                where(and( //
-                        eq(column(MessageMapping.class, MessageMapping.ADDRESS), parameter("address")), //
-                        eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")) //
-                ));
+                return !currentTags.contains(input.getTag());
             }
 
-<<<<<<< mine
-        }.toQuery(MapBuilder.<String, Object> build("address", address, "tag", tag));
-        return activeObjects.count(MessageMapping.class, query);
-=======
+        });
+        for (MessageTagMapping messageTagMapping : toRemove)
+        {
+            activeObjects.delete(messageTagMapping);
+        }
+
+        Iterable<String> toAdd = Iterables.filter(currentTags, new Predicate<String>()
+        {
+
+            @Override
+            public boolean apply(String input)
+            {
+                return !previousTags.contains(input);
+            }
+
         });
 
         for (String tag : toAdd)
@@ -423,6 +482,6 @@ public class MessageDaoImpl implements MessageDao
                     new DBParam(MessageConsumerMapping.RETRIES_COUNT, 0) //
                     );
         }
->>>>>>> theirs
     }
+
 }

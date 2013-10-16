@@ -11,8 +11,8 @@ import net.java.ao.schema.Table;
  * @author Stanislav Dvorscak
  * 
  */
-@Table("MESSAGE_QUEUE_ITEM")
-public interface MessageQueueItemMapping extends Entity
+@Table("MESSAGE_CONSUMER")
+public interface MessageConsumerMapping extends Entity
 {
 
     /**
@@ -21,14 +21,19 @@ public interface MessageQueueItemMapping extends Entity
     String MESSAGE = "MESSAGE_ID";
 
     /**
-     * @see #getQueue()
+     * @see #getConsumer()
      */
-    String QUEUE = "QUEUE";
+    String CONSUMER = "CONSUMER";
 
     /**
-     * @see #getState()
+     * @see #isQueued()
      */
-    String STATE = "STATE";
+    String QUEUED = "QUEUED";
+
+    /**
+     * @see #isWaitForRetry()
+     */
+    String WAIT_FOR_RETRY = "WAIT_FOR_RETRY";
 
     /**
      * @see #getLastFailed()
@@ -48,24 +53,35 @@ public interface MessageQueueItemMapping extends Entity
     /**
      * @return Identifier of consumer.
      */
-    String getQueue();
+    String getConsumer();
 
     /**
      * @param consumer
-     *            {@link #getQueue()}
+     *            {@link #getConsumer()}
      */
     void setConsumer(String consumer);
 
     /**
-     * @return state of message
+     * @return true if it is waiting for processing - was already queued.
      */
-    String getState();
+    boolean isQueued();
 
     /**
-     * @param state
-     *            {@link #getState()}
+     * @param queued
+     *            {@link #isQueued()}
      */
-    void setState(String state);
+    void setQueued(boolean queued);
+
+    /**
+     * @return True if this message is waiting for retry.
+     */
+    boolean isWaitForRetry();
+
+    /**
+     * @param waitForRetry
+     *            {@link #isWaitForRetry()}
+     */
+    void setWaitForRetry(boolean waitForRetry);
 
     /**
      * @return Date when last failed happened.
