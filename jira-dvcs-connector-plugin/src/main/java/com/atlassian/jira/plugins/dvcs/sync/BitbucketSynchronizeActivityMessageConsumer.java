@@ -74,7 +74,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketSynchronizeActivityMessage payload = message.getPayload();
         Repository repo = payload.getRepository();
         int jiraCount = payload.getProgress().getJiraCount();
-        int pullRequestActivityCount = 0;
+
         BitbucketPullRequestBaseActivityEnvelope activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
         try
@@ -114,7 +114,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 int localPrId = processActivity(message, info, pullRestpoint);
                 markProcessed(payload, info, localPrId);
 
-                payload.getProgress().inPullRequestProgress(++pullRequestActivityCount,
+                payload.getProgress().inPullRequestProgress(payload.getProcessedPullRequests().size(),
                         jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
             } catch (Exception e)
             {
