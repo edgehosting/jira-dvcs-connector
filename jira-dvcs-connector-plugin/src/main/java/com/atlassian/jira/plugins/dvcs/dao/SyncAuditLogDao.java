@@ -6,11 +6,22 @@ public interface SyncAuditLogDao
 {
     SyncAuditLogMapping newSyncAuditLog(int repoId, String syncType);
 
+    SyncAuditLogMapping finish(int syncId);
+
+    SyncAuditLogMapping setException(int syncId, Throwable t);
+
+    int removeAllForRepo(int repoId);
+
+    boolean hasException(int syncId);
+
+    SyncAuditLogMapping[] getAll();
+
     SyncAuditLogMapping[] getAllForRepo(int repoId);
 
     SyncAuditLogMapping getLastForRepo(int repoId);
 
-    SyncAuditLogMapping finish(int syncId, Throwable exception);
+    SyncAuditLogMapping getLastSuccessForRepo(int repoId);
 
-    int removeAllForRepo(int repoId);
+    SyncAuditLogMapping getLastFailedForRepo(int repoId);
+
 }
