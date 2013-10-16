@@ -16,11 +16,13 @@ import java.util.List;
 public class PullRequestServiceImpl implements PullRequestService
 {
     private final RepositoryActivityDao pulLRequestDao;
-    private final PullRequestTransformer transformer = new PullRequestTransformer();
 
-    public PullRequestServiceImpl(final RepositoryActivityDao pulLRequestDao)
+    private final PullRequestTransformer transformer;
+
+    public PullRequestServiceImpl(final RepositoryActivityDao pulLRequestDao, final RepositoryService repositoryService)
     {
         this.pulLRequestDao = pulLRequestDao;
+        transformer = new PullRequestTransformer(repositoryService);
     }
 
     @Override

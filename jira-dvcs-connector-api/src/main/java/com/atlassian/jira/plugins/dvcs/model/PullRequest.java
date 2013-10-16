@@ -1,11 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 public class PullRequest
 {
@@ -13,12 +8,12 @@ public class PullRequest
     private long remoteId;
     private int repositoryId;
     private String name;
-    private String description;
     private String url;
     private PullRequestRef source;
     private PullRequestRef destination;
     private String status;
     private Date createdOn;
+    private Date updatedOn;
     private String author;
 
     public PullRequest(final int id)
@@ -64,16 +59,6 @@ public class PullRequest
     public void setName(final String name)
     {
         this.name = name;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription(final String description)
-    {
-        this.description = description;
     }
 
     public String getUrl()
@@ -134,5 +119,15 @@ public class PullRequest
     public void setAuthor(final String author)
     {
         this.author = author;
+    }
+
+    public Date getUpdatedOn()
+    {
+        return updatedOn;
+    }
+
+    public void setUpdatedOn(final Date updatedOn)
+    {
+        this.updatedOn = updatedOn;
     }
 }

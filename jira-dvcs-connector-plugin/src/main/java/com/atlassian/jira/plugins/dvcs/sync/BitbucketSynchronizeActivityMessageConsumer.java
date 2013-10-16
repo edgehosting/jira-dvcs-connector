@@ -212,7 +212,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote)
     {
-        return !local.getUpdatedOn().equals(remote.getUpdatedOn());
+        return !remote.getUpdatedOn().equals(local.getUpdatedOn());
     }
 
     public void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,

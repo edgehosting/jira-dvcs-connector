@@ -8,12 +8,14 @@ package com.atlassian.jira.plugins.dvcs.model;
 public class PullRequestRef
 {
     private String branch;
-    private Repository repository;
+    private String repository;
+    private String repository_url;
 
-    public PullRequestRef(final String branch, final Repository repository)
+    public PullRequestRef(final String branch, final String repository, final String repository_url)
     {
         this.branch = branch;
         this.repository = repository;
+        this.repository_url = repository_url;
     }
 
     public String getBranch()
@@ -26,12 +28,12 @@ public class PullRequestRef
         this.branch = branch;
     }
 
-    public Repository getRepository()
+    public String getRepository()
     {
         return repository;
     }
 
-    public void setRepository(final Repository repository)
+    public void setRepository(final String repository)
     {
         this.repository = repository;
     }
