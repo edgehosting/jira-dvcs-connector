@@ -20,10 +20,11 @@ public class ActiveObjectsUtils
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
     private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500);
 
-    public static <T extends Entity> void delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
+    public static <T extends Entity> int delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
         //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
         log.debug("Deleting type {}", entityType);
+        int deleted = 0;
         int remainingEntities = activeObjects.count(entityType, query);
         while (remainingEntities > 0)
         {
@@ -32,8 +33,10 @@ public class ActiveObjectsUtils
             // BBC-453 we need to copy Query as ActiveObjects.find will mangle query for all types annotated by @Preload
             T[] entities = activeObjects.find(entityType, copyQuery(query).limit(DELETE_WINDOW_SIZE));
             activeObjects.delete(entities);
+            deleted++;
             remainingEntities = activeObjects.count(entityType, query);
         }
+        return deleted;
     }
 
     public static Query copyQuery(Query query)

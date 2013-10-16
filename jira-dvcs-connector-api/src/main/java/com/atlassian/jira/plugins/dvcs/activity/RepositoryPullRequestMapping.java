@@ -11,12 +11,9 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String REMOTE_ID = "REMOTE_ID";
     String TO_REPO_ID = "TO_REPOSITORY_ID";
     String NAME = "NAME";
-    // this is not used
-    String DESCRIPTION = "DESCRIPTION";
     String URL = "URL";
 
     String AUTHOR = "AUTHOR";
-    String SOURCE_URL = "SOURCE_URL";
     String SOURCE_REPO = "SOURCE_REPO";
     String SOURCE_BRANCH = "SOURCE_BRANCH";
     String DESTINATION_BRANCH = "DESTINATION_BRANCH";
@@ -60,11 +57,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     String getName();
 
-    String getDescription();
-
     String getUrl();
-
-    String getSourceUrl();
 
     String getSourceBranch();
 
@@ -92,11 +85,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     void setName(String name);
 
-    void setDescription(String description);
-
     void setUrl(String url);
-
-    void setSourceUrl(String sourceUrl);
 
     void setSourceBranch(String branch);
 
