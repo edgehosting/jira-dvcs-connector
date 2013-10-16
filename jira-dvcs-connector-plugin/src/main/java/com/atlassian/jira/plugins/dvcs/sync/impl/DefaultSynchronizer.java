@@ -86,6 +86,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     public void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
         if (skipSync(repository)) {
             return;
@@ -95,12 +97,15 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         {
             if (!softSync)
             {
-                // we are doing full sync, lets delete all existing changesets
-                // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                changesetService.removeAllInRepository(repository.getId());
-                branchService.removeAllBranchHeadsInRepository(repository.getId());
-                repository.setLastCommitDate(null);
-                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+                if (changestesSync)
+                {
+                    // we are doing full sync, lets delete all existing changesets
+                    // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                    changesetService.removeAllInRepository(repository.getId());
+                    branchService.removeAllBranchHeadsInRepository(repository.getId());
+                    repository.setLastCommitDate(null);
+                }
+                if (pullRequestSync)
                 {
                     repositoryActivityDao.removeAll(repository);
                     repository.setActivityLastSync(null);
@@ -109,14 +114,18 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             }
 
             startProgress(repository);
+
             if (repository.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
             {
-                // sync csets
-                BranchFilterInfo filterNodes = getFilterNodes(repository);
-                processBitbucketSync(repository, softSync, filterNodes);
-                updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+                if (changestesSync)
+                {
+                    // sync csets
+                    BranchFilterInfo filterNodes = getFilterNodes(repository);
+                    processBitbucketSync(repository, softSync, filterNodes);
+                    updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+                }
                 // sync pull requests
-                if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
+                if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
                 {
                     MessageKey<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                             BitbucketSynchronizeActivityMessage.class, //
@@ -127,20 +136,26 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
             } else
             {
-                Date synchronizationStartedAt = new Date();
-                for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
+                if (changestesSync)
                 {
-                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
-                            branchHead.getName(), branchHead.getHead(), //
-                            synchronizationStartedAt, //
-                            null, softSync);
-                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
-                            SynchronizeChangesetMessage.class, //
-                            GithubSynchronizeChangesetMessageConsumer.KEY //
-                            );
-                    messagingService.publish(key, message, UUID.randomUUID().toString());
+                    Date synchronizationStartedAt = new Date();
+                    for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
+                    {
+                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
+                                branchHead.getName(), branchHead.getHead(), //
+                                synchronizationStartedAt, //
+                                null, softSync);
+                        MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                                SynchronizeChangesetMessage.class, //
+                                GithubSynchronizeChangesetMessageConsumer.KEY //
+                                );
+                        messagingService.publish(key, message, UUID.randomUUID().toString());
+                    }
                 }
-
+                if (pullRequestSync)
+                {
+                    // TODO
+                }
             }
 
         }
