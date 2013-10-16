@@ -9,9 +9,9 @@ import net.java.ao.Query;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {

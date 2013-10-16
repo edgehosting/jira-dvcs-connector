@@ -188,8 +188,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
 
         Set<String> currentIssueKeys = new HashSet<String>();
-        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName(),
-                repositoryPullRequestMapping.getDescription()));
+        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName()));
 
         // commits
         for (RepositoryCommitMapping commit : repositoryPullRequestMapping.getCommits())
