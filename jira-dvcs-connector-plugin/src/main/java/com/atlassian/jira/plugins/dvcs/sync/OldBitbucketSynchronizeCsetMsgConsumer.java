@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
 
 public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSupport<OldBitbucketSynchronizeCsetMsg>
@@ -19,13 +19,13 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     }
 
     @Override
-    public String getId()
+    public String getQueue()
     {
         return ID;
     }
 
     @Override
-    public MessageKey<OldBitbucketSynchronizeCsetMsg> getKey()
+    public MessageAddress<OldBitbucketSynchronizeCsetMsg> getAddress()
     {
         return messagingService.get(OldBitbucketSynchronizeCsetMsg.class, KEY);
     }
