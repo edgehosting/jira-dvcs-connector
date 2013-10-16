@@ -8,7 +8,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
-import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
@@ -23,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -103,13 +103,16 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     }
 
     @Override
-    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, String remoteStatus)
+    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
+            String remoteStatus, Date updatedOn, String sourceRepo)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
       request.setName(name);
       request.setSourceBranch(sourceBranch);
       request.setDestinationBranch(dstBranch);
       request.setLastStatus(com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status.fromBbString(remoteStatus).name());
+      request.setSourceRepo(sourceRepo);
+      request.setUpdatedOn(updatedOn);
       activeObjects.executeInTransaction(new TransactionCallback<Void>()
       {
           @Override

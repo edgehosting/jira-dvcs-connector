@@ -17,10 +17,12 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     String AUTHOR = "AUTHOR";
     String SOURCE_URL = "SOURCE_URL";
+    String SOURCE_REPO = "SOURCE_REPO";
     String SOURCE_BRANCH = "SOURCE_BRANCH";
     String DESTINATION_BRANCH = "DESTINATION_BRANCH";
     String LAST_STATUS = "LAST_STATUS";
     String CREATED_ON = "CREATED_ON";
+    String UPDATED_ON = "UPDATED_ON";
 
     public enum Status {
         OPEN("open"), DECLINED("rejected"), MERGED("fulfilled");
@@ -72,10 +74,14 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     Date getCreatedOn();
 
+    Date getUpdatedOn();
+
     String getAuthor();
 
     @ManyToMany(RepositoryPullRequestToCommitMapping.class)
     RepositoryCommitMapping[] getCommits();
+
+    String getSourceRepo();
 
     //
     // setters
@@ -100,5 +106,9 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     void setCreatedOn(Date date);
 
+    void setUpdatedOn(Date date);
+
     void setAuthor(String author);
+
+    void setSourceRepo(String sourceRepo);
 }
