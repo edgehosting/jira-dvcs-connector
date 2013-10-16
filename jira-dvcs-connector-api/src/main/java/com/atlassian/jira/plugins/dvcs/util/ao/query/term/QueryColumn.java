@@ -46,6 +46,15 @@ public class QueryColumn extends DefaultQueryNode implements QueryTerm
     {
         return context.getEntityAlias(entity) + "." + columnName;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String buildOrder(QueryContext context)
+    {
+        return context.getEntityAlias(entity) + "." + columnName;
+    }
 
     /**
      * {@inheritDoc}

@@ -35,7 +35,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -470,7 +470,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);*/
                 if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS) && posponePrSyncHelper.isAfterPostponedTime())
                 {
-                    MessageKey<BitbucketSynchronizeActivityMessage> key = messagingService.<BitbucketSynchronizeActivityMessage>get( //
+                    MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.<BitbucketSynchronizeActivityMessage>get( //
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
@@ -486,7 +486,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                             branchHead.getName(), branchHead.getHead(), //
                             synchronizationStartedAt, //
                             null, softSync);
-                    MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                    MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                             SynchronizeChangesetMessage.class, //
                             GithubSynchronizeChangesetMessageConsumer.KEY //
                             );
@@ -519,7 +519,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                         branchHead.getName(), branchHead.getHead(), //
                         synchronizationStartedAt, //
                         null, newBranchHeads, softSync);
-                MessageKey<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
+                MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
                         );
@@ -531,7 +531,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 log.debug("No new changesets detected for repository [{}].", repository.getSlug());
                 return;
             }
-            MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+            MessageAddress<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
                     BitbucketSynchronizeChangesetMessage.class,
                     BitbucketSynchronizeChangesetMessageConsumer.KEY
                     );

@@ -4,7 +4,7 @@ import net.java.ao.Entity;
 import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 
-import com.atlassian.sal.api.message.Message;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 
 /**
  * DB version of {@link Message}
@@ -17,15 +17,15 @@ public interface MessageMapping extends Entity
 {
 
     /**
-     * @see #getKey()
+     * @see #getAddress()
      */
-    String KEY = "KEY";
+    String ADDRESS = "ADDRESS";
 
     /**
      * @see #getPriority()
      */
     String PRIORITY = "PRIORITY";
-    
+
     /**
      * @see #getPayloadType()
      */
@@ -37,15 +37,15 @@ public interface MessageMapping extends Entity
     String PAYLOAD = "PAYLOAD";
 
     /**
-     * @return Routing key of message.
+     * @return {@link Message#getAddress()}
      */
-    String getKey();
+    String getAddress();
 
     /**
-     * @param key
-     *            {@link #getKey()}
+     * @param address
+     *            {@link #getAddress()}
      */
-    void setKey(String key);
+    void setAddress(String address);
 
     /**
      * @return Priority of message.
@@ -70,7 +70,7 @@ public interface MessageMapping extends Entity
     void setPayloadType(String payloadType);
 
     /**
-     * @return Payload of message.
+     * @return {@link Message#get}
      */
     String getPayload();
 
@@ -87,9 +87,9 @@ public interface MessageMapping extends Entity
     MessageTagMapping[] getTags();
 
     /**
-     * @return awaited/remaining consumers of this message
+     * @return remaining consumers of this message
      */
     @OneToMany
-    MessageConsumerMapping[] getConsumers();
+    MessageQueueItemMapping[] getQueuesItems();
 
 }

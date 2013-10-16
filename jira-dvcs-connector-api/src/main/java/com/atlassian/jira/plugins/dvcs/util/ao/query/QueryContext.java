@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util.ao.query;
 
+import java.util.Map;
+
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
@@ -37,5 +39,10 @@ public interface QueryContext
      * @param parameterValue
      */
     void pushParameter(String parameterName, Object parameterValue);
+
+    /**
+     * @return Returns provided parameters - which are used for current {@link Query} building.
+     */
+    Map<String, Object> getProvidedParameters();
 
 }

@@ -90,7 +90,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 for (String parentChangesetNode : changeset.getParents())
                 {
                     if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
-                        messagingService.publish(getKey(), createNextMessage(payload, parentChangesetNode), tags);
+                        messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), tags);
                     }
                 }
 
@@ -100,11 +100,11 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                     repositoryService.save(repo);
                 }
             }
-            messagingService.ok(message, this);
+            messagingService.ok(this, message);
 
         } catch (Exception e)
         {
-            messagingService.fail(message, this);
+            messagingService.fail(this, message);
             ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
             LOGGER.error(e.getMessage(), e);
         } finally
@@ -116,7 +116,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
     protected void tryEndProgress(P payload, String[] tags)
     {
-        if (messagingService.getQueuedCount(getKey(), tags[0]) == 0)
+        if (messagingService.getQueuedCount(getAddress(), tags[0]) == 0)
         {
             smartCommitsProcessor.startProcess(payload.getProgress(), getRepository(payload), changesetService);
             payload.getProgress().finish();

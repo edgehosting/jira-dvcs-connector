@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 
 /**
  * Message which should be delivered.
@@ -18,9 +18,9 @@ public class Message<P extends HasProgress>
     private Integer id;
 
     /**
-     * @see #getKey()
+     * @see #getAddress()
      */
-    private MessageKey<P> key;
+    private MessageAddress<P> address;
 
     /**
      * @see #getPriority()
@@ -58,18 +58,18 @@ public class Message<P extends HasProgress>
     /**
      * @return Address where this message should be delivered.
      */
-    public MessageKey<P> getKey()
+    public MessageAddress<P> getAddress()
     {
-        return key;
+        return address;
     }
 
     /**
-     * @param key
-     *            {@link #getKey()}
+     * @param address
+     *            {@link #getAddress()}
      */
-    public void setKey(MessageKey<P> key)
+    public void setAddress(MessageAddress<P> address)
     {
-        this.key = key;
+        this.address = address;
     }
 
     /**
