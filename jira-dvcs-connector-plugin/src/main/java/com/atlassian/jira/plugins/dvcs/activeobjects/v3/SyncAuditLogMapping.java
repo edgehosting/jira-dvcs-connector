@@ -3,11 +3,15 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 import java.util.Date;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 @Table("SYNC_AUDIT_LOG")
 public interface SyncAuditLogMapping extends Entity
 {
+    String SYNC_STATUS_FAILED = "FAILED";
+    String SYNC_STATUS_SUCCESS = "SUCCESS";
+    //
     String REPO_ID = "REPO_ID";
     String START_DATE = "START_DATE";
     String END_DATE = "END_DATE";
@@ -20,6 +24,7 @@ public interface SyncAuditLogMapping extends Entity
     Date getEndDate();
     String getSyncStatus();
     String getSyncType();
+    @StringLength(StringLength.UNLIMITED)
     String getExcTrace();
 
     void setRepoId(int id);
@@ -27,6 +32,7 @@ public interface SyncAuditLogMapping extends Entity
     void setEndDate(Date date);
     void setSyncStatus(String status);
     void setSyncType(String type);
+    @StringLength(StringLength.UNLIMITED)
     void setExcTrace(String trace);
 
 }
