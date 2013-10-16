@@ -9,8 +9,11 @@ import net.java.ao.schema.Table;
 @Table("SYNC_AUDIT_LOG")
 public interface SyncAuditLogMapping extends Entity
 {
+    String SYNC_STATUS_RUNNING = "RUNNING";
     String SYNC_STATUS_FAILED = "FAILED";
     String SYNC_STATUS_SUCCESS = "SUCCESS";
+    String SYNC_TYPE_SOFT = "SOFT";
+    String SYNC_TYPE_FULL = "FULL";
     //
     String REPO_ID = "REPO_ID";
     String START_DATE = "START_DATE";

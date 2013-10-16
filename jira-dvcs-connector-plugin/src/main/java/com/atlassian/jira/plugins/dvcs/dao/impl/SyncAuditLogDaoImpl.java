@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import net.java.ao.Query;
@@ -23,9 +24,13 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping newSyncAuditLog(Map<String, Object> data, int repoId)
+    public SyncAuditLogMapping newSyncAuditLog(int repoId, String syncType)
     {
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put(SyncAuditLogMapping.REPO_ID, repoId);
+        data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
+        data.put(SyncAuditLogMapping.START_DATE, new Date());
+        data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
         return ao.create(SyncAuditLogMapping.class, data);
     }
 
