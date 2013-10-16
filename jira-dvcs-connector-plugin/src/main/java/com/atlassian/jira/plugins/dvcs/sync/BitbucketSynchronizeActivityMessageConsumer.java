@@ -288,13 +288,11 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.UPDATED_ON, request.getUpdatedOn());
         ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
-        ret.put(RepositoryPullRequestMapping.SOURCE_REPO, request.getSource().getRepository().getFullName());
         ret.put(RepositoryPullRequestMapping.LAST_STATUS, RepositoryPullRequestMapping.Status.fromBbString(request.getStatus()).name());
         // in case that fork has been deleted, the source repository is null
         if (request.getSource().getRepository() != null)
         {
-            String sourceRepositoryUrl = request.getSource().getRepository().getLinks().getHtml().getHref();
-            ret.put(RepositoryPullRequestMapping.SOURCE_URL, sourceRepositoryUrl);
+            ret.put(RepositoryPullRequestMapping.SOURCE_REPO, request.getSource().getRepository().getFullName());
         }
 
         return ret;
