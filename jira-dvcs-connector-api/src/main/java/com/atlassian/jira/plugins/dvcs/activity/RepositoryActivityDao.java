@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +12,8 @@ public interface RepositoryActivityDao
     // C-U-D
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
 
-    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, String remoteStatus);
+    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, String remoteStatus,
+            Date updatedOn, String sourceRepo);
 
     /**
      * Updates issue keys related to commits of provided repository.

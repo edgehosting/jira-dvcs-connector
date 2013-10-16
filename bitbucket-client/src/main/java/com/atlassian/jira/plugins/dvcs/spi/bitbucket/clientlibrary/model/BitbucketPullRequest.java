@@ -28,6 +28,7 @@ public class BitbucketPullRequest implements Serializable
     private BitbucketPullRequestHead source;
     private BitbucketPullRequestHead destination;
     private Date createdOn;
+    private Date updatedOn;
 
     public BitbucketPullRequest()
     {
@@ -122,5 +123,15 @@ public class BitbucketPullRequest implements Serializable
     public void setCreatedOn(Date createdOn)
     {
         this.createdOn = createdOn;
+    }
+
+    public Date getUpdatedOn()
+    {
+        return updatedOn;
+    }
+
+    public void setUpdatedOn(Date updatedOn)
+    {
+        this.updatedOn = updatedOn;
     }
 }
