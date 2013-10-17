@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
  * Provides services related to messaging.
@@ -12,16 +13,16 @@ public interface MessagingService
 {
 
     /**
-     * Publishes a message with provided payload under provided key.
+     * Publishes a message with provided payload under provided address.
      * 
-     * @param key
+     * @param address
      *            for publication
      * @param payload
      *            for publication
      * @param tags
      *            of messages
      */
-    <P extends HasProgress> void publish(MessageAddress<P> key, P payload, String... tags);
+    <P extends HasProgress> void publish(MessageAddress<P> address, P payload, String... tags);
 
     /**
      * Pauses all messages, which are marked by provided tag.
@@ -70,34 +71,38 @@ public interface MessagingService
     <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message);
 
     /**
-     * @param key
+     * @param address
      *            {@link Message#getAddress()}
      * @param consumerId
      *            {@link MessageConsumer#getQueue()}
      * @return next message for consuming or null, if queue is already empty
      */
-    public <P extends HasProgress> Message<P> getNextMessageForConsuming(MessageConsumer<P> consumer, String key);
+    public <P extends HasProgress> Message<P> getNextMessageForConsuming(MessageConsumer<P> consumer, String address);
 
     /**
-     * Returns count of queued messages with provided publication key and marked by provided tag.
+     * Returns count of queued messages with provided publication address and marked by provided tag.
      * 
-     * @param key
-     *            of message
      * @param tag
      *            of message
      * @return count of queued messages
      */
-    <K extends MessageAddress<P>, P extends HasProgress> int getQueuedCount(K key, String tag);
+    int getQueuedCount(String tag);
 
     /**
-     * Creates message key, necessary by publishing and routing.
+     * Creates message address, necessary by publishing and routing.
      * 
      * @param payloadType
      *            type of payload
      * @param id
      *            of route
-     * @return created message key
+     * @return created message address
      */
     <P extends HasProgress> MessageAddress<P> get(Class<P> payloadType, String id);
+
+    /**
+     * @param repository
+     * @return message tag for a synchronization
+     */
+    String getTagForSynchronization(Repository repository);
 
 }

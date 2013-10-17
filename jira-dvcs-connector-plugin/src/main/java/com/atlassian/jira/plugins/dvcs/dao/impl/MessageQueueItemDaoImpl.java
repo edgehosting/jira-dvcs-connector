@@ -5,12 +5,14 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
+import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
@@ -136,6 +138,37 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 
         MessageQueueItemMapping[] founded = activeObjects.find(MessageQueueItemMapping.class, query);
         return founded.length == 1 ? founded[0] : null;
+    }
+
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getByState(MessageState state, final StreamCallback<MessageQueueItemMapping> stream)
+    {
+        Query query = new QueryTemplate()
+        {
+
+            @Override
+            protected void build()
+            {
+                alias(MessageQueueItemMapping.class, "messageQueueItem");
+                where(eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")));
+            }
+
+        }.toQuery(Collections.<String, Object> singletonMap("state", state.name()));
+
+        activeObjects.stream(MessageQueueItemMapping.class, query, new EntityStreamCallback<MessageQueueItemMapping, Integer>()
+        {
+
+            @Override
+            public void onRowRead(MessageQueueItemMapping messageQueueItem)
+            {
+                stream.callback(messageQueueItem);
+            }
+
+        });
     }
 
     /**

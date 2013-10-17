@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 import java.util.Date;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 
 /**
@@ -43,22 +44,25 @@ public interface MessageQueueItemMapping extends Entity
     /**
      * @return Message for consuming.
      */
+    @NotNull
     MessageMapping getMessage();
 
     /**
      * @return Identifier of consumer.
      */
+    @NotNull
     String getQueue();
 
     /**
-     * @param consumer
+     * @param queue
      *            {@link #getQueue()}
      */
-    void setConsumer(String consumer);
+    void setQueue(String queue);
 
     /**
      * @return state of message
      */
+    @NotNull
     String getState();
 
     /**
@@ -81,6 +85,7 @@ public interface MessageQueueItemMapping extends Entity
     /**
      * @return Counts how many times was attempted to process message.
      */
+    @NotNull
     int getRetriesCount();
 
     /**

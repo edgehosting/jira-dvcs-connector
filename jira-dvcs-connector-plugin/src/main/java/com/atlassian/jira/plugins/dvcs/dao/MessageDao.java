@@ -49,12 +49,10 @@ public interface MessageDao
     void getByTag(String tag, StreamCallback<MessageMapping> messagesStream);
 
     /**
-     * @param key
-     *            {@link Message#getAddress()}
      * @param tag
      *            {@link Message#getTags()}
      * @return count of messages which are waiting for processing
      */
-    int getMessagesForConsumingCount(String key, String tag);
+    int getMessagesForConsumingCount(String tag);
 
 }

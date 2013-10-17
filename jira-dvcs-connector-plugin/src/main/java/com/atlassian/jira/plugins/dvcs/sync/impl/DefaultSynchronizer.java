@@ -131,8 +131,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
-                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()), UUID.randomUUID().toString(),
-                            makeRepoTag(repo.getId()));
+                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()),
+                            messagingService.getTagForSynchronization(repo));
                 }
 
             } else
@@ -150,7 +150,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                                 SynchronizeChangesetMessage.class, //
                                 GithubSynchronizeChangesetMessageConsumer.KEY //
                                 );
-                        messagingService.publish(key, message, UUID.randomUUID().toString(), makeRepoTag(repo.getId()));
+                        messagingService.publish(key, message, messagingService.getTagForSynchronization(repo));
                     }
                 }
                 if (pullRequestSync)
@@ -160,11 +160,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             }
 
         }
-    }
-
-    public String makeRepoTag(int repoId)
-    {
-        return "repo-" + repoId;
     }
 
     private void startProgress(Repository repository)
@@ -198,7 +193,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
                         );
-                messagingService.publish(key, message, UUID.randomUUID().toString());
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repository));
             }
         } else
         {
@@ -280,17 +275,18 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         if (progress != null)
         {
             progress.setShouldCancel(true);
-            messagingService.cancel(makeRepoTag(repository.getId()));
+            messagingService.cancel(messagingService.getTagForSynchronization(repository));
         }
+        messagingService.cancel(messagingService.getTagForSynchronization(repository));
     }
 
     @Override
     public void pauseSynchronization(Repository repository, boolean pause)
     {
-        Progress progress = SynchronizationProgessHolder.progressMap.get(repository.getId());
-        if (progress != null)
-        {
-            messagingService.pause(makeRepoTag(repository.getId()));
+        if (pause) {
+            messagingService.pause(messagingService.getTagForSynchronization(repository));
+        } else {
+            messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
 
     }
