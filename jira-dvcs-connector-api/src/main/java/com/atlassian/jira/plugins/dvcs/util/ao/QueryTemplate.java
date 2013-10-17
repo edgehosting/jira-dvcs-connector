@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util.ao;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,9 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryContext;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryJoin;
+import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryOrder;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryWhere;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.AndCriterion;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.EqCriterion;
+import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.InCriterion;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.LikeCriterion;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.OrCriterion;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;
@@ -47,6 +51,11 @@ public abstract class QueryTemplate
      * Where clause.
      */
     private QueryWhere where;
+
+    /**
+     * Order clause.
+     */
+    private QueryOrder[] orders = new QueryOrder[] {};
 
     /**
      * Constructor.
@@ -101,6 +110,27 @@ public abstract class QueryTemplate
     }
 
     /**
+     * Order clause.
+     * 
+     * @param orders
+     *            parts
+     */
+    protected void order(QueryOrder... orders)
+    {
+        this.orders = orders;
+    }
+
+    /**
+     * @param orderBy
+     * @param asc
+     * @return {@link QueryOrder}
+     */
+    protected QueryOrder orderBy(QueryColumn orderBy, boolean asc)
+    {
+        return new QueryOrder(orderBy, asc);
+    }
+
+    /**
      * @param criteria
      * @return {@link AndCriterion}
      */
@@ -142,6 +172,16 @@ public abstract class QueryTemplate
     protected QueryCriterion eq(QueryTerm leftSide, QueryTerm rightSide)
     {
         return new EqCriterion(leftSide, rightSide);
+    }
+
+    /**
+     * @param column
+     * @param in
+     * @return {@link InCriterion}
+     */
+    protected QueryCriterion in(QueryColumn column, QueryParameter in)
+    {
+        return new InCriterion(column, in);
     }
 
     /**
@@ -238,7 +278,7 @@ public abstract class QueryTemplate
      * @param parameters
      * @return
      */
-    public Query toQuery(Map<String, Object> parameters)
+    public Query toQuery(final Map<String, Object> parameters)
     {
         final List<String> namedParameters = new LinkedList<String>();
 
@@ -279,6 +319,12 @@ public abstract class QueryTemplate
                 return result;
             }
 
+            @Override
+            public Map<String, Object> getProvidedParameters()
+            {
+                return parameters;
+            }
+
         };
 
         buildAliases(context);
@@ -287,6 +333,8 @@ public abstract class QueryTemplate
         Map<String, Object> mergedParameters = new HashMap<String, Object>(initialParameterValues);
         mergedParameters.putAll(parameters);
         buildWhere(context, namedParameters, mergedParameters);
+
+        buildOrder(context);
 
         return result;
     }
@@ -339,6 +387,29 @@ public abstract class QueryTemplate
     }
 
     /**
+     * Builds order part of query.
+     * 
+     * @param context
+     *            query context
+     */
+    private void buildOrder(QueryContext context)
+    {
+        StringBuilder order = new StringBuilder();
+        for (int i = 0; i < orders.length; i++)
+        {
+            order.append(orders[i].buildOrder(context));
+            if (i != orders.length - 1)
+            {
+                order.append(", ");
+            }
+        }
+        String orderClause = order.toString().trim();
+        if (!orderClause.isEmpty()) {
+            context.getQuery().order(orderClause);
+        }
+    }
+
+    /**
      * 
      * @param nameToParameter
      *            parameter aliases
@@ -348,13 +419,29 @@ public abstract class QueryTemplate
      */
     private Object[] toQueryParameters(Map<String, Object> nameToParameter, final List<String> namedParameters)
     {
-        Object[] queryParameters = new Object[namedParameters.size()];
-        for (int i = 0; i < namedParameters.size(); i++)
+        List<Object> queryParameters = new LinkedList<Object>();
+        for (String parameterName : namedParameters)
         {
-            String parameterName = namedParameters.get(i);
             if (nameToParameter.containsKey(parameterName))
             {
-                queryParameters[i] = nameToParameter.get(parameterName);
+                Object parameterByName = nameToParameter.get(parameterName);
+                if (parameterByName != null && parameterByName.getClass().isArray())
+                {
+                    int length = Array.getLength(parameterByName);
+                    for (int i = 0; i < length; i++)
+                    {
+                        queryParameters.add(Array.get(parameterByName, i));
+                    }
+
+                } else if (parameterByName instanceof Collection<?>)
+                {
+                    queryParameters.addAll((Collection<?>) parameterByName);
+
+                } else
+                {
+                    queryParameters.add(parameterByName);
+
+                }
 
             } else
             {
@@ -362,7 +449,7 @@ public abstract class QueryTemplate
 
             }
         }
-        return queryParameters;
+        return queryParameters.toArray();
     }
 
 }

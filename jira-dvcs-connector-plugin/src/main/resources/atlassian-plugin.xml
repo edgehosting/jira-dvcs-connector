@@ -126,8 +126,8 @@
         
         <!-- Messaging -->
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageConsumerMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping</entity>
 
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -474,6 +474,9 @@
 	 <!-- Messaging -->
     <component key="messageDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageDaoImpl">
     	<interface>com.atlassian.jira.plugins.dvcs.dao.MessageDao</interface>
+    </component>
+    <component key="messageQueueItemDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageQueueItemDaoImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao</interface>
     </component>
     <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>

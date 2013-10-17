@@ -23,7 +23,7 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -144,12 +144,12 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
         } else if (errorOnPage)
         {
-            messagingService.fail(message, this);
+            messagingService.fail(this, message);
         }
 
         if (!errorOnPage)
         {
-            if (messagingService.getQueuedCount(getKey(), message.getTags()[0]) == 0)
+            if (messagingService.getQueuedCount(getAddress(), message.getTags()[0]) == 0)
             {
                 smartcCommitsProcessor.startProcess(payload.getProgress(), payload.getRepository(),
                         changesetService);
@@ -161,7 +161,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 }
             }
 
-            messagingService.ok(message, this);
+            messagingService.ok(this, message);
         }
     }
 
@@ -187,7 +187,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
     {
         messagingService.publish(
-                getKey(), //
+                getAddress(), //
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
@@ -210,13 +210,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     }
 
     @Override
-    public String getId()
+    public String getQueue()
     {
         return ID;
     }
 
     @Override
-    public MessageKey<BitbucketSynchronizeChangesetMessage> getKey()
+    public MessageAddress<BitbucketSynchronizeChangesetMessage> getAddress()
     {
         return messagingService.get(BitbucketSynchronizeChangesetMessage.class, KEY);
     }
