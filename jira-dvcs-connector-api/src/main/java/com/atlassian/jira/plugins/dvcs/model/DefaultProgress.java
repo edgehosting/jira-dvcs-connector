@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultProgress implements Progress
 {
-    private volatile boolean shouldStop = false;
 
     @XmlAttribute
     private boolean finished = false;
@@ -47,10 +46,19 @@ public class DefaultProgress implements Progress
     private boolean hasAdminPermission = true;
 
     @XmlTransient
+    @Deprecated
+    // to be removed
+    private boolean shouldStop = false;
+
+    @XmlTransient
     private boolean shouldCancel;
+
+    @XmlTransient
+    private int auditLogId;
 
     public DefaultProgress()
     {
+        super();
     }
 
     @Override
@@ -220,5 +228,15 @@ public class DefaultProgress implements Progress
     public void setShouldCancel(boolean cancelled)
     {
         this.shouldCancel = cancelled;
+    }
+
+    public int getAuditLogId()
+    {
+        return auditLogId;
+    }
+
+    public void setAuditLogId(int auditLogId)
+    {
+        this.auditLogId = auditLogId;
     }
 }

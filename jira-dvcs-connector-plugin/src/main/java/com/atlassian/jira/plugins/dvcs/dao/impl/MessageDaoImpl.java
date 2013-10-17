@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
+import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -72,7 +73,8 @@ public class MessageDaoImpl implements MessageDao
             @Override
             public Void doInTransaction()
             {
-                for (MessageTagMapping tag : message.getTags()) {
+                for (MessageTagMapping tag : message.getTags())
+                {
                     activeObjects.delete(tag);
                 }
                 activeObjects.delete(message);
@@ -128,7 +130,7 @@ public class MessageDaoImpl implements MessageDao
      * {@inheritDoc}
      */
     @Override
-    public int getMessagesForConsumingCount(String address, String tag)
+    public int getMessagesForConsumingCount(String tag)
     {
         Query query = new QueryTemplate()
         {
@@ -136,7 +138,7 @@ public class MessageDaoImpl implements MessageDao
             @Override
             protected void build()
             {
-                alias(MessageMapping.class, "message");
+                alias(MessageMapping.class, "messageMapping");
                 alias(MessageTagMapping.class, "messageTag");
                 alias(MessageQueueItemMapping.class, "messageQueueItem");
 
@@ -144,12 +146,12 @@ public class MessageDaoImpl implements MessageDao
                 join(MessageQueueItemMapping.class, column(MessageMapping.class, "ID"), MessageQueueItemMapping.MESSAGE);
 
                 where(and( //
-                        eq(column(MessageMapping.class, MessageMapping.ADDRESS), parameter("address")), //
-                        eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")) //
+                        eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")), //
+                        in(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object> build("address", address, "tag", tag));
+        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING }));
         return activeObjects.count(MessageMapping.class, query);
     }
 }
