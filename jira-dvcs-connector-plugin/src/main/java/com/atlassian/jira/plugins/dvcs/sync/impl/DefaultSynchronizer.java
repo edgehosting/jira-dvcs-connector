@@ -267,16 +267,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return changesetBranch;
     }
 
-
     @Override
     public void stopSynchronization(Repository repository)
     {
-        Progress progress = SynchronizationProgessHolder.progressMap.get(repository.getId());
-        if (progress != null)
-        {
-            progress.setShouldCancel(true);
-            messagingService.cancel(messagingService.getTagForSynchronization(repository));
-        }
         messagingService.cancel(messagingService.getTagForSynchronization(repository));
     }
 
