@@ -7,7 +7,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
@@ -132,7 +131,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
-                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync), UUID.randomUUID().toString(),
+                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()), UUID.randomUUID().toString(),
                             makeRepoTag(repo.getId()));
                 }
 

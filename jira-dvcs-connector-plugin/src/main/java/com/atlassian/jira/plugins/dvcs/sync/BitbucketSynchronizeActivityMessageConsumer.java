@@ -19,8 +19,8 @@ import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -93,7 +93,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(infos);
 
-        Date lastActivitySyncDate = repo.getActivityLastSync();
+        Date lastSync = payload.getLastSyncDate();
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
@@ -106,9 +106,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                     Log.info("Date for the activity could not be found.");
                     continue;
                 }
-                if ((lastActivitySyncDate == null) || (activityDate.after(lastActivitySyncDate)))
+                if ((lastSync == null) || (activityDate.after(lastSync)))
                 {
-                    lastActivitySyncDate = activityDate;
+                    lastSync = activityDate;
+                    repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
                 }
 
                 int localPrId = processActivity(message, info, pullRestpoint);
@@ -123,10 +124,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
         if (!isLastPage)
         {
-            fireNextPage(message, activityPage.getNext());
+            fireNextPage(message, activityPage.getNext(), lastSync);
         } else
         {
-            finalizeSync(message, lastActivitySyncDate);
+            finalizeSync(message, lastSync);
         }
 
     }
@@ -144,12 +145,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         messagingService.ok(this, message);
     }
 
-    private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl)
+    private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl, Date lastSync)
     {
         BitbucketSynchronizeActivityMessage payload = message.getPayload();
 
         messagingService.publish(getAddress(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
-                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal()), message.getTags());
+                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync), message.getTags());
     }
 
     private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)

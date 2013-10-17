@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +42,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             result.put("page", payload.getPageNum());
             result.put("processedPullRequests", payload.getProcessedPullRequests());
             result.put("processedPullRequestsLocal", payload.getProcessedPullRequestsLocal());
+            result.put("lastSyncDate", getDateFormat().format(payload.getLastSyncDate()));
             return result.toString();
 
         } catch (JSONException e)
@@ -57,6 +60,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         boolean softSync = false;
         Set<Integer> processedPullRequests;
         Set<Integer> processedPullRequestsLocal;
+        Date lastSyncDate;
         int page = 1;
 
         try
@@ -68,6 +72,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             page = result.optInt("page");
             processedPullRequests = asSet(result.optJSONArray("processedPullRequests"));
             processedPullRequestsLocal = asSet(result.optJSONArray("processedPullRequestsLocal"));
+            lastSyncDate = getDateFormat().parse(result.getString("lastSyncDate"));
 
             progress = synchronizer.getProgress(repository.getId());
             if (progress == null || progress.isFinished())
@@ -78,10 +83,12 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         } catch (JSONException e)
         {
             throw new RuntimeException(e);
-
+        } catch (ParseException e)
+        {
+            throw new RuntimeException(e);
         }
 
-        return new BitbucketSynchronizeActivityMessage(repository, progress, softSync, page, processedPullRequests, processedPullRequestsLocal);
+        return new BitbucketSynchronizeActivityMessage(repository, progress, softSync, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate);
     }
 
     private Set<Integer> asSet(JSONArray optJSONArray)
