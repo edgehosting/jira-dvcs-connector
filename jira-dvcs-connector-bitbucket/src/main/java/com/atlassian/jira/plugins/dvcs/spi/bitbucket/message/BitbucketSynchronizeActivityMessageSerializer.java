@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -76,7 +78,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             processedPullRequests = asSet(result.optJSONArray("processedPullRequests"));
             processedPullRequestsLocal = asSet(result.optJSONArray("processedPullRequestsLocal"));
             String lastSyncOrNull = result.optString("lastSyncDate");
-            if (lastSyncOrNull != null)
+            if (StringUtils.isNotBlank(lastSyncOrNull))
             {
                 lastSyncDate = getDateFormat().parse(lastSyncOrNull);
             }
