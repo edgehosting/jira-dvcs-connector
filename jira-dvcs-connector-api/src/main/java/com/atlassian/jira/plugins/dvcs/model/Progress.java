@@ -107,4 +107,6 @@ public interface Progress
      * @param smartCommitErrors
      */
     void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors);
+
+    void setError(String error);
 }

@@ -113,52 +113,60 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 repositoryDao.save(repo);
             }
 
-            startProgress(repo);
-
-            if (repo.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
+            try
             {
-                if (changestesSync)
-                {
-                    // sync csets
-                    BranchFilterInfo filterNodes = getFilterNodes(repo);
-                    processBitbucketSync(repo, softSync, filterNodes);
-                    updateBranchHeads(repo, filterNodes.newHeads, filterNodes.oldHeads);
-                }
-                // sync pull requests
-                if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
-                {
-                    MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
-                            BitbucketSynchronizeActivityMessage.class, //
-                            BitbucketSynchronizeActivityMessageConsumer.KEY //
-                            );
-                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()),
-                            messagingService.getTagForSynchronization(repo));
-                }
+                startProgress(repo);
 
-            } else
-            {
-                if (changestesSync)
+                if (repo.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
                 {
-                    Date synchronizationStartedAt = new Date();
-                    for (BranchHead branchHead : communicatorProvider.getCommunicator(repo.getDvcsType()).getBranches(repo))
+                    if (changestesSync)
                     {
-                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
-                                branchHead.getName(), branchHead.getHead(), //
-                                synchronizationStartedAt, //
-                                null, softSync);
-                        MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
-                                SynchronizeChangesetMessage.class, //
-                                GithubSynchronizeChangesetMessageConsumer.KEY //
+                        // sync csets
+                        BranchFilterInfo filterNodes = getFilterNodes(repo);
+                        processBitbucketSync(repo, softSync, filterNodes);
+                        updateBranchHeads(repo, filterNodes.newHeads, filterNodes.oldHeads);
+                    }
+                    // sync pull requests
+                    if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
+                    {
+                        MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
+                                BitbucketSynchronizeActivityMessage.class, //
+                                BitbucketSynchronizeActivityMessageConsumer.KEY //
                                 );
-                        messagingService.publish(key, message, messagingService.getTagForSynchronization(repo));
+                        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()),
+                                messagingService.getTagForSynchronization(repo));
+                    }
+
+                } else
+                {
+                    if (changestesSync)
+                    {
+                        Date synchronizationStartedAt = new Date();
+                        for (BranchHead branchHead : communicatorProvider.getCommunicator(repo.getDvcsType()).getBranches(repo))
+                        {
+                            SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
+                                    branchHead.getName(), branchHead.getHead(), //
+                                    synchronizationStartedAt, //
+                                    null, softSync);
+                            MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
+                                    SynchronizeChangesetMessage.class, //
+                                    GithubSynchronizeChangesetMessageConsumer.KEY //
+                                    );
+                            messagingService.publish(key, message, messagingService.getTagForSynchronization(repo));
+                        }
+                    }
+                    if (pullRequestSync)
+                    {
+                        // TODO
                     }
                 }
-                if (pullRequestSync)
-                {
-                    // TODO
-                }
+            } catch (Exception e)
+            {
+                log.error(e.getMessage(), e);
+                Progress progress = getProgress(repo.getId());
+                progress.setError("Error during sync. See server logs.");
+                progress.setFinished(true);
             }
-
         }
     }
 

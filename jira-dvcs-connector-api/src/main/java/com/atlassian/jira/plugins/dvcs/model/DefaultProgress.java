@@ -116,6 +116,7 @@ public class DefaultProgress implements Progress
         return synchroErrorCount;
     }
 
+    @Override
     public void setError(String error)
     {
         this.error = error;
