@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
     private Progress progress;
     private Set<Integer> processedPullRequests;
     private Set<Integer> processedPullRequestsLocal;
+    private Date lastSyncDate;
 
     private int pageNum;
 
@@ -27,7 +29,8 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
                                                boolean softSync,
                                                int pageNum,
                                                Set<Integer> processedPullRequests,
-                                               Set<Integer> processedPullRequestsLocal)
+                                               Set<Integer> processedPullRequestsLocal,
+                                               Date lastSyncDate)
     {
         this.repository = repository;
         this.progress = progress;
@@ -35,11 +38,12 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
         this.pageNum = pageNum;
         this.processedPullRequests = processedPullRequests;
         this.processedPullRequestsLocal = processedPullRequestsLocal;
+        this.lastSyncDate = lastSyncDate;
     }
 
-    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync)
+    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate)
     {
-        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>());
+        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate);
     }
 
     @Override
@@ -71,6 +75,11 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
     public Set<Integer> getProcessedPullRequestsLocal()
     {
         return processedPullRequestsLocal;
+    }
+
+    public Date getLastSyncDate()
+    {
+        return lastSyncDate;
     }
 
 }

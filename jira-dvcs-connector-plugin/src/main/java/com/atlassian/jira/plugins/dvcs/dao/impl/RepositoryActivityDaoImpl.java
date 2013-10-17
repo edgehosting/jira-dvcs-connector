@@ -344,8 +344,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
-                RepositoryCommitMapping.class, })
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+                RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
                     Query.select().where(RepositoryDomainMapping.DOMAIN + " = ? ", domain.getId()));

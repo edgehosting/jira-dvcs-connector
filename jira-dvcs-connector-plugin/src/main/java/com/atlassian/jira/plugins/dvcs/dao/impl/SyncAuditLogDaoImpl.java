@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import javax.annotation.PostConstruct;
+
 import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
@@ -219,5 +221,10 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 }
             }
         });
+    }
+
+    @PostConstruct
+    public void afterPropertiesSet() throws Exception
+    {
     }
 }

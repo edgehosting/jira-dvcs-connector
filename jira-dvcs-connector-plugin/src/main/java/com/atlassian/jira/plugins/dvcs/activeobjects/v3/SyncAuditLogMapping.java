@@ -6,7 +6,7 @@ import net.java.ao.Entity;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
-@Table("SYNC_AUDIT_LOG")
+@Table("SyncAuditLog")
 public interface SyncAuditLogMapping extends Entity
 {
     String SYNC_STATUS_RUNNING = "RUNNING";
