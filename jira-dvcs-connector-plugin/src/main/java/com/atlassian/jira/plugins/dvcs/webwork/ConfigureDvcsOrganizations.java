@@ -4,14 +4,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;

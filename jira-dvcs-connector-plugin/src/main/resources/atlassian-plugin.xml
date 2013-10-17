@@ -124,6 +124,11 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping</entity>
+        
+        <!-- Audit 
+        -->
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping</entity>
+        
 
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -676,6 +681,9 @@
         
     <component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
         class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
+
+    <component key="syncAuditLogDaoImpl" name="Sync Audit Log Dao Impl"
+        class="com.atlassian.jira.plugins.dvcs.dao.impl.SyncAuditLogDaoImpl" />
         
     <!-- Activity rendering -->
     <component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"

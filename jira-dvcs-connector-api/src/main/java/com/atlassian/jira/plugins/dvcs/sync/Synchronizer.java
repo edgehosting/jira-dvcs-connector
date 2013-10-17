@@ -23,6 +23,8 @@ public interface Synchronizer
 
     public void pauseSynchronization(Repository repository, boolean pause);
 
+    public String makeRepoTag(int repoId);
+
     /**
      * Get the progress of a sync being executed for given repository
      * This will not return progress of sync triggered by postcommit hook.
