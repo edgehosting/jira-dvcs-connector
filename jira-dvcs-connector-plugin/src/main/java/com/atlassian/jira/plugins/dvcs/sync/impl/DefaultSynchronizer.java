@@ -28,7 +28,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -127,7 +127,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 // sync pull requests
                 if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
                 {
-                    MessageKey<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
+                    MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
@@ -145,7 +145,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                                 branchHead.getName(), branchHead.getHead(), //
                                 synchronizationStartedAt, //
                                 null, softSync);
-                        MessageKey<SynchronizeChangesetMessage> key = messagingService.get( //
+                        MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                                 SynchronizeChangesetMessage.class, //
                                 GithubSynchronizeChangesetMessageConsumer.KEY //
                                 );
@@ -188,7 +188,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         branchHead.getName(), branchHead.getHead(), //
                         synchronizationStartedAt, //
                         null, newBranchHeads, softSync);
-                MessageKey<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
+                MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
                         );
@@ -200,7 +200,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 log.debug("No new changesets detected for repository [{}].", repository.getSlug());
                 return;
             }
-            MessageKey<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+            MessageAddress<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
                     BitbucketSynchronizeChangesetMessage.class,
                     BitbucketSynchronizeChangesetMessageConsumer.KEY
                     );

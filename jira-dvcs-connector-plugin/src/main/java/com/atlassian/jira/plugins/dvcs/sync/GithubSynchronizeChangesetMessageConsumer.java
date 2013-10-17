@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageKey;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 
 public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSupport<SynchronizeChangesetMessage>
@@ -10,13 +10,13 @@ public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSu
     private static final String ID = GithubSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = SynchronizeChangesetMessage.class.getCanonicalName();
 
-    public String getId()
+    public String getQueue()
     {
         return ID;
     }
 
     @Override
-    public MessageKey<SynchronizeChangesetMessage> getKey()
+    public MessageAddress<SynchronizeChangesetMessage> getAddress()
     {
         return messagingService.get(SynchronizeChangesetMessage.class, KEY);
     }

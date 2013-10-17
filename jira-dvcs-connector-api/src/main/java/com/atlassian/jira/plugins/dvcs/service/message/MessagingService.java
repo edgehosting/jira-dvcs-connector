@@ -21,27 +21,62 @@ public interface MessagingService
      * @param tags
      *            of messages
      */
-    <P extends HasProgress> void publish(MessageKey<P> key, P payload, String... tags);
+    <P extends HasProgress> void publish(MessageAddress<P> key, P payload, String... tags);
+
+    /**
+     * Pauses all messages, which are marked by provided tag.
+     * 
+     * @param tag
+     *            {@link Message#getTags()}
+     */
+    void pause(String tag);
+
+    /**
+     * Resume all messages, which are marked by provided tag.
+     * 
+     * @param tag
+     *            {@link Message#getTags()}
+     */
+    void resume(String tag);
+
+    /**
+     * Cancels all messages, which are marked by provided tag.
+     * 
+     * @param tag
+     *            {@link Message#getTags()}
+     */
+    void cancel(String tag);
+
+    <P extends HasProgress> void queued(MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
      * 
-     * @param message
-     *            for marking
      * @param consumer
      *            of message
+     * @param message
+     *            for marking
      */
-    <P extends HasProgress> void ok(Message<P> message, MessageConsumer<P> consumer);
+    <P extends HasProgress> void ok(MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
      * 
-     * @param message
-     *            for marking
      * @param consumer
      *            of message
+     * @param message
+     *            for marking
      */
-    <P extends HasProgress> void fail(Message<P> message, MessageConsumer<P> consumer);
+    <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message);
+
+    /**
+     * @param key
+     *            {@link Message#getAddress()}
+     * @param consumerId
+     *            {@link MessageConsumer#getQueue()}
+     * @return next message for consuming or null, if queue is already empty
+     */
+    public <P extends HasProgress> Message<P> getNextMessageForConsuming(MessageConsumer<P> consumer, String key);
 
     /**
      * Returns count of queued messages with provided publication key and marked by provided tag.
@@ -52,7 +87,7 @@ public interface MessagingService
      *            of message
      * @return count of queued messages
      */
-    <K extends MessageKey<P>, P extends HasProgress> int getQueuedCount(K key, String tag);
+    <K extends MessageAddress<P>, P extends HasProgress> int getQueuedCount(K key, String tag);
 
     /**
      * Creates message key, necessary by publishing and routing.
@@ -63,6 +98,6 @@ public interface MessagingService
      *            of route
      * @return created message key
      */
-    <P extends HasProgress> MessageKey<P> get(Class<P> payloadType, String id);
+    <P extends HasProgress> MessageAddress<P> get(Class<P> payloadType, String id);
 
 }
