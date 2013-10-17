@@ -42,7 +42,10 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             result.put("page", payload.getPageNum());
             result.put("processedPullRequests", payload.getProcessedPullRequests());
             result.put("processedPullRequestsLocal", payload.getProcessedPullRequestsLocal());
-            result.put("lastSyncDate", getDateFormat().format(payload.getLastSyncDate()));
+            if (payload.getLastSyncDate() != null)
+            {
+                result.put("lastSyncDate", getDateFormat().format(payload.getLastSyncDate()));
+            }
             return result.toString();
 
         } catch (JSONException e)
@@ -60,7 +63,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         boolean softSync = false;
         Set<Integer> processedPullRequests;
         Set<Integer> processedPullRequestsLocal;
-        Date lastSyncDate;
+        Date lastSyncDate = null;
         int page = 1;
 
         try
@@ -72,8 +75,11 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             page = result.optInt("page");
             processedPullRequests = asSet(result.optJSONArray("processedPullRequests"));
             processedPullRequestsLocal = asSet(result.optJSONArray("processedPullRequestsLocal"));
-            lastSyncDate = getDateFormat().parse(result.getString("lastSyncDate"));
-
+            String lastSyncOrNull = result.optString("lastSyncDate");
+            if (lastSyncOrNull != null)
+            {
+                lastSyncDate = getDateFormat().parse(lastSyncOrNull);
+            }
             progress = synchronizer.getProgress(repository.getId());
             if (progress == null || progress.isFinished())
             {
