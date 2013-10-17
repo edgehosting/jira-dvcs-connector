@@ -104,9 +104,9 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
         } catch (Exception e)
         {
-            messagingService.fail(this, message);
-            ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
             LOGGER.error(e.getMessage(), e);
+            ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
+            messagingService.fail(this, message);
         } finally
         {
             tryEndProgress(payload, tags);
@@ -114,9 +114,9 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
     }
 
-    protected void tryEndProgress(P payload, String[] tags)
+    protected synchronized void tryEndProgress(P payload, String[] tags)
     {
-        if (messagingService.getQueuedCount(getAddress(), tags[0]) == 0)
+        if (messagingService.getQueuedCount(messagingService.getTagForSynchronization(getRepository(payload))) == 0)
         {
             smartCommitsProcessor.startProcess(payload.getProgress(), getRepository(payload), changesetService);
             payload.getProgress().finish();

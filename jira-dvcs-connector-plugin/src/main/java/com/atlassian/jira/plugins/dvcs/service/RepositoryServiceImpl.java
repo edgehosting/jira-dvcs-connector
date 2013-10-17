@@ -460,7 +460,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             registration.setRepository(repository);
 
             // un/pause possible synchronization
-            synchronizer.pauseSynchronization(repository, linked);
+            synchronizer.pauseSynchronization(repository, !linked);
 
             repository.setLinked(linked);
 
