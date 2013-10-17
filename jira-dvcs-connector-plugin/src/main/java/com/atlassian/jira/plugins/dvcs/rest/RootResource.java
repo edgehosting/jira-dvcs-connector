@@ -8,19 +8,25 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPRRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequests;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
@@ -28,9 +34,11 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import com.google.common.collect.Multimaps;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -45,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -84,6 +93,8 @@ public class RootResource
 
     private final ChangesetService changesetService;
 
+    private final PullRequestService pullRequestService;
+
     private final AccountsConfigService ondemandAccountConfig;
 
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
@@ -94,14 +105,15 @@ public class RootResource
      * @param organizationService
      *            the organization service
      * @param repositoryService
-     *            the repository service
+     * @param pullRequestService
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService, ChangesetService changesetService,
-            IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
+            final PullRequestService pullRequestService, IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
+        this.pullRequestService = pullRequestService;
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
@@ -606,7 +618,7 @@ public class RootResource
             }
         }
 
-        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
+        List<RestChangesetRepository> restRepositories = new ArrayList<RestChangesetRepository>();
         for (int repositoryId : changesetTorepositoryMapping.keySet())
         {
             Repository repository = repositories.get(repositoryId);
@@ -617,7 +629,7 @@ public class RootResource
                 repositories.put(repositoryId, repository);
             }
 
-            RestRepository restRepository = new RestRepository();
+            RestChangesetRepository restRepository = new RestChangesetRepository();
             restRepository.setName(repository.getName());
             restRepository.setSlug(repository.getSlug());
             restRepository.setUrl(repository.getRepositoryUrl());
@@ -626,7 +638,7 @@ public class RootResource
                         restRepository.setFork(repository.isFork());
             if (repository.isFork() && repository.getForkOf() != null)
             {
-                RestRepository forkOfRepository = new RestRepository();
+                RestRepository forkOfRepository = new RestChangesetRepository();
                 forkOfRepository.setName(repository.getForkOf().getName());
                 forkOfRepository.setSlug(repository.getForkOf().getSlug());
                 forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
@@ -669,5 +681,100 @@ public class RootResource
         }
 
         return restChangesets;
+    }
+
+    @GET
+    @Path("/jira-dev/pr-detail")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response getPullRequests(@QueryParam("issue") String issueKey)
+    {
+        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
+        if (issue == null)
+        {
+            return Status.notFound().message("Issue not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+        {
+            throw new AuthorizationException();
+        }
+
+        Project project = issue.getProjectObject();
+
+        if (project == null)
+        {
+            return Status.notFound().message("Project was not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+        {
+            throw new AuthorizationException();
+        }
+
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
+        List<PullRequest> pullRequests = pullRequestService.getByIssueKeys(issueKeys);
+
+        ListMultimap<Integer, PullRequest> prTorepositoryMapping = Multimaps.index(pullRequests, new Function<PullRequest, Integer>()
+        {
+            @Override
+            public Integer apply(@Nullable final PullRequest input)
+            {
+                return input.getRepositoryId();
+            }
+        });
+        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
+        List<RestPRRepository> restRepositories = new ArrayList<RestPRRepository>();
+        for (int repositoryId : prTorepositoryMapping.keySet())
+        {
+            Repository repository = repositories.get(repositoryId);
+
+            if (repository == null)
+            {
+                repository = repositoryService.get(repositoryId);
+                repositories.put(repositoryId, repository);
+            }
+
+            RestPRRepository restRepository = new RestPRRepository();
+            restRepository.setName(repository.getName());
+            restRepository.setSlug(repository.getSlug());
+            restRepository.setUrl(repository.getRepositoryUrl());
+            restRepository.setAvatar(repository.getLogo());
+            restRepository.setPullRequests(createPullRequests(repository, prTorepositoryMapping.get(repositoryId)));
+            restRepository.setFork(repository.isFork());
+            if (repository.isFork() && repository.getForkOf() != null)
+            {
+                RestChangesetRepository forkOfRepository = new RestChangesetRepository();
+                forkOfRepository.setName(repository.getForkOf().getName());
+                forkOfRepository.setSlug(repository.getForkOf().getSlug());
+                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
+                restRepository.setForkOf(forkOfRepository);
+            }
+
+            restRepositories.add(restRepository);
+        }
+
+        RestPullRequests result = new RestPullRequests();
+        result.setRepositories(restRepositories);
+        return Response.ok(result).build();
+    }
+
+    private List<RestPullRequest> createPullRequests(final Repository repository, final List<PullRequest> pullRequests)
+    {
+        List<RestPullRequest> restPullRequests = new ArrayList<RestPullRequest>();
+        for (PullRequest pullRequest : pullRequests)
+        {
+            DvcsUser user = repositoryService.getUser(repository, pullRequest.getAuthor(), pullRequest.getAuthor());
+            RestPullRequest restPullRequest = new RestPullRequest();
+            restPullRequest.setAuthor(new RestAuthor(user.getFullName(), null, user.getAvatar()));
+            restPullRequest.setAuthorTimestamp(pullRequest.getCreatedOn().getTime());
+            restPullRequest.setTitle(pullRequest.getName());
+            restPullRequest.setId(pullRequest.getRemoteId());
+            restPullRequest.setUrl(pullRequest.getUrl());
+            restPullRequest.setUpdateOn(pullRequest.getUpdatedOn().getTime());
+            restPullRequest.setStatus(pullRequest.getStatus());
+            restPullRequests.add(restPullRequest);
+        }
+
+        return restPullRequests;
     }
 }

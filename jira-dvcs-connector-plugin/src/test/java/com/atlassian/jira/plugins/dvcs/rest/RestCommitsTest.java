@@ -13,12 +13,14 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl;
@@ -81,6 +83,9 @@ public class RestCommitsTest
     private ChangesetService changesetService;
 
     @Mock
+    private PullRequestService pullRequestService;
+
+    @Mock
     private IssueManager issueManager;
 
     @Mock
@@ -133,7 +138,7 @@ public class RestCommitsTest
 
         when(repositoryService.getUser(any(Repository.class), anyString(), anyString())).thenReturn(new DvcsUser("USERNAME", "FULL_NAME", "RAW_AUTHOR", "AVATAR", "URL"));
 
-        rootResource = new RootResource(organizationService, repositoryService, changesetService, issueAndProjectKeyManager, ondemandAccountConfig);
+        rootResource = new RootResource(organizationService, repositoryService, changesetService, pullRequestService, issueAndProjectKeyManager, ondemandAccountConfig);
     }
 
     class RepositoryBuilder
@@ -219,7 +224,7 @@ public class RestCommitsTest
         assertEquals(response.getStatus(), 200, "Status should be 200");
         RestChangesets restChangesets = (RestChangesets) response.getEntity();
 
-        List<RestRepository> restRepositories = restChangesets.getRepositories();
+        List<RestChangesetRepository> restRepositories = restChangesets.getRepositories();
         // checking repositories count
         assertThat(restRepositories, hasSize(3));
 
@@ -239,7 +244,7 @@ public class RestCommitsTest
         checkChangeset(restRepositories.get(2).getCommits().get(0), false, 1, "TST-1");
     }
 
-    private void checkRepository(RestRepository restRepository, int id, int commitCounts, String forkOf)
+    private void checkRepository(RestChangesetRepository restRepository, int id, int commitCounts, String forkOf)
     {
         assertThat(restRepository.getCommits(), hasSize(commitCounts));
         assertEquals(restRepository.getSlug(), "SLUG_"+id);
