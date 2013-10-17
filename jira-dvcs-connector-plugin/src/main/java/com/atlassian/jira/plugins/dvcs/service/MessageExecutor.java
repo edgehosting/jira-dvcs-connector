@@ -68,7 +68,7 @@ public class MessageExecutor
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
      */
-    private final ConcurrentMap<MessageAddress<?>, List<MessageConsumer<?>>> messageKeyToConsumers = new ConcurrentHashMap<MessageAddress<?>, List<MessageConsumer<?>>>();
+    private final ConcurrentMap<MessageAddress<?>, List<MessageConsumer<?>>> messageAddressToConsumers = new ConcurrentHashMap<MessageAddress<?>, List<MessageConsumer<?>>>();
 
     /**
      * {@link MessageConsumer} to free tokens.
@@ -88,54 +88,39 @@ public class MessageExecutor
     {
         for (MessageConsumer<?> consumer : consumers)
         {
-            List<MessageConsumer<?>> byKey = messageKeyToConsumers.get(consumer.getAddress());
-            if (byKey == null)
+            List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress());
+            if (byAddress == null)
             {
-                messageKeyToConsumers.putIfAbsent(consumer.getAddress(), byKey = new CopyOnWriteArrayList<MessageConsumer<?>>());
+                messageAddressToConsumers.putIfAbsent(consumer.getAddress(), byAddress = new CopyOnWriteArrayList<MessageConsumer<?>>());
             }
-            byKey.add(consumer);
+            byAddress.add(consumer);
             consumerToRemainingTokens.put(consumer, new AtomicInteger(consumer.getParallelThreads()));
 
-            /**
-             * It must be started in separate thread - AO can not be accessed during bean's set-up.
-             */
-            new Thread(new Runnable()
-            {
-
-                @Override
-                public void run()
-                {
-                    for (MessageConsumer<?> consumer : consumers)
-                    {
-                        tryToProcessNextMessage(consumer);
-                    }
-                }
-
-            });
         }
     }
-    
+
     /**
      * Stops messaging executor.
      */
     @PreDestroy
-    public void destroy() {
+    public void destroy()
+    {
         stop = true;
         executor.shutdown();
     }
 
     /**
-     * Notifies that new message with provided key was added into the queues. It is necessary because of consumers' weak-up, which can be
-     * slept because of empty queues.
+     * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
+     * be slept because of empty queues.
      * 
-     * @param messageKey
-     *            key of new message
+     * @param messageAddress
+     *            destination address of new message
      */
-    public void notify(MessageAddress<?> messageKey)
+    public void notify(MessageAddress<?> messageAddress)
     {
-        for (MessageConsumer<?> byMessageKey : messageKeyToConsumers.get(messageKey))
+        for (MessageConsumer<?> byMessageAddress : messageAddressToConsumers.get(messageAddress))
         {
-            tryToProcessNextMessage(byMessageKey);
+            tryToProcessNextMessage(byMessageAddress);
         }
     }
 
@@ -148,10 +133,11 @@ public class MessageExecutor
      */
     private <P extends HasProgress> void tryToProcessNextMessage(MessageConsumer<P> consumer)
     {
-        if (stop) {
+        if (stop)
+        {
             return;
         }
-        
+
         Message<P> message;
         synchronized (this)
         {
@@ -194,7 +180,7 @@ public class MessageExecutor
             {
                 return false;
             }
-        } while (!remainingTokens.compareAndSet(remainingTokensValue, remainingTokensValue + 1));
+        } while (!remainingTokens.compareAndSet(remainingTokensValue, remainingTokensValue - 1));
 
         return true;
     }

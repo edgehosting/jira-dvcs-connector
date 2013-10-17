@@ -149,7 +149,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
         if (!errorOnPage)
         {
-            if (messagingService.getQueuedCount(getAddress(), message.getTags()[0]) == 0)
+            if (messagingService.getQueuedCount(messagingService.getTagForSynchronization(payload.getRepository())) == 0)
             {
                 smartcCommitsProcessor.startProcess(payload.getProgress(), payload.getRepository(),
                         changesetService);

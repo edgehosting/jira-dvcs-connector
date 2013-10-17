@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
@@ -40,6 +41,7 @@ public interface MessageMapping extends Entity
     /**
      * @return {@link Message#getAddress()}
      */
+    @NotNull
     String getAddress();
 
     /**
@@ -51,6 +53,7 @@ public interface MessageMapping extends Entity
     /**
      * @return Priority of message.
      */
+    @NotNull
     int getPriority();
 
     /**
@@ -62,6 +65,7 @@ public interface MessageMapping extends Entity
     /**
      * @return Type of payload.
      */
+    @NotNull
     String getPayloadType();
 
     /**
@@ -73,6 +77,7 @@ public interface MessageMapping extends Entity
     /**
      * @return {@link Message#getPayload()}
      */
+    @NotNull
     @StringLength(StringLength.UNLIMITED)
     String getPayload();
 

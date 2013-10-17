@@ -83,17 +83,17 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
-    public void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
+    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flags)
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-        if (skipSync(repository)) {
+        if (skipSync(repo)) {
             return;
         }
 
-        if (repository.isLinked())
+        if (repo.isLinked())
         {
             if (!softSync)
             {
@@ -101,28 +101,28 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 {
                     // we are doing full sync, lets delete all existing changesets
                     // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                    changesetService.removeAllInRepository(repository.getId());
-                    branchService.removeAllBranchHeadsInRepository(repository.getId());
-                    repository.setLastCommitDate(null);
+                    changesetService.removeAllInRepository(repo.getId());
+                    branchService.removeAllBranchHeadsInRepository(repo.getId());
+                    repo.setLastCommitDate(null);
                 }
                 if (pullRequestSync)
                 {
-                    repositoryActivityDao.removeAll(repository);
-                    repository.setActivityLastSync(null);
+                    repositoryActivityDao.removeAll(repo);
+                    repo.setActivityLastSync(null);
                 }
-                repositoryDao.save(repository);
+                repositoryDao.save(repo);
             }
 
-            startProgress(repository);
+            startProgress(repo);
 
-            if (repository.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
+            if (repo.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
             {
                 if (changestesSync)
                 {
                     // sync csets
-                    BranchFilterInfo filterNodes = getFilterNodes(repository);
-                    processBitbucketSync(repository, softSync, filterNodes);
-                    updateBranchHeads(repository, filterNodes.newHeads, filterNodes.oldHeads);
+                    BranchFilterInfo filterNodes = getFilterNodes(repo);
+                    processBitbucketSync(repo, softSync, filterNodes);
+                    updateBranchHeads(repo, filterNodes.newHeads, filterNodes.oldHeads);
                 }
                 // sync pull requests
                 if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
@@ -131,7 +131,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                             BitbucketSynchronizeActivityMessage.class, //
                             BitbucketSynchronizeActivityMessageConsumer.KEY //
                             );
-                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repository, softSync), UUID.randomUUID().toString());
+                    messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()),
+                            messagingService.getTagForSynchronization(repo));
                 }
 
             } else
@@ -139,9 +140,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 if (changestesSync)
                 {
                     Date synchronizationStartedAt = new Date();
-                    for (BranchHead branchHead : communicatorProvider.getCommunicator(repository.getDvcsType()).getBranches(repository))
+                    for (BranchHead branchHead : communicatorProvider.getCommunicator(repo.getDvcsType()).getBranches(repo))
                     {
-                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repository, //
+                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
                                 branchHead.getName(), branchHead.getHead(), //
                                 synchronizationStartedAt, //
                                 null, softSync);
@@ -149,7 +150,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                                 SynchronizeChangesetMessage.class, //
                                 GithubSynchronizeChangesetMessageConsumer.KEY //
                                 );
-                        messagingService.publish(key, message, UUID.randomUUID().toString());
+                        messagingService.publish(key, message, messagingService.getTagForSynchronization(repo));
                     }
                 }
                 if (pullRequestSync)
@@ -161,7 +162,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         }
     }
 
-    protected void startProgress(Repository repository)
+    private void startProgress(Repository repository)
     {
         DefaultProgress progress = new DefaultProgress();
         progress.start();
@@ -174,7 +175,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return progress != null && !progress.isFinished();
     }
 
-    protected void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
+    private void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
     {
         List<BranchHead> newBranchHeads = filterNodes.newHeads;
 
@@ -192,7 +193,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
                         );
-                messagingService.publish(key, message, UUID.randomUUID().toString());
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repository));
             }
         } else
         {
@@ -223,7 +224,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return newNodes;
     }
 
-    protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads, List<BranchHead> oldHeads)
+    private void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads, List<BranchHead> oldHeads)
     {
         branchService.updateBranchHeads(repo, newBranchHeads, oldHeads);
     }
@@ -274,16 +275,18 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         if (progress != null)
         {
             progress.setShouldCancel(true);
+            messagingService.cancel(messagingService.getTagForSynchronization(repository));
         }
+        messagingService.cancel(messagingService.getTagForSynchronization(repository));
     }
 
     @Override
     public void pauseSynchronization(Repository repository, boolean pause)
     {
-        Progress progress = SynchronizationProgessHolder.progressMap.get(repository.getId());
-        if (progress != null)
-        {
-            // TODO
+        if (pause) {
+            messagingService.pause(messagingService.getTagForSynchronization(repository));
+        } else {
+            messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
 
     }
@@ -309,13 +312,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void destroy() throws Exception
     {
-        // TODO
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        // TODO
     }
 
     private static class BranchFilterInfo {
