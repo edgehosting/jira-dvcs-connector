@@ -696,7 +696,7 @@ public class RootResource
             DvcsUser user = repositoryService.getUser(repository, pullRequest.getAuthor(), pullRequest.getAuthor());
             RestPullRequest restPullRequest = new RestPullRequest();
             restPullRequest.setAuthor(new RestAuthor(user.getFullName(), null, user.getAvatar()));
-            restPullRequest.setAuthorTimestamp(pullRequest.getCreatedOn().getTime());
+            restPullRequest.setCreatedOn(pullRequest.getCreatedOn().getTime());
             restPullRequest.setTitle(pullRequest.getName());
             restPullRequest.setId(pullRequest.getRemoteId());
             restPullRequest.setUrl(pullRequest.getUrl());

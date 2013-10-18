@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestPullRequest
 {
     private RestAuthor author;
-    private long authorTimestamp;
+    private long createdOn;
     private long updateOn;
     private long id;
     private String title;
@@ -32,14 +32,14 @@ public class RestPullRequest
         this.author = author;
     }
 
-    public long getAuthorTimestamp()
+    public long getCreatedOn()
     {
-        return authorTimestamp;
+        return createdOn;
     }
 
-    public void setAuthorTimestamp(final long authorTimestamp)
+    public void setCreatedOn(final long createdOn)
     {
-        this.authorTimestamp = authorTimestamp;
+        this.createdOn = createdOn;
     }
 
     public long getId()
