@@ -69,11 +69,7 @@ import static org.testng.Assert.assertTrue;
  */
 public class RestCommitsTest
 {
-    @Mock
-    private RootResource rootResource;
-
-    @Mock
-    private OrganizationService organizationService;
+    private DevToolsResource devToolsResource;
 
     @Mock
     private RepositoryService repositoryService;
@@ -100,9 +96,6 @@ public class RestCommitsTest
     private JiraAuthenticationContext jiraAuthenticationContext;
 
     private IssueAndProjectKeyManager issueAndProjectKeyManager;
-
-    @Mock
-    private AccountsConfigService ondemandAccountConfig;
 
     private int issueIdSequence;
     private int projectIdSequence;
@@ -137,7 +130,7 @@ public class RestCommitsTest
 
         when(repositoryService.getUser(any(Repository.class), anyString(), anyString())).thenReturn(new DvcsUser("USERNAME", "FULL_NAME", "RAW_AUTHOR", "AVATAR", "URL"));
 
-        rootResource = new RootResource(organizationService, repositoryService, changesetService, pullRequestService, issueAndProjectKeyManager, ondemandAccountConfig);
+        devToolsResource = new DevToolsResource(repositoryService, changesetService, pullRequestService, issueAndProjectKeyManager);
     }
 
     class RepositoryBuilder
@@ -218,7 +211,7 @@ public class RestCommitsTest
     @Test
     public void testCommits()
     {
-        Response response = rootResource.getCommits("TST-1");
+        Response response = devToolsResource.getCommits("TST-1");
 
         assertEquals(response.getStatus(), 200, "Status should be 200");
         RestDevResponse restChangesets = (RestDevResponse) response.getEntity();
@@ -271,7 +264,7 @@ public class RestCommitsTest
     @Test
     public void testIssueNotFound()
     {
-        Response response = rootResource.getCommits("TST-123");
+        Response response = devToolsResource.getCommits("TST-123");
 
         assertEquals(response.getStatus(), 404, "Status should be 404");
         assertEquals(response.getEntity().getClass(), Status.class);
@@ -280,13 +273,13 @@ public class RestCommitsTest
     @Test(expectedExceptions = AuthorizationException.class)
     public void testIssueNoPermission()
     {
-        rootResource.getCommits("TST-2");
+        devToolsResource.getCommits("TST-2");
     }
 
     @Test(expectedExceptions = AuthorizationException.class)
     public void testProjectNoPermission()
     {
-        rootResource.getCommits("FORBIDDEN-1");
+        devToolsResource.getCommits("FORBIDDEN-1");
     }
 }
 
