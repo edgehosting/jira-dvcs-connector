@@ -14,8 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -222,9 +221,9 @@ public class RestCommitsTest
         Response response = rootResource.getCommits("TST-1");
 
         assertEquals(response.getStatus(), 200, "Status should be 200");
-        RestChangesets restChangesets = (RestChangesets) response.getEntity();
+        RestDevResponse restChangesets = (RestDevResponse) response.getEntity();
 
-        List<RestChangesetRepository> restRepositories = restChangesets.getRepositories();
+        List<RestChangesetRepository> restRepositories = (List<RestChangesetRepository>) restChangesets.getRepositories();
         // checking repositories count
         assertThat(restRepositories, hasSize(3));
 

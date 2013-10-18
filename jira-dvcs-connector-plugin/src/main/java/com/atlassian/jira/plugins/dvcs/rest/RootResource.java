@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
@@ -16,10 +17,10 @@ import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPRRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequests;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
@@ -37,7 +38,6 @@ import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-
 import com.google.common.collect.Multimaps;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -580,77 +579,42 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON })
     public Response getCommits(@QueryParam("issue") String issueKey)
     {
-        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
-        if (issue == null)
+        return new RestTransformer<RestChangesetRepository>()
         {
-            return Status.notFound().message("Issue not found").response();
-        }
+            private ListMultimap<Integer, Changeset> changesetTorepositoryMapping;
 
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
-        {
-            throw new AuthorizationException();
-        }
-
-        Project project = issue.getProjectObject();
-
-        if (project == null)
-        {
-            return Status.notFound().message("Project was not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
-        {
-            throw new AuthorizationException();
-        }
-
-        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
-        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
-
-        ListMultimap<Integer, Changeset> changesetTorepositoryMapping = ArrayListMultimap.create();
-        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
-
-        // group changesets by repository
-        for (Changeset changeset : changesets)
-        {
-            for (int repositoryId : changeset.getRepositoryIds())
+            @Override
+            protected Set<Integer> getRepositories(final Set<String> issueKeys)
             {
-                changesetTorepositoryMapping.put(repositoryId, changeset);
-            }
-        }
+                List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
 
-        List<RestChangesetRepository> restRepositories = new ArrayList<RestChangesetRepository>();
-        for (int repositoryId : changesetTorepositoryMapping.keySet())
-        {
-            Repository repository = repositories.get(repositoryId);
+                changesetTorepositoryMapping = ArrayListMultimap.create();
 
-            if (repository == null)
-            {
-                repository = repositoryService.get(repositoryId);
-                repositories.put(repositoryId, repository);
+                // group changesets by repository
+                for (Changeset changeset : changesets)
+                {
+                    for (int repositoryId : changeset.getRepositoryIds())
+                    {
+                        changesetTorepositoryMapping.put(repositoryId, changeset);
+                    }
+                }
+
+                return changesetTorepositoryMapping.keySet();
             }
 
-            RestChangesetRepository restRepository = new RestChangesetRepository();
-            restRepository.setName(repository.getName());
-            restRepository.setSlug(repository.getSlug());
-            restRepository.setUrl(repository.getRepositoryUrl());
-            restRepository.setAvatar(repository.getLogo());
-            restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repositoryId)));
-                        restRepository.setFork(repository.isFork());
-            if (repository.isFork() && repository.getForkOf() != null)
+            @Override
+            protected RestChangesetRepository createRepository()
             {
-                RestRepository forkOfRepository = new RestChangesetRepository();
-                forkOfRepository.setName(repository.getForkOf().getName());
-                forkOfRepository.setSlug(repository.getForkOf().getSlug());
-                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
-                restRepository.setForkOf(forkOfRepository);
+                return new RestChangesetRepository();
             }
 
-            restRepositories.add(restRepository);
-        }
+            @Override
+            protected void setData(final RestChangesetRepository restRepository, final Repository repository)
+            {
+                restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repository.getId())));
+            }
 
-        RestChangesets result = new RestChangesets();
-        result.setRepositories(restRepositories);
-        return Response.ok(result).build();
+        }.getResponse(issueKey);
     }
 
     private List<RestChangeset> createCommits(Repository repository, List<Changeset> changesets)
@@ -688,74 +652,40 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON })
     public Response getPullRequests(@QueryParam("issue") String issueKey)
     {
-        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
-        if (issue == null)
+        return new RestTransformer<RestPRRepository>()
         {
-            return Status.notFound().message("Issue not found").response();
-        }
+            private ListMultimap<Integer, PullRequest> prTorepositoryMapping;
 
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
-        {
-            throw new AuthorizationException();
-        }
-
-        Project project = issue.getProjectObject();
-
-        if (project == null)
-        {
-            return Status.notFound().message("Project was not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
-        {
-            throw new AuthorizationException();
-        }
-
-        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
-        List<PullRequest> pullRequests = pullRequestService.getByIssueKeys(issueKeys);
-
-        ListMultimap<Integer, PullRequest> prTorepositoryMapping = Multimaps.index(pullRequests, new Function<PullRequest, Integer>()
-        {
             @Override
-            public Integer apply(@Nullable final PullRequest input)
+            protected Set<Integer> getRepositories(final Set<String> issueKeys)
             {
-                return input.getRepositoryId();
-            }
-        });
-        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
-        List<RestPRRepository> restRepositories = new ArrayList<RestPRRepository>();
-        for (int repositoryId : prTorepositoryMapping.keySet())
-        {
-            Repository repository = repositories.get(repositoryId);
+                List<PullRequest> pullRequests = pullRequestService.getByIssueKeys(issueKeys);
 
-            if (repository == null)
-            {
-                repository = repositoryService.get(repositoryId);
-                repositories.put(repositoryId, repository);
-            }
+                prTorepositoryMapping = Multimaps.index(pullRequests, new Function<PullRequest, Integer>()
+                {
+                    @Override
+                    public Integer apply(@Nullable final PullRequest input)
+                    {
+                        return input.getRepositoryId();
+                    }
+                });
 
-            RestPRRepository restRepository = new RestPRRepository();
-            restRepository.setName(repository.getName());
-            restRepository.setSlug(repository.getSlug());
-            restRepository.setUrl(repository.getRepositoryUrl());
-            restRepository.setAvatar(repository.getLogo());
-            restRepository.setPullRequests(createPullRequests(repository, prTorepositoryMapping.get(repositoryId)));
-            restRepository.setFork(repository.isFork());
-            if (repository.isFork() && repository.getForkOf() != null)
-            {
-                RestChangesetRepository forkOfRepository = new RestChangesetRepository();
-                forkOfRepository.setName(repository.getForkOf().getName());
-                forkOfRepository.setSlug(repository.getForkOf().getSlug());
-                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
-                restRepository.setForkOf(forkOfRepository);
+                return prTorepositoryMapping.keySet();
             }
 
-            restRepositories.add(restRepository);
-        }
+            @Override
+            protected RestPRRepository createRepository()
+            {
+                return new RestPRRepository();
+            }
 
-        RestPullRequests result = new RestPullRequests();
-        result.setRepositories(restRepositories);
-        return Response.ok(result).build();
+            @Override
+            protected void setData(final RestPRRepository restRepository, final Repository repository)
+            {
+                restRepository.setPullRequests(createPullRequests(repository, prTorepositoryMapping.get(repository.getId())));
+            }
+
+        }.getResponse(issueKey);
     }
 
     private List<RestPullRequest> createPullRequests(final Repository repository, final List<PullRequest> pullRequests)
@@ -772,9 +702,97 @@ public class RootResource
             restPullRequest.setUrl(pullRequest.getUrl());
             restPullRequest.setUpdateOn(pullRequest.getUpdatedOn().getTime());
             restPullRequest.setStatus(pullRequest.getStatus());
+            restPullRequest.setSource(createRef(pullRequest.getSource()));
+            restPullRequest.setDestination(createRef(pullRequest.getDestination()));
             restPullRequests.add(restPullRequest);
         }
 
         return restPullRequests;
+    }
+
+    private RestRef createRef(PullRequestRef ref)
+    {
+        if (ref == null)
+        {
+            return null;
+        }
+        RestRef restRef = new RestRef();
+        restRef.setBranch(ref.getBranch());
+        restRef.setRepository(ref.getRepository());
+        restRef.setUrl(ref.getRepositoryUrl());
+
+        return restRef;
+    }
+
+    private abstract class RestTransformer<T extends RestRepository>
+    {
+        public Response getResponse(String issueKey)
+        {
+            Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
+            if (issue == null)
+            {
+                return Status.notFound().message("Issue not found").response();
+            }
+
+            if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+            {
+                throw new AuthorizationException();
+            }
+
+            Project project = issue.getProjectObject();
+
+            if (project == null)
+            {
+                return Status.notFound().message("Project was not found").response();
+            }
+
+            if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+            {
+                throw new AuthorizationException();
+            }
+
+            Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
+            Set<Integer> repositoryIds = getRepositories(issueKeys);
+            Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
+
+            List<T> restRepositories = new ArrayList<T>();
+            for (int repositoryId : repositoryIds)
+            {
+                Repository repository = repositories.get(repositoryId);
+
+                if (repository == null)
+                {
+                    repository = repositoryService.get(repositoryId);
+                    repositories.put(repositoryId, repository);
+                }
+
+                T restRepository = createRepository();
+                restRepository.setName(repository.getName());
+                restRepository.setSlug(repository.getSlug());
+                restRepository.setUrl(repository.getRepositoryUrl());
+                restRepository.setAvatar(repository.getLogo());
+                setData(restRepository, repository);
+                restRepository.setFork(repository.isFork());
+                if (repository.isFork() && repository.getForkOf() != null)
+                {
+                    RestRepository forkOfRepository = new RestChangesetRepository();
+                    forkOfRepository.setName(repository.getForkOf().getName());
+                    forkOfRepository.setSlug(repository.getForkOf().getSlug());
+                    forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
+                    restRepository.setForkOf(forkOfRepository);
+                }
+
+                restRepositories.add(restRepository);
+            }
+
+            RestDevResponse result = new RestDevResponse();
+            result.setRepositories(restRepositories);
+            return Response.ok(result).build();
+        }
+
+        protected abstract Set<Integer> getRepositories(final Set<String> issueKeys);
+        protected abstract T createRepository();
+        protected abstract void setData(T restRepository, Repository repository);
+
     }
 }

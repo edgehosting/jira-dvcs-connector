@@ -19,6 +19,8 @@ public class RestPullRequest
     private String title;
     private String url;
     private String status;
+    private RestRef source;
+    private RestRef destination;
 
     public RestAuthor getAuthor()
     {
@@ -88,6 +90,26 @@ public class RestPullRequest
     public void setUpdateOn(final long updateOn)
     {
         this.updateOn = updateOn;
+    }
+
+    public RestRef getSource()
+    {
+        return source;
+    }
+
+    public void setSource(final RestRef source)
+    {
+        this.source = source;
+    }
+
+    public RestRef getDestination()
+    {
+        return destination;
+    }
+
+    public void setDestination(final RestRef destination)
+    {
+        this.destination = destination;
     }
 }
 

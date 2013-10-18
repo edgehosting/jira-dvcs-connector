@@ -9,13 +9,13 @@ public class PullRequestRef
 {
     private String branch;
     private String repository;
-    private String repository_url;
+    private String repositoryUrl;
 
-    public PullRequestRef(final String branch, final String repository, final String repository_url)
+    public PullRequestRef(final String branch, final String repository, final String repositoryUrl)
     {
         this.branch = branch;
         this.repository = repository;
-        this.repository_url = repository_url;
+        this.repositoryUrl = repositoryUrl;
     }
 
     public String getBranch()
@@ -36,5 +36,15 @@ public class PullRequestRef
     public void setRepository(final String repository)
     {
         this.repository = repository;
+    }
+
+    public String getRepositoryUrl()
+    {
+        return repositoryUrl;
+    }
+
+    public void setRepositoryUrl(final String repositoryUrl)
+    {
+        this.repositoryUrl = repositoryUrl;
     }
 }

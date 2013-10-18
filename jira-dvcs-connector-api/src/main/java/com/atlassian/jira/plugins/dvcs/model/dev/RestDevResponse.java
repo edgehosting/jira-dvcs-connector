@@ -8,19 +8,24 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  *
  *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class RestPullRequests
+public class RestDevResponse
 {
-    private List<RestPRRepository> repositories;
+    private List<? extends RestRepository> repositories;
 
-    public List<RestPRRepository> getRepositories()
+    public RestDevResponse()
+    {
+    }
+
+    public List<? extends RestRepository> getRepositories()
     {
         return repositories;
     }
 
-    public void setRepositories(final List<RestPRRepository> repositories)
+    public void setRepositories(final List<? extends RestRepository> repositories)
     {
         this.repositories = repositories;
     }
