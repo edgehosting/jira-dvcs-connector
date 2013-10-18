@@ -86,6 +86,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetService</interface>
     </component>
 
+    <component key="dvcsPullRequestService" name="DVCS PullRequest Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService</interface>
+    </component>
+
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
@@ -460,6 +464,12 @@
     <component key="issueAndProjectKeyManager" name="issueAndProjectKeyManager"
                class="com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager</interface>
+    </component>
+
+    <component key="pullRequestService" name="pullRequestService"
+               class="com.atlassian.jira.plugins.dvcs.service.PullRequestServiceImpl">
+        <description>pullRequestService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.PullRequestService</interface>
     </component>
 
     <!-- Listener -->

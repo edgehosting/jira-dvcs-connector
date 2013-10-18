@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     private final RepositoryActivityDao activityDao;
     private final IssueActionFactory issueActionFactory;
     private final TemplateRenderer templateRenderer;
+    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     private static final Comparator<? super IssueAction> ISSUE_ACTION_COMPARATOR = new Comparator<IssueAction>()
     {
@@ -55,23 +57,25 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
     public DvcsActivityTabPanel(PermissionManager permissionManager,
             RepositoryService repositoryService, RepositoryActivityDao activityDao,
-            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory, TemplateRenderer templateRenderer)
+            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.permissionManager = permissionManager;
         this.repositoryService = repositoryService;
         this.activityDao = activityDao;
         this.issueActionFactory = issueActionFactory;
         this.templateRenderer = templateRenderer;
+        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
     @Override
     public List<IssueAction> getActions(Issue issue, User user)
     {
         String issueKey = issue.getKey();
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
         List<IssueAction> issueActions = new ArrayList<IssueAction>();
 
         //
-        List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKey);
+        List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKeys);
         Map<String, Object> ctxt = Maps.newHashMap(new  ImmutableMap.Builder<String, Object>().put("prs", prs).build());
         issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
         //
