@@ -40,14 +40,14 @@ public class RepositoryDaoTest
 
 	// tested object
 	private RepositoryDao repositoryDao;
-	
+
 	private static final Date SAMPLE_DATE = new Date();
 
     @BeforeMethod
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        repositoryDao = new RepositoryDaoImpl(activeObjects, synchronizer);
+        repositoryDao = new RepositoryDaoImpl(activeObjects);
     }
 
 	@Test

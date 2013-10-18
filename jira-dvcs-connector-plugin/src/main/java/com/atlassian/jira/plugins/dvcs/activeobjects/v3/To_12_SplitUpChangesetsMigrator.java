@@ -427,17 +427,31 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
 
                 // hack - github commits are using only node, not raw nodes :(
                 String currentNode = resolveChangesetNode(current.rawNode, current.node);
-                String uniqueChangesetNode;
+                String uniqueChangesetNode = null;
+
+                // false if current changeset is consider to be unique, otherwise it is duplicate
+                boolean isDuplicate = false;
 
                 // restart processing - tries to find previous proceed changeset, or null if it is first attempt
                 if (uniqueChangeset == null)
                 {
                     uniqueChangeset = findUniqueChangesetAfterRestart(activeObjects, currentNode);
                 }
-                uniqueChangesetNode = uniqueChangeset != null ? resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node) : null;
 
-                // false if current changeset is consider to be unique, otherwise it is duplicate
-                boolean isDuplicate = uniqueChangeset != null && uniqueChangesetNode.equals(currentNode);
+                if (uniqueChangeset != null)
+                {
+                	uniqueChangesetNode = resolveChangesetNode(uniqueChangeset.rawNode, uniqueChangeset.node);
+                	if (StringUtils.isBlank(uniqueChangesetNode))
+                	{
+                		logger.warn("The changeset with no hash found, it will be deleted.");
+                		addDeleteChangesetStatement(deleteChangesetStatement, uniqueChangeset);
+                		continue;
+                	
+                	} else if (currentNode.equals(uniqueChangesetNode))
+                    {
+                		isDuplicate = true;
+                    }                
+                }
 
                 // if it is unique changeset - it updates cursor for current valid unique changeset
                 if (!isDuplicate)
@@ -597,9 +611,9 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                                 column(ChangesetMapping.ISSUE_KEY) //
                         }, ", ") //
                 + " from " + table(ChangesetMapping.class) //
-                + "where " + column(ChangesetMapping.PROJECT_KEY) + " is not null and " //
+                + " where " + column(ChangesetMapping.PROJECT_KEY) + " is not null and " //
                 + column(ChangesetMapping.ISSUE_KEY) + " is not null " //
-                + "order by " + column(ChangesetMapping.RAW_NODE) + ", " + column(ChangesetMapping.NODE) + ", " + column("ID") + " ASC";
+                + " order by " + column(ChangesetMapping.RAW_NODE) + ", " + column(ChangesetMapping.NODE) + ", " + column("ID") + " ASC";
     }
 
     /**
@@ -746,17 +760,7 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
     private String table(Class<? extends Entity> entity)
     {
         String tableName = tableNameConverter.getName(entity);
-
-        String quotedTableName;
-        if (!StringUtils.isBlank(quote))
-        {
-            quotedTableName = quote + tableName + quote;
-        } else
-        {
-            quotedTableName = tableName;
-        }
-        
-        return databaseProvider.withSchema(quotedTableName);
+        return databaseProvider.withSchema(tableName);
     }
 
     /**

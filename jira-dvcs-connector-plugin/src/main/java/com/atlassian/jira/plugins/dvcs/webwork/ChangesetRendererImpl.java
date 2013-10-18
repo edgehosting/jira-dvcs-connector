@@ -1,21 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -24,12 +9,22 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ChangesetRendererImpl implements ChangesetRenderer
 {
@@ -42,25 +37,23 @@ public class ChangesetRendererImpl implements ChangesetRenderer
     private final ApplicationProperties applicationProperties;
 
     private final TemplateRenderer templateRenderer;
-    private final IssueManager issueManager;
-    private final ChangeHistoryManager changeHistoryManager;
+    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueManager issueManager, ChangeHistoryManager changeHistoryManager)
+            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
         this.applicationProperties = applicationProperties;
         this.templateRenderer = templateRenderer;
-        this.issueManager = issueManager;
-        this.changeHistoryManager = changeHistoryManager;
+        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
     @Override
     public List<IssueAction> getAsActions(Issue issue)
     {
-        Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
         return getAsActions(issueKeys);
     }
 
@@ -69,36 +62,17 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         try
         {
-            Map<String, List<Changeset>> changesetsGroupedByNode = new LinkedHashMap<String, List<Changeset>>();
-
-            final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys);
+            final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys, false);
             for (Changeset changeset : changesetList)
             {
                 logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), StringUtils.join(issueKeys, ", "));
-                String node = changeset.getNode();
-                if (changesetsGroupedByNode.containsKey(node))
-                {
-                    changesetsGroupedByNode.get(node).add(changeset);
-                }
-                else
-                {
-                    List<Changeset> changesetsWithSameNode = Lists.newArrayList();
-                    changesetsWithSameNode.add(changeset);
-                    changesetsGroupedByNode.put(node, changesetsWithSameNode);
-                }
-            }
 
-            for (String node : changesetsGroupedByNode.keySet())
-            {
-                List<Changeset> changesetsWithSameNode = changesetsGroupedByNode.get(node);
-
-                String changesetAsHtml = getHtmlForChangeset(changesetsWithSameNode);
+                String changesetAsHtml = getHtmlForChangeset(changeset);
                 if (StringUtils.isNotBlank(changesetAsHtml))
                 {
-                    bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changesetsWithSameNode.get(0).getDate()));
+                    bitbucketActions.add(new CommitsIssueAction(changesetAsHtml, changeset.getDate()));
                 }
             }
-
         }
         catch (SourceControlException e)
         {
@@ -108,7 +82,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         return bitbucketActions;
     }
 
-    public String getHtmlForChangeset(List<Changeset> changesets)
+    public String getHtmlForChangeset(Changeset changeset)
     {
         Map<String, Object> templateMap = new HashMap<String, Object>();
 
@@ -123,15 +97,25 @@ public class ChangesetRendererImpl implements ChangesetRenderer
 
         Map<Repository, String> commitUrlsByRepo = Maps.newHashMap();
         Map<Repository, Map<ChangesetFile, String>> fileCommitUrlsByRepo = Maps.newHashMap();
-        for (Changeset changeset : changesets)
+
+        Repository firstRepository = null;
+
+        for (Integer repositoryId : changeset.getRepositoryIds())
         {
-            Repository repository = repositoryService.get(changeset.getRepositoryId());
+            Repository repository = repositoryService.get(repositoryId);
             if (repository == null || repository.isDeleted() || !repository.isLinked())
             {
                 continue;
             }
 
-            repositories.add(repository);
+            if (repositoryId == changeset.getRepositoryId())
+            {
+                firstRepository = repository;
+                repositories.add(0,repository);
+            } else
+            {
+                repositories.add(repository);
+            }
 
             String commitUrl = changesetService.getCommitUrl(repository, changeset);
             commitUrlsByRepo.put(repository, commitUrl);
@@ -147,27 +131,24 @@ public class ChangesetRendererImpl implements ChangesetRenderer
             return null;
         }
 
-        Changeset firstChangeset = changesets.get(0);
-        Repository firstRepository = repositories.get(0);
+        String authorName = changeset.getRawAuthor();
+        String login = changeset.getAuthor();
 
-        String authorName = firstChangeset.getRawAuthor();
-        String login = firstChangeset.getAuthor();
-
-        templateMap.put("changeset", firstChangeset);
+        templateMap.put("changeset", changeset);
         templateMap.put("repositories", repositories);
         templateMap.put("commit_urls_by_repo", commitUrlsByRepo);
         templateMap.put("file_commit_urls_by_repo", fileCommitUrlsByRepo);
 
-        DvcsUser user = repositoryService.getUser(firstRepository, firstChangeset.getAuthor(), firstChangeset.getRawAuthor());
+        DvcsUser user = repositoryService.getUser(firstRepository, changeset.getAuthor(), changeset.getRawAuthor());
 
-        String commitMessage = firstChangeset.getMessage();
+        String commitMessage = changeset.getMessage();
 
         templateMap.put("gravatar_url", user.getAvatar());
         templateMap.put("user_url", user.getUrl());
         templateMap.put("login", login);
         templateMap.put("user_name", authorName);
         templateMap.put("commit_message", commitMessage);
-        templateMap.put("commit_hash", firstChangeset.getNode());
+        templateMap.put("commit_hash", changeset.getNode());
         templateMap.put("max_visible_files", Changeset.MAX_VISIBLE_FILES);
 
         StringWriter sw = new StringWriter();

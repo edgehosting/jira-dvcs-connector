@@ -15,7 +15,7 @@
 		<div class="aui-message">
 		    <p class="title">
 		        <span class="aui-icon aui-icon-wait"></span>
-		        <strong>Operation In Progess</strong>
+		        <strong>Operation In Progress</strong>
 		    </p>
 		    
     		<p >Linking new account ... </p>

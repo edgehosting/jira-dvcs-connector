@@ -41,8 +41,9 @@
      vertical-align: text-bottom;
      display: inline-block;
  }
+
  
-  .syncrepoicon:ACTIVE {
+.syncrepoicon:ACTIVE {
   	top: 1px;
   	left: 1px;
   	position: relative;
@@ -50,8 +51,12 @@
 
  .syncrepoicon.running {
      background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+     cursor: default;
  }
- 
+ .syncrepoicon.syncrepoiconqueue {
+     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/queued.png);
+     cursor: default;
+ }
 .syncicon.error {
     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
     display:inline-block;
@@ -354,34 +359,6 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 
 .dvcs-organization-controls {
 	min-width: 320px;
-}
-
-.dvcs-advertisement .product {
-	display: inline-block;
-	width: 30ex;
-	margin: 2ex 2ex;
-	vertical-align: top;
-	border-right: solid 1px #dddddd;
-}
-
-.dvcs-advertisement .product:last-child {
-	border: none;
-}
-
-.dvcs-advertisement .product h4 {
-	margin: 0ex;
-}
-
-.dvcs-advertisement .product .content {
-	margin: 1ex 0;
-}
-
-.dvcs-advertisement .product .buttons {
-	margin: 1ex 0ex;
-}
-
-.dvcs-advertisement .product .buttons a {
-	margin-right: 1ex;
 }
 
 .repository-error-icon {

@@ -5,6 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+
+import java.util.Iterator;
 
 /**
  *
@@ -28,7 +31,7 @@ public class GlobalFilterQueryWhereClauseBuilder
 
             if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
             {
-                whereClauseProjectsSb.append("ISSUE." + IssueToChangesetMapping.PROJECT_KEY + " in ").append(joinStringsToSet(gf.getInProjects())).append(" ");
+                whereClauseProjectsSb.append(renderSqlIn("ISSUE." + IssueToChangesetMapping.PROJECT_KEY, gf.getInProjects())).append(" ");
             }
             if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
             {
@@ -38,12 +41,12 @@ public class GlobalFilterQueryWhereClauseBuilder
                 }
 
 
-                whereClauseProjectsSb.append("ISSUE." + IssueToChangesetMapping.PROJECT_KEY + " not in ").append(joinStringsToSet(gf.getNotInProjects())).append(" ");
+                whereClauseProjectsSb.append(renderSqlNotIn("ISSUE." + IssueToChangesetMapping.PROJECT_KEY, gf.getNotInProjects())).append(" ");
             }
 
             if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
             {
-                whereClauseIssueKyesSb.append("ISSUE." + IssueToChangesetMapping.ISSUE_KEY + " in ").append(joinStringsToSet(gf.getInIssues())).append(" ");
+                whereClauseIssueKyesSb.append(renderSqlIn("ISSUE." + IssueToChangesetMapping.ISSUE_KEY, gf.getInIssues())).append(" ");
             }
             if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
             {
@@ -52,17 +55,16 @@ public class GlobalFilterQueryWhereClauseBuilder
                     whereClauseIssueKyesSb.append(" AND ");
                 }
 
-
-                whereClauseIssueKyesSb.append("ISSUE." + IssueToChangesetMapping.ISSUE_KEY + " not in ").append(joinStringsToSet(gf.getNotInIssues())).append(" ");
+                whereClauseIssueKyesSb.append(renderSqlNotIn("ISSUE." + IssueToChangesetMapping.ISSUE_KEY, gf.getNotInIssues())).append(" ");
             }
 
             if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
             {
-                whereClauseUsersSb.append("CHANGESET." + ChangesetMapping.AUTHOR + " in ").append(joinStringsToSet(gf.getInUsers())).append(" ");
+                whereClauseUsersSb.append(renderSqlIn("CHANGESET." + ChangesetMapping.AUTHOR, gf.getInUsers())).append(" ");
             }
             if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
             {
-                whereClauseUsersSb.append("CHANGESET." + ChangesetMapping.AUTHOR + " not in ").append(joinStringsToSet(gf.getNotInUsers())).append(" ");
+                whereClauseUsersSb.append(renderSqlNotIn("CHANGESET." + ChangesetMapping.AUTHOR, gf.getNotInUsers())).append(" ");
             }
         }
         StringBuilder whereClauseSb = new StringBuilder();
@@ -95,21 +97,13 @@ public class GlobalFilterQueryWhereClauseBuilder
         return whereClauseSb.toString();
     }
 
-    private StringBuilder joinStringsToSet(Iterable<String> strings)
+    private StringBuilder renderSqlNotIn(final String column, final Iterable<String> values)
     {
-        StringBuilder builder = new StringBuilder("(");
-        for (String string : strings)
-        {
-            if(StringUtils.isEmpty(string)) {
-                continue;
-            }
-            if (builder.length() > 1) {
-                builder.append(", ");
-            }
-            builder.append("'").append(string).append("'");
-        }
-        builder.append(")");
+        return ActiveObjectsUtils.renderListStringsOperator(column, "NOT IN", "AND", values);
+    }
 
-        return builder;
+    private StringBuilder renderSqlIn(final String column, final Iterable<String> values)
+    {
+        return ActiveObjectsUtils.renderListStringsOperator(column, "IN", "OR", values);
     }
 }

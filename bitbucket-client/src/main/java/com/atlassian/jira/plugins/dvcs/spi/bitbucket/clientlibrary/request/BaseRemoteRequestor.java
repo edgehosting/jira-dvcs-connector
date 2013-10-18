@@ -1,5 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.cache.HttpCacheStorage;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.*;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -17,43 +37,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheStorage;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-
 /**
  * BaseRemoteRequestor
- *
- *
+ * 
+ * 
  * <br />
  * <br />
  * Created on 13.7.2012, 10:25:24 <br />
  * <br />
- *
+ * 
  * @author jhocman@atlassian.com
- *
+ * 
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
@@ -83,7 +77,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             this.socketTimeout = apiProvider.getTimeout();
         }
     }
-
+    
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
@@ -102,6 +96,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return postWithRetry(uri, parameters, callback);
     }
 
+
     @Override
     public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
@@ -111,7 +106,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
     // Retryers...
     // --------------------------------------------------------------------------------------------------
-
+    
     private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
             final ResponseCallback<T> callback)
     {
@@ -141,7 +136,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T postWithRetry(final String uri, final Map<String, ? extends Object> parameters,
-            final ResponseCallback<T> callback)
+                                final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -183,7 +178,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append oauth params ...
      */
-    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri, Map<String, ? extends Object> params)
+    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri,  Map<String, ? extends Object> params)
     {
         return finalUri;
     }
@@ -220,7 +215,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         HttpClient client = newDefaultHttpClient();
         RemoteResponse response = null;
-
+       
         try
         {
             createConnection(client, method, uri, params);
@@ -264,21 +259,21 @@ public class BaseRemoteRequestor implements RemoteRequestor
             client = new EtagCachingHttpClient(client, getStorage());
         }
         RemoteResponse response = null;
-
+       
         try
         {
             createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
-
+          
             HttpResponse httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
-
+            
             return callback.onResponse(response);
 
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-
+            
         } catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
@@ -291,16 +286,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
     {
+        
         RemoteResponse response = new RemoteResponse();
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
             logRequestAndResponse(method, httpResponse, statusCode);
-
+            
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
-                    + statusCode);
-
+                    + statusCode);            
+             
             switch (statusCode)
             {
             case HttpStatus.SC_BAD_REQUEST:
@@ -313,9 +309,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 toBeThrown = new BitbucketRequestException.Forbidden_403();
                 break;
             case HttpStatus.SC_NOT_FOUND:
-                toBeThrown = new BitbucketRequestException.NotFound_404();
+                toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
                 break;
             }
+            
 
             throw toBeThrown;
         }
@@ -350,11 +347,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
                     new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                    statusCode, responseAsString });
+                            statusCode, responseAsString });
         }
-
     }
-    
+
     private Header[] sanitizeHeadersForLogging(Header[] headers)
     {
         List<Header> result = new LinkedList<Header>(Arrays.asList(headers));
@@ -450,8 +446,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
         onConnectionCreated(client, method, params);
 
     }
-    
-    protected HttpClient newDefaultHttpClient() {
+
+    protected HttpClient newDefaultHttpClient()
+    {
         return new DefaultHttpClient();
     }
 

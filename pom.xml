@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.4-SNAPSHOT</version>
 
     <organization>
         <name>Atlassian</name>
@@ -39,12 +39,12 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.1-OD-06</jira.compile.version>
-        <jira.version>6.1-OD-06</jira.version>
-        <jira.data.version>6.1-OD-06</jira.data.version>
+        <jira.compile.version>6.2-rotp1</jira.compile.version>
+        <jira.version>6.2-rotp1</jira.version>
+        <jira.data.version>6.2-rotp1</jira.data.version>
 
         <ao.version>0.22.1</ao.version>
-        <streams.version>5.0.1</streams.version>
+        <streams.version>5.3.11</streams.version>
         <greenhopper.version>6.2.5.1</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
@@ -158,17 +158,10 @@
     </dependencies>
 	<profiles>
         <profile>
-            <id>jira5</id>
-            <properties>
-                <jira.version>5.0.1</jira.version>
-                <jira.data.version>5.0.1</jira.data.version>
-            </properties>
-        </profile>
-        <profile>
             <id>jira52</id>
             <properties>
-                <jira.version>5.2.5</jira.version>
-                <jira.data.version>5.2.5</jira.data.version>
+                <jira.version>5.2.1</jira.version>
+                <jira.data.version>5.2.1</jira.data.version>
                 <testkit.version>5.2-m33</testkit.version>
             </properties>
         </profile>
@@ -180,5 +173,22 @@
                 <testkit.version>5.2-m33</testkit.version>
             </properties>
         </profile>
+        <profile>
+            <id>jira61</id>
+            <properties>
+                <jira.version>6.1-OD-06</jira.version>
+                <jira.data.version>6.1-OD-06</jira.data.version>
+                <testkit.version>6.0.41</testkit.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>jira62</id>
+            <properties>
+                <jira.version>6.2-SNAPSHOT</jira.version>
+                <jira.data.version>6.2-SNAPSHOT</jira.data.version>
+                <testkit.version>6.0.41</testkit.version>
+            </properties>
+        </profile>
+
     </profiles>
 </project>

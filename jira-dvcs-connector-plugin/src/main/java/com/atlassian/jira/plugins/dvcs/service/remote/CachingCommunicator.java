@@ -11,6 +11,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -21,11 +22,12 @@ import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
 
 /**
- * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent lookup times
+ * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent
+ * lookup times
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    private final DvcsCommunicator delegate;
+    private DvcsCommunicator delegate;
 
     private class UserKey
     {
@@ -41,11 +43,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null) return false;
-            if (this == obj) return true;
-            if (this.getClass() != obj.getClass()) return false;
+            if (obj == null)
+                return false;
+            if (this == obj)
+                return true;
+            if (this.getClass() != obj.getClass())
+                return false;
             UserKey that = (UserKey) obj;
-            return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username).isEquals();
+            return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username)
+                    .isEquals();
         }
 
         @Override
@@ -59,22 +65,28 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private class OrganisationKey
     {
         private final Organization organization;
+
         public OrganisationKey(Organization organization)
         {
             this.organization = organization;
         }
+
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null) return false;
-            if (this == obj) return true;
-            if (this.getClass() != obj.getClass()) return false;
+            if (obj == null)
+                return false;
+            if (this == obj)
+                return true;
+            if (this.getClass() != obj.getClass())
+                return false;
             OrganisationKey that = (OrganisationKey) obj;
             return new EqualsBuilder()
                     .append(organization.getHostUrl(), that.organization.getHostUrl())
                     .append(organization.getName(), that.organization.getName())
                     .isEquals();
         }
+
         @Override
         public int hashCode()
         {
@@ -82,15 +94,14 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
     }
 
-    private final Map<UserKey, DvcsUser> usersCache =
-            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<UserKey, DvcsUser>()
+    private final Map<UserKey, DvcsUser> usersCache = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
+            new Function<UserKey, DvcsUser>()
             {
                 @Override
                 public DvcsUser apply(UserKey key)
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
-
             });
 
     private final Map<OrganisationKey, List<Group>> groupsCache =
@@ -103,8 +114,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         }
 
                     });
-
-    public CachingCommunicator(DvcsCommunicator delegate)
+    
+    public CachingCommunicator()
+    {
+    }
+    
+    public void setDelegate(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
     }
@@ -123,8 +138,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
 
     private SourceControlException unrollException(ComputationException e)
     {
-        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
-                .getCause());
+        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(
+                e.getCause());
     }
 
     @Override
@@ -167,6 +182,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public List<Repository> getRepositories(Organization organization)
     {
         return delegate.getRepositories(organization);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<BranchHead> getBranches(Repository repository)
+    {
+        return delegate.getBranches(repository);
     }
 
     @Override
@@ -227,5 +251,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public DvcsUser getTokenOwner(Organization organization)
     {
         return delegate.getTokenOwner(organization);
+    }
+
+    @Override
+    public DvcsCommunicator getDelegate()
+    {
+        return delegate;
     }
 }

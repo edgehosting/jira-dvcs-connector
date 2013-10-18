@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import net.java.ao.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.ActiveObjectsUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -55,7 +55,7 @@ public class BranchDaoImpl implements BranchDao
                 log.debug("adding branch head {} for repository with id = [ {} ]", new Object[]{branchHead, repositoryId});
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
-                map.put(BranchHeadMapping.BRANCH_NAME, branchHead.getName());
+                map.put(BranchHeadMapping.BRANCH_NAME, ActiveObjectsUtils.stripToLimit(branchHead.getName(), 255));
                 map.put(BranchHeadMapping.HEAD, branchHead.getHead());
 
                 activeObjects.create(BranchHeadMapping.class, map);

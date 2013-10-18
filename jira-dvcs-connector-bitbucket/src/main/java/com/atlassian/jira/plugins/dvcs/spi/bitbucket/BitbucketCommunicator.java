@@ -33,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -50,19 +51,13 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
-/**
- * The Class BitbucketCommunicator.
- *
- */
 public class BitbucketCommunicator implements DvcsCommunicator
 {
-    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
 
     private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 50);
 
-    /** The Constant BITBUCKET. */
-    private static final String BITBUCKET = "bitbucket";
+    public static final String BITBUCKET = "bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
@@ -72,14 +67,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private final ChangesetCache changesetCache;
 
-    /**
-     * The Constructor.
-     *
-     * @param bitbucketLinker
-     * @param pluginAccessor
-     * @param oauth
-     * @param bitbucketClientBuilder
-     */
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
             BranchService branchService,
@@ -216,7 +203,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         try
         {
             //remote branch head list
-            final List<BranchHead> newBranchHeads = getBranchHeads(repository);
+            final List<BranchHead> newBranchHeads = getBranches(repository);
             log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
             if (newBranchHeads.isEmpty())
             {
@@ -289,6 +276,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
+    public BitbucketChangesetPage getChangesetsForPage(int page, Repository repository, List<String> includeNodes, List<String> excludeNodes)
+    {
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+        return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
+                includeNodes, excludeNodes);
+    }
+
+    public List<BranchHead> getOldBranches(Repository repository)
+    {
+        return branchService.getListOfBranchHeads(repository);
+    }
+
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
         if (branchHeads == null)
@@ -305,7 +304,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return result;
     }
 
-    private List<BranchHead> getBranchHeads(Repository repository)
+    @Override
+    public List<BranchHead> getBranches(Repository repository)
     {
         List<BranchHead> branches = new ArrayList<BranchHead>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
@@ -317,7 +317,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 for (String head : heads)
                 {
                     // make sure "default" branch is first in the list
-                    if ("default".equals(bitbucketBranch.getName()))
+                    if (bitbucketBranch.isMainbranch())
                     {
                         branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
                     } else

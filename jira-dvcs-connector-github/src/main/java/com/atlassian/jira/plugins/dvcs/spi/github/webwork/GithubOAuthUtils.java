@@ -52,7 +52,7 @@ public class GithubOAuthUtils
     public String requestAccessToken(String githubHostUrl, String code)
     {
         log.debug("Requesting access token at " + githubHostUrl + " with code " + code);
-
+        
         URL url;
         HttpURLConnection conn;
 
@@ -71,7 +71,7 @@ public class GithubOAuthUtils
             String requestUrl = githubUrl + "/login/oauth/access_token";
 
             String urlParameters = "client_id=" + clientId + "&client_secret=" + secret + "&code=" + code;
-
+            
             log.debug("requestAccessToken() - " + requestUrl + " with parameters " + urlParameters);
 
             url = new URL(requestUrl);
@@ -80,7 +80,7 @@ public class GithubOAuthUtils
             conn.setDoInput(true);
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
             conn.setRequestProperty("charset", "utf-8");
             conn.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
             conn.setUseCaches (false);
@@ -89,7 +89,7 @@ public class GithubOAuthUtils
             wr.writeBytes(urlParameters);
             wr.flush();
             wr.close();
-
+            
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             while ((line = rd.readLine()) != null)
             {
@@ -130,7 +130,7 @@ public class GithubOAuthUtils
             throw new InvalidResponseException("Error obtaining access token. Response is invalid.");
         }
 
-        return result.replaceAll("access_token=(.*)&token_type.*", "$1");
+        return result.replaceAll("access_token=([^&]*).*", "$1");
     }
 
     private String githubUrl(String githubHostUrl)

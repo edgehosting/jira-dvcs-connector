@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer.SynchronizationProgessHolder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 public class RepositoryDaoImpl implements RepositoryDao
@@ -29,12 +30,10 @@ public class RepositoryDaoImpl implements RepositoryDao
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
     private final ActiveObjects activeObjects;
-    private final Synchronizer synchronizer;
 
-    public RepositoryDaoImpl(ActiveObjects activeObjects, Synchronizer synchronizer)
+    public RepositoryDaoImpl(ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
-        this.synchronizer = synchronizer;
     }
 
     protected Repository transform(RepositoryMapping repositoryMapping)
@@ -51,8 +50,32 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+        repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
+
+        Date lastDate = repositoryMapping.getLastCommitDate();
+
+        if (lastDate == null || (repositoryMapping.getActivityLastSync() != null && repositoryMapping.getActivityLastSync().after(lastDate)))
+        {
+            lastDate = repositoryMapping.getActivityLastSync();
+        }
+        repository.setLastActivityDate(lastDate);
+        repository.setLogo(repositoryMapping.getLogo());
         // set sync progress
-        repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
+        repository.setSync((DefaultProgress) SynchronizationProgessHolder.getProgress(repository.getId()));
+        repository.setFork(repositoryMapping.isFork());
+
+        if (repository.isFork())
+        {
+            Repository forkOfRepository = new Repository();
+            forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());
+            forkOfRepository.setName(repositoryMapping.getForkOfName());
+            forkOfRepository.setOwner(repositoryMapping.getForkOfOwner());
+            if (organizationMapping != null)
+            {
+                forkOfRepository.setRepositoryUrl(createForkOfRepositoryUrl(repositoryMapping, organizationMapping));
+            }
+            repository.setForkOf(forkOfRepository);
+        }
 
         if (organizationMapping != null)
         {
@@ -75,13 +98,22 @@ public class RepositoryDaoImpl implements RepositoryDao
 
     private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
     {
-        String hostUrl = organizationMapping.getHostUrl();
+        return createRepositoryUrl(organizationMapping.getHostUrl(), organizationMapping.getName(), repositoryMapping.getSlug());
+    }
+
+    private String createForkOfRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
+    {
+        return createRepositoryUrl(organizationMapping.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
+    }
+
+    private String createRepositoryUrl(String hostUrl, String owner, String slug)
+    {
         // normalize
         if (hostUrl != null && hostUrl.endsWith("/"))
         {
             hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
         }
-        return hostUrl + "/" + organizationMapping.getName() + "/" + repositoryMapping.getSlug();
+        return hostUrl + "/" + owner + "/" + slug;
     }
 
     @SuppressWarnings("unchecked")
@@ -209,7 +241,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             log.warn("Repository with id {} was not found.", repositoryId);
             return null;
-
         } else
         {
             return transform(repositoryMapping);
@@ -239,7 +270,15 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.LINKED, repository.isLinked());
                     map.put(RepositoryMapping.DELETED, repository.isDeleted());
                     map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
-
+                    map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
+                    map.put(RepositoryMapping.LOGO, repository.getLogo());
+                    map.put(RepositoryMapping.IS_FORK, repository.isFork());
+                    if (repository.getForkOf() != null)
+                    {
+                        map.put(RepositoryMapping.FORK_OF_NAME, repository.getForkOf().getName());
+                        map.put(RepositoryMapping.FORK_OF_SLUG, repository.getForkOf().getSlug());
+                        map.put(RepositoryMapping.FORK_OF_OWNER, repository.getForkOf().getOwner());
+                    }
                     rm = activeObjects.create(RepositoryMapping.class, map);
                     rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
                 } else
@@ -252,7 +291,20 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setLinked(repository.isLinked());
                     rm.setDeleted(repository.isDeleted());
                     rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
-
+                    rm.setActivityLastSync(repository.getActivityLastSync());
+                    rm.setLogo(repository.getLogo());
+                    rm.setFork(repository.isFork());
+                    if (repository.getForkOf() != null)
+                    {
+                        rm.setForkOfName(repository.getForkOf().getName());
+                        rm.setForkOfSlug(repository.getForkOf().getSlug());
+                        rm.setForkOfOwner(repository.getForkOf().getOwner());
+                    } else
+                    {
+                        rm.setForkOfName(null);
+                        rm.setForkOfSlug(null);
+                        rm.setForkOfOwner(null);
+                    }
                     rm.save();
                 }
                 return rm;
@@ -260,7 +312,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
 
         return transform(repositoryMapping);
-
     }
 
     @Override
@@ -281,4 +332,18 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
     }
 
+    @Override
+    public void setLastActivitySyncDate(final Integer repositoryId, final Date date)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            public Void doInTransaction()
+            {
+                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, repositoryId);
+                repo.setActivityLastSync(date);
+                repo.save();
+                return null;
+            }
+        });
+    }
 }

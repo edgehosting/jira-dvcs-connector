@@ -1,0 +1,62 @@
+<html>
+<head>
+<style type="text/css">
+td,th {
+  vertical-align: top;
+  padding: 5px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: verdana;
+  font-size: 12px;
+}
+
+table,td,th {
+  border: 1px solid black;
+}
+
+.trace-pane {
+  max-height: 400px;
+  overflow: auto;
+}
+
+pre {
+  margin: 0px;
+}
+
+.alert {
+  background-color: #FFF2F3;
+}
+</style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Repository ID</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Sync Type</th>
+        <th>Sync Status</th>
+        <th>Error ?</th>
+      </tr>
+    </thead>
+    <tbody>
+      #foreach($log in $logs)
+      <tr class="#if($log.syncStatus == "FAILED") alert #end">
+        <td>$log.repoId</td>
+        <td>$log.startDate</td>
+        <td>$log.endDate</td>
+        <td>$log.syncType</td>
+        <td>$log.syncStatus</td>
+        <td><div class="trace-pane">
+            <pre>$!log.excTrace</pre>
+          </div></td>
+      </tr>
+      #end
+    </tbody>
+  </table>
+</body>
+</html>

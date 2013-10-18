@@ -46,15 +46,15 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
 
     private String doChangeAccessToken()
     {
-        String accessToken = getAccessToken();
         try
         {
+            String accessToken = getAccessToken();
             organizationService.updateCredentialsAccessToken(Integer.parseInt(organization), accessToken);
 
         } catch (SourceControlException e)
         {
-            addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
-            log.debug("Failed adding the account: [" + e.getMessage() + "]");
+            addErrorMessage("Cannot regenerate OAuth access token: [" + e.getMessage() + "]");
+            log.debug("Cannot regenerate OAuth access token: [" + e.getMessage() + "]");
             return INPUT;
         }
 

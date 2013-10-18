@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
 
-import org.testng.annotations.Test;
-
-import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder;
-import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  *
@@ -28,7 +27,7 @@ public class TestGlobalFilterQueryWhereClauseBuilder
     @Test
     public void fullGlobalFilter()
     {
-        final String expected = "(ISSUE.PROJECT_KEY in ('projectIn')  AND ISSUE.PROJECT_KEY not in ('projectNotIn') ) AND (ISSUE.ISSUE_KEY in ('issueIn')  AND ISSUE.ISSUE_KEY not in ('issueNotIn') ) AND (CHANGESET.AUTHOR in ('userIn') CHANGESET.AUTHOR not in ('userNotIn') )";
+        final String expected = "(ISSUE.PROJECT_KEY IN ('projectIn')  AND ISSUE.PROJECT_KEY NOT IN ('projectNotIn') ) AND (ISSUE.ISSUE_KEY IN ('issueIn')  AND ISSUE.ISSUE_KEY NOT IN ('issueNotIn') ) AND (CHANGESET.AUTHOR IN ('userIn') CHANGESET.AUTHOR NOT IN ('userNotIn') )";
         GlobalFilter gf = new GlobalFilter();
         gf.setInProjects(Arrays.asList("projectIn"));
         gf.setNotInProjects(Arrays.asList("projectNotIn"));
@@ -44,12 +43,11 @@ public class TestGlobalFilterQueryWhereClauseBuilder
     @Test
     public void testGlobalFilterWorksForIssueKeysOnly() throws Exception
     {
-        final String expected = "(ISSUE.ISSUE_KEY in ('issueIn', 'issueIn2') )";
+        final String expected = "(ISSUE.ISSUE_KEY IN ('issueIn', 'issueIn2') )";
         GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(Arrays.asList("issueIn", "issueIn2"));
 
         GlobalFilterQueryWhereClauseBuilder globalFilterQueryWhereClauseBuilder = new GlobalFilterQueryWhereClauseBuilder(gf);
         assertThat(globalFilterQueryWhereClauseBuilder.build()).isEqualTo(expected);
-
     }
 }

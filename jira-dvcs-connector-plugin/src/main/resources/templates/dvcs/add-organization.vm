@@ -160,7 +160,7 @@
             <tr>
                 <th>Enabled</th>
                 <th>Repository</th>
-                <th style="text-align: right; white-space: nowrap;" >Last Commit</th>   ## last commit
+                <th style="text-align: right; white-space: nowrap;" >Last Activity</th>   ## last activity
                 <th class="dvcs-centered">Sync Repo</th>   ## sync repo
                 <th class="dvcs-smartcommits-head" style="white-space: nowrap;">Smart Commits</th>
             </tr>
@@ -222,7 +222,7 @@
                 <td class="dvcs-sync-repo dvcs-centered">
                     <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
                         <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="forceSync(event, $repo.id); return false;">
-                            <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" >&nbsp;</span>
+                            <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" data-title="Click To Sync Repo $textutils.htmlEncode($repo.name)">&nbsp;</span>
                         </a>
                     </div>
                 </td>

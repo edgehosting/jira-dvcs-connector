@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -62,6 +62,15 @@ public class ChangesetServiceImpl implements ChangesetService
         changesetDao.removeAllInRepository(repositoryId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Changeset getByNode(int repositoryId, String changesetNode)
+    {
+        return changesetDao.getByNode(repositoryId, changesetNode);
+    }
+
     @Override
     public Iterable<Changeset> getChangesetsFromDvcs(Repository repository)
     {
@@ -77,9 +86,9 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public List<Changeset> getByIssueKey(Iterable<String> issueKeys)
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst)
     {
-        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys);
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, newestFirst);
         return checkChangesetVersion(changesets);
     }
 

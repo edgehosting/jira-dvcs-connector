@@ -4,7 +4,6 @@ public class BasicAuthAuthProvider extends AbstractAuthProvider
 {
 	private final String username;
 	private final String password;
-
 	public BasicAuthAuthProvider(String hostUrl, String username, String password)
 	{
 		super(hostUrl);
@@ -17,6 +16,5 @@ public class BasicAuthAuthProvider extends AbstractAuthProvider
 	{
 		return new BasicAuthRemoteRequestor(this, username, password);
 	}
-
 }
 

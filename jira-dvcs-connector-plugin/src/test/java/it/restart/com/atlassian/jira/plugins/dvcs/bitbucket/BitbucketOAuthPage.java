@@ -11,8 +11,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
 
 public class BitbucketOAuthPage implements Page
 {    
-    public static final String PAGE_URL = "https://bitbucket.org/account/user/jirabitbucketconnector/api";
-
     @ElementBy(linkText = "Add consumer")
     private PageElement addConsumerButton;
     
@@ -31,10 +29,21 @@ public class BitbucketOAuthPage implements Page
     @ElementBy(xpath = "//section[@id='oauth-consumers']//tbody")
     private PageElement consumersTable;
 
+    private String account = "jirabitbucketconnector";
+
+    public BitbucketOAuthPage()
+    {
+    }
+
+    public BitbucketOAuthPage(final String account)
+    {
+        this.account = account;
+    }
+
     @Override
     public String getUrl()
     {
-        return PAGE_URL;
+        return "https://bitbucket.org/account/user/" + account + "/api";
     }
 
     public OAuth addConsumer()

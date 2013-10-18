@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.HttpClient;
 import org.scribe.extractors.HeaderExtractorImpl;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;

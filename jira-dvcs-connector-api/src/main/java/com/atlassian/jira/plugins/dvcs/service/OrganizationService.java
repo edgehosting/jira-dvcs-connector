@@ -16,12 +16,22 @@ public interface OrganizationService
 {
 
     /**
-     * check if account exists on given server.
+     * check if account exists on given server using all available communicators.
      * @param hostUrl server host name
      * @param accountName name of account (organizationName)
      * @return accoutnInfo
      */
     AccountInfo getAccountInfo(String hostUrl, String accountName);
+
+    /**
+     * check if account exists on given server using communicator
+     * of given <code>dvcsType</code>.
+     * @param hostUrl server host name
+     * @param accountName name of account (organizationName)
+     * @param dvcsType type of DVCS
+     * @return accoutnInfo
+     */
+    AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType);
 
     /**
      * returns all organizations.

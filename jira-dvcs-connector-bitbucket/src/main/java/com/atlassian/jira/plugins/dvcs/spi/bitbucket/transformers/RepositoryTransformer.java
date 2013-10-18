@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
@@ -33,9 +34,26 @@ public final class RepositoryTransformer {
 
                 repository.setName(bitbucketRepository.getName());
                 repository.setSlug(bitbucketRepository.getSlug());
-
+                repository.setLogo(bitbucketRepository.getLogo());
+                repository.setFork(bitbucketRepository.isFork());
+                repository.setForkOf(createForkOfRepository(bitbucketRepository.getForkOf()));
                 return repository;
             }
         });
+    }
+
+    private static Repository createForkOfRepository(BitbucketRepository bitbucketRepository)
+    {
+        if (bitbucketRepository == null)
+        {
+            return null;
+        }
+
+        Repository forkRepository = new Repository();
+        forkRepository.setSlug(bitbucketRepository.getSlug());
+        forkRepository.setName(bitbucketRepository.getName());
+        forkRepository.setOwner(bitbucketRepository.getOwner());
+
+        return forkRepository;
     }
 }

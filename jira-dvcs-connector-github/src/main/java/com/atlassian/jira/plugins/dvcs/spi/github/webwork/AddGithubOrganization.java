@@ -5,12 +5,11 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
 
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -18,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
@@ -36,13 +36,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private String oauthClientId;
     private String oauthSecret;
 
-    // sent by GH on the way back
-    private String code;
+	// sent by GH on the way back
+	private String code;
 
     private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
-
 
     public AddGithubOrganization(ApplicationProperties applicationProperties,
                                  EventPublisher eventPublisher,
@@ -90,7 +89,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             addErrorMessage("Please provide both url and organization parameters.");
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization);
+        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
         if (accountInfo == null)
         {
             addErrorMessage("Invalid user/team account.");
@@ -111,14 +110,14 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
-            if ( sce.getCause() != null )
+            if (sce.getCause() != null)
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
-
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             addErrorMessage("Error obtain access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
             return INPUT;
@@ -132,7 +131,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             Organization newOrganization = new Organization();
             newOrganization.setName(organization);
             newOrganization.setHostUrl(url);
-            newOrganization.setDvcsType("github");
+            newOrganization.setDvcsType(GithubCommunicator.GITHUB);
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
             newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id),
                     oAuthStore.getSecret(Host.GITHUB.id), accessToken));

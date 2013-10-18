@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +59,6 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         {
             try
             {
-                webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin");
                 return soyTemplateRenderer.render(DvcsConstants.SOY_TEMPLATE_PLUGIN_KEY, "dvcs.connector.plugin.soy.advertisement",
                         Collections.<String, Object> emptyMap());
             } catch (SoyException e)
@@ -78,15 +79,18 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private final ChangesetRenderer renderer;
 
+    private final EventPublisher eventPublisher;
+
     public DvcsTabPanel(PermissionManager permissionManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
-            WebResourceManager webResourceManager, ChangesetRenderer renderer)
+            WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher)
     {
         this.permissionManager = permissionManager;
         this.renderer = renderer;
         this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
         this.webResourceManager = webResourceManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -95,6 +99,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         // make advertisement, if plug-in is not using
         if (!repositoryService.existsLinkedRepositories())
         {
+            eventPublisher.publish(new DvcsCommitsAnalyticsEvent("issue", "tabshowing", false));
             return Collections.<IssueAction> singletonList(new AdvertisementAction());
         }
 
@@ -104,6 +109,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
             actions.add(ChangesetRenderer.DEFAULT_MESSAGE);
         }
 
+        eventPublisher.publish(new DvcsCommitsAnalyticsEvent("issue", "tabshowing", true));
         return actions;
     }
 
@@ -112,5 +118,4 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
     }
-
 }

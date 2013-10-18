@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -7,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SyncProgress;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -24,7 +27,7 @@ public interface RepositoryService
      * @return repositories
      */
     List<Repository> getAllByOrganization(int organizationId);
-
+    
     /**
      * returns all repositories for given organization
      * @param organizationId organizationId
@@ -36,7 +39,7 @@ public interface RepositoryService
     /**
 	 * Gets the all active (not deleted) repositories and their synchronization
 	 * status.
-	 *
+	 * 
 	 * @param organizationId
 	 *            the organization id
 	 * @return the all active repositories
@@ -75,9 +78,9 @@ public interface RepositoryService
      * Synchronization of repository list in given organization
      *    Retrieves list of repositories for organization and adds/removes local repositories accordingly.
      *    If autolinking is set to to true new repositories will be linked and they will start synchronizing.
-     *
+     *    
      * softsync is used by default
-     *
+     * 
      * @param organization organization
      */
     void syncRepositoryList(Organization organization);
@@ -87,24 +90,24 @@ public interface RepositoryService
     /**
      * synchronization of changesets in given repository
      * @param repositoryId repositoryId
-     * @param softSync
+     * @param flags
      */
-    void sync(int repositoryId, boolean softSync);
+    void sync(int repositoryId, EnumSet<SynchronizationFlag> flags);
 
 	/**
 	 * Enables/links the repository to the jira projects. This will also
 	 * (un)install postcommit hooks on repository and configure Links on
 	 * bitbucket repositories
-	 *
+	 * 
 	 * @param repoId
 	 *            the repo id
 	 * @param linked
 	 *            the parse boolean
-	 *
+	 *            
 	 * @returns {@link RepositoryRegistration}
 	 */
 	RepositoryRegistration enableRepository(int repoId, boolean linked);
-
+	
 	/**
 	 * Enable repository smartcommits.
 	 *
@@ -123,7 +126,7 @@ public interface RepositoryService
      * @param repository
      */
     void remove(Repository repository);
-
+    
     /**
      * The same as {@link #removeOrphanRepositories()}, but it will run in background.
      * 

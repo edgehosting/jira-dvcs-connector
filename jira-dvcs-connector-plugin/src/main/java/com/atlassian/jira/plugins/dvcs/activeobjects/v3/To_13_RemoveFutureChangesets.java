@@ -34,13 +34,20 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
-        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
-                IssueToChangesetMapping.class, RepositoryToChangesetMapping.class, BranchHeadMapping.class);
-
-        for (ChangesetMapping changesetMapping : getChangesetsFromFuture(activeObjects))
+        try
         {
-            setChangesetDate(activeObjects, DATE_IN_THE_PAST, changesetMapping);
+            activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
+                    IssueToChangesetMapping.class, RepositoryToChangesetMapping.class, BranchHeadMapping.class);
+        
+            for (ChangesetMapping changesetMapping : getChangesetsFromFuture(activeObjects))
+            {
+                setChangesetDate(activeObjects, DATE_IN_THE_PAST, changesetMapping);
+            }
+        } catch(RuntimeException e)
+        {
+            log.warn("Cleaning of future dates did not finished correctly. This will not affect the behavior, only the changesets from the future will be still there. To fix them run full synchronization.", e);
         }
+            
     }
 
     private void setChangesetDate(ActiveObjects activeObjects, Date dateInThePast, final ChangesetMapping changesetMapping)
@@ -125,7 +132,7 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
             // filter in those from the future
             for (ChangesetMapping changesetMapping : latestChangesets)
             {
-                if (changesetMapping.getDate().after(TOMORROW_DATE))
+                if (changesetMapping.getDate() != null && changesetMapping.getDate().after(TOMORROW_DATE))
                 {
                     currentPage.add(changesetMapping);
                 }
