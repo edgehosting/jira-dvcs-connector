@@ -354,7 +354,7 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/src/test/resources/test-resources-mysql-gh-enabled-5.0.1.zip</dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-mysql-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
@@ -400,7 +400,7 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/src/test/resources/test-resources-postgres-gh-enabled-5.0.1.zip</dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-postgres-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
