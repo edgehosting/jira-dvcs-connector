@@ -36,9 +36,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTrans
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
@@ -192,7 +192,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
                         originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
-                                .getNodesToBranches(), originalMessage.isSoftSync()), tags);
+                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), tags);
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
@@ -220,7 +220,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         return messagingService.get(BitbucketSynchronizeChangesetMessage.class, KEY);
     }
-    
+
     @Override
     public int getParallelThreads()
     {

@@ -42,6 +42,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             result.put("repository", payload.getRepository().getId());
             result.put("softSync", payload.isSoftSync());
             result.put("page", payload.getPageNum());
+            result.put("syncAuditId", payload.getSyncAuditId());
             result.put("processedPullRequests", payload.getProcessedPullRequests());
             result.put("processedPullRequestsLocal", payload.getProcessedPullRequestsLocal());
             if (payload.getLastSyncDate() != null)
@@ -67,6 +68,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
         Set<Integer> processedPullRequestsLocal;
         Date lastSyncDate = null;
         int page = 1;
+        int syncAuditId = 0;
 
         try
         {
@@ -75,6 +77,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             repository = repositoryService.get(result.optInt("repository"));
             softSync = result.optBoolean("softSync");
             page = result.optInt("page");
+            syncAuditId = result.optInt("syncAuditId");
             processedPullRequests = asSet(result.optJSONArray("processedPullRequests"));
             processedPullRequestsLocal = asSet(result.optJSONArray("processedPullRequestsLocal"));
             String lastSyncOrNull = result.optString("lastSyncDate");
@@ -96,7 +99,7 @@ public class BitbucketSynchronizeActivityMessageSerializer implements MessagePay
             throw new RuntimeException(e);
         }
 
-        return new BitbucketSynchronizeActivityMessage(repository, progress, softSync, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate);
+        return new BitbucketSynchronizeActivityMessage(repository, progress, softSync, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, syncAuditId);
     }
 
     private Set<Integer> asSet(JSONArray optJSONArray)

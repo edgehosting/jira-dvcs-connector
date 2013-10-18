@@ -150,7 +150,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketSynchronizeActivityMessage payload = message.getPayload();
 
         messagingService.publish(getAddress(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
-                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync), message.getTags());
+                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync, payload.getSyncAuditId()), message.getTags());
     }
 
     private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)

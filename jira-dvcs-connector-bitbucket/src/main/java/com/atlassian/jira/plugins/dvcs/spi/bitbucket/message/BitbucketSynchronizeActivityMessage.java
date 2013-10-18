@@ -7,9 +7,9 @@ import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
 
-public class BitbucketSynchronizeActivityMessage implements Serializable, HasProgress
+public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMessage implements Serializable
 {
 
     private static final long serialVersionUID = -4361088769277502144L;
@@ -17,7 +17,6 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
     private boolean softSync;
 
     private Repository repository;
-    private Progress progress;
     private Set<Integer> processedPullRequests;
     private Set<Integer> processedPullRequestsLocal;
     private Date lastSyncDate;
@@ -30,10 +29,11 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
                                                int pageNum,
                                                Set<Integer> processedPullRequests,
                                                Set<Integer> processedPullRequestsLocal,
-                                               Date lastSyncDate)
+                                               Date lastSyncDate,
+                                               int syncAuditId)
     {
+        super(progress, syncAuditId);
         this.repository = repository;
-        this.progress = progress;
         this.softSync = softSync;
         this.pageNum = pageNum;
         this.processedPullRequests = processedPullRequests;
@@ -41,15 +41,9 @@ public class BitbucketSynchronizeActivityMessage implements Serializable, HasPro
         this.lastSyncDate = lastSyncDate;
     }
 
-    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate)
+    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate, int syncAuditId)
     {
-        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate);
-    }
-
-    @Override
-    public Progress getProgress()
-    {
-        return progress;
+        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate, syncAuditId);
     }
 
     public Repository getRepository()

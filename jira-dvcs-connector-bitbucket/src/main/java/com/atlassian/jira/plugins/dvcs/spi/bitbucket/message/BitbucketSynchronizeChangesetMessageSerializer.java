@@ -78,6 +78,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
             result.put("repository", payload.getRepository().getId());
             result.put("exclude", collectionToString(payload.getExclude()));
             result.put("page", payload.getPage());
+            result.put("syncAuditId", payload.getSyncAuditId());
             result.put("newHeads", Lists.transform(payload.getNewHeads(), new Function<BranchHead, String>()
             {
                 @Override
@@ -112,6 +113,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
         int page;
         Map<String, String> nodesToBranches;
         boolean softSync;
+        int syncAuditId = 0;
 
         try
         {
@@ -121,6 +123,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
             refreshAfterSynchronizedAt = getDateFormat().parse(result.optString("refreshAfterSynchronizedAt"));
             exclude = collectionFromString(result.optString("exclude"));
             page = result.optInt("page");
+            syncAuditId = result.optInt("syncAuditId");
             newHeads = toBranchHeads(result.optJSONArray("newHeads"));
             softSync = result.getBoolean("softSync");
             new Function<String, BranchHead>()
@@ -151,7 +154,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer implements MessagePa
         }
 
         return new BitbucketSynchronizeChangesetMessage(repository, refreshAfterSynchronizedAt, progress, newHeads, exclude,
-                 page, nodesToBranches, softSync);
+                 page, nodesToBranches, softSync, syncAuditId);
     }
 
     private List<BranchHead> toBranchHeads(JSONArray optJSONArray)

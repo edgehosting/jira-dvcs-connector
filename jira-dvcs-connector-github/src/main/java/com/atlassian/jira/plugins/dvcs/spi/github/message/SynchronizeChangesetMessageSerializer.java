@@ -65,6 +65,7 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
             result.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
             result.put("repository", payload.getRepository().getId());
             result.put("softSync", payload.isSoftSync());
+            result.put("syncAuditId", payload.getSyncAuditId());
             return result.toString();
 
         } catch (JSONException e)
@@ -87,6 +88,7 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
         Date refreshAfterSynchronizedAt;
         Progress progress;
         boolean softSync;
+        int syncAuditId = 0;
 
         try
         {
@@ -97,6 +99,7 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
             node = result.getString("node");
             refreshAfterSynchronizedAt = getDateFormat().parse(result.getString("refreshAfterSynchronizedAt"));
             softSync = result.getBoolean("softSync");
+            syncAuditId = result.optInt("syncAuditId");
 
             progress = synchronizer.getProgress(repository.getId());
             if (progress == null || progress.isFinished())
@@ -114,7 +117,7 @@ public class SynchronizeChangesetMessageSerializer implements MessagePayloadSeri
 
         }
 
-        return new SynchronizeChangesetMessage(repository, branch, node, refreshAfterSynchronizedAt, progress, softSync);
+        return new SynchronizeChangesetMessage(repository, branch, node, refreshAfterSynchronizedAt, progress, softSync, syncAuditId);
     }
 
     /**

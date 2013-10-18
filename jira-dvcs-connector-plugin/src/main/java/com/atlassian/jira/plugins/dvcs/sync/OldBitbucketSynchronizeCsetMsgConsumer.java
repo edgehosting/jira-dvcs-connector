@@ -55,7 +55,7 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
                 parentChangesetNode, //
                 payload.getRefreshAfterSynchronizedAt(), //
                 payload.getProgress(), payload.getNewHeads() //
-                , payload.isSoftSync()
+                , payload.isSoftSync(), payload.getSyncAuditId()
         );
     }
 

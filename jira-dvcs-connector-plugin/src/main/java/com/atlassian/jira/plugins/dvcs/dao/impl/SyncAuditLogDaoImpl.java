@@ -216,7 +216,11 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                     return callable.call();
                 } catch (Throwable e)
                 {
-                    log.warn("Error during sync audit log.", e);
+                    log.warn("Problem during sync audit log. " + e.getMessage());
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Sync audit log.", e);
+                    }
                     return null;
                 }
             }

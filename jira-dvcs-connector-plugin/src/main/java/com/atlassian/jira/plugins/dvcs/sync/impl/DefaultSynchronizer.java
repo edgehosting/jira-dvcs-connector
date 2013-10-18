@@ -123,18 +123,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     {
                         // sync csets
                         BranchFilterInfo filterNodes = getFilterNodes(repo);
-                        processBitbucketSync(repo, softSync, filterNodes);
+                        processBitbucketCsetSync(repo, softSync, filterNodes);
                         updateBranchHeads(repo, filterNodes.newHeads, filterNodes.oldHeads);
                     }
                     // sync pull requests
                     if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
                     {
-                        MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
-                                BitbucketSynchronizeActivityMessage.class, //
-                                BitbucketSynchronizeActivityMessageConsumer.KEY //
-                                );
-                        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync()),
-                                messagingService.getTagForSynchronization(repo));
+                        processBitbucketPrSync(repo, softSync);
                     }
 
                 } else
@@ -147,7 +142,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                             SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
                                     branchHead.getName(), branchHead.getHead(), //
                                     synchronizationStartedAt, //
-                                    null, softSync);
+                                    null, softSync, 0);
                             MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                                     SynchronizeChangesetMessage.class, //
                                     GithubSynchronizeChangesetMessageConsumer.KEY //
@@ -197,7 +192,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return progress != null && !progress.isFinished();
     }
 
-    private void processBitbucketSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
+    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
     {
         List<BranchHead> newBranchHeads = filterNodes.newHeads;
 
@@ -210,7 +205,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
                         branchHead.getName(), branchHead.getHead(), //
                         synchronizationStartedAt, //
-                        null, newBranchHeads, softSync);
+                        null, newBranchHeads, softSync, 0);
                 MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
@@ -230,10 +225,20 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             Date synchronizationStartedAt = new Date();
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync);
+                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync, 0);
 
             messagingService.publish(key, message, UUID.randomUUID().toString());
         }
+    }
+
+    protected void processBitbucketPrSync(Repository repo, boolean softSync)
+    {
+        MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
+                BitbucketSynchronizeActivityMessage.class, //
+                BitbucketSynchronizeActivityMessageConsumer.KEY //
+                );
+        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), 0),
+                messagingService.getTagForSynchronization(repo));
     }
 
     private Collection<String> getInclude(BranchFilterInfo filterNodes)

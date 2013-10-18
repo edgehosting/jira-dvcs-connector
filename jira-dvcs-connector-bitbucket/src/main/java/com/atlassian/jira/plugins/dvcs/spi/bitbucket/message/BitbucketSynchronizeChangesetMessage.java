@@ -8,7 +8,7 @@ import java.util.Map;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
 
 /**
  * Message which is fired when a changeset should be synchronized.
@@ -17,7 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
  * @author Stanislav Dvorscak
  *
  */
-public class BitbucketSynchronizeChangesetMessage implements Serializable, HasProgress
+public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMessage implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
@@ -25,8 +25,6 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable, HasPr
     private final Repository repository;
 
     private Date refreshAfterSynchronizedAt;
-
-    private Progress progress;
 
     private List<BranchHead> newHeads;
 
@@ -39,18 +37,18 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable, HasPr
     private boolean softSync;
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, boolean softSync)
+            Progress progress, boolean softSync, int syncAuditId)
     {
-        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null, softSync);
+        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null, softSync, syncAuditId);
         this.softSync = softSync;
     }
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches, boolean softSync)
+            Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches, boolean softSync, int syncAuditId)
     {
+        super(progress, syncAuditId);
         this.repository = repository;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
-        this.progress = progress;
         this.newHeads = newHeads;
         this.exclude = exclude;
         this.page = page;
@@ -65,11 +63,6 @@ public class BitbucketSynchronizeChangesetMessage implements Serializable, HasPr
     public Date getRefreshAfterSynchronizedAt()
     {
         return refreshAfterSynchronizedAt;
-    }
-
-    public Progress getProgress()
-    {
-        return progress;
     }
 
     public List<String> getExclude()

@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
 
 /**
  * Message which is fired when a changeset should be synchronized.
@@ -14,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
  * @author Stanislav Dvorscak
  *
  */
-public class SynchronizeChangesetMessage implements Serializable, HasProgress
+public class SynchronizeChangesetMessage extends BaseProgressEnabledMessage implements Serializable
 {
 
     /**
@@ -42,10 +42,6 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
      */
     private Date refreshAfterSynchronizedAt;
 
-    /**
-     * @see #getProgress()
-     */
-    private Progress progress;
 
     private boolean softSync;
 
@@ -65,13 +61,13 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
      *            {@link #getSynchronizationTag()}
      */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, boolean softSync)
+            Progress progress, boolean softSync, int syncAuditId)
     {
+        super(progress, syncAuditId);
         this.repository = repository;
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
-        this.progress = progress;
         this.softSync = softSync;
     }
 
@@ -107,13 +103,6 @@ public class SynchronizeChangesetMessage implements Serializable, HasProgress
         return refreshAfterSynchronizedAt;
     }
 
-    /**
-     * @return progress of synchronization
-     */
-    public Progress getProgress()
-    {
-        return progress;
-    }
 
     public boolean isSoftSync()
     {

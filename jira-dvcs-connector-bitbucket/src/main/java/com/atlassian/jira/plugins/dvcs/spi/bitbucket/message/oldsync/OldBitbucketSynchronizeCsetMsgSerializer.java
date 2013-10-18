@@ -82,6 +82,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
                 }
             }));
             result.put("softSync", payload.isSoftSync());
+            result.put("syncAuditId", payload.getSyncAuditId());
             return result.toString();
 
         } catch (JSONException e)
@@ -105,6 +106,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
         Progress progress;
         List<BranchHead> newHeads;
         boolean softSync;
+        int syncAuditId = 0;
 
         try
         {
@@ -116,6 +118,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
             refreshAfterSynchronizedAt = getDateFormat().parse(result.getString("refreshAfterSynchronizedAt"));
             newHeads = toBranchHeads(result.optJSONArray("newHeads"));
             softSync = result.getBoolean("softSync");
+            syncAuditId = result.optInt("syncAuditId");
             new Function<String, BranchHead>()
             {
                 @Override
@@ -142,7 +145,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer implements MessagePayloadS
 
         }
 
-        return new OldBitbucketSynchronizeCsetMsg(repository, branch, node, refreshAfterSynchronizedAt, progress, newHeads, softSync);
+        return new OldBitbucketSynchronizeCsetMsg(repository, branch, node, refreshAfterSynchronizedAt, progress, newHeads, softSync, syncAuditId);
     }
 
     private List<BranchHead> toBranchHeads(JSONArray optJSONArray)
