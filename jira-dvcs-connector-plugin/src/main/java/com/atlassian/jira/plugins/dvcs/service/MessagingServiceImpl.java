@@ -498,7 +498,7 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public String getTagForSynchronization(Repository repository)
     {
-        return "repo-" + repository.getSlug();
+        return "synchronization-repository-" + repository.getSlug();
     }
 
     /**
