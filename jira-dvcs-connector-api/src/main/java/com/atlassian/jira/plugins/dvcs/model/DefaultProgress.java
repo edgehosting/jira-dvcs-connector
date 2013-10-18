@@ -51,9 +51,6 @@ public class DefaultProgress implements Progress
     private boolean shouldStop = false;
 
     @XmlTransient
-    private boolean shouldCancel;
-
-    @XmlTransient
     private int auditLogId;
 
     public DefaultProgress()
@@ -119,6 +116,7 @@ public class DefaultProgress implements Progress
         return synchroErrorCount;
     }
 
+    @Override
     public void setError(String error)
     {
         this.error = error;
@@ -216,18 +214,6 @@ public class DefaultProgress implements Progress
     public void setAdminPermission(boolean hasAdminPermission)
     {
         this.hasAdminPermission = hasAdminPermission;
-    }
-
-    @Override
-    public boolean isShouldCancel()
-    {
-        return this.shouldCancel;
-    }
-
-    @Override
-    public void setShouldCancel(boolean cancelled)
-    {
-        this.shouldCancel = cancelled;
     }
 
     public int getAuditLogId()

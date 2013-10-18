@@ -434,8 +434,7 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());
             // we need tip changeset of the branch
-            
-            return Collections.emptyList();
+            throw new SourceControlException("Could not retrieve list of branches", e);
         }
         return branches;
     }

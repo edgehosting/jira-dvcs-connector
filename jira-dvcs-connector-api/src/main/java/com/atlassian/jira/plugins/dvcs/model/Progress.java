@@ -65,8 +65,6 @@ public interface Progress
 	 */
 	boolean isShouldStop();
 
-	boolean isShouldCancel();
-
     /**
      * Call this method to update the current status of the pull request progress.
      *
@@ -81,8 +79,6 @@ public interface Progress
      * @param finished
      */
     void setFinished(boolean finished);
-
-    void setShouldCancel(boolean cancelled);
 
     /**
      * Indication that the repository has administration permission
@@ -111,4 +107,6 @@ public interface Progress
      * @param smartCommitErrors
      */
     void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors);
+
+    void setError(String error);
 }
