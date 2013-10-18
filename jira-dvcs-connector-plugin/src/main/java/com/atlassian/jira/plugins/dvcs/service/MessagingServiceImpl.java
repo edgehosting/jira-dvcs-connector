@@ -40,9 +40,9 @@ import com.google.common.collect.Sets;
 
 /**
  * A {@link MessagingService} implementation.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class MessagingServiceImpl implements MessagingService
 {
@@ -498,12 +498,12 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public String getTagForSynchronization(Repository repository)
     {
-        return "synchronization for repository: " + repository.getSlug();
+        return "synchronization-repository-" + repository.getSlug();
     }
 
     /**
      * Re-maps provided {@link Message} to parameters.
-     * 
+     *
      * @param source
      *            of mapping
      * @return mapped entity
@@ -526,7 +526,7 @@ public class MessagingServiceImpl implements MessagingService
 
     /**
      * Re-maps provided {@link MessageMapping} to {@link Message}.
-     * 
+     *
      * @param target
      *            of mapping
      * @param source
@@ -572,7 +572,7 @@ public class MessagingServiceImpl implements MessagingService
 
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.
-     * 
+     *
      * @param messageId
      *            {@link Message#getId()}
      * @param queue

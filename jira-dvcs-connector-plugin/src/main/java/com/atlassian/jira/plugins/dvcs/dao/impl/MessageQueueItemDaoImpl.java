@@ -9,6 +9,7 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
@@ -26,6 +27,12 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  */
 public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 {
+    
+    /**
+     * Injected {@link QueryHelper} dependency.
+     */
+    @Resource
+    private QueryHelper queryHelper;
 
     /**
      * Injected {@link ActiveObjects} dependency.
@@ -194,7 +201,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
                 ));
 
-                order(orderBy(column(MessageMapping.class, MessageMapping.PRIORITY), false));
+                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(MessageMapping.PRIORITY)), false));
             }
 
         }.toQuery(MapBuilder.<String, Object> build("address", address, "queue", queue, "state", MessageState.PENDING));

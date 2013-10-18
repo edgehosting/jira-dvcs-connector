@@ -93,10 +93,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
         for (Changeset changeset : allOrLatestChangesets)
         {
-        	if (progress.isShouldStop())
+        	/*if (progress.isShouldStop())
         	{
         		return;
-        	}
+        	}*/
 
         	if (changeset == null)
         	{
