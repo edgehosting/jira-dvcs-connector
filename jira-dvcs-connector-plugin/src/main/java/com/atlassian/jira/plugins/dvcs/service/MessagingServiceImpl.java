@@ -47,6 +47,8 @@ import com.google.common.collect.Sets;
 public class MessagingServiceImpl implements MessagingService
 {
 
+    private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
+
     /**
      * Logger for this class.
      */
@@ -498,7 +500,25 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public String getTagForSynchronization(Repository repository)
     {
-        return "synchronization-repository-" + repository.getSlug();
+        return SYNCHRONIZATION_REPO_TAG_PREFIX + repository.getSlug();
+    }
+
+    private int repoId(int messageId, MessageTagMapping[] tags)
+    {
+        for (MessageTagMapping tag : tags)
+        {
+            if (SYNCHRONIZATION_REPO_TAG_PREFIX.equals(tag.getTag()))
+            {
+                try
+                {
+                    return Integer.parseInt(tag.getTag().substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length() + 1));
+                } catch (NumberFormatException e)
+                {
+                    throw new RuntimeException("Can't get repository id from tags for message with ID " + messageId, e);
+                }
+            }
+        }
+        throw new RuntimeException("Can't get repository id from tags for message with ID " + messageId);
     }
 
     /**
@@ -554,7 +574,7 @@ public class MessagingServiceImpl implements MessagingService
 
         target.setId(source.getID());
         target.setAddress(get(payloadType, source.getAddress()));
-        target.setPayload(payloadSerializer.deserialize(source.getPayload()));
+        target.setPayload(payloadSerializer.deserialize(source.getID(), source.getPayload(), repoId(source.getID(), source.getTags())));
         target.setPayloadType(payloadType);
         target.setPriority(source.getPriority());
         target.setTags(Iterables.toArray(Iterables.transform(Arrays.asList(source.getTags()), new Function<MessageTagMapping, String>()
@@ -569,6 +589,7 @@ public class MessagingServiceImpl implements MessagingService
         }), String.class));
         target.setRetriesCount(retriesCount);
     }
+
 
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.

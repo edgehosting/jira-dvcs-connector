@@ -14,9 +14,6 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
 
     private static final long serialVersionUID = -4361088769277502144L;
 
-    private boolean softSync;
-
-    private Repository repository;
     private Set<Integer> processedPullRequests;
     private Set<Integer> processedPullRequestsLocal;
     private Date lastSyncDate;
@@ -32,9 +29,7 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
                                                Date lastSyncDate,
                                                int syncAuditId)
     {
-        super(progress, syncAuditId);
-        this.repository = repository;
-        this.softSync = softSync;
+        super(progress, syncAuditId, softSync, repository);
         this.pageNum = pageNum;
         this.processedPullRequests = processedPullRequests;
         this.processedPullRequestsLocal = processedPullRequestsLocal;
@@ -44,16 +39,6 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
     public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate, int syncAuditId)
     {
         this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate, syncAuditId);
-    }
-
-    public Repository getRepository()
-    {
-        return repository;
-    }
-
-    public boolean isSoftSync()
-    {
-        return softSync;
     }
 
     public Set<Integer> getProcessedPullRequests()

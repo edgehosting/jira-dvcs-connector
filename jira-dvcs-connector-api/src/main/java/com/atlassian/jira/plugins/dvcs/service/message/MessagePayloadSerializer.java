@@ -2,9 +2,9 @@ package com.atlassian.jira.plugins.dvcs.service.message;
 
 /**
  * Serializer/Unserializer of provided message payload.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  * @param <P>
  *            type of message
  */
@@ -23,7 +23,7 @@ public interface MessagePayloadSerializer<P extends HasProgress>
      *            serialized version of message payload
      * @return deserialized message
      */
-    P deserialize(String payload);
+    P deserialize(int messageId, String payload, int repoId);
 
     /**
      * @return type of payload

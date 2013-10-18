@@ -1,17 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.message;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
 /**
@@ -20,121 +14,41 @@ import com.atlassian.jira.util.json.JSONObject;
  * @author Stanislav Dvorscak
  *
  */
-public class SynchronizeChangesetMessageSerializer implements MessagePayloadSerializer<SynchronizeChangesetMessage>
+public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<SynchronizeChangesetMessage>
 {
 
-    /**
-     * @see #setRepositoryService(RepositoryService)
-     */
-    private RepositoryService repositoryService;
-
-    /**
-     * @see #setSynchronizer(Synchronizer)
-     */
-    private Synchronizer synchronizer;
-
-    /**
-     * @param repositoryService
-     *            injected {@link RepositoryService} dependency
-     */
-    public void setRepositoryService(RepositoryService repositoryService)
+    public SynchronizeChangesetMessageSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
     {
-        this.repositoryService = repositoryService;
+        super(repositoryService, synchronizer);
     }
 
-    /**
-     * @param synchronizer
-     *            injected {@link Synchronizer} dependency
-     */
-    public void setSynchronizer(Synchronizer synchronizer)
-    {
-        this.synchronizer = synchronizer;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public String serialize(SynchronizeChangesetMessage payload)
+    protected void serializeInternal(JSONObject json, SynchronizeChangesetMessage payload) throws Exception
     {
-        try
-        {
-            JSONObject result = new JSONObject();
-            result.put("branch", payload.getBranch());
-            result.put("node", payload.getNode());
-            result.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
-            result.put("repository", payload.getRepository().getId());
-            result.put("softSync", payload.isSoftSync());
-            result.put("syncAuditId", payload.getSyncAuditId());
-            return result.toString();
-
-        } catch (JSONException e)
-        {
-            throw new RuntimeException(e);
-
-        }
-
+        json.put("branch", payload.getBranch());
+        json.put("node", payload.getNode());
+        json.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public SynchronizeChangesetMessage deserialize(String payload)
+    protected SynchronizeChangesetMessage deserializeInternal(JSONObject json) throws Exception
     {
-        Repository repository;
         String branch;
         String node;
         Date refreshAfterSynchronizedAt;
-        Progress progress;
-        boolean softSync;
-        int syncAuditId = 0;
 
-        try
-        {
-            JSONObject result = new JSONObject(payload);
+        branch = json.getString("branch");
+        node = json.getString("node");
+        refreshAfterSynchronizedAt = getDateFormat().parse(json.getString("refreshAfterSynchronizedAt"));
 
-            repository = repositoryService.get(result.getInt("repository"));
-            branch = result.getString("branch");
-            node = result.getString("node");
-            refreshAfterSynchronizedAt = getDateFormat().parse(result.getString("refreshAfterSynchronizedAt"));
-            softSync = result.getBoolean("softSync");
-            syncAuditId = result.optInt("syncAuditId");
-
-            progress = synchronizer.getProgress(repository.getId());
-            if (progress == null || progress.isFinished())
-            {
-                synchronizer.putProgress(repository, progress = new DefaultProgress());
-            }
-
-        } catch (JSONException e)
-        {
-            throw new RuntimeException(e);
-
-        } catch (ParseException e)
-        {
-            throw new RuntimeException(e);
-
-        }
-
-        return new SynchronizeChangesetMessage(repository, branch, node, refreshAfterSynchronizedAt, progress, softSync, syncAuditId);
+        return new SynchronizeChangesetMessage(null, branch, node, refreshAfterSynchronizedAt, null, false, 0);
     }
 
-    /**
-     * @return date formatter
-     */
-    private DateFormat getDateFormat()
-    {
-        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Class<SynchronizeChangesetMessage> getPayloadType()
     {
         return SynchronizeChangesetMessage.class;
     }
+
 
 }

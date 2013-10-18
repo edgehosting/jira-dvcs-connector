@@ -22,8 +22,6 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
 
     private static final long serialVersionUID = 1L;
 
-    private final Repository repository;
-
     private Date refreshAfterSynchronizedAt;
 
     private List<BranchHead> newHeads;
@@ -34,30 +32,21 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
 
     private Map<String, String> nodesToBranches;
 
-    private boolean softSync;
-
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
             Progress progress, boolean softSync, int syncAuditId)
     {
         this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null, softSync, syncAuditId);
-        this.softSync = softSync;
     }
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
             Progress progress, List<BranchHead> newHeads, List<String> exclude, int page, Map<String, String> nodesToBranches, boolean softSync, int syncAuditId)
     {
-        super(progress, syncAuditId);
-        this.repository = repository;
+        super(progress, syncAuditId, softSync, repository);
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.newHeads = newHeads;
         this.exclude = exclude;
         this.page = page;
         this.nodesToBranches = nodesToBranches;
-    }
-
-    public Repository getRepository()
-    {
-        return repository;
     }
 
     public Date getRefreshAfterSynchronizedAt()
@@ -83,11 +72,6 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
     public Map<String, String> getNodesToBranches()
     {
         return nodesToBranches;
-    }
-
-    public boolean isSoftSync()
-    {
-        return softSync;
     }
 
 }

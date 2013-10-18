@@ -17,95 +17,36 @@ import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessag
 public class SynchronizeChangesetMessage extends BaseProgressEnabledMessage implements Serializable
 {
 
-    /**
-     * Serial version id.
-     */
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @see #getRepository()
-     */
-    private final Repository repository;
-
-    /**
-     * @see #getBranch()
-     */
     private final String branch;
 
-    /**
-     * @see #getNode()
-     */
     private final String node;
 
-    /**
-     * @see #getRefreshAfterSynchronizedAt()
-     */
     private Date refreshAfterSynchronizedAt;
 
-
-    private boolean softSync;
-
-    /**
-     * Constructor.
-     *
-     * @param repository
-     *            {@link #getRepository()}
-     * @param branch
-     * @param node
-     *            {@link #getNode()}
-     * @param refreshAfterSynchronizedAt
-     *            {@link #getRefreshAfterSynchronizedAt()}
-     * @param progress
-     *            {@link #getProgress()}
-     * @param synchronizationTag
-     *            {@link #getSynchronizationTag()}
-     */
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
             Progress progress, boolean softSync, int syncAuditId)
     {
-        super(progress, syncAuditId);
-        this.repository = repository;
+        super(progress, syncAuditId, softSync, repository);
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
-        this.softSync = softSync;
     }
 
-    /**
-     * @return Repository owner of changeset.
-     */
-    public Repository getRepository()
-    {
-        return repository;
-    }
-
-    /**
-     * @return Branch of node.
-     */
     public String getBranch()
     {
         return branch;
     }
 
-    /**
-     * @return Changeset identity.
-     */
     public String getNode()
     {
         return node;
     }
 
-    /**
-     * @return Date when changeset should be resynchronized if last synchronization is after this date.
-     */
     public Date getRefreshAfterSynchronizedAt()
     {
         return refreshAfterSynchronizedAt;
     }
 
-
-    public boolean isSoftSync()
-    {
-        return softSync;
-    }
 }
