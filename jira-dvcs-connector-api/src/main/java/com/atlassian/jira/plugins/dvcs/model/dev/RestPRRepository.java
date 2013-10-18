@@ -8,11 +8,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class RestPRRepository extends RestRepository
+public class RestPrRepository extends RestRepository
 {
     private List<RestPullRequest> pullRequests;
 
-    public RestPRRepository()
+    public RestPrRepository()
     {
     }
 

@@ -14,7 +14,7 @@ public class RestPullRequest
 {
     private RestAuthor author;
     private long createdOn;
-    private long updateOn;
+    private long updatedOn;
     private long id;
     private String title;
     private String url;
@@ -82,14 +82,14 @@ public class RestPullRequest
         this.status = status;
     }
 
-    public long getUpdateOn()
+    public long getUpdatedOn()
     {
-        return updateOn;
+        return updatedOn;
     }
 
-    public void setUpdateOn(final long updateOn)
+    public void setUpdatedOn(final long updatedOn)
     {
-        this.updateOn = updateOn;
+        this.updatedOn = updatedOn;
     }
 
     public RestRef getSource()

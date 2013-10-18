@@ -48,6 +48,11 @@ public class PullRequestTransformer
 
     private String createRepositoryUrl(String hostUrl, String repositoryLabel)
     {
+        if (repositoryLabel == null)
+        {
+            // the fork repository was deleted
+            return null;
+        }
         // normalize
         if (hostUrl != null && hostUrl.endsWith("/"))
         {
@@ -58,6 +63,6 @@ public class PullRequestTransformer
 
     private String createRepositoryLabel(Repository repository)
     {
-        return repository.getOwner() + "/" + repository.getSlug();
+        return repository.getOrgName() + "/" + repository.getSlug();
     }
 }
