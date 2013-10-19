@@ -94,6 +94,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         {
             if (!softSync)
             {
+                //TODO This will deleted both changeset and PR messages, we should distinguish between them
+                // Stopping synchronization to delete failed messages for repository
+                stopSynchronization(repo);
                 if (changestesSync)
                 {
                     // we are doing full sync, lets delete all existing changesets
