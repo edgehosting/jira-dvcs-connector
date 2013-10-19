@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
@@ -353,7 +354,7 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/target/test-classes/jira-home-mysql</dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-mysql-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
@@ -399,7 +400,7 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/target/test-classes/jira-home-postgres</dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-postgres-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
