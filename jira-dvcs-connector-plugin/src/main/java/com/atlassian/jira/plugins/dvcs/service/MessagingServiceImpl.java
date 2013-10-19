@@ -1,22 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -37,6 +20,22 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -197,7 +196,7 @@ public class MessagingServiceImpl implements MessagingService
             public void callback(MessageQueueItemMapping e)
             {
                 Message<HasProgress> message = new Message<HasProgress>();
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings ("unchecked")
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
@@ -500,18 +499,18 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public String getTagForSynchronization(Repository repository)
     {
-        return SYNCHRONIZATION_REPO_TAG_PREFIX + repository.getSlug();
+        return SYNCHRONIZATION_REPO_TAG_PREFIX + repository.getId();
     }
 
     private int repoId(int messageId, MessageTagMapping[] tags)
     {
         for (MessageTagMapping tag : tags)
         {
-            if (SYNCHRONIZATION_REPO_TAG_PREFIX.equals(tag.getTag()))
+            if (StringUtils.startsWith(tag.getTag(), SYNCHRONIZATION_REPO_TAG_PREFIX))
             {
                 try
                 {
-                    return Integer.parseInt(tag.getTag().substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length() + 1));
+                    return Integer.parseInt(tag.getTag().substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length()));
                 } catch (NumberFormatException e)
                 {
                     throw new RuntimeException("Can't get repository id from tags for message with ID " + messageId, e);
