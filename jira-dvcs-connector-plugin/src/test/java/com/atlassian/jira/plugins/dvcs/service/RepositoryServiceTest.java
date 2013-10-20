@@ -3,7 +3,10 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.mockito.ArgumentMatcher;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -15,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
@@ -33,7 +37,7 @@ public class RepositoryServiceTest
 
 	@Mock
 	private RepositoryDao repositoryDao;
-	
+
 	@Mock
 	private RepositoryActivityDao repositoryActivityDao;
 
@@ -54,25 +58,30 @@ public class RepositoryServiceTest
 
 	@Mock
 	private PluginSettingsFactory settings;
-	
+
 	@Mock
     private RepositoryActivitySynchronizer activitySyncerMock;
 
+	@Mock
+	private PostponeOndemandPrSyncListener posponePrSyncHelper;
+
+	@Mock
+	private Synchronizer synchroizerMock;
+
 	// tested object
-	private RepositoryService repositoryService;
+	//private RepositoryService repositoryService;
+	@InjectMocks RepositoryService repositoryService = new RepositoryServiceImpl();
 
 	public RepositoryServiceTest()
 	{
 		super();
 	}
 
-	@BeforeMethod
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-		repositoryService = new RepositoryServiceImpl(dvcsCommunicatorProvider, repositoryDao, repositoryActivityDao, synchronizer,
-				changesetService, branchService, applicationProperties, settings, activitySyncerMock);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
 
 	@Test
 	public void testDisableRepository()
@@ -232,6 +241,7 @@ public class RepositoryServiceTest
 
 		Mockito.verify(changesetService).removeAllInRepository(8);
 		Mockito.verify(repositoryDao).remove(8);
+		Mockito.verify(repositoryActivityDao).removeAll(sampleRepository);
 	}
 
 	@Test

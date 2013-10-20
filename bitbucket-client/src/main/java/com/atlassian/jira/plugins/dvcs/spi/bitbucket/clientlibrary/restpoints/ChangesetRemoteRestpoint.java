@@ -1,12 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -16,11 +19,23 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * ChangesetRemoteRestpoint
- * 
+ *
  * @author Martin Skurla mskurla@atlassian.com
  */
 public class ChangesetRemoteRestpoint
 {
+    private static final ResponseCallback<BitbucketChangesetPage> BITBUCKET_CHANGESETS_PAGE_RESPONSE = new ResponseCallback<BitbucketChangesetPage>()
+    {
+
+        @Override
+        public BitbucketChangesetPage onResponse(RemoteResponse response)
+        {
+            return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
+            {
+            }.getType());
+        }
+
+    };
     private final RemoteRequestor requestor;
 
     public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor)
@@ -93,4 +108,23 @@ public class ChangesetRemoteRestpoint
             }
         };
     }
+
+    public BitbucketChangesetPage getChangesetsForPage(final int page, final String owner, final String slug,
+            final int changesetsLimit, final List<String> includeNodes, final List<String> excludeNodes)
+    {
+        String url = String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s&page=%s", owner, slug, changesetsLimit, page);
+        Map<String, Object> parameters = new HashMap<String, Object>();
+
+        if (includeNodes != null)
+        {
+            parameters.put("include", new ArrayList<String>(includeNodes));
+        }
+
+        if (excludeNodes != null)
+        {
+            parameters.put("exclude", new ArrayList<String>(excludeNodes));
+        }
+        return requestor.post(url, null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+    }
+
 }

@@ -1,22 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-
+    
     private int id;
+    
+    private Date synchronizedAt;
+
     // the main repository
     private int repositoryId;
-    // list of all repositories the changeset is in
-    private List<Integer> repositoryIds;
     private String node;
+      // list of all repositories the changeset is in
+    private List<Integer> repositoryIds;
     private String rawAuthor;
     private String author;
     private Date date;
@@ -56,6 +59,16 @@ public class Changeset
         this.allFileCount = allFileCount;
         this.authorEmail = authorEmail;
     }
+    
+    public Date getSynchronizedAt()
+    {
+        return synchronizedAt;
+    }
+    
+    public void setSynchronizedAt(Date synchronizedAt)
+    {
+        this.synchronizedAt = synchronizedAt;
+    }
 
     public int getRepositoryId()
     {
@@ -65,16 +78,6 @@ public class Changeset
     public void setRepositoryId(int repositoryId)
     {
         this.repositoryId = repositoryId;
-    }
-
-    public List<Integer> getRepositoryIds()
-    {
-        return repositoryIds;
-    }
-
-    public void setRepositoryIds(final List<Integer> repositoryIds)
-    {
-        this.repositoryIds = repositoryIds;
     }
 
     public String getNode()
@@ -87,7 +90,16 @@ public class Changeset
         this.node = node;
     }
 
+    public List<Integer> getRepositoryIds()
+    {
+        return repositoryIds;
+    }
 
+    public void setRepositoryIds(final List<Integer> repositoryIds)
+    {
+        this.repositoryIds = repositoryIds;
+    }
+    
     public String getRawAuthor()
     {
         return rawAuthor;

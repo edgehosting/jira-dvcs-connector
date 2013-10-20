@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.dao;
 import java.util.List;
 import java.util.Set;
 
+import net.java.ao.Entity;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 
@@ -98,6 +100,6 @@ public interface ChangesetDao
         /**
          * @param changeset
          */
-        void execute(Changeset changeset);
+        void execute(Entity changeset);
     }
 }

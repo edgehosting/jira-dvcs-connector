@@ -1,19 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -27,7 +32,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -56,64 +60,33 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
             new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
 
-    /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
 
-    /** The repository dao. */
-    private final RepositoryDao repositoryDao;
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
-    /**
-     * Injected {@link RepositoryActivityDao} dependency.
-     */
-    private final RepositoryActivityDao repositoryActivityDao;
+    @Resource
+    private RepositoryDao repositoryDao;
 
-    /** The synchronizer. */
-    private final Synchronizer synchronizer;
+    @Resource
+    private RepositoryActivityDao repositoryActivityDao;
 
-    /** The changeset service. */
-    private final ChangesetService changesetService;
+    @Resource
+    private Synchronizer synchronizer;
 
-    /** The branch service. */
-    private final BranchService branchService;
+    @Resource
+    private ChangesetService changesetService;
 
-    /** The application properties. */
-    private final ApplicationProperties applicationProperties;
+    @Resource
+    private BranchService branchService;
 
-    private final PluginSettingsFactory pluginSettingsFactory;
+    @Resource
+    private ApplicationProperties applicationProperties;
 
-    private final RepositoryActivitySynchronizer activitySynchronizer;
+    @Resource
+    private PluginSettingsFactory pluginSettingsFactory;
 
-    /**
-     * The Constructor.
-     *
-     * @param communicatorProvider
-     *            the communicator provider
-     * @param repositoryDao
-     *            the repository dao
-     * @param repositoryActivityDao
-     *            injected {@link RepositoryActivityDao} dependency
-     * @param synchronizer
-     *            the synchronizer
-     * @param changesetService
-     *            the changeset service
-     * @param applicationProperties
-     *            the application properties
-     */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao,
-            RepositoryActivityDao repositoryActivityDao, Synchronizer synchronizer, ChangesetService changesetService, BranchService branchService,
-            ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory,
-            @Qualifier("delegatingRepositoryActivitySynchronizer") RepositoryActivitySynchronizer activitySynchronizer)
-    {
-        this.communicatorProvider = communicatorProvider;
-        this.repositoryDao = repositoryDao;
-        this.repositoryActivityDao = repositoryActivityDao;
-        this.branchService = branchService;
-        this.synchronizer = synchronizer;
-        this.changesetService = changesetService;
-        this.applicationProperties = applicationProperties;
-        this.pluginSettingsFactory = pluginSettingsFactory;
-        this.activitySynchronizer = activitySynchronizer;
-    }
+    @Resource
+    private ChangesetCache changesetCache;
 
     /**
      * {@inheritDoc}
@@ -221,7 +194,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes duplicated repositories.
-     * 
+     *
      * @param organization
      * @param storedRepositories
      */
@@ -315,7 +288,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Removes the deleted repositories.
-     * 
+     *
      * @param storedRepositories
      *            the stored repositories
      * @param remoteRepositories
@@ -341,7 +314,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * Updates existing repositories
      * - undelete existing deleted
      * - updates names.
-     * 
+     *
      * @param storedRepositories
      *            the stored repositories
      * @param remoteRepositories
@@ -370,7 +343,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Converts collection of repository objects into map where key is repository slug and value is repository object.
-     * 
+     *
      * @param repositories
      *            the repositories
      * @return the map< string, repository>
@@ -405,7 +378,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * synchronization of changesets in all repositories which are in given organization
-     * 
+     *
      * @param organizationId
      *            organizationId
      * @param flags
@@ -426,6 +399,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 // to disable smart commits on it, make sense
                 // in case when someone has just migrated
                 // repo to DVCS avoiding duplicate smart commits
+                flags.remove(SynchronizationFlag.SOFT_SYNC);
                 doSync(repository, flags);
             }
         }
@@ -436,18 +410,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      *
      * @param repository
      *            the repository
-     * @param flags
-     *            type/way of synchronization
+     * @param softSync
+     *            the soft sync
      */
     private void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
-        if (repository.isLinked())
-        {
-            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
-                    activitySynchronizer, flags);
-            synchronizer.synchronize(repository, synchronisationOperation, changesetService);
-        }
+        synchronizer.doSync(repository, flags);
     }
 
     /**
@@ -491,11 +459,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         {
             registration.setRepository(repository);
 
-            if (!linked)
-            {
-                synchronizer.stopSynchronization(repository);
-                synchronizer.removeProgress(repository);
-            }
+            // un/pause possible synchronization
+            synchronizer.pauseSynchronization(repository, !linked);
 
             repository.setLinked(linked);
 
@@ -564,7 +529,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * Gets the post commit url.
-     * 
+     *
      * @param repo
      *            the repo
      * @return the post commit url
@@ -580,12 +545,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
-        // we stop all synchronizations first to prevent starting a new redundant synchronization
-        for (Repository repository : repositories)
-        {
-            synchronizer.stopSynchronization(repository);
-        }
-
         for (Repository repository : repositories)
         {
             markForRemove(repository);
@@ -602,7 +561,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     private void markForRemove(Repository repository)
     {
-        synchronizer.removeProgress(repository);
+        // we stop all synchronizations first to prevent starting a new redundant synchronization
+    	synchronizer.stopSynchronization(repository);
         repository.setDeleted(true);
     }
 
@@ -612,7 +572,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void remove(Repository repository)
     {
-        synchronizer.stopSynchronization(repository);
         // try remove postcommit hook
         if (repository.isLinked())
         {
@@ -626,11 +585,13 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         branchService.removeAllBranchHeadsInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
+        // remove pull requests things
+        repositoryActivityDao.removeAll(repository);
     }
 
     /**
      * Removes the postcommit hook.
-     * 
+     *
      * @param repository
      *            the repository
      */
@@ -643,8 +604,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             communicator.removePostcommitHook(repository, postCommitUrl);
         } catch (Exception e)
         {
-            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
-                    + ", slug = " + repository.getRepositoryUrl(), e);
+            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+                            + repository.getRepositoryUrl(), e);
         }
     }
 

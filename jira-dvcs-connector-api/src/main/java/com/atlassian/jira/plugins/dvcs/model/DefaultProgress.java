@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultProgress implements Progress
 {
-    private volatile boolean shouldStop = false;
 
     @XmlAttribute
     private boolean finished = false;
@@ -27,7 +26,7 @@ public class DefaultProgress implements Progress
 
     @XmlAttribute
     private int pullRequestActivityCount = 0;
-    
+
     @XmlAttribute
     private int synchroErrorCount = 0;
 
@@ -46,8 +45,17 @@ public class DefaultProgress implements Progress
     @XmlTransient
     private boolean hasAdminPermission = true;
 
+    @XmlTransient
+    @Deprecated
+    // to be removed
+    private boolean shouldStop = false;
+
+    @XmlTransient
+    private int auditLogId;
+
     public DefaultProgress()
     {
+        super();
     }
 
     @Override
@@ -58,7 +66,7 @@ public class DefaultProgress implements Progress
         this.jiraCount = jiraCount;
         this.synchroErrorCount = synchroErrorCount;
     }
-    
+
     @Override
     public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
     {
@@ -77,6 +85,7 @@ public class DefaultProgress implements Progress
         smartCommitErrors.clear();
     }
 
+    @Override
     public void finish()
     {
         finishTime = System.currentTimeMillis();
@@ -94,7 +103,7 @@ public class DefaultProgress implements Progress
     {
         return jiraCount;
     }
-    
+
     @Override
     public int getPullRequestActivityCount()
     {
@@ -107,6 +116,7 @@ public class DefaultProgress implements Progress
         return synchroErrorCount;
     }
 
+    @Override
     public void setError(String error)
     {
         this.error = error;
@@ -164,7 +174,7 @@ public class DefaultProgress implements Progress
     {
         this.pullRequestActivityCount = pullRequestActivityCount;
     }
-    
+
     public void setSynchroErrorCount(int synchroErrorCount)
     {
         this.synchroErrorCount = synchroErrorCount;
@@ -204,5 +214,15 @@ public class DefaultProgress implements Progress
     public void setAdminPermission(boolean hasAdminPermission)
     {
         this.hasAdminPermission = hasAdminPermission;
+    }
+
+    public int getAuditLogId()
+    {
+        return auditLogId;
+    }
+
+    public void setAuditLogId(int auditLogId)
+    {
+        this.auditLogId = auditLogId;
     }
 }

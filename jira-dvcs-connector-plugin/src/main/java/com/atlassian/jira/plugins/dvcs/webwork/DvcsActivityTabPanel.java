@@ -1,10 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
-import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,93 +18,68 @@ import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityMapping;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
     private final Logger logger = LoggerFactory.getLogger(DvcsActivityTabPanel.class);
 
-    private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No commits found.");
+    private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No pull requests found.");
     private final PermissionManager permissionManager;
-    private final ChangesetService changesetService;
     private final RepositoryService repositoryService;
     private final RepositoryActivityDao activityDao;
-    private final IssueManager issueManager;
-    private final ChangeHistoryManager changeHistoryManager;
-
     private final IssueActionFactory issueActionFactory;
+    private final TemplateRenderer templateRenderer;
+    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     private static final Comparator<? super IssueAction> ISSUE_ACTION_COMPARATOR = new Comparator<IssueAction>()
     {
         @Override
         public int compare(IssueAction o1, IssueAction o2)
         {
+            DefaultIssueAction o1d = (DefaultIssueAction) o1;
+            DefaultIssueAction o2d = (DefaultIssueAction) o2;
             if (o1 == null || o1.getTimePerformed() == null)
                 return -1;
             if (o2 == null || o2.getTimePerformed() == null)
                 return 1;
-            return o1.getTimePerformed().compareTo(o2.getTimePerformed());
+            return new Integer(o1d.getId()).compareTo(o2d.getId());
         }
     };
 
-    public DvcsActivityTabPanel(PermissionManager permissionManager, ChangesetService changesetService,
+    public DvcsActivityTabPanel(PermissionManager permissionManager,
             RepositoryService repositoryService, RepositoryActivityDao activityDao,
-            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory,
-            IssueManager issueManager, ChangeHistoryManager changeHistoryManager)
+            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.permissionManager = permissionManager;
-        this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.activityDao = activityDao;
         this.issueActionFactory = issueActionFactory;
-        this.issueManager = issueManager;
-        this.changeHistoryManager = changeHistoryManager;
+        this.templateRenderer = templateRenderer;
+        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
     @Override
     public List<IssueAction> getActions(Issue issue, User user)
     {
         String issueKey = issue.getKey();
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
         List<IssueAction> issueActions = new ArrayList<IssueAction>();
 
-        try
-        {
-            List<RepositoryActivityMapping> activities = activityDao.getRepositoryActivityForIssue(issueKey);
-
-            for (RepositoryActivityMapping activity : activities)
-            {
-                logger.debug("found changeset [ {} ] on issue [ {} ]", activity.getID(), issueKey);
-                IssueAction issueAction = issueActionFactory.create(activity);
-                if (issueAction != null)
-                {
-                    issueActions.add(issueAction);
-                }
-            }
-
-            Set<String> issueKeys = SystemUtils.getAllIssueKeys(issueManager, changeHistoryManager, issue);
-
-            for (Changeset changeset : changesetService.getByIssueKey(issueKeys, false))
-            {
-                logger.debug("found changeset [ {} ] on issue [ {} ]", changeset.getNode(), issueKey);
-                IssueAction issueAction = issueActionFactory.create(changeset);
-                if (issueAction != null)
-                {
-                    issueActions.add(issueAction);
-                }
-            }
-
-        } catch (SourceControlException e)
-        {
-            logger.debug("Could not retrieve changeset for [ " + issueKey + " ]: " + e, e);
-        }
-
+        //
+        List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKeys);
+        Map<String, Object> ctxt = Maps.newHashMap(new  ImmutableMap.Builder<String, Object>().put("prs", prs).build());
+        issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
+        //
+        //
         if (issueActions.isEmpty())
         {
             issueActions.add(DEFAULT_MESSAGE);

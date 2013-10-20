@@ -18,6 +18,11 @@ public interface Progress
     void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
 
     /**
+     * Marks progress as finished.
+     */
+    void finish();
+
+    /**
      * @return true if the progress is Finished
      */
     boolean isFinished();
@@ -38,7 +43,7 @@ public interface Progress
     int getSynchroErrorCount();
 
     int getPullRequestActivityCount();
-    
+
 	/**
 	 * @return error messages
 	 */
@@ -47,15 +52,15 @@ public interface Progress
 	/**
 	 * Indication that the synchronisation should stop.
 	 * Used when repository is unlinked or organisation and its repositories are deleted.
-	 * 
+	 *
 	 * @param shouldStop
 	 */
 	void setShouldStop(boolean shouldStop);
 
 	/**
-	 * Indication that the synchronisation should stop 
+	 * Indication that the synchronisation should pause
 	 * Used when repository is unlinked or organisation and its repositories are deleted.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isShouldStop();
@@ -102,4 +107,6 @@ public interface Progress
      * @param smartCommitErrors
      */
     void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors);
+
+    void setError(String error);
 }

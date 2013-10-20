@@ -14,7 +14,6 @@ public class RestRepository
     private String slug;
     private String url;
     private String avatar;
-    private List<RestChangeset> commits;
     private Boolean fork;
     private RestRepository forkOf;
 
@@ -50,16 +49,6 @@ public class RestRepository
     public void setAvatar(final String avatar)
     {
         this.avatar = avatar;
-    }
-
-    public List<RestChangeset> getCommits()
-    {
-        return commits;
-    }
-
-    public void setCommits(final List<RestChangeset> commits)
-    {
-        this.commits = commits;
     }
 
     public Boolean isFork()

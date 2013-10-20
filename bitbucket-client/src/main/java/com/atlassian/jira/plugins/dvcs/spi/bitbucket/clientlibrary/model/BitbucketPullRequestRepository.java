@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 
 /**
- * 
+ *
  *
  * ...
  *        "pr_repo": {
@@ -10,17 +10,19 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  *            "slug": "hgrepoindahouse"
  *        },
  *     ...
- *    
- *    
+ *
+ *
  */
 public class BitbucketPullRequestRepository
 {
 
     private String owner;
-    
+
     private String slug;
-    
+
     private BitbucketPullRequestLinks links;
+
+    private String fullName;
 
     public BitbucketPullRequestRepository()
     {
@@ -55,6 +57,16 @@ public class BitbucketPullRequestRepository
     public void setLinks(BitbucketPullRequestLinks links)
     {
         this.links = links;
+    }
+
+    public String getFullName()
+    {
+        return fullName;
+    }
+
+    public void setFullName(String fullName)
+    {
+        this.fullName = fullName;
     }
 }
 

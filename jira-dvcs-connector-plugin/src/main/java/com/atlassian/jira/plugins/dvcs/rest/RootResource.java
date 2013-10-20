@@ -8,19 +8,26 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.PullRequest;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
@@ -28,9 +35,10 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-
+import com.google.common.collect.Multimaps;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -44,7 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -84,6 +92,8 @@ public class RootResource
 
     private final ChangesetService changesetService;
 
+    private final PullRequestService pullRequestService;
+
     private final AccountsConfigService ondemandAccountConfig;
 
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
@@ -94,14 +104,15 @@ public class RootResource
      * @param organizationService
      *            the organization service
      * @param repositoryService
-     *            the repository service
+     * @param pullRequestService
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService, ChangesetService changesetService,
-            IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
+            final PullRequestService pullRequestService, IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
+        this.pullRequestService = pullRequestService;
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
@@ -561,113 +572,5 @@ public class RootResource
         }
 
         return Response.noContent().build();
-    }
-
-    @GET
-    @Path("/jira-dev/detail")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits(@QueryParam("issue") String issueKey)
-    {
-        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
-        if (issue == null)
-        {
-            return Status.notFound().message("Issue not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
-        {
-            throw new AuthorizationException();
-        }
-
-        Project project = issue.getProjectObject();
-
-        if (project == null)
-        {
-            return Status.notFound().message("Project was not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
-        {
-            throw new AuthorizationException();
-        }
-
-        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
-        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
-
-        ListMultimap<Integer, Changeset> changesetTorepositoryMapping = ArrayListMultimap.create();
-        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
-
-        // group changesets by repository
-        for (Changeset changeset : changesets)
-        {
-            for (int repositoryId : changeset.getRepositoryIds())
-            {
-                changesetTorepositoryMapping.put(repositoryId, changeset);
-            }
-        }
-
-        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
-        for (int repositoryId : changesetTorepositoryMapping.keySet())
-        {
-            Repository repository = repositories.get(repositoryId);
-
-            if (repository == null)
-            {
-                repository = repositoryService.get(repositoryId);
-                repositories.put(repositoryId, repository);
-            }
-
-            RestRepository restRepository = new RestRepository();
-            restRepository.setName(repository.getName());
-            restRepository.setSlug(repository.getSlug());
-            restRepository.setUrl(repository.getRepositoryUrl());
-            restRepository.setAvatar(repository.getLogo());
-            restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repositoryId)));
-                        restRepository.setFork(repository.isFork());
-            if (repository.isFork() && repository.getForkOf() != null)
-            {
-                RestRepository forkOfRepository = new RestRepository();
-                forkOfRepository.setName(repository.getForkOf().getName());
-                forkOfRepository.setSlug(repository.getForkOf().getSlug());
-                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
-                restRepository.setForkOf(forkOfRepository);
-            }
-
-            restRepositories.add(restRepository);
-        }
-
-        RestChangesets result = new RestChangesets();
-        result.setRepositories(restRepositories);
-        return Response.ok(result).build();
-    }
-
-    private List<RestChangeset> createCommits(Repository repository, List<Changeset> changesets)
-    {
-        List<RestChangeset> restChangesets = new ArrayList<RestChangeset>();
-        for (Changeset changeset : changesets)
-        {
-            DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
-            RestChangeset restChangeset = new RestChangeset();
-            restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
-            restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
-            restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
-            restChangeset.setId(changeset.getRawNode());
-            restChangeset.setMessage(changeset.getMessage());
-            restChangeset.setFileCount(changeset.getAllFileCount());
-            restChangeset.setUrl(changesetService.getCommitUrl(repository, changeset));
-
-            if (changeset.getParents() == null)
-            {
-                // no parents are set, it means that the length of the parent json is too long, so it was large merge (e.g Octopus merge)
-                restChangeset.setMerge(true);
-            } else
-            {
-                restChangeset.setMerge(changeset.getParents().size() > 1);
-            }
-
-            restChangesets.add(restChangeset);
-        }
-
-        return restChangesets;
     }
 }

@@ -86,6 +86,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetService</interface>
     </component>
 
+    <component key="dvcsPullRequestService" name="DVCS PullRequest Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService</interface>
+    </component>
+
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
@@ -93,15 +97,12 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetToChangesetMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityToCommitMapping</entity>
-		<entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommitActivityMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommentActivityMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestUpdateActivityMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestCommentActivityMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
         
         <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
@@ -121,7 +122,17 @@
         <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping</entity>
         
-        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
+         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
+        
+        <!-- Messaging -->
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping</entity>
+        
+        <!-- Audit 
+        -->
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping</entity>
+        
 
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.PropertyMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.Uri2UrlMigrator</upgradeTask>
@@ -249,10 +260,6 @@
     </component>
     
     <!-- Bitbucket -->
-    <component key="bitbucketPRDao" name="Bitbucket PR DAO"
-        class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.impl.BitbucketPullRequestDaoImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.dao.BitbucketPullRequestDao</interface>
-    </component>
     
     <!-- GitHub -->
     
@@ -373,7 +380,7 @@
     </component>
 
     <component key="dvcsCommunicatorProvider" name="dvcsCommunicatorProvider"
-               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider">
+               class="com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProviderImpl">
         <description>dvcsCommunicatorProvider</description>
     </component>
 
@@ -439,6 +446,10 @@
                class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory</interface>
     </component>
+    
+    <component key="linkedIssueService" class="com.atlassian.jira.plugins.dvcs.service.LinkedIssueServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.LinkedIssueService</interface>
+    </component>
 
     <component key="pluginFeatureDetector" name="pluginFeatureDetector"
                class="com.atlassian.jira.plugins.dvcs.listener.DefaultPluginFeatureDetector">
@@ -455,8 +466,53 @@
         <interface>com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager</interface>
     </component>
 
+    <component key="pullRequestService" name="pullRequestService"
+               class="com.atlassian.jira.plugins.dvcs.service.PullRequestServiceImpl">
+        <description>pullRequestService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.PullRequestService</interface>
+    </component>
+
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
+    <component key="postponeOndemandPrSyncListener" class="com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener" />
+
+	 <!-- Messaging -->
+    <component key="messageDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageDaoImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.dao.MessageDao</interface>
+    </component>
+    <component key="messageQueueItemDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageQueueItemDaoImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao</interface>
+    </component>
+    <component key="messagingService" class="com.atlassian.jira.plugins.dvcs.service.MessagingServiceImpl">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagingService</interface>
+    </component>
+    <component key="messageExecutor" class="com.atlassian.jira.plugins.dvcs.service.MessageExecutor">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.MessageExecutor</interface>
+    </component>
+    <component key="synchronizeChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeOldBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeOldBbChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="synchronizeActivityMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeActivityMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">
@@ -467,11 +523,11 @@
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
     
-    <issue-tabpanel key="dvcs-pullrequets-tabpanel" name="Dvcs PullRequestss Tab Panel"
+    <issue-tabpanel key="dvcs-pullrequests-tabpanel" name="Dvcs PullRequests Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsActivityTabPanel">
 
         <description>Show Dvcs Pull Requests activities related to an issue in an issue tab panel.</description>
-        <label>DVCS</label>
+        <label>Pull Requests</label>
         <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
@@ -495,7 +551,6 @@
         <description>
         </description>
         <actions>
-
             <action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
@@ -583,7 +638,7 @@
         <resource type="download" name="javascripts/dvcs-tabs.js" location="javascripts/dvcs-tabs.js"/>
     </web-resource>
 
-	<web-resource key="soy-templates-admin-context">
+	<web-resource key="soy-templates-admin-">
 		<context>atl.admin</context>
 	    <dependency>com.atlassian.soy.soy-template-plugin:soy-deps</dependency>
 	    
@@ -636,6 +691,9 @@
         
     <component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
         class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
+
+    <component key="syncAuditLogDaoImpl" name="Sync Audit Log Dao Impl"
+        class="com.atlassian.jira.plugins.dvcs.dao.impl.SyncAuditLogDaoImpl" />
         
     <!-- Activity rendering -->
     <component key="aggregatedIssueActionFactory" name="AggregatedIssueActionFactory"
@@ -646,17 +704,7 @@
         class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
         interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
         
-    <component key="pullRequestUpdateIssueActionFactory" name="PullRequestUpdateIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestUpdateIssueActionFactory" 
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
-    <component key="pullRequestCommentIssueActionFactory" name="PullRequestCommentIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.PullRequestCommentIssueActionFactory" 
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-    <component key="commitCommentIssueActionFactory"
-        class="com.atlassian.jira.plugins.dvcs.webwork.render.CommitCommentIssueActionFactory"
-        interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
+
     <!--  -->
     <component key="columnNameResolverService" name="Column Name Resolver Service"
         class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">

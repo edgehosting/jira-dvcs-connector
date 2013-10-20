@@ -1,27 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitCommentActivityMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitCommentDAO;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommit;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubCommitComment;
 import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService;
 
 /**
  * The implementation of the {@link GitHubCommitCommentService}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentService
 {
@@ -43,7 +37,7 @@ public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentServic
 
     /**
      * Constructor.
-     * 
+     *
      * @param activeObjects
      *            injected {@link ActiveObjects} dependency
      * @param gitHubCommitCommentDAO
@@ -119,7 +113,7 @@ public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentServic
     @Override
     public void synchronize(Repository domainRepository, GitHubRepository domain)
     {
-        int pageSize = 128;
+        /*int pageSize = 128;
 
         Map<String, Object> activityMap = new HashMap<String, Object>();
         List<GitHubCommit> commentedCommits;
@@ -164,12 +158,12 @@ public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentServic
                     activeObjects.delete(delete);
                 }
             }
-        } while (!commentedCommits.isEmpty());
+        } while (!commentedCommits.isEmpty());*/
     }
 
     /**
      * Maps provided GitHub comment into activity comment.
-     * 
+     *
      * @param domainRepository
      *            over which repository
      * @param target
@@ -180,18 +174,18 @@ public class GitHubCommitCommentServiceImpl implements GitHubCommitCommentServic
     private void map(Repository domainRepository, Map<String, Object> target, GitHubCommitComment source)
     {
 
-        RepositoryCommitMapping commit = repositoryActivityDao.getCommitByNode(domainRepository, source.getCommit().getSha());
-
-        target.put(RepositoryCommitCommentActivityMapping.REPOSITORY_ID, domainRepository.getId());
-        target.put(RepositoryCommitCommentActivityMapping.COMMIT, commit.getID());
-        target.put(RepositoryCommitCommentActivityMapping.COMMENT_URL, source.getHtmlUrl());
-
-        target.put(RepositoryCommitCommentActivityMapping.ENTITY_TYPE, RepositoryCommitCommentActivityMapping.class);
-        target.put(RepositoryCommitCommentActivityMapping.REMOTE_ID, source.getGitHubId());
-        target.put(RepositoryCommitCommentActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
-        target.put(RepositoryCommitCommentActivityMapping.AUTHOR, source.getCreatedBy().getLogin());
-        target.put(RepositoryCommitCommentActivityMapping.RAW_AUTHOR, source.getCreatedBy().getName());
-        target.put(RepositoryCommitCommentActivityMapping.MESSAGE, source.getText());
+//        RepositoryCommitMapping commit = repositoryActivityDao.getCommitByNode(domainRepository, source.getCommit().getSha());
+//
+//        target.put(RepositoryCommitCommentActivityMapping.REPOSITORY_ID, domainRepository.getId());
+//        target.put(RepositoryCommitCommentActivityMapping.COMMIT, commit.getID());
+//        target.put(RepositoryCommitCommentActivityMapping.COMMENT_URL, source.getHtmlUrl());
+//
+//        target.put(RepositoryCommitCommentActivityMapping.ENTITY_TYPE, RepositoryCommitCommentActivityMapping.class);
+//        target.put(RepositoryCommitCommentActivityMapping.REMOTE_ID, source.getGitHubId());
+//        target.put(RepositoryCommitCommentActivityMapping.LAST_UPDATED_ON, source.getCreatedAt());
+//        target.put(RepositoryCommitCommentActivityMapping.AUTHOR, source.getCreatedBy().getLogin());
+//        target.put(RepositoryCommitCommentActivityMapping.RAW_AUTHOR, source.getCreatedBy().getName());
+//        target.put(RepositoryCommitCommentActivityMapping.MESSAGE, source.getText());
     }
 
 }
