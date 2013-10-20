@@ -611,9 +611,9 @@ public class To_12_SplitUpChangesetsMigrator implements ActiveObjectsUpgradeTask
                                 column(ChangesetMapping.ISSUE_KEY) //
                         }, ", ") //
                 + " from " + table(ChangesetMapping.class) //
-                + "where " + column(ChangesetMapping.PROJECT_KEY) + " is not null and " //
+                + " where " + column(ChangesetMapping.PROJECT_KEY) + " is not null and " //
                 + column(ChangesetMapping.ISSUE_KEY) + " is not null " //
-                + "order by " + column(ChangesetMapping.RAW_NODE) + ", " + column(ChangesetMapping.NODE) + ", " + column("ID") + " ASC";
+                + " order by " + column(ChangesetMapping.RAW_NODE) + ", " + column(ChangesetMapping.NODE) + ", " + column("ID") + " ASC";
     }
 
     /**

@@ -218,19 +218,23 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
         };
 
-        UserProfile userProfile = userProfileAccessor.getAnonymousUserProfile();
+        UserProfile userProfile = null;
 
         if (user != null && user.getAvatar() != null && user.getAvatar().startsWith("https"))
         {
-            try {
+            try
+            {
                 URI uri = new URI(user.getAvatar());
                 userProfile = new UserProfile.Builder("").profilePictureUri(Option.option(uri)).build();
-            } catch (URISyntaxException e) {
-                // do nothing. we use anonymous gravatar
+            } catch (URISyntaxException e)
+            {
+                // we use anonymous profile
+                userProfile = userProfileAccessor.getAnonymousUserProfile();
             }
+        } else
+        {
+            userProfile = userProfileAccessor.getAnonymousUserProfile();
         }
-
-
 
         return new StreamsEntry(StreamsEntry.params()
                 .id(URI.create(""))

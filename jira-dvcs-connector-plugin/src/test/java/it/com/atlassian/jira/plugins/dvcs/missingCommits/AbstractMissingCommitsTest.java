@@ -57,9 +57,6 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     @BeforeClass
     public void beforeClass()
     {
-        // log in to JIRA
-        new JiraLoginPageController(jira).login();
-
         oAuth = loginToDvcsAndGetJiraOAuthCredentials();
     }
 
