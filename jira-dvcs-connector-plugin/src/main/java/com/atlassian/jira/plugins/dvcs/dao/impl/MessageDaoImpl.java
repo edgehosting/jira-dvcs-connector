@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Collections;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import net.java.ao.DBParam;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -19,6 +10,13 @@ import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.DBParam;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+
+import java.util.Collections;
+import java.util.Map;
+import javax.annotation.Resource;
 
 /**
  * An implementation of {@link MessageDao}.
@@ -73,9 +71,12 @@ public class MessageDaoImpl implements MessageDao
             @Override
             public Void doInTransaction()
             {
-                for (MessageTagMapping tag : message.getTags())
+                if (message.getTags() != null)
                 {
-                    activeObjects.delete(tag);
+                    for (MessageTagMapping tag : message.getTags())
+                    {
+                        activeObjects.delete(tag);
+                    }
                 }
                 activeObjects.delete(message);
                 return null;

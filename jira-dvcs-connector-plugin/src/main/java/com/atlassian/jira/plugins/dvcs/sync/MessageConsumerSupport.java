@@ -53,9 +53,6 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     @Resource
     protected BranchService branchService;
 
-    @Resource
-    SmartcommitsChangesetsProcessor smartCommitsProcessor;
-
     @Override
     public void onReceive(final Message<P> message)
     {
@@ -107,26 +104,13 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             LOGGER.error(e.getMessage(), e);
             ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
             messagingService.fail(this, message);
-        } finally
-        {
-            tryEndProgress(payload, tags);
-        }
-
-    }
-
-    protected synchronized void tryEndProgress(P payload, String[] tags)
-    {
-        if (messagingService.getQueuedCount(messagingService.getTagForSynchronization(getRepository(payload))) == 0)
-        {
-            smartCommitsProcessor.startProcess(payload.getProgress(), getRepository(payload), changesetService);
-            payload.getProgress().finish();
         }
     }
 
     @Override
     public void afterDiscard(int messageId, int retryCount, P payload, String[] tags)
     {
-        tryEndProgress(payload, tags);
+
     }
 
     static void markChangesetForSmartCommit(Repository repo, Changeset changesetForSave, boolean mark)

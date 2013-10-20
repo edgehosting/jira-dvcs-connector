@@ -117,6 +117,14 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             {
                 startProgress(repo);
 
+                try
+                {
+                    messagingService.retry(messagingService.getTagForSynchronization(repo));
+                } catch (Exception e)
+                {
+                    log.warn("Could not resume failed messages.", e);
+                }
+
                 if (repo.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
                 {
                     if (changestesSync)
@@ -162,19 +170,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 progress.setError("Error during sync. See server logs.");
             } finally
             {
-                tryEndProgress(repo);
-            }
-        }
-    }
-
-    private void tryEndProgress(Repository repo)
-    {
-        if (messagingService.getQueuedCount(messagingService.getTagForSynchronization(repo)) == 0)
-        {
-            Progress progress = getProgress(repo.getId());
-            if (!progress.isFinished())
-            {
-                progress.finish();
+                messagingService.tryEndProgress(repo, getProgress(repo.getId()), null);
             }
         }
     }

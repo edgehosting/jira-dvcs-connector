@@ -1,18 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -22,17 +9,27 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -58,8 +55,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private MessagingService messagingService;
     @Resource
     private BranchService branchService;
-    @Resource
-    private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
 
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
@@ -138,30 +133,17 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             }
         }
 
-        if (!errorOnPage && StringUtils.isNotBlank(page.getNext()))
-        {
-            fireNextPage(page, payload, message.getTags());
-
-        } else if (errorOnPage)
-        {
-            messagingService.fail(this, message);
-        }
-
         if (!errorOnPage)
         {
-            if (messagingService.getQueuedCount(messagingService.getTagForSynchronization(payload.getRepository())) == 0)
+            if (StringUtils.isNotBlank(page.getNext()))
             {
-                smartcCommitsProcessor.startProcess(payload.getProgress(), payload.getRepository(),
-                        changesetService);
-                payload.getProgress().finish();
-
-                if (page.getPage() == 1)
-                {
-                    updateBranchHeads(payload.getRepository(), payload.getNewHeads());
-                }
+                fireNextPage(page, payload, message.getTags());
             }
 
             messagingService.ok(this, message);
+        } else
+        {
+            messagingService.fail(this, message);
         }
     }
 
@@ -176,12 +158,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         {
             changesetBranch.put(parent.getHash(), branch);
         }
-    }
-
-    protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads)
-    {
-        List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
-        branchService.updateBranchHeads(repo, newBranchHeads, oldBranchHeads);
     }
 
     private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)

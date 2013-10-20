@@ -201,7 +201,9 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
                 ));
 
-                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(MessageMapping.PRIORITY)), false));
+                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(MessageMapping.PRIORITY)), false), //
+                      orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName("ID")), true) //
+                );
             }
 
         }.toQuery(MapBuilder.<String, Object> build("address", address, "queue", queue, "state", MessageState.PENDING));

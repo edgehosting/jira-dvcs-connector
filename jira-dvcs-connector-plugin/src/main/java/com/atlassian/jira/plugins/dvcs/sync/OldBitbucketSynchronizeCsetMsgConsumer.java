@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
+
+import java.util.List;
 
 public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSupport<OldBitbucketSynchronizeCsetMsg>
 {
@@ -70,6 +70,4 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     {
         return retryCount >= 3;
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
@@ -41,6 +42,14 @@ public interface MessagingService
     void resume(String tag);
 
     /**
+     * Retries all messages, which are marked by provided tag.
+     *
+     * @param tag
+     *            {@link Message#getTags()}
+     */
+    void retry(String tag);
+
+    /**
      * Cancels all messages, which are marked by provided tag.
      * 
      * @param tag
@@ -69,6 +78,14 @@ public interface MessagingService
      *            for marking
      */
     <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message);
+
+    /**
+     * Discards message.
+     *
+     * @param message
+     *            for discard
+     */
+    <P extends HasProgress> void discard(Message<P> message);
 
     /**
      * @param address
@@ -105,4 +122,20 @@ public interface MessagingService
      */
     String getTagForSynchronization(Repository repository);
 
+    /**
+     * Extracts repository from message
+     *
+     * @param message
+     * @return repository
+     */
+    <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message);
+
+    /**
+     * Ends progress if no messages left for repository
+     *
+     * @param repo
+     * @param progress
+     * @param consumer
+     */
+    <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer);
 }

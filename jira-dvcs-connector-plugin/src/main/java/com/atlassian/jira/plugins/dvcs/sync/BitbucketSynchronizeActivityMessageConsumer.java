@@ -125,24 +125,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (!isLastPage)
         {
             fireNextPage(message, activityPage.getNext(), lastSync);
-        } else
-        {
-            finalizeSync(message, lastSync);
         }
 
+        messagingService.ok(this, message);
     }
 
     protected void markProcessed(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info, Integer prLocalId)
     {
         payload.getProcessedPullRequests().add(info.getPullRequest().getId().intValue());
         payload.getProcessedPullRequestsLocal().add(prLocalId);
-    }
-
-    private void finalizeSync(Message<BitbucketSynchronizeActivityMessage> message, Date lastActivitySyncDate)
-    {
-        message.getPayload().getProgress().finish();
-        repositoryDao.setLastActivitySyncDate(message.getPayload().getRepository().getId(), lastActivitySyncDate);
-        messagingService.ok(this, message);
     }
 
     private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl, Date lastSync)

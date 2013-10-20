@@ -1,5 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,20 +17,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 
 /**
  * Is responsible for message execution.
@@ -258,15 +256,32 @@ public class MessageExecutor
             {
                 LOGGER.error(e.getMessage(), e);
                 messagingService.fail(consumer, message);
-                ((DefaultProgress) message.getPayload().getProgress()).setError("Error during sync. See server logs.");
-                message.getPayload().getProgress().setFinished(true);
+                message.getPayload().getProgress().setError("Error during sync. See server logs.");
+            } finally
+            {
+                tryEndProgress(message, consumer);
+            }
+        }
+
+        protected <P extends HasProgress> void tryEndProgress(Message<P> message, MessageConsumer<P> consumer)
+        {
+            try
+            {
+                Repository repository = messagingService.getRepositoryFromMessage(message);
+                if (repository != null)
+                {
+                    messagingService.tryEndProgress(repository, message.getPayload().getProgress(), consumer);
+                }
+            } catch (RuntimeException e)
+            {
+                LOGGER.error(e.getMessage(), e);
+                // Any RuntimeException will be ignored in this step
             }
         }
 
         private void discard(Message<P> message, P payload)
         {
-            // FIXME<MSG>
-            payload.getProgress().setFinished(true);
+            messagingService.discard(message);
         }
 
     }

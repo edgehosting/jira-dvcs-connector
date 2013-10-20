@@ -9,12 +9,14 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
@@ -94,6 +96,15 @@ public class MessagingServiceImpl implements MessagingService
      */
     @Resource
     private MessageConsumer<?>[] messageConsumers;
+
+    @Resource
+    private RepositoryService repositoryService;
+
+    @Resource
+    protected ChangesetService changesetService;
+
+    @Resource
+    private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -362,6 +373,56 @@ public class MessagingServiceImpl implements MessagingService
         }
     }
 
+    @Override
+    public void retry(String tag)
+    {
+        final Set<MessageAddress<?>> addresses = new HashSet<MessageAddress<?>>();
+        messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
+        {
+
+            @Override
+            public void callback(final MessageMapping message)
+            {
+                activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                {
+
+                    @Override
+                    public Void doInTransaction()
+                    {
+                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
+                        {
+                            if (MessageState.WAITING_FOR_RETRY.name().equals(messageQueueItem.getState()))
+                            {
+                                messageQueueItem.setState(MessageState.PENDING.name());
+                                messageQueueItemDao.save(messageQueueItem);
+
+                                try
+                                {
+                                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                                    MessageAddress messageAddress = get((Class) Class.forName(messageQueueItem.getMessage()
+                                            .getPayloadType()), messageQueueItem.getMessage().getAddress());
+                                    addresses.add(messageAddress);
+                                } catch (ClassNotFoundException e)
+                                {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+
+                        return null;
+                    }
+
+                });
+            }
+
+        });
+
+        for (MessageAddress<?> address : addresses)
+        {
+            messageExecutor.notify(address);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -380,11 +441,15 @@ public class MessagingServiceImpl implements MessagingService
                     @Override
                     public Void doInTransaction()
                     {
-                        for (MessageQueueItemMapping queueItem : message.getQueuesItems())
+                        MessageMapping fullMessage = messageDao.getById(message.getID());
+                        if (fullMessage.getQueuesItems() != null)
                         {
-                            messageQueueItemDao.delete(queueItem);
+                            for (MessageQueueItemMapping queueItem : fullMessage.getQueuesItems())
+                            {
+                                messageQueueItemDao.delete(queueItem);
+                            }
                         }
-                        messageDao.delete(message);
+                        messageDao.delete(fullMessage);
                         return null;
                     }
 
@@ -429,6 +494,25 @@ public class MessagingServiceImpl implements MessagingService
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
+    }
+
+    @Override
+    public <P extends HasProgress> void discard(final Message<P> message)
+    {
+        MessageMapping messageMapping = messageDao.getById(message.getId());
+
+        if (messageMapping != null)
+        {
+            if (messageMapping.getQueuesItems() != null)
+            {
+                for (MessageQueueItemMapping queueItem : messageMapping.getQueuesItems())
+                {
+                    messageQueueItemDao.delete(queueItem);
+                }
+            }
+
+            messageDao.delete(messageMapping);
+        }
     }
 
     /**
@@ -500,6 +584,29 @@ public class MessagingServiceImpl implements MessagingService
     public String getTagForSynchronization(Repository repository)
     {
         return SYNCHRONIZATION_REPO_TAG_PREFIX + repository.getId();
+    }
+
+    @Override
+    public <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message)
+    {
+        for (String tag : message.getTags())
+        {
+            if (StringUtils.startsWith(tag, SYNCHRONIZATION_REPO_TAG_PREFIX))
+            {
+                int repositoryId;
+                try
+                {
+                    repositoryId = Integer.parseInt(tag.substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length()));
+                    return repositoryService.get(repositoryId);
+
+                } catch (NumberFormatException e)
+                {
+                    LOGGER.warn("Can't get repository id from tags for message with ID {}", message.getId());
+                }
+            }
+        }
+
+        return null;
     }
 
     private int repoId(int messageId, MessageTagMapping[] tags)
@@ -612,4 +719,34 @@ public class MessagingServiceImpl implements MessagingService
 
     }
 
+    @Override
+    public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer)
+    {
+        if (consumer != null)
+        {
+            synchronized(consumer)
+            {
+                endProgress(repository, progress);
+            }
+        } else
+        {
+            endProgress(repository,progress);
+        }
+
+    }
+
+    private void endProgress(Repository repository, Progress progress)
+    {
+        if (getQueuedCount(getTagForSynchronization(repository)) == 0)
+        {
+            if (progress.getError() == null)
+            {
+                smartcCommitsProcessor.startProcess(progress, repository, changesetService);
+            }
+            if (!progress.isFinished())
+            {
+                progress.finish();
+            }
+        }
+    }
 }
