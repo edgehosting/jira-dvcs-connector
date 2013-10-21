@@ -61,8 +61,8 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             // progress stuff
             //
-            syncAudit = getSyncAuditIdFromMessage(message);
-            deserialized.syncAuditId = syncAudit;
+            syncAudit = getSyncAuditIdFromTags(message.getTags());
+            deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
 
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
@@ -73,10 +73,10 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
                 synchronizer.putProgress(deserialized.repository, progress);
             }
             deserialized.progress = progress;
-            //
-            //
-            deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
+
             deserialized.softSync = jsoned.optBoolean("softSync");
+            deserialized.syncAuditId = syncAudit;
+
             return result;
 
         } catch (Exception e)
@@ -85,9 +85,9 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         }
     }
 
-    public static <PR extends HasProgress> int getSyncAuditIdFromMessage(Message<PR> message)
+    public static <PR extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
     {
-        for (String tag : message.getTags())
+        for (String tag : tags)
         {
             if (StringUtils.startsWith(tag, SYNCHRONIZATION_AUDIT_TAG_PREFIX))
             {

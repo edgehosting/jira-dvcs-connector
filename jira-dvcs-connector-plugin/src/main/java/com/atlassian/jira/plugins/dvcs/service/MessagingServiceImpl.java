@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -291,6 +293,7 @@ public class MessagingServiceImpl implements MessagingService
     public void pause(String tag)
     {
         pausedTags.add(tag);
+        final Set<Integer> syncAudits = new LinkedHashSet<Integer>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
         {
 
@@ -316,9 +319,19 @@ public class MessagingServiceImpl implements MessagingService
                     }
 
                 });
+
+                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(message.getTags()));
+                if (syncAuditId != 0)
+                {
+                    syncAudits.add(syncAuditId);
+                }
             }
 
         });
+        for (Integer syncAuditId : syncAudits)
+        {
+            syncAudit.pause(syncAuditId);
+        }
     }
 
     @Override
@@ -337,6 +350,7 @@ public class MessagingServiceImpl implements MessagingService
     {
         pausedTags.remove(tag);
         final Set<String> addresses = new HashSet<String>();
+        final Set<Integer> syncAudits = new HashSet<Integer>();
 
         messageQueueItemDao.getByTagAndState(tag, MessageState.SLEEPING, new StreamCallback<MessageQueueItemMapping>()
         {
@@ -345,7 +359,16 @@ public class MessagingServiceImpl implements MessagingService
             public void callback(MessageQueueItemMapping e)
             {
                 e.setState(MessageState.PENDING.name());
+                messageQueueItemDao.save(e);
                 addresses.add(e.getMessage().getAddress());
+
+                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(e.getMessage().getTags()));
+                if (syncAuditId != 0)
+                {
+                    syncAudits.add(syncAuditId);
+                }
+
+
             }
 
         });
@@ -353,6 +376,11 @@ public class MessagingServiceImpl implements MessagingService
         for (String address : addresses)
         {
             messageExecutor.notify(address);
+        }
+
+        for (Integer syncAuditId : syncAudits)
+        {
+            syncAudit.resume(syncAuditId);
         }
     }
 
@@ -462,7 +490,7 @@ public class MessagingServiceImpl implements MessagingService
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
-        syncAudit.setException(getSyncAuditIdFromMessage(message), t, false);
+        syncAudit.setException(getSyncAuditIdFromTags(message.getTags()), t, false);
     }
 
     @Override
@@ -585,16 +613,16 @@ public class MessagingServiceImpl implements MessagingService
         return null;
     }
 
-    public <P extends HasProgress> int getSyncAuditIdFromMessage(Message<P> message)
+    @Override
+    public <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
     {
         try
         {
-            return AbstractMessagePayloadSerializer.getSyncAuditIdFromMessage(message);
+            return AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(tags);
         } catch (NumberFormatException e)
         {
             LOGGER.warn("Get audit ID info from message: " + e.getMessage());
         }
-        LOGGER.warn("Can't get audit ID from tags for message with ID {}", message.getId());
         return 0;
     }
 
@@ -648,7 +676,13 @@ public class MessagingServiceImpl implements MessagingService
         target.setPayload(source.getPayload());
         target.setPayloadType(payloadType);
         target.setPriority(source.getPriority());
-        target.setTags(Iterables.toArray(Iterables.transform(Arrays.asList(source.getTags()), new Function<MessageTagMapping, String>()
+        target.setTags(transformTags(source.getTags()));
+        target.setRetriesCount(retriesCount);
+    }
+
+    private String[] transformTags(MessageTagMapping[] messageTags)
+    {
+        return Iterables.toArray(Iterables.transform(Arrays.asList(messageTags), new Function<MessageTagMapping, String>()
         {
 
             @Override
@@ -657,8 +691,7 @@ public class MessagingServiceImpl implements MessagingService
                 return input.getTag();
             }
 
-        }), String.class));
-        target.setRetriesCount(retriesCount);
+        }), String.class);
     }
 
     /**

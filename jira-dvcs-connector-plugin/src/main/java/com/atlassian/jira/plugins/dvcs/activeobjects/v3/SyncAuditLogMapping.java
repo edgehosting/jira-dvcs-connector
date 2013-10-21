@@ -12,6 +12,7 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_STATUS_RUNNING = "RUNNING";
     String SYNC_STATUS_FAILED = "FAILED";
     String SYNC_STATUS_SUCCESS = "SUCCESS";
+    String SYNC_STATUS_SLEEPING = "SLEEPING";
     String SYNC_TYPE_SOFT = "SOFT";
     String SYNC_TYPE_FULL = "FULL";
     //

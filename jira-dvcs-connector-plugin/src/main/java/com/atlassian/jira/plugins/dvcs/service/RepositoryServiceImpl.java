@@ -453,7 +453,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public RepositoryRegistration enableRepository(int repoId, boolean linked)
+    public RepositoryRegistration  enableRepository(int repoId, boolean linked)
     {
         RepositoryRegistration registration = new RepositoryRegistration();
 

@@ -24,4 +24,7 @@ public interface SyncAuditLogDao
 
     SyncAuditLogMapping getLastFailedForRepo(int repoId);
 
+    SyncAuditLogMapping pause(int syncId);
+
+    SyncAuditLogMapping resume(int syncId);
 }

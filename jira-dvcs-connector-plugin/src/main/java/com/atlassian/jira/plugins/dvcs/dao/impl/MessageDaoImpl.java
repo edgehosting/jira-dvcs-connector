@@ -106,6 +106,7 @@ public class MessageDaoImpl implements MessageDao
             @Override
             protected void build()
             {
+
                 alias(MessageMapping.class, "message");
                 alias(MessageTagMapping.class, "messageTag");
 
@@ -120,11 +121,12 @@ public class MessageDaoImpl implements MessageDao
             @Override
             public void onRowRead(MessageMapping message)
             {
-                messagesStream.callback(message);
+                // load whole message
+                MessageMapping wholeMessage = activeObjects.get(MessageMapping.class, message.getID());
+                messagesStream.callback(wholeMessage);
             }
 
         });
-
     }
 
     /**

@@ -140,7 +140,7 @@ public interface MessagingService
      * @return repository
      */
     <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message);
-    <P extends HasProgress> int getSyncAuditIdFromMessage(Message<P> message);
+    <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags);
 
     /**
      * Ends progress if no messages left for repository
