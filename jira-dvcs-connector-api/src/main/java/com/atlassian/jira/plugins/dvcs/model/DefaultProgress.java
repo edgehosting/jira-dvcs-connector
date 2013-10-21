@@ -31,10 +31,10 @@ public class DefaultProgress implements Progress
     private int synchroErrorCount = 0;
 
     @XmlAttribute
-    private long startTime = 0;
+    private Long startTime;
 
     @XmlAttribute
-    private long finishTime = 0;
+    private Long finishTime;
 
     @XmlAttribute
     private String error;
@@ -134,7 +134,7 @@ public class DefaultProgress implements Progress
         return finished;
     }
 
-    public long getStartTime()
+    public Long getStartTime()
     {
         return startTime;
     }
@@ -144,7 +144,7 @@ public class DefaultProgress implements Progress
         this.startTime = startTime;
     }
 
-    public long getFinishTime()
+    public Long getFinishTime()
     {
         return finishTime;
     }
