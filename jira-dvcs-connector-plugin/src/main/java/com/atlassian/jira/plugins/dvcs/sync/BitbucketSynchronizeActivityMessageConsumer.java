@@ -86,7 +86,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         } catch (Exception e)
         {
             LOGGER.error("Failed to process " + payload.getRepository().getName(), e);
-            messagingService.fail(this, message);
+            messagingService.fail(this, message, e);
             return;
         }
 

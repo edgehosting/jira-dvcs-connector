@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.annotation.PostConstruct;
-
 import net.java.ao.Query;
 
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +20,8 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {
+    private static final int BIG_DATA_PAGESIZE = 500;
+
     private final ActiveObjects ao;
 
     private static final Logger log = LoggerFactory.getLogger(SyncAuditLogDaoImpl.class);
@@ -81,7 +81,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             @Override
             public Integer call() throws Exception
             {
-                return ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class, repoQuery(repoId));
+                return ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class, repoQuery(repoId).q());
             }
         });
         return ret == null ? -1 : ret;
@@ -106,25 +106,25 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping[] getAllForRepo(final int repoId)
+    public SyncAuditLogMapping[] getAllForRepo(final int repoId, final Integer page)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping []>(){
             @Override
             public SyncAuditLogMapping [] call() throws Exception
             {
-                return ao.find(SyncAuditLogMapping.class, repoQuery(repoId).order(SyncAuditLogMapping.START_DATE + " DESC"));
+                return ao.find(SyncAuditLogMapping.class, repoQuery(repoId).page(page).order(SyncAuditLogMapping.START_DATE + " DESC"));
             }
         });
     }
 
     @Override
-    public SyncAuditLogMapping[] getAll()
+    public SyncAuditLogMapping[] getAll(final Integer page)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping []>(){
             @Override
             public SyncAuditLogMapping [] call() throws Exception
             {
-                return ao.find(SyncAuditLogMapping.class, Query.select().order(SyncAuditLogMapping.START_DATE + " DESC"));
+                return ao.find(SyncAuditLogMapping.class, pageQuery(Query.select().order(SyncAuditLogMapping.START_DATE + " DESC"), page));
             }
         });
     }
@@ -137,7 +137,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             public SyncAuditLogMapping call() throws Exception
             {
                 SyncAuditLogMapping[] found = ao.find(SyncAuditLogMapping.class,
-                        repoQuery(repoId).limit(1).order(SyncAuditLogMapping.START_DATE + " DESC"));
+                        repoQuery(repoId).q().limit(1).order(SyncAuditLogMapping.START_DATE + " DESC"));
                 return found.length == 1 ? found[0] : null;
             }
         });
@@ -190,9 +190,36 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         return ao.get(SyncAuditLogMapping.class, syncId);
     }
 
-    private Query repoQuery(int repoId)
+    private PageableQuery repoQuery(final int repoId)
     {
-        return Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
+        return new PageableQuery()
+        {
+            private Query q;
+            @Override
+            public Query q()
+            {
+                q = Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
+                return q;
+            }
+            @Override
+            public Query page(Integer page)
+            {
+                pageQuery(q, page);
+                return q;
+            }
+        };
+    }
+
+    private static Query pageQuery(Query q, Integer page)
+    {
+        q.setLimit(BIG_DATA_PAGESIZE);
+        if (page == null)
+        {
+            q.setOffset(0);
+        } else {
+            q.setOffset(BIG_DATA_PAGESIZE * page);
+        }
+        return q;
     }
 
     private Query statusQueryLimitOne(int repoId, String status)
@@ -227,8 +254,8 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         });
     }
 
-    @PostConstruct
-    public void afterPropertiesSet() throws Exception
-    {
+    interface PageableQuery {
+        Query page(Integer page);
+        Query q();
     }
 }

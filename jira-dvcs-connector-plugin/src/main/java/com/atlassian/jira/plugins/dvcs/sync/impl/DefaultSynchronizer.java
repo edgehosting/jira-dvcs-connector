@@ -1,7 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -26,21 +45,6 @@ import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsum
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.collect.MapMaker;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import javax.annotation.Resource;
 
 /**
  * Synchronization service
@@ -72,6 +76,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
     @Resource
     private PostponeOndemandPrSyncListener posponePrSyncHelper;
+
+    @Resource
+    private SyncAuditLogDao syncAudit;
 
 
     public DefaultSynchronizer()
@@ -115,7 +122,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
             try
             {
-                startProgress(repo);
+                int auditId = startProgress(repo, softSync);
 
                 try
                 {
@@ -131,13 +138,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     {
                         // sync csets
                         BranchFilterInfo filterNodes = getFilterNodes(repo);
-                        processBitbucketCsetSync(repo, softSync, filterNodes);
+                        processBitbucketCsetSync(repo, softSync, filterNodes, auditId);
                         updateBranchHeads(repo, filterNodes.newHeads, filterNodes.oldHeads);
                     }
                     // sync pull requests
                     if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
                     {
-                        processBitbucketPrSync(repo, softSync);
+                        processBitbucketPrSync(repo, softSync, auditId);
                     }
 
                 } else
@@ -150,7 +157,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                             SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
                                     branchHead.getName(), branchHead.getHead(), //
                                     synchronizationStartedAt, //
-                                    null, softSync, 0);
+                                    null, softSync, auditId);
                             MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                                     SynchronizeChangesetMessage.class, //
                                     GithubSynchronizeChangesetMessageConsumer.KEY //
@@ -175,11 +182,20 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         }
     }
 
-    private void startProgress(Repository repository)
+    private int startProgress(Repository repository, boolean softSync)
     {
         DefaultProgress progress = new DefaultProgress();
         progress.start();
         putProgress(repository, progress);
+        // audit
+        int auditId = syncAudit.newSyncAuditLog(repository.getId(), getSyncType(softSync)).getID();
+        progress.setAuditLogId(auditId);
+        return auditId;
+    }
+
+    protected String getSyncType(boolean softSync)
+    {
+        return softSync ? SyncAuditLogMapping.SYNC_TYPE_SOFT : SyncAuditLogMapping.SYNC_TYPE_FULL;
     }
 
     private boolean skipSync(Repository repository)
@@ -188,7 +204,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return progress != null && !progress.isFinished();
     }
 
-    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes)
+    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId)
     {
         List<BranchHead> newBranchHeads = filterNodes.newHeads;
 
@@ -201,7 +217,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
                         branchHead.getName(), branchHead.getHead(), //
                         synchronizationStartedAt, //
-                        null, newBranchHeads, softSync, 0);
+                        null, newBranchHeads, softSync, auditId);
                 MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
@@ -221,19 +237,19 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             Date synchronizationStartedAt = new Date();
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync, 0);
+                    (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync, auditId);
 
             messagingService.publish(key, message, messagingService.getTagForSynchronization(repository));
         }
     }
 
-    protected void processBitbucketPrSync(Repository repo, boolean softSync)
+    protected void processBitbucketPrSync(Repository repo, boolean softSync, int auditId)
     {
         MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                 BitbucketSynchronizeActivityMessage.class, //
                 BitbucketSynchronizeActivityMessageConsumer.KEY //
                 );
-        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), 0),
+        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId),
                 messagingService.getTagForSynchronization(repo));
     }
 

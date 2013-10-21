@@ -24,7 +24,6 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
     @Override
     public final String serialize(P payload)
     {
-
         try
         {
             JSONObject json = new JSONObject();
@@ -47,22 +46,26 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
     public final P deserialize(int messageId, String payload, int repoId)
     {
         Progress progress = null;
+        int syncAudit = 0;
         try
         {
             JSONObject jsoned = new JSONObject(payload);
 
             P result = deserializeInternal(jsoned);
             //
+            syncAudit = jsoned.optInt("syncAuditId");
             BaseProgressEnabledMessage deserialized = (BaseProgressEnabledMessage) result;
             deserialized.repository = repositoryService.get(repoId);
             deserialized.softSync = jsoned.optBoolean("softSync");
-            deserialized.syncAuditId = jsoned.optInt("syncAuditId");
+            deserialized.syncAuditId = syncAudit;
 
             //
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
             {
                 progress = new DefaultProgress();
+                // inject existing sync audit id
+                progress.setAuditLogId(result.getSyncAuditId());
                 synchronizer.putProgress(deserialized.repository, progress);
             }
             deserialized.progress = progress;

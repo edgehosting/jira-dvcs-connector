@@ -20,6 +20,7 @@ import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -87,6 +88,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private ChangesetCache changesetCache;
+
+    @Resource
+    private SyncAuditLogDao syncAuditDao;
 
     /**
      * {@inheritDoc}
@@ -587,6 +591,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         repositoryDao.remove(repository.getId());
         // remove pull requests things
         repositoryActivityDao.removeAll(repository);
+        // remove sync logs
+        syncAuditDao.removeAllForRepo(repository.getId());
     }
 
     /**

@@ -6,16 +6,16 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
  * Provides services related to messaging.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public interface MessagingService
 {
 
     /**
      * Publishes a message with provided payload under provided address.
-     * 
+     *
      * @param address
      *            for publication
      * @param payload
@@ -27,7 +27,7 @@ public interface MessagingService
 
     /**
      * Pauses all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
@@ -35,7 +35,7 @@ public interface MessagingService
 
     /**
      * Resume all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
@@ -51,7 +51,7 @@ public interface MessagingService
 
     /**
      * Cancels all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
@@ -61,7 +61,7 @@ public interface MessagingService
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
-     * 
+     *
      * @param consumer
      *            of message
      * @param message
@@ -71,13 +71,13 @@ public interface MessagingService
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
-     * 
+     *
      * @param consumer
      *            of message
      * @param message
      *            for marking
      */
-    <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message);
+    <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message, Throwable t);
 
     /**
      * Discards message.
@@ -98,7 +98,7 @@ public interface MessagingService
 
     /**
      * Returns count of queued messages with provided publication address and marked by provided tag.
-     * 
+     *
      * @param tag
      *            of message
      * @return count of queued messages
@@ -107,7 +107,7 @@ public interface MessagingService
 
     /**
      * Creates message address, necessary by publishing and routing.
-     * 
+     *
      * @param payloadType
      *            type of payload
      * @param id

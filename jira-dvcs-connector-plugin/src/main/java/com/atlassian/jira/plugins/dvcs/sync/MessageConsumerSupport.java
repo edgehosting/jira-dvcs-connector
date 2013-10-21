@@ -22,7 +22,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 
 public abstract class MessageConsumerSupport<P extends HasProgress> implements MessageConsumer<P>
 {
@@ -103,7 +102,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         {
             LOGGER.error(e.getMessage(), e);
             ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
-            messagingService.fail(this, message);
+            messagingService.fail(this, message, e);
         }
     }
 
@@ -124,7 +123,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             LOGGER.debug("Changeset node = {}. Repository not enabled for smartcommits.", changesetForSave.getNode());
         }
     }
-    
+
     @Override
     public int getParallelThreads()
     {

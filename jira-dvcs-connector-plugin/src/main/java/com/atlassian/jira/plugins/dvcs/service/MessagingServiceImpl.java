@@ -1,5 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -7,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -22,22 +41,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -105,6 +108,9 @@ public class MessagingServiceImpl implements MessagingService
 
     @Resource
     private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
+
+    @Resource
+    private SyncAuditLogDao syncAudit;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -211,7 +217,7 @@ public class MessagingServiceImpl implements MessagingService
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
-                fail(consumer, message);
+                fail(consumer, message, new RuntimeException("Marking to fail."));
             }
 
         });
@@ -488,12 +494,13 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message)
+    public <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message, Throwable t)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
+        syncAudit.setException(message.getPayload().getSyncAuditId(), t);
     }
 
     @Override
@@ -746,6 +753,7 @@ public class MessagingServiceImpl implements MessagingService
             if (!progress.isFinished())
             {
                 progress.finish();
+                syncAudit.finish(progress.getAuditLogId());
             }
         }
     }

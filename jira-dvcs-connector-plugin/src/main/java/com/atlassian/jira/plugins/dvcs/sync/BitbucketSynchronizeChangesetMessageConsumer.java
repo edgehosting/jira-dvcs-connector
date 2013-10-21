@@ -1,5 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -19,17 +32,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -90,7 +92,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketChangesetPage page)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
-        boolean errorOnPage = false;
+        Exception errorOnPage = null;
         BitbucketSynchronizeChangesetMessage payload = message.getPayload();
         boolean softSync = payload.isSoftSync();
 
@@ -127,13 +129,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                         );
             } catch (Exception e)
             {
-                errorOnPage = true;
+                errorOnPage = e;
                 ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
                 LOGGER.error(e.getMessage(), e);
             }
         }
 
-        if (!errorOnPage)
+        if (errorOnPage == null)
         {
             if (StringUtils.isNotBlank(page.getNext()))
             {
@@ -143,7 +145,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             messagingService.ok(this, message);
         } else
         {
-            messagingService.fail(this, message);
+            messagingService.fail(this, message, errorOnPage);
         }
     }
 

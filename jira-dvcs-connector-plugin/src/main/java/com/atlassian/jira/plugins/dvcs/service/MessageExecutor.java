@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -17,15 +8,26 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+
 /**
  * Is responsible for message execution.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class MessageExecutor
 {
@@ -110,7 +112,7 @@ public class MessageExecutor
     /**
      * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
      * be slept because of empty queues.
-     * 
+     *
      * @param messageAddress
      *            destination address of new message
      */
@@ -125,7 +127,7 @@ public class MessageExecutor
     /**
      * Tries to process next message of queue, if there is any message and any available token ({@link MessageConsumer#getParallelThreads()
      * thread}).
-     * 
+     *
      * @param consumer
      *            for processing
      */
@@ -162,7 +164,7 @@ public class MessageExecutor
 
     /**
      * Gets single available token, if any.
-     * 
+     *
      * @param consumer
      *            which need token
      * @return true if free token was acquired - otherwise false is returned
@@ -185,7 +187,7 @@ public class MessageExecutor
 
     /**
      * Releases single token - counter part of {@link #acquireToken(MessageConsumer)}.
-     * 
+     *
      * @param consumer
      *            for which consumer
      */
@@ -196,9 +198,9 @@ public class MessageExecutor
 
     /**
      * Runnable for single message processing.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      * @param <P>
      *            type of message payload
      */
@@ -217,7 +219,7 @@ public class MessageExecutor
 
         /**
          * Constructor.
-         * 
+         *
          * @param message
          * @param consumer
          */
@@ -255,7 +257,7 @@ public class MessageExecutor
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
-                messagingService.fail(consumer, message);
+                messagingService.fail(consumer, message, e);
                 message.getPayload().getProgress().setError("Error during sync. See server logs.");
             } finally
             {
@@ -263,7 +265,7 @@ public class MessageExecutor
             }
         }
 
-        protected <P extends HasProgress> void tryEndProgress(Message<P> message, MessageConsumer<P> consumer)
+        protected <PR extends HasProgress> void tryEndProgress(Message<PR> message, MessageConsumer<PR> consumer)
         {
             try
             {

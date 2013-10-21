@@ -14,9 +14,9 @@ public interface SyncAuditLogDao
 
     boolean hasException(int syncId);
 
-    SyncAuditLogMapping[] getAll();
+    SyncAuditLogMapping[] getAll(Integer page);
 
-    SyncAuditLogMapping[] getAllForRepo(int repoId);
+    SyncAuditLogMapping[] getAllForRepo(int repoId, Integer page);
 
     SyncAuditLogMapping getLastForRepo(int repoId);
 

@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -40,12 +41,12 @@ public class AuditRootResource
     @Produces(MediaType.TEXT_HTML)
     @Path("/repository/all/")
     @GET
-    public Response showSyncAll()
+    public Response showSyncAll(@QueryParam("page") Integer page)
     {
         try
         {
             StringWriter writer = new StringWriter();
-            Map<String, Object> data = MapBuilder.<String, Object>build("logs", syncAuditDao.getAll());
+            Map<String, Object> data = MapBuilder.<String, Object>build("logs", syncAuditDao.getAll(page));
             templateRender.render("/templates/dvcs/audit/sync.vm", data, writer);
             return Response.ok(writer.toString()).build();
 
@@ -61,12 +62,12 @@ public class AuditRootResource
     @Produces(MediaType.TEXT_HTML)
     @Path("/repository/{id}/")
     @GET
-    public Response showSyncByRepo(@PathParam("id") int repoId)
+    public Response showSyncByRepo(@PathParam("id") int repoId, @QueryParam("page") Integer page)
     {
         try
         {
             StringWriter writer = new StringWriter();
-            Map<String, Object> data = MapBuilder.<String, Object>build("logs", syncAuditDao.getAllForRepo(repoId));
+            Map<String, Object> data = MapBuilder.<String, Object>build("logs", syncAuditDao.getAllForRepo(repoId, page));
             templateRender.render("/templates/dvcs/audit/sync.vm", data, writer);
             return Response.ok(writer.toString()).build();
 
