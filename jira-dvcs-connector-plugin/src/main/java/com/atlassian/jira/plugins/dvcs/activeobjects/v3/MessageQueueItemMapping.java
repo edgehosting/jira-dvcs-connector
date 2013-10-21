@@ -46,7 +46,7 @@ public interface MessageQueueItemMapping extends Entity
      */
     @NotNull
     MessageMapping getMessage();
-
+    
     /**
      * @return Identifier of consumer.
      */

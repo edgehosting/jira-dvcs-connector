@@ -66,7 +66,7 @@ public class MessageExecutor
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
      */
-    private final ConcurrentMap<MessageAddress<?>, List<MessageConsumer<?>>> messageAddressToConsumers = new ConcurrentHashMap<MessageAddress<?>, List<MessageConsumer<?>>>();
+    private final ConcurrentMap<String, List<MessageConsumer<?>>> messageAddressToConsumers = new ConcurrentHashMap<String, List<MessageConsumer<?>>>();
 
     /**
      * {@link MessageConsumer} to free tokens.
@@ -86,10 +86,10 @@ public class MessageExecutor
     {
         for (MessageConsumer<?> consumer : consumers)
         {
-            List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress());
+            List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress().getId());
             if (byAddress == null)
             {
-                messageAddressToConsumers.putIfAbsent(consumer.getAddress(), byAddress = new CopyOnWriteArrayList<MessageConsumer<?>>());
+                messageAddressToConsumers.putIfAbsent(consumer.getAddress().getId(), byAddress = new CopyOnWriteArrayList<MessageConsumer<?>>());
             }
             byAddress.add(consumer);
             consumerToRemainingTokens.put(consumer, new AtomicInteger(consumer.getParallelThreads()));
@@ -114,9 +114,9 @@ public class MessageExecutor
      * @param messageAddress
      *            destination address of new message
      */
-    public void notify(MessageAddress<?> messageAddress)
+    public void notify(String address)
     {
-        for (MessageConsumer<?> byMessageAddress : messageAddressToConsumers.get(messageAddress))
+        for (MessageConsumer<?> byMessageAddress : messageAddressToConsumers.get(address))
         {
             tryToProcessNextMessage(byMessageAddress);
         }
@@ -153,7 +153,7 @@ public class MessageExecutor
             }
 
             // we have token and message - message is going to be marked that is queued / busy - and can be proceed
-            messagingService.queued(consumer, message);
+            messagingService.running(consumer, message);
         }
 
         // process message itself

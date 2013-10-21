@@ -116,6 +116,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             try
             {
                 startProgress(repo);
+                
+                // first retry all failed messages
+                messagingService.retry(messagingService.getTagForSynchronization(repo));
 
                 try
                 {

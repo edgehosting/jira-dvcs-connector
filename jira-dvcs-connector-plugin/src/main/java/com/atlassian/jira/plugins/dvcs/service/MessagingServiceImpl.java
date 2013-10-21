@@ -1,5 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -21,29 +39,12 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
- *
+ * 
  * @author Stanislav Dvorscak
- *
+ * 
  */
 public class MessagingServiceImpl implements MessagingService
 {
@@ -207,7 +208,7 @@ public class MessagingServiceImpl implements MessagingService
             public void callback(MessageQueueItemMapping e)
             {
                 Message<HasProgress> message = new Message<HasProgress>();
-                @SuppressWarnings ("unchecked")
+                @SuppressWarnings("unchecked")
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
@@ -228,19 +229,13 @@ public class MessagingServiceImpl implements MessagingService
             @Override
             public void run()
             {
-                Set<MessageAddress<?>> allAddresses = Sets.<MessageAddress<?>> newHashSet(Iterables.transform(
-                        Arrays.asList(messageConsumers), new Function<MessageConsumer<?>, MessageAddress<?>>()
-                        {
+                Set<String> addresses = new HashSet<String>();
+                for (MessageConsumer<?> consumer : consumers)
+                {
+                    addresses.add(consumer.getAddress().getId());
+                }
 
-                            @Override
-                            public MessageAddress<?> apply(MessageConsumer<?> input)
-                            {
-                                return input.getAddress();
-                            }
-
-                        }));
-
-                for (MessageAddress<?> address : allAddresses)
+                for (String address : addresses)
                 {
                     messageExecutor.notify(address);
                 }
@@ -279,7 +274,7 @@ public class MessagingServiceImpl implements MessagingService
             messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state));
         }
 
-        messageExecutor.notify(address);
+        messageExecutor.notify(address.getId());
     }
 
     /**
@@ -326,90 +321,48 @@ public class MessagingServiceImpl implements MessagingService
     public void resume(String tag)
     {
         pausedTags.remove(tag);
-        final Set<MessageAddress<?>> addresses = new HashSet<MessageAddress<?>>();
-        messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
+        final Set<String> addresses = new HashSet<String>();
+
+        messageQueueItemDao.getByTagAndState(tag, MessageState.SLEEPING, new StreamCallback<MessageQueueItemMapping>()
         {
 
             @Override
-            public void callback(final MessageMapping message)
+            public void callback(MessageQueueItemMapping e)
             {
-                activeObjects.executeInTransaction(new TransactionCallback<Void>()
-                {
-
-                    @Override
-                    public Void doInTransaction()
-                    {
-                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
-                        {
-                            if (MessageState.SLEEPING.name().equals(messageQueueItem.getState()))
-                            {
-                                messageQueueItem.setState(MessageState.PENDING.name());
-                                messageQueueItemDao.save(messageQueueItem);
-
-                                try
-                                {
-                                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                                    MessageAddress messageAddress = get((Class) Class.forName(messageQueueItem.getMessage()
-                                            .getPayloadType()), messageQueueItem.getMessage().getAddress());
-                                    addresses.add(messageAddress);
-                                } catch (ClassNotFoundException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-
-                        return null;
-                    }
-
-                });
+                e.setState(MessageState.PENDING.name());
+                addresses.add(e.getMessage().getAddress());
             }
 
         });
 
-        for (MessageAddress<?> address : addresses)
+        for (String address : addresses)
         {
             messageExecutor.notify(address);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void retry(String tag)
+    public void retry(final String tag)
     {
-        final Set<MessageAddress<?>> addresses = new HashSet<MessageAddress<?>>();
+        final Set<String> addresses = new HashSet<String>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
         {
 
             @Override
-            public void callback(final MessageMapping message)
+            public void callback(MessageMapping e)
             {
-                activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                messageQueueItemDao.getByTagAndState(tag, MessageState.WAITING_FOR_RETRY, new StreamCallback<MessageQueueItemMapping>()
                 {
 
                     @Override
-                    public Void doInTransaction()
+                    public void callback(MessageQueueItemMapping e)
                     {
-                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
-                        {
-                            if (MessageState.WAITING_FOR_RETRY.name().equals(messageQueueItem.getState()))
-                            {
-                                messageQueueItem.setState(MessageState.PENDING.name());
-                                messageQueueItemDao.save(messageQueueItem);
-
-                                try
-                                {
-                                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                                    MessageAddress messageAddress = get((Class) Class.forName(messageQueueItem.getMessage()
-                                            .getPayloadType()), messageQueueItem.getMessage().getAddress());
-                                    addresses.add(messageAddress);
-                                } catch (ClassNotFoundException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-
-                        return null;
+                        addresses.add(e.getMessage().getAddress());
+                        e.setState(MessageState.PENDING.name());
+                        messageQueueItemDao.save(e);
                     }
 
                 });
@@ -417,7 +370,7 @@ public class MessagingServiceImpl implements MessagingService
 
         });
 
-        for (MessageAddress<?> address : addresses)
+        for (String address : addresses)
         {
             messageExecutor.notify(address);
         }
@@ -463,7 +416,7 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> void queued(MessageConsumer<P> consumer, Message<P> message)
+    public <P extends HasProgress> void running(MessageConsumer<P> consumer, Message<P> message)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setState(MessageState.RUNNING.name());
@@ -629,7 +582,7 @@ public class MessagingServiceImpl implements MessagingService
 
     /**
      * Re-maps provided {@link Message} to parameters.
-     *
+     * 
      * @param source
      *            of mapping
      * @return mapped entity
@@ -652,7 +605,7 @@ public class MessagingServiceImpl implements MessagingService
 
     /**
      * Re-maps provided {@link MessageMapping} to {@link Message}.
-     *
+     * 
      * @param target
      *            of mapping
      * @param source
@@ -696,10 +649,9 @@ public class MessagingServiceImpl implements MessagingService
         target.setRetriesCount(retriesCount);
     }
 
-
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.
-     *
+     * 
      * @param messageId
      *            {@link Message#getId()}
      * @param queue
@@ -724,13 +676,13 @@ public class MessagingServiceImpl implements MessagingService
     {
         if (consumer != null)
         {
-            synchronized(consumer)
+            synchronized (consumer)
             {
                 endProgress(repository, progress);
             }
         } else
         {
-            endProgress(repository,progress);
+            endProgress(repository, progress);
         }
 
     }
