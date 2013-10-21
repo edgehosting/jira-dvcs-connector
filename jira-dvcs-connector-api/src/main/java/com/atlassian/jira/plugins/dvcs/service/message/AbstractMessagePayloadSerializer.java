@@ -62,10 +62,6 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
             deserialized.softSync = jsoned.optBoolean("softSync");
             deserialized.syncAuditId = syncAudit;
-            if (true)
-            {
-                throw new RuntimeException("Serialization no no cool");
-            }
             //
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
