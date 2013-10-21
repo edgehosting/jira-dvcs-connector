@@ -88,14 +88,14 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping setException(final int syncId, final Throwable t)
+    public SyncAuditLogMapping setException(final int syncId, final Throwable t, final boolean overwriteOld)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
                 SyncAuditLogMapping found = find(syncId);
-                if (t != null)
+                if (t != null && overwriteOld)
                 {
                     found.setExcTrace(ExceptionUtils.getStackTrace(t));
                     found.save();

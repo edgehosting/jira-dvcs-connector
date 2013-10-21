@@ -140,6 +140,7 @@ public interface MessagingService
      * @return repository
      */
     <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message);
+    <P extends HasProgress> int getSyncAuditIdFromMessage(Message<P> message);
 
     /**
      * Ends progress if no messages left for repository
@@ -148,7 +149,7 @@ public interface MessagingService
      * @param progress
      * @param consumer
      */
-    <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer);
+    <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer, int auditId);
 
     <P extends  HasProgress> P deserializePayload(Message<P> message);
 }

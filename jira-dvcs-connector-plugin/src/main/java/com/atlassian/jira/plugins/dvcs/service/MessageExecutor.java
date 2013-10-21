@@ -291,7 +291,7 @@ public class MessageExecutor
                 Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
-                    messagingService.tryEndProgress(repository, progress, consumer);
+                    messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSyncAuditIdFromMessage(message));
                 }
             } catch (RuntimeException e)
             {

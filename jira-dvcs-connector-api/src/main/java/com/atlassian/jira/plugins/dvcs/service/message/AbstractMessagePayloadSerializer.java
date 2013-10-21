@@ -57,12 +57,13 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             P result = deserializeInternal(jsoned);
             //
-            syncAudit = getSyncAuditIdFromMessage(message);
             BaseProgressEnabledMessage deserialized = (BaseProgressEnabledMessage) result;
-            deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
-            deserialized.softSync = jsoned.optBoolean("softSync");
-            deserialized.syncAuditId = syncAudit;
+
+            // progress stuff
             //
+            syncAudit = getSyncAuditIdFromMessage(message);
+            deserialized.syncAuditId = syncAudit;
+
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
             {
@@ -73,6 +74,9 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
             }
             deserialized.progress = progress;
             //
+            //
+            deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
+            deserialized.softSync = jsoned.optBoolean("softSync");
             return result;
 
         } catch (Exception e)

@@ -92,6 +92,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+        int auditId = 0;
 
         if (skipSync(repo)) {
             return;
@@ -122,7 +123,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
             try
             {
-                int auditId = startProgress(repo, softSync);
+                auditId = startProgress(repo, softSync);
 
                 // first retry all failed messages
                 messagingService.retry(messagingService.getTagForSynchronization(repo));
@@ -180,7 +181,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 progress.setError("Error during sync. See server logs.");
             } finally
             {
-                messagingService.tryEndProgress(repo, getProgress(repo.getId()), null);
+                messagingService.tryEndProgress(repo, getProgress(repo.getId()), null, auditId);
             }
         }
     }

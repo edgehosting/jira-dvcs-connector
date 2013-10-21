@@ -462,7 +462,7 @@ public class MessagingServiceImpl implements MessagingService
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
-        syncAudit.setException(getSyncAuditIdFromMessage(message), t);
+        syncAudit.setException(getSyncAuditIdFromMessage(message), t, false);
     }
 
     @Override
@@ -684,22 +684,22 @@ public class MessagingServiceImpl implements MessagingService
     }
 
     @Override
-    public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer)
+    public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
         if (consumer != null)
         {
             synchronized (consumer)
             {
-                endProgress(repository, progress);
+                endProgress(repository, progress, auditId);
             }
         } else
         {
-            endProgress(repository, progress);
+            endProgress(repository, progress, auditId);
         }
 
     }
 
-    private void endProgress(Repository repository, Progress progress)
+    private void endProgress(Repository repository, Progress progress, int auditId)
     {
         if (getQueuedCount(getTagForSynchronization(repository)) == 0)
         {
@@ -711,7 +711,10 @@ public class MessagingServiceImpl implements MessagingService
             if (progress != null && !progress.isFinished())
             {
                 progress.finish();
-                syncAudit.finish(progress.getAuditLogId());
+            }
+            if (auditId > 0)
+            {
+                syncAudit.finish(auditId);
             }
         }
     }

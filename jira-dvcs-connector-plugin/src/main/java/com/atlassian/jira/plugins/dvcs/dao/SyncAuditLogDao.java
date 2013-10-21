@@ -8,7 +8,7 @@ public interface SyncAuditLogDao
 
     SyncAuditLogMapping finish(int syncId);
 
-    SyncAuditLogMapping setException(int syncId, Throwable t);
+    SyncAuditLogMapping setException(int syncId, Throwable t, boolean overwriteOld);
 
     int removeAllForRepo(int repoId);
 
