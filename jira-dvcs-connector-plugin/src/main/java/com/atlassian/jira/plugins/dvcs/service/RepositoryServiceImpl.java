@@ -565,8 +565,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     private void markForRemove(Repository repository)
     {
-        // we stop all synchronizations first to prevent starting a new redundant synchronization
-    	synchronizer.stopSynchronization(repository);
+    	synchronizer.pauseSynchronization(repository, true);
         repository.setDeleted(true);
     }
 
@@ -576,6 +575,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void remove(Repository repository)
     {
+        synchronizer.stopSynchronization(repository);
+
         // try remove postcommit hook
         if (repository.isLinked())
         {

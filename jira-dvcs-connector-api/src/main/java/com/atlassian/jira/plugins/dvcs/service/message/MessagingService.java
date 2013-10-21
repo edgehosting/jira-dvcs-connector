@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -42,7 +43,7 @@ public interface MessagingService
     void resume(String tag);
 
     /**
-     * Retries all messages, which are marked by provided tag.
+     * Retries all messages, which are marked by provided tag, and are in {@link MessageState#WAITING_FOR_RETRY}.
      *
      * @param tag
      *            {@link Message#getTags()}
@@ -57,7 +58,15 @@ public interface MessagingService
      */
     void cancel(String tag);
 
-    <P extends HasProgress> void queued(MessageConsumer<P> consumer, Message<P> message);
+    /**
+     * Marks provided message as running / in progress.
+     *
+     * @param consumer
+     *            owner of processing
+     * @param message
+     *            for makring
+     */
+    <P extends HasProgress> void running(MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
@@ -122,6 +131,8 @@ public interface MessagingService
      */
     String getTagForSynchronization(Repository repository);
 
+    String getTagForAuditSynchronization(int id);
+
     /**
      * Extracts repository from message
      *
@@ -138,4 +149,6 @@ public interface MessagingService
      * @param consumer
      */
     <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer);
+
+    <P extends  HasProgress> P deserializePayload(Message<P> message);
 }

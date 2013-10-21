@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
+import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 
 /**
@@ -49,7 +50,17 @@ public interface MessageQueueItemDao
      * @return queue item for provided queue name and message
      */
     MessageQueueItemMapping getByQueueAndMessage(String queue, int messageId);
-    
+
+    /**
+     * @param tag
+     *            {@link Message#getTags()}
+     * @param state
+     *            {@link MessageQueueItemMapping#getState()}
+     * @param stream
+     *            searches for {@link MessageQueueItemMapping}-s by provided tag and state
+     */
+    void getByTagAndState(String tag, MessageState state, StreamCallback<MessageQueueItemMapping> stream);
+
     /**
      * Returns all {@link MessageQueueItemMapping}-s for provided state.
      * 

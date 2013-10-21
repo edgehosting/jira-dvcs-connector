@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
+import com.atlassian.jira.plugins.dvcs.model.Message;
+
 /**
  * Serializer/Unserializer of provided message payload.
  *
@@ -23,7 +25,7 @@ public interface MessagePayloadSerializer<P extends HasProgress>
      *            serialized version of message payload
      * @return deserialized message
      */
-    P deserialize(int messageId, String payload, int repoId);
+    P deserialize(Message<P> message);
 
     /**
      * @return type of payload

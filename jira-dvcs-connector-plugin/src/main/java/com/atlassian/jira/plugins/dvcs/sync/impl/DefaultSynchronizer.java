@@ -124,6 +124,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             {
                 int auditId = startProgress(repo, softSync);
 
+                // first retry all failed messages
+                messagingService.retry(messagingService.getTagForSynchronization(repo));
+
                 try
                 {
                     messagingService.retry(messagingService.getTagForSynchronization(repo));
@@ -162,7 +165,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                                     SynchronizeChangesetMessage.class, //
                                     GithubSynchronizeChangesetMessageConsumer.KEY //
                                     );
-                            messagingService.publish(key, message, messagingService.getTagForSynchronization(repo));
+                            messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                         }
                     }
                     if (pullRequestSync)
@@ -222,7 +225,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         OldBitbucketSynchronizeCsetMsg.class, //
                         OldBitbucketSynchronizeCsetMsgConsumer.KEY //
                         );
-                messagingService.publish(key, message, messagingService.getTagForSynchronization(repository));
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
             }
         } else
         {
@@ -239,7 +242,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
                     (Progress) null, filterNodes.newHeads, filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newHeads), softSync, auditId);
 
-            messagingService.publish(key, message, messagingService.getTagForSynchronization(repository));
+            messagingService.publish(key, message, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
         }
     }
 
@@ -250,7 +253,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 BitbucketSynchronizeActivityMessageConsumer.KEY //
                 );
         messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId),
-                messagingService.getTagForSynchronization(repo));
+                messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
     }
 
     private Collection<String> getInclude(BranchFilterInfo filterNodes)
