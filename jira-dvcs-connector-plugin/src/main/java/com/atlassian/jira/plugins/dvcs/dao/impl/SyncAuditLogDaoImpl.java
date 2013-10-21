@@ -95,7 +95,9 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             public SyncAuditLogMapping call() throws Exception
             {
                 SyncAuditLogMapping found = find(syncId);
-                if (t != null && overwriteOld)
+                boolean noExceptionYet = StringUtils.isBlank(found.getExcTrace());
+
+                if (t != null && (overwriteOld || noExceptionYet))
                 {
                     found.setExcTrace(ExceptionUtils.getStackTrace(t));
                     found.save();
