@@ -61,18 +61,17 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     }
 
     @Override
-    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message)
+    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload)
     {
         CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) dvcsCommunicatorProvider
                 .getCommunicator(BitbucketCommunicator.BITBUCKET);
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        Repository repo = message.getPayload().getRepository();
-        int pageNum = message.getPayload().getPage();
+        Repository repo = payload.getRepository();
+        int pageNum = payload.getPage();
 
-        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(message.getPayload()), message
-                .getPayload().getExclude());
-        process(message, page);
+        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(payload), payload.getExclude());
+        process(message, payload, page);
         //
     }
 
@@ -87,11 +86,10 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         return newHeadsNodes;
     }
 
-    private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketChangesetPage page)
+    private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean errorOnPage = false;
-        BitbucketSynchronizeChangesetMessage payload = message.getPayload();
         boolean softSync = payload.isSoftSync();
 
         for (BitbucketNewChangeset ncset : csets)

@@ -25,8 +25,10 @@ public interface MessageConsumer<P extends HasProgress>
      * 
      * @param message
      *            identity of message
+     * @param payload
+     *            deserialized payload
      */
-    void onReceive(Message<P> message);
+    void onReceive(Message<P> message, P payload);
 
     /**
      * @return address of messages, which will be received

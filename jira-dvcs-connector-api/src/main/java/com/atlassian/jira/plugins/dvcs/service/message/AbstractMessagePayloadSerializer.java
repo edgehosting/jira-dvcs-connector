@@ -44,7 +44,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
     }
 
     @Override
-    public final P deserialize(int messageId, String payload, int repoId)
+    public final P deserialize(String payload)
     {
         Progress progress = null;
         try
@@ -54,7 +54,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
             P result = deserializeInternal(jsoned);
             //
             BaseProgressEnabledMessage deserialized = (BaseProgressEnabledMessage) result;
-            deserialized.repository = repositoryService.get(repoId);
+            deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
             deserialized.softSync = jsoned.optBoolean("softSync");
             deserialized.syncAuditId = jsoned.optInt("syncAuditId");
 
@@ -71,7 +71,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
         } catch (Exception e)
         {
-            throw new MessageDeserializationException(e, progress, messageId);
+            throw new MessageDeserializationException(e, progress);
         }
     }
 
@@ -89,23 +89,16 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         private static final long serialVersionUID = -469226983071844241L;
 
         private Progress progress;
-        private int messageId;
 
-        private MessageDeserializationException(Throwable cause, Progress p, int messageId)
+        private MessageDeserializationException(Throwable cause, Progress p)
         {
             super(cause);
             this.progress = p;
-            this.messageId = messageId;
         }
 
         public Progress getProgressOrNull()
         {
             return progress;
-        }
-
-        public int getMessageId()
-        {
-            return messageId;
         }
     }
 

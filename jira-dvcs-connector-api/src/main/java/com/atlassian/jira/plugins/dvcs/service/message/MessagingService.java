@@ -147,4 +147,6 @@ public interface MessagingService
      * @param consumer
      */
     <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer);
+
+    <P extends  HasProgress> P deserializePayload(Message<P> message);
 }

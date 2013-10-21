@@ -1,23 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -39,6 +21,22 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -260,9 +258,11 @@ public class MessagingServiceImpl implements MessagingService
             }
         }
 
+        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payload.getClass());
+
         Message<P> message = new Message<P>();
         message.setAddress(address);
-        message.setPayload(payload);
+        message.setPayload(payloadSerializer.serialize(payload));
         message.setPayloadType(address.getPayloadType());
         message.setTags(tags);
         MessageMapping messageMapping = messageDao.create(toMessageMap(message), tags);
@@ -312,6 +312,14 @@ public class MessagingServiceImpl implements MessagingService
             }
 
         });
+    }
+
+    @Override
+    public <P extends  HasProgress> P deserializePayload(Message<P> message)
+    {
+        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(message.getPayloadType());
+
+        return payloadSerializer.deserialize(message.getPayload());
     }
 
     /**
@@ -589,16 +597,12 @@ public class MessagingServiceImpl implements MessagingService
      */
     private <P extends HasProgress> Map<String, Object> toMessageMap(Message<P> source)
     {
-        @SuppressWarnings("unchecked")
-        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(source
-                .getAddress().getPayloadType());
-
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageMapping.ADDRESS, source.getAddress().getId());
         result.put(MessageMapping.PRIORITY, source.getPriority());
         result.put(MessageMapping.PAYLOAD_TYPE, source.getPayloadType().getCanonicalName());
-        result.put(MessageMapping.PAYLOAD, payloadSerializer.serialize(source.getPayload()));
+        result.put(MessageMapping.PAYLOAD, source.getPayload());
 
         return result;
     }
@@ -623,8 +627,6 @@ public class MessagingServiceImpl implements MessagingService
             throw new RuntimeException(e);
         }
 
-        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payloadType);
-
         int retriesCount = 0;
         for (MessageQueueItemMapping queueItem : source.getQueuesItems())
         {
@@ -633,7 +635,7 @@ public class MessagingServiceImpl implements MessagingService
 
         target.setId(source.getID());
         target.setAddress(get(payloadType, source.getAddress()));
-        target.setPayload(payloadSerializer.deserialize(source.getID(), source.getPayload(), repoId(source.getID(), source.getTags())));
+        target.setPayload(source.getPayload());
         target.setPayloadType(payloadType);
         target.setPriority(source.getPriority());
         target.setTags(Iterables.toArray(Iterables.transform(Arrays.asList(source.getTags()), new Function<MessageTagMapping, String>()
@@ -691,11 +693,12 @@ public class MessagingServiceImpl implements MessagingService
     {
         if (getQueuedCount(getTagForSynchronization(repository)) == 0)
         {
-            if (progress.getError() == null)
+            // TODO error could be in PR synchronization and thus we can process smartcommits
+            if (progress == null || progress.getError() == null)
             {
                 smartcCommitsProcessor.startProcess(progress, repository, changesetService);
             }
-            if (!progress.isFinished())
+            if (progress != null && !progress.isFinished())
             {
                 progress.finish();
             }

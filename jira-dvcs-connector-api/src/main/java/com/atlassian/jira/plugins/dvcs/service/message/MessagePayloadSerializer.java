@@ -23,7 +23,7 @@ public interface MessagePayloadSerializer<P extends HasProgress>
      *            serialized version of message payload
      * @return deserialized message
      */
-    P deserialize(int messageId, String payload, int repoId);
+    P deserialize(String payload);
 
     /**
      * @return type of payload

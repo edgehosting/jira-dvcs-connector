@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -140,6 +142,7 @@ public class MessageExecutor
         synchronized (this)
         {
             message = messagingService.getNextMessageForConsuming(consumer, consumer.getAddress().getId());
+
             if (message == null)
             {
                 // no other message for processing
@@ -241,36 +244,52 @@ public class MessageExecutor
         @Override
         public void run()
         {
+            Progress progress = null;
             try
             {
-                if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
+                P payload = null;
+                try
                 {
-                    consumer.onReceive(message);
+                    payload = messagingService.deserializePayload(message);
+                    progress = payload.getProgress();
+                } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
+                {
+                    progress = e.getProgressOrNull();
+                    throw e;
+                }
+
+                if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags()))
+                {
+                    consumer.onReceive(message, payload);
                 } else
                 {
-                    discard(message, message.getPayload());
-                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
+                    discard(message);
+                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
                 }
 
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
                 messagingService.fail(consumer, message);
-                message.getPayload().getProgress().setError("Error during sync. See server logs.");
+
+                if (progress != null)
+                {
+                    progress.setError("Error during sync. See server logs.");
+                }
             } finally
             {
-                tryEndProgress(message, consumer);
+                tryEndProgress(message, consumer, progress);
             }
         }
 
-        protected <P extends HasProgress> void tryEndProgress(Message<P> message, MessageConsumer<P> consumer)
+        protected <P extends HasProgress> void tryEndProgress(Message<P> message, MessageConsumer<P> consumer, Progress progress)
         {
             try
             {
                 Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
-                    messagingService.tryEndProgress(repository, message.getPayload().getProgress(), consumer);
+                    messagingService.tryEndProgress(repository, progress, consumer);
                 }
             } catch (RuntimeException e)
             {
@@ -279,7 +298,7 @@ public class MessageExecutor
             }
         }
 
-        private void discard(Message<P> message, P payload)
+        private void discard(Message<P> message)
         {
             messagingService.discard(message);
         }
