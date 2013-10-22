@@ -154,7 +154,7 @@ public class MessageDaoImpl implements MessageDao
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING }));
+        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
         return activeObjects.count(MessageMapping.class, query);
     }
 }

@@ -60,16 +60,15 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 if (mapping != null)
                 {
                     mapping.setEndDate(new Date());
-                    if (!SyncAuditLogMapping.SYNC_STATUS_SLEEPING.equals(mapping.getSyncStatus()))
+
+                    if (StringUtils.isNotBlank(mapping.getExcTrace()))
                     {
-                        if (StringUtils.isNotBlank(mapping.getExcTrace()))
-                        {
-                            mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_FAILED);
-                        } else
-                        {
-                            mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SUCCESS);
-                        }
+                        mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_FAILED);
+                    } else
+                    {
+                        mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SUCCESS);
                     }
+
                     mapping.save();
                 }
                 return mapping;
