@@ -123,7 +123,10 @@ public class MessageDaoImpl implements MessageDao
             {
                 // load whole message
                 MessageMapping wholeMessage = activeObjects.get(MessageMapping.class, message.getID());
-                messagesStream.callback(wholeMessage);
+                if (wholeMessage != null)
+                {
+                    messagesStream.callback(wholeMessage);
+                }
             }
 
         });
