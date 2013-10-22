@@ -55,9 +55,12 @@ pre {
         <td>$!log.endDate #if($log.endDate) #set($took = ($log.endDate.time - $log.startDate.time) / 1000) (<b>~ $took</b> secs.)  #end </td>
         <td>$log.syncType</td>
         <td>$log.syncStatus</td>
-        <td><div class="trace-pane">
-            <pre>$!log.excTrace</pre>
-          </div></td>
+        <td>
+            <div class="trace-pane">
+                Total errors: <b>($log.totalErrors)</b>
+                <pre>$!log.excTrace</pre>
+          </div>
+        </td>
       </tr>
       #end
     </tbody>

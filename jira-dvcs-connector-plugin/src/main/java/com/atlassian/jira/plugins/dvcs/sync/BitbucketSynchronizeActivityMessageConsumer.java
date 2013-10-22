@@ -114,7 +114,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 int localPrId = processActivity(message, payload, info, pullRestpoint);
                 markProcessed(payload, info, localPrId);
 
-                payload.getProgress().inPullRequestProgress(payload.getProcessedPullRequests().size(),
+                payload.getProgress().inPullRequestProgress(processedSize(payload),
                         jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
             } catch (Exception e)
             {
@@ -127,6 +127,11 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
 
         messagingService.ok(this, message);
+    }
+
+    protected int processedSize(BitbucketSynchronizeActivityMessage payload)
+    {
+        return payload.getProcessedPullRequests() == null ? 0 : payload.getProcessedPullRequests().size();
     }
 
     protected void markProcessed(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info, Integer prLocalId)

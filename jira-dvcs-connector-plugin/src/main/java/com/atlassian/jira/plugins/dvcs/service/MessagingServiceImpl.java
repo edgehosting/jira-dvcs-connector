@@ -15,7 +15,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +218,7 @@ public class MessagingServiceImpl implements MessagingService
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
-                fail(consumer, message, new RuntimeException("Marking to fail."));
+                fail(consumer, message, new RuntimeException("Synchronization has been interrupted (probably plugin un/re/install)."));
             }
 
         });

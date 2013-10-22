@@ -44,6 +44,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
                 data.put(SyncAuditLogMapping.START_DATE, new Date());
                 data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
+                data.put(SyncAuditLogMapping.TOTAL_ERRORS , 0);
                 return ao.create(SyncAuditLogMapping.class, data);
             }
         });
@@ -78,6 +79,11 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 
     @Override
     public SyncAuditLogMapping pause(final int syncId)
+    {
+        return status(syncId);
+    }
+
+    protected SyncAuditLogMapping status(final int syncId)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -141,8 +147,11 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 if (t != null && (overwriteOld || noExceptionYet))
                 {
                     found.setExcTrace(ExceptionUtils.getStackTrace(t));
-                    found.save();
                 }
+
+                found.setTotalErrors(found.getTotalErrors() + 1);
+                found.save();
+
                 return found;
             }
         });
