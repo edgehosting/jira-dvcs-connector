@@ -19,7 +19,7 @@
       <td headers=""><span class="aui-lozenge pull-request-state #if($pr.lastStatus == "OPEN") aui-lozenge-complete #elseif($pr.lastStatus == "MERGED") aui-lozenge-success #elseif($pr.lastStatus == "DECLINED") aui-lozenge-error #end">$pr.lastStatus</span></td>
       <td headers="">$pr.name</td>
       <td headers="">?</td>
-      <td headers="">$pr.sourceBranch</td>
+      <td headers="">$pr.sourceRepo -> $pr.sourceBranch</td>
       <td headers="">$pr.destinationBranch</td>
       <td headers="">$pr.createdOn</td>
     </tr>

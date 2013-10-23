@@ -95,7 +95,10 @@ public class SmartcommitOperation implements Runnable
                                     SmartCommitError sce = new SmartCommitError(changeset.getNode(), commitUrl, error);
                                     smartCommitErrors.add(sce);
                                 }
-                                progress.setSmartCommitErrors(smartCommitErrors);
+                                if (progress != null)
+                                {
+                                    progress.setSmartCommitErrors(smartCommitErrors);
+                                }
                             }
                         }
                     }

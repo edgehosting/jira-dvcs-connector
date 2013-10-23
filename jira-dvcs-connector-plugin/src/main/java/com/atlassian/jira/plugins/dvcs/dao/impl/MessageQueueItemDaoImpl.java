@@ -12,6 +12,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
@@ -27,7 +28,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  */
 public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 {
-    
+
     /**
      * Injected {@link QueryHelper} dependency.
      */
@@ -147,7 +148,44 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
         return founded.length == 1 ? founded[0] : null;
     }
 
-    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getByTagAndState(String tag, MessageState state, final StreamCallback<MessageQueueItemMapping> stream)
+    {
+        Query query = new QueryTemplate()
+        {
+
+            @Override
+            protected void build()
+            {
+                alias(MessageQueueItemMapping.class, "messageQueueItem");
+                alias(MessageTagMapping.class, "messageTag");
+
+                join(MessageTagMapping.class, column(MessageQueueItemMapping.class, MessageQueueItemMapping.MESSAGE),
+                        MessageTagMapping.MESSAGE);
+
+                where(and( //
+                        eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")), //
+                        eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
+                ));
+            }
+
+        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", state.name()));
+
+        activeObjects.stream(MessageQueueItemMapping.class, query, new EntityStreamCallback<MessageQueueItemMapping, Integer>()
+        {
+
+            @Override
+            public void onRowRead(MessageQueueItemMapping messageQueueItem)
+            {
+                stream.callback(activeObjects.get(MessageQueueItemMapping.class, messageQueueItem.getID()));
+            }
+
+        });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -172,7 +210,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
             @Override
             public void onRowRead(MessageQueueItemMapping messageQueueItem)
             {
-                stream.callback(messageQueueItem);
+                stream.callback(activeObjects.get(MessageQueueItemMapping.class, messageQueueItem.getID()));
             }
 
         });

@@ -91,13 +91,13 @@ public interface MessageMapping extends Entity
     /**
      * @return Marker tags of message.
      */
-    @OneToMany()
+    @OneToMany(reverse = "getMessage")
     MessageTagMapping[] getTags();
 
     /**
      * @return remaining consumers of this message
      */
-    @OneToMany
+    @OneToMany(reverse = "getMessage")
     MessageQueueItemMapping[] getQueuesItems();
 
 }

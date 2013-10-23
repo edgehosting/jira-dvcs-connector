@@ -1,21 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
  * Provides services related to messaging.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public interface MessagingService
 {
+    public static final int DEFAULT_PRIORITY = 0;
+    public static final int SOFTSYNC_PRIORITY = 10;
 
     /**
      * Publishes a message with provided payload under provided address.
-     * 
+     *
      * @param address
      *            for publication
      * @param payload
@@ -26,8 +29,22 @@ public interface MessagingService
     <P extends HasProgress> void publish(MessageAddress<P> address, P payload, String... tags);
 
     /**
+     * Publishes a message with provided payload under provided address.
+     *
+     * @param address
+     *            for publication
+     * @param payload
+     *            for publication
+     * @param priority
+     *            priority of message
+     * @param tags
+     *            of messages
+     */
+    <P extends HasProgress> void publish(MessageAddress<P> address, P payload, int priority, String... tags);
+
+    /**
      * Pauses all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
@@ -35,14 +52,14 @@ public interface MessagingService
 
     /**
      * Resume all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
     void resume(String tag);
 
     /**
-     * Retries all messages, which are marked by provided tag.
+     * Retries all messages, which are marked by provided tag, and are in {@link MessageState#WAITING_FOR_RETRY}.
      *
      * @param tag
      *            {@link Message#getTags()}
@@ -51,17 +68,25 @@ public interface MessagingService
 
     /**
      * Cancels all messages, which are marked by provided tag.
-     * 
+     *
      * @param tag
      *            {@link Message#getTags()}
      */
     void cancel(String tag);
 
-    <P extends HasProgress> void queued(MessageConsumer<P> consumer, Message<P> message);
+    /**
+     * Marks provided message as running / in progress.
+     *
+     * @param consumer
+     *            owner of processing
+     * @param message
+     *            for makring
+     */
+    <P extends HasProgress> void running(MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
-     * 
+     *
      * @param consumer
      *            of message
      * @param message
@@ -71,13 +96,13 @@ public interface MessagingService
 
     /**
      * Marks message specified by provided message id, as proceed successfully.
-     * 
+     *
      * @param consumer
      *            of message
      * @param message
      *            for marking
      */
-    <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message);
+    <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message, Throwable t);
 
     /**
      * Discards message.
@@ -98,7 +123,7 @@ public interface MessagingService
 
     /**
      * Returns count of queued messages with provided publication address and marked by provided tag.
-     * 
+     *
      * @param tag
      *            of message
      * @return count of queued messages
@@ -107,7 +132,7 @@ public interface MessagingService
 
     /**
      * Creates message address, necessary by publishing and routing.
-     * 
+     *
      * @param payloadType
      *            type of payload
      * @param id
@@ -122,6 +147,8 @@ public interface MessagingService
      */
     String getTagForSynchronization(Repository repository);
 
+    String getTagForAuditSynchronization(int id);
+
     /**
      * Extracts repository from message
      *
@@ -129,6 +156,7 @@ public interface MessagingService
      * @return repository
      */
     <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message);
+    <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags);
 
     /**
      * Ends progress if no messages left for repository
@@ -137,5 +165,7 @@ public interface MessagingService
      * @param progress
      * @param consumer
      */
-    <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer);
+    <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer, int auditId);
+
+    <P extends  HasProgress> P deserializePayload(Message<P> message);
 }

@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -17,15 +8,28 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+
 /**
  * Is responsible for message execution.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class MessageExecutor
 {
@@ -66,7 +70,7 @@ public class MessageExecutor
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
      */
-    private final ConcurrentMap<MessageAddress<?>, List<MessageConsumer<?>>> messageAddressToConsumers = new ConcurrentHashMap<MessageAddress<?>, List<MessageConsumer<?>>>();
+    private final ConcurrentMap<String, List<MessageConsumer<?>>> messageAddressToConsumers = new ConcurrentHashMap<String, List<MessageConsumer<?>>>();
 
     /**
      * {@link MessageConsumer} to free tokens.
@@ -86,10 +90,10 @@ public class MessageExecutor
     {
         for (MessageConsumer<?> consumer : consumers)
         {
-            List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress());
+            List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress().getId());
             if (byAddress == null)
             {
-                messageAddressToConsumers.putIfAbsent(consumer.getAddress(), byAddress = new CopyOnWriteArrayList<MessageConsumer<?>>());
+                messageAddressToConsumers.putIfAbsent(consumer.getAddress().getId(), byAddress = new CopyOnWriteArrayList<MessageConsumer<?>>());
             }
             byAddress.add(consumer);
             consumerToRemainingTokens.put(consumer, new AtomicInteger(consumer.getParallelThreads()));
@@ -110,13 +114,13 @@ public class MessageExecutor
     /**
      * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
      * be slept because of empty queues.
-     * 
+     *
      * @param messageAddress
      *            destination address of new message
      */
-    public void notify(MessageAddress<?> messageAddress)
+    public void notify(String address)
     {
-        for (MessageConsumer<?> byMessageAddress : messageAddressToConsumers.get(messageAddress))
+        for (MessageConsumer<?> byMessageAddress : messageAddressToConsumers.get(address))
         {
             tryToProcessNextMessage(byMessageAddress);
         }
@@ -125,7 +129,7 @@ public class MessageExecutor
     /**
      * Tries to process next message of queue, if there is any message and any available token ({@link MessageConsumer#getParallelThreads()
      * thread}).
-     * 
+     *
      * @param consumer
      *            for processing
      */
@@ -140,6 +144,7 @@ public class MessageExecutor
         synchronized (this)
         {
             message = messagingService.getNextMessageForConsuming(consumer, consumer.getAddress().getId());
+
             if (message == null)
             {
                 // no other message for processing
@@ -153,7 +158,7 @@ public class MessageExecutor
             }
 
             // we have token and message - message is going to be marked that is queued / busy - and can be proceed
-            messagingService.queued(consumer, message);
+            messagingService.running(consumer, message);
         }
 
         // process message itself
@@ -162,7 +167,7 @@ public class MessageExecutor
 
     /**
      * Gets single available token, if any.
-     * 
+     *
      * @param consumer
      *            which need token
      * @return true if free token was acquired - otherwise false is returned
@@ -185,7 +190,7 @@ public class MessageExecutor
 
     /**
      * Releases single token - counter part of {@link #acquireToken(MessageConsumer)}.
-     * 
+     *
      * @param consumer
      *            for which consumer
      */
@@ -196,9 +201,9 @@ public class MessageExecutor
 
     /**
      * Runnable for single message processing.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
+     *
      * @param <P>
      *            type of message payload
      */
@@ -217,7 +222,7 @@ public class MessageExecutor
 
         /**
          * Constructor.
-         * 
+         *
          * @param message
          * @param consumer
          */
@@ -241,36 +246,52 @@ public class MessageExecutor
         @Override
         public void run()
         {
+            Progress progress = null;
             try
             {
-                if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags()))
+                P payload = null;
+                try
                 {
-                    consumer.onReceive(message);
+                    payload = messagingService.deserializePayload(message);
+                    progress = payload.getProgress();
+                } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
+                {
+                    progress = e.getProgressOrNull();
+                    throw e;
+                }
+
+                if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags()))
+                {
+                    consumer.onReceive(message, payload);
                 } else
                 {
-                    discard(message, message.getPayload());
-                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), message.getPayload(), message.getTags());
+                    discard(message);
+                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
                 }
 
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
-                messagingService.fail(consumer, message);
-                message.getPayload().getProgress().setError("Error during sync. See server logs.");
+                messagingService.fail(consumer, message, e);
+
+                if (progress != null)
+                {
+                    progress.setError("Error during sync. See server logs.");
+                }
             } finally
             {
-                tryEndProgress(message, consumer);
+                tryEndProgress(message, consumer, progress);
             }
         }
 
-        protected <P extends HasProgress> void tryEndProgress(Message<P> message, MessageConsumer<P> consumer)
+        protected <PR extends HasProgress> void tryEndProgress(Message<PR> message, MessageConsumer<PR> consumer, Progress progress)
         {
             try
             {
                 Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
-                    messagingService.tryEndProgress(repository, message.getPayload().getProgress(), consumer);
+                    messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSyncAuditIdFromTags(message.getTags()));
                 }
             } catch (RuntimeException e)
             {
@@ -279,7 +300,7 @@ public class MessageExecutor
             }
         }
 
-        private void discard(Message<P> message, P payload)
+        private void discard(Message<P> message)
         {
             messagingService.discard(message);
         }

@@ -69,9 +69,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     @Override
-    public void onReceive(Message<BitbucketSynchronizeActivityMessage> message)
+    public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload)
     {
-        BitbucketSynchronizeActivityMessage payload = message.getPayload();
         Repository repo = payload.getRepository();
         int jiraCount = payload.getProgress().getJiraCount();
 
@@ -86,7 +85,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         } catch (Exception e)
         {
             LOGGER.error("Failed to process " + payload.getRepository().getName(), e);
-            messagingService.fail(this, message);
+            messagingService.fail(this, message, e);
             return;
         }
 
@@ -112,10 +111,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                     repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
                 }
 
-                int localPrId = processActivity(message, info, pullRestpoint);
+                int localPrId = processActivity(message, payload, info, pullRestpoint);
                 markProcessed(payload, info, localPrId);
 
-                payload.getProgress().inPullRequestProgress(payload.getProcessedPullRequests().size(),
+                payload.getProgress().inPullRequestProgress(processedSize(payload),
                         jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
             } catch (Exception e)
             {
@@ -124,10 +123,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
         if (!isLastPage)
         {
-            fireNextPage(message, activityPage.getNext(), lastSync);
+            fireNextPage(message, payload, activityPage.getNext(), lastSync);
         }
 
         messagingService.ok(this, message);
+    }
+
+    protected int processedSize(BitbucketSynchronizeActivityMessage payload)
+    {
+        return payload.getProcessedPullRequests() == null ? 0 : payload.getProcessedPullRequests().size();
     }
 
     protected void markProcessed(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info, Integer prLocalId)
@@ -136,12 +140,19 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         payload.getProcessedPullRequestsLocal().add(prLocalId);
     }
 
-    private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, String nextUrl, Date lastSync)
+    private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload, String nextUrl, Date lastSync)
     {
-        BitbucketSynchronizeActivityMessage payload = message.getPayload();
-
         messagingService.publish(getAddress(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
-                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync, payload.getSyncAuditId()), message.getTags());
+                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync, payload.getSyncAuditId()), getPriority(payload), message.getTags());
+    }
+
+    private int getPriority(BitbucketSynchronizeActivityMessage payload)
+    {
+        if (payload == null)
+        {
+            return MessagingService.DEFAULT_PRIORITY;
+        }
+        return payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY;
     }
 
     private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)
@@ -149,10 +160,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return infos.isEmpty() || infos.size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE;
     }
 
-    private int processActivity(Message<BitbucketSynchronizeActivityMessage> message, BitbucketPullRequestActivityInfo info,
+    private int processActivity(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info,
             PullRequestRemoteRestpoint pullRestpoint)
     {
-        BitbucketSynchronizeActivityMessage payload = message.getPayload();
         Repository repo = payload.getRepository();
 
         RepositoryPullRequestMapping localPullRequest = ensurePullRequestPresent(repo, pullRestpoint, info, payload);

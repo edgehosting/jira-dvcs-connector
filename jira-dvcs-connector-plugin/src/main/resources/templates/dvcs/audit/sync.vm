@@ -19,6 +19,7 @@ table,td,th {
 
 .trace-pane {
   max-height: 400px;
+  max-width: 900px;
   overflow: auto;
 }
 
@@ -26,6 +27,9 @@ pre {
   margin: 0px;
 }
 
+.ok {
+  background-color: #F1FAED ;
+}
 .alert {
   background-color: #FFF2F3;
 }
@@ -35,7 +39,7 @@ pre {
   <table>
     <thead>
       <tr>
-        <th>Repository ID</th>
+        <th>ID: Repo (Sync)</th>
         <th>Start Date</th>
         <th>End Date</th>
         <th>Sync Type</th>
@@ -45,15 +49,18 @@ pre {
     </thead>
     <tbody>
       #foreach($log in $logs)
-      <tr class="#if($log.syncStatus == "FAILED") alert #end">
-        <td>$log.repoId</td>
+      <tr class="ok #if($log.excTrace) alert #end">
+        <td><b>$log.repoId</b> ($log.ID)</td>
         <td>$log.startDate</td>
-        <td>$log.endDate</td>
+        <td>$!log.endDate #if($log.endDate) #set($took = ($log.endDate.time - $log.startDate.time) / 1000) (<b>~ $took</b> secs.)  #end </td>
         <td>$log.syncType</td>
         <td>$log.syncStatus</td>
-        <td><div class="trace-pane">
-            <pre>$!log.excTrace</pre>
-          </div></td>
+        <td>
+            <div class="trace-pane">
+                Total errors: <b>($log.totalErrors)</b>
+                <pre>$!log.excTrace</pre>
+          </div>
+        </td>
       </tr>
       #end
     </tbody>
