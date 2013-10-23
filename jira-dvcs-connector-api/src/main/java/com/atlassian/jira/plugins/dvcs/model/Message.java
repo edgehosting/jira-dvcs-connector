@@ -35,7 +35,7 @@ public class Message<P extends HasProgress>
     /**
      * @see #getPayload()
      */
-    private P payload;
+    private String payload;
 
     /**
      * @see #getTags()
@@ -118,7 +118,7 @@ public class Message<P extends HasProgress>
     /**
      * @return message payload
      */
-    public P getPayload()
+    public String getPayload()
     {
         return payload;
     }
@@ -127,7 +127,7 @@ public class Message<P extends HasProgress>
      * @param payload
      *            {@link #getPayload()}
      */
-    public void setPayload(P payload)
+    public void setPayload(String payload)
     {
         this.payload = payload;
     }

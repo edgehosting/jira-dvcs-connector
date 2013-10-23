@@ -17,6 +17,9 @@ public interface Progress
      */
     void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
 
+    int getAuditLogId();
+    void setAuditLogId(int id);
+
     /**
      * Marks progress as finished.
      */

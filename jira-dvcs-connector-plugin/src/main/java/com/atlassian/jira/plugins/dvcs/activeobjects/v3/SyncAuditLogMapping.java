@@ -12,6 +12,7 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_STATUS_RUNNING = "RUNNING";
     String SYNC_STATUS_FAILED = "FAILED";
     String SYNC_STATUS_SUCCESS = "SUCCESS";
+    String SYNC_STATUS_SLEEPING = "SLEEPING";
     String SYNC_TYPE_SOFT = "SOFT";
     String SYNC_TYPE_FULL = "FULL";
     //
@@ -21,6 +22,7 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_STATUS = "SYNC_STATUS";
     String EXC_TRACE = "EXC_TRACE";
     String SYNC_TYPE = "SYNC_TYPE"; // hard, soft
+    String TOTAL_ERRORS  = "TOTAL_ERRORS";
 
     int getRepoId();
     Date getStartDate();
@@ -29,6 +31,7 @@ public interface SyncAuditLogMapping extends Entity
     String getSyncType();
     @StringLength(StringLength.UNLIMITED)
     String getExcTrace();
+    int getTotalErrors();
 
     void setRepoId(int id);
     void setStartDate(Date date);
@@ -37,5 +40,6 @@ public interface SyncAuditLogMapping extends Entity
     void setSyncType(String type);
     @StringLength(StringLength.UNLIMITED)
     void setExcTrace(String trace);
+    void setTotalErrors(int total);
 
 }

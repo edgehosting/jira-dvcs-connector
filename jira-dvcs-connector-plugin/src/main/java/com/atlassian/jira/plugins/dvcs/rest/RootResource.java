@@ -1,58 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.PullRequest;
-import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
-import com.atlassian.jira.plugins.dvcs.model.SentData;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
-import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
-import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
-import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
-import com.atlassian.jira.project.Project;
-import com.atlassian.jira.security.Permissions;
-import com.atlassian.plugins.rest.common.Status;
-import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -67,6 +21,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
+import com.atlassian.jira.plugins.dvcs.model.SentData;
+import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.plugins.rest.common.Status;
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
 /**
  * The Class RootResource.
@@ -90,13 +67,7 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    private final ChangesetService changesetService;
-
-    private final PullRequestService pullRequestService;
-
     private final AccountsConfigService ondemandAccountConfig;
-
-    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     /**
      * The Constructor.
@@ -106,14 +77,10 @@ public class RootResource
      * @param repositoryService
      * @param pullRequestService
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, ChangesetService changesetService,
-            final PullRequestService pullRequestService, IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.changesetService = changesetService;
-        this.pullRequestService = pullRequestService;
-        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 

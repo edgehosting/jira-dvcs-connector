@@ -106,6 +106,7 @@ public class MessageDaoImpl implements MessageDao
             @Override
             protected void build()
             {
+
                 alias(MessageMapping.class, "message");
                 alias(MessageTagMapping.class, "messageTag");
 
@@ -120,11 +121,15 @@ public class MessageDaoImpl implements MessageDao
             @Override
             public void onRowRead(MessageMapping message)
             {
-                messagesStream.callback(message);
+                // load whole message
+                MessageMapping wholeMessage = activeObjects.get(MessageMapping.class, message.getID());
+                if (wholeMessage != null)
+                {
+                    messagesStream.callback(wholeMessage);
+                }
             }
 
         });
-
     }
 
     /**
@@ -152,7 +157,7 @@ public class MessageDaoImpl implements MessageDao
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING }));
+        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
         return activeObjects.count(MessageMapping.class, query);
     }
 }

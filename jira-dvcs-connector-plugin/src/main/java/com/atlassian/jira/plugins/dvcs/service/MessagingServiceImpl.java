@@ -1,5 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -7,10 +26,12 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -21,23 +42,6 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -105,6 +109,9 @@ public class MessagingServiceImpl implements MessagingService
 
     @Resource
     private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
+
+    @Resource
+    private SyncAuditLogDao syncAudit;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -207,11 +214,11 @@ public class MessagingServiceImpl implements MessagingService
             public void callback(MessageQueueItemMapping e)
             {
                 Message<HasProgress> message = new Message<HasProgress>();
-                @SuppressWarnings ("unchecked")
+                @SuppressWarnings("unchecked")
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
-                fail(consumer, message);
+                fail(consumer, message, new RuntimeException("Synchronization has been interrupted (probably plugin un/re/install)."));
             }
 
         });
@@ -228,19 +235,13 @@ public class MessagingServiceImpl implements MessagingService
             @Override
             public void run()
             {
-                Set<MessageAddress<?>> allAddresses = Sets.<MessageAddress<?>> newHashSet(Iterables.transform(
-                        Arrays.asList(messageConsumers), new Function<MessageConsumer<?>, MessageAddress<?>>()
-                        {
+                Set<String> addresses = new HashSet<String>();
+                for (MessageConsumer<?> consumer : consumers)
+                {
+                    addresses.add(consumer.getAddress().getId());
+                }
 
-                            @Override
-                            public MessageAddress<?> apply(MessageConsumer<?> input)
-                            {
-                                return input.getAddress();
-                            }
-
-                        }));
-
-                for (MessageAddress<?> address : allAddresses)
+                for (String address : addresses)
                 {
                     messageExecutor.notify(address);
                 }
@@ -255,6 +256,15 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public <P extends HasProgress> void publish(MessageAddress<P> address, P payload, String... tags)
     {
+        publish(address, payload, MessagingService.DEFAULT_PRIORITY, tags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <P extends HasProgress> void publish(MessageAddress<P> address, P payload, int priority, String... tags)
+    {
         MessageState state = MessageState.PENDING;
         for (String tag : tags)
         {
@@ -265,11 +275,14 @@ public class MessagingServiceImpl implements MessagingService
             }
         }
 
+        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payload.getClass());
+
         Message<P> message = new Message<P>();
         message.setAddress(address);
-        message.setPayload(payload);
+        message.setPayload(payloadSerializer.serialize(payload));
         message.setPayloadType(address.getPayloadType());
         message.setTags(tags);
+        message.setPriority(priority);
         MessageMapping messageMapping = messageDao.create(toMessageMap(message), tags);
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -279,7 +292,7 @@ public class MessagingServiceImpl implements MessagingService
             messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state));
         }
 
-        messageExecutor.notify(address);
+        messageExecutor.notify(address.getId());
     }
 
     /**
@@ -289,6 +302,7 @@ public class MessagingServiceImpl implements MessagingService
     public void pause(String tag)
     {
         pausedTags.add(tag);
+        final Set<Integer> syncAudits = new LinkedHashSet<Integer>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
         {
 
@@ -314,9 +328,27 @@ public class MessagingServiceImpl implements MessagingService
                     }
 
                 });
+
+                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(message.getTags()));
+                if (syncAuditId != 0)
+                {
+                    syncAudits.add(syncAuditId);
+                }
             }
 
         });
+        for (Integer syncAuditId : syncAudits)
+        {
+            syncAudit.pause(syncAuditId);
+        }
+    }
+
+    @Override
+    public <P extends  HasProgress> P deserializePayload(Message<P> message)
+    {
+        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(message.getPayloadType());
+
+        return payloadSerializer.deserialize(message);
     }
 
     /**
@@ -326,90 +358,63 @@ public class MessagingServiceImpl implements MessagingService
     public void resume(String tag)
     {
         pausedTags.remove(tag);
-        final Set<MessageAddress<?>> addresses = new HashSet<MessageAddress<?>>();
-        messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
+        final Set<String> addresses = new HashSet<String>();
+        final Set<Integer> syncAudits = new HashSet<Integer>();
+
+        messageQueueItemDao.getByTagAndState(tag, MessageState.SLEEPING, new StreamCallback<MessageQueueItemMapping>()
         {
 
             @Override
-            public void callback(final MessageMapping message)
+            public void callback(MessageQueueItemMapping e)
             {
-                activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                e.setState(MessageState.PENDING.name());
+                messageQueueItemDao.save(e);
+                addresses.add(e.getMessage().getAddress());
+
+                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(e.getMessage().getTags()));
+                if (syncAuditId != 0)
                 {
+                    syncAudits.add(syncAuditId);
+                }
 
-                    @Override
-                    public Void doInTransaction()
-                    {
-                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
-                        {
-                            if (MessageState.SLEEPING.name().equals(messageQueueItem.getState()))
-                            {
-                                messageQueueItem.setState(MessageState.PENDING.name());
-                                messageQueueItemDao.save(messageQueueItem);
 
-                                try
-                                {
-                                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                                    MessageAddress messageAddress = get((Class) Class.forName(messageQueueItem.getMessage()
-                                            .getPayloadType()), messageQueueItem.getMessage().getAddress());
-                                    addresses.add(messageAddress);
-                                } catch (ClassNotFoundException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-
-                        return null;
-                    }
-
-                });
             }
 
         });
 
-        for (MessageAddress<?> address : addresses)
+        for (String address : addresses)
         {
             messageExecutor.notify(address);
         }
+
+        for (Integer syncAuditId : syncAudits)
+        {
+            syncAudit.resume(syncAuditId);
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void retry(String tag)
+    public void retry(final String tag)
     {
-        final Set<MessageAddress<?>> addresses = new HashSet<MessageAddress<?>>();
+        final Set<String> addresses = new HashSet<String>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
         {
 
             @Override
-            public void callback(final MessageMapping message)
+            public void callback(MessageMapping e)
             {
-                activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                messageQueueItemDao.getByTagAndState(tag, MessageState.WAITING_FOR_RETRY, new StreamCallback<MessageQueueItemMapping>()
                 {
 
                     @Override
-                    public Void doInTransaction()
+                    public void callback(MessageQueueItemMapping e)
                     {
-                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
-                        {
-                            if (MessageState.WAITING_FOR_RETRY.name().equals(messageQueueItem.getState()))
-                            {
-                                messageQueueItem.setState(MessageState.PENDING.name());
-                                messageQueueItemDao.save(messageQueueItem);
-
-                                try
-                                {
-                                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                                    MessageAddress messageAddress = get((Class) Class.forName(messageQueueItem.getMessage()
-                                            .getPayloadType()), messageQueueItem.getMessage().getAddress());
-                                    addresses.add(messageAddress);
-                                } catch (ClassNotFoundException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-
-                        return null;
+                        addresses.add(e.getMessage().getAddress());
+                        e.setState(MessageState.PENDING.name());
+                        messageQueueItemDao.save(e);
                     }
 
                 });
@@ -417,7 +422,7 @@ public class MessagingServiceImpl implements MessagingService
 
         });
 
-        for (MessageAddress<?> address : addresses)
+        for (String address : addresses)
         {
             messageExecutor.notify(address);
         }
@@ -463,7 +468,7 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> void queued(MessageConsumer<P> consumer, Message<P> message)
+    public <P extends HasProgress> void running(MessageConsumer<P> consumer, Message<P> message)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setState(MessageState.RUNNING.name());
@@ -488,12 +493,13 @@ public class MessagingServiceImpl implements MessagingService
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message)
+    public <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message, Throwable t)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
+        syncAudit.setException(getSyncAuditIdFromTags(message.getTags()), t, false);
     }
 
     @Override
@@ -587,6 +593,12 @@ public class MessagingServiceImpl implements MessagingService
     }
 
     @Override
+    public String getTagForAuditSynchronization(int id)
+    {
+        return AbstractMessagePayloadSerializer.SYNCHRONIZATION_AUDIT_TAG_PREFIX + id;
+    }
+
+    @Override
     public <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message)
     {
         for (String tag : message.getTags())
@@ -601,30 +613,26 @@ public class MessagingServiceImpl implements MessagingService
 
                 } catch (NumberFormatException e)
                 {
-                    LOGGER.warn("Can't get repository id from tags for message with ID {}", message.getId());
+                    LOGGER.warn("Get repo ID from message: " + e.getMessage());
                 }
             }
         }
 
+        LOGGER.warn("Can't get repository ID from tags for message with ID {}", message.getId());
         return null;
     }
 
-    private int repoId(int messageId, MessageTagMapping[] tags)
+    @Override
+    public <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
     {
-        for (MessageTagMapping tag : tags)
+        try
         {
-            if (StringUtils.startsWith(tag.getTag(), SYNCHRONIZATION_REPO_TAG_PREFIX))
-            {
-                try
-                {
-                    return Integer.parseInt(tag.getTag().substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length()));
-                } catch (NumberFormatException e)
-                {
-                    throw new RuntimeException("Can't get repository id from tags for message with ID " + messageId, e);
-                }
-            }
+            return AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(tags);
+        } catch (NumberFormatException e)
+        {
+            LOGGER.warn("Get audit ID info from message: " + e.getMessage());
         }
-        throw new RuntimeException("Can't get repository id from tags for message with ID " + messageId);
+        return 0;
     }
 
     /**
@@ -636,16 +644,12 @@ public class MessagingServiceImpl implements MessagingService
      */
     private <P extends HasProgress> Map<String, Object> toMessageMap(Message<P> source)
     {
-        @SuppressWarnings("unchecked")
-        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(source
-                .getAddress().getPayloadType());
-
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageMapping.ADDRESS, source.getAddress().getId());
         result.put(MessageMapping.PRIORITY, source.getPriority());
         result.put(MessageMapping.PAYLOAD_TYPE, source.getPayloadType().getCanonicalName());
-        result.put(MessageMapping.PAYLOAD, payloadSerializer.serialize(source.getPayload()));
+        result.put(MessageMapping.PAYLOAD, source.getPayload());
 
         return result;
     }
@@ -670,8 +674,6 @@ public class MessagingServiceImpl implements MessagingService
             throw new RuntimeException(e);
         }
 
-        MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payloadType);
-
         int retriesCount = 0;
         for (MessageQueueItemMapping queueItem : source.getQueuesItems())
         {
@@ -680,10 +682,16 @@ public class MessagingServiceImpl implements MessagingService
 
         target.setId(source.getID());
         target.setAddress(get(payloadType, source.getAddress()));
-        target.setPayload(payloadSerializer.deserialize(source.getID(), source.getPayload(), repoId(source.getID(), source.getTags())));
+        target.setPayload(source.getPayload());
         target.setPayloadType(payloadType);
         target.setPriority(source.getPriority());
-        target.setTags(Iterables.toArray(Iterables.transform(Arrays.asList(source.getTags()), new Function<MessageTagMapping, String>()
+        target.setTags(transformTags(source.getTags()));
+        target.setRetriesCount(retriesCount);
+    }
+
+    private String[] transformTags(MessageTagMapping[] messageTags)
+    {
+        return Iterables.toArray(Iterables.transform(Arrays.asList(messageTags), new Function<MessageTagMapping, String>()
         {
 
             @Override
@@ -692,10 +700,8 @@ public class MessagingServiceImpl implements MessagingService
                 return input.getTag();
             }
 
-        }), String.class));
-        target.setRetriesCount(retriesCount);
+        }), String.class);
     }
-
 
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.
@@ -720,32 +726,37 @@ public class MessagingServiceImpl implements MessagingService
     }
 
     @Override
-    public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer)
+    public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
         if (consumer != null)
         {
-            synchronized(consumer)
+            synchronized (consumer)
             {
-                endProgress(repository, progress);
+                endProgress(repository, progress, auditId);
             }
         } else
         {
-            endProgress(repository,progress);
+            endProgress(repository, progress, auditId);
         }
 
     }
 
-    private void endProgress(Repository repository, Progress progress)
+    private void endProgress(Repository repository, Progress progress, int auditId)
     {
         if (getQueuedCount(getTagForSynchronization(repository)) == 0)
         {
-            if (progress.getError() == null)
+            // TODO error could be in PR synchronization and thus we can process smartcommits
+            if (progress == null || progress.getError() == null)
             {
                 smartcCommitsProcessor.startProcess(progress, repository, changesetService);
             }
-            if (!progress.isFinished())
+            if (progress != null && !progress.isFinished())
             {
                 progress.finish();
+            }
+            if (auditId > 0)
+            {
+                syncAudit.finish(auditId);
             }
         }
     }
