@@ -256,6 +256,15 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public <P extends HasProgress> void publish(MessageAddress<P> address, P payload, String... tags)
     {
+        publish(address, payload, MessagingService.DEFAULT_PRIORITY, tags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <P extends HasProgress> void publish(MessageAddress<P> address, P payload, int priority, String... tags)
+    {
         MessageState state = MessageState.PENDING;
         for (String tag : tags)
         {
@@ -273,6 +282,7 @@ public class MessagingServiceImpl implements MessagingService
         message.setPayload(payloadSerializer.serialize(payload));
         message.setPayloadType(address.getPayloadType());
         message.setTags(tags);
+        message.setPriority(priority);
         MessageMapping messageMapping = messageDao.create(toMessageMap(message), tags);
 
         @SuppressWarnings({ "rawtypes", "unchecked" })

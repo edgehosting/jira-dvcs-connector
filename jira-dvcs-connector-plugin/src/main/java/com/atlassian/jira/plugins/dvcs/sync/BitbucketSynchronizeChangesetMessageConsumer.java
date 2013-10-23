@@ -137,7 +137,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         {
             if (StringUtils.isNotBlank(page.getNext()))
             {
-                fireNextPage(page, payload, message.getTags());
+                fireNextPage(page, payload, softSync, message.getTags());
             }
 
             messagingService.ok(this, message);
@@ -160,7 +160,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
     }
 
-    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, String[] tags)
+    private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, boolean softSync, String[] tags)
     {
         messagingService.publish(
                 getAddress(), //
@@ -168,7 +168,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
                         originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
-                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), tags);
+                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
