@@ -143,7 +143,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload, String nextUrl, Date lastSync)
     {
         messagingService.publish(getAddress(), new BitbucketSynchronizeActivityMessage(payload.getRepository(), null, payload.isSoftSync(),
-                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync, payload.getSyncAuditId()), message.getTags());
+                payload.getPageNum() + 1, payload.getProcessedPullRequests(), payload.getProcessedPullRequestsLocal(), lastSync, payload.getSyncAuditId()), getPriority(payload), message.getTags());
+    }
+
+    private int getPriority(BitbucketSynchronizeActivityMessage payload)
+    {
+        if (payload == null)
+        {
+            return MessagingService.DEFAULT_PRIORITY;
+        }
+        return payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY;
     }
 
     private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)

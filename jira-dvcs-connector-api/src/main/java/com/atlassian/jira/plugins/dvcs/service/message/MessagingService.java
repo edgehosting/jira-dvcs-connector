@@ -13,6 +13,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  */
 public interface MessagingService
 {
+    public static final int DEFAULT_PRIORITY = 0;
+    public static final int SOFTSYNC_PRIORITY = 10;
 
     /**
      * Publishes a message with provided payload under provided address.
@@ -25,6 +27,20 @@ public interface MessagingService
      *            of messages
      */
     <P extends HasProgress> void publish(MessageAddress<P> address, P payload, String... tags);
+
+    /**
+     * Publishes a message with provided payload under provided address.
+     *
+     * @param address
+     *            for publication
+     * @param payload
+     *            for publication
+     * @param priority
+     *            priority of message
+     * @param tags
+     *            of messages
+     */
+    <P extends HasProgress> void publish(MessageAddress<P> address, P payload, int priority, String... tags);
 
     /**
      * Pauses all messages, which are marked by provided tag.

@@ -63,6 +63,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             String node = getNode(payload);
             String branch = getBranch(payload);
             boolean softSync = getSoftSync(payload);
+            int priority = softSync? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY;
 
             if (changesetService.getByNode(repo.getId(), node) == null)
             {
@@ -85,7 +86,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 for (String parentChangesetNode : changeset.getParents())
                 {
                     if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
-                        messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), tags);
+                        messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), priority, tags);
                     }
                 }
 
