@@ -432,6 +432,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     branchHeads.add(branchTip);
                 }
                 Branch branch = new Branch(ghBranch.getName());
+                branch.setRepositoryId(repository.getId());
                 branch.setHeads(branchHeads);
                 branches.add(branch);
             }

@@ -337,7 +337,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
 
             Branch branch = new Branch(bitbucketBranch.getName());
-
+            branch.setRepositoryId(repository.getId());
             branch.setHeads(heads);
             branches.add(branch);
         }

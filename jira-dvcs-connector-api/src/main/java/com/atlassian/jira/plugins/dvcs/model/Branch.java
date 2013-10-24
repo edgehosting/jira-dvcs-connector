@@ -93,7 +93,6 @@ public class Branch
         return "Branch{" +
                 "name='" + name + '\'' +
                 ", repositoryId=" + repositoryId +
-                ", id=" + id +
                 '}';
     }
 }
