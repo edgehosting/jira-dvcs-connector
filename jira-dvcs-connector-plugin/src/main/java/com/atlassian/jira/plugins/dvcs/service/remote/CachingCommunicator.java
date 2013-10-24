@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -188,7 +189,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public List<BranchHead> getBranches(Repository repository)
+    public List<Branch> getBranches(Repository repository)
     {
         return delegate.getBranches(repository);
     }

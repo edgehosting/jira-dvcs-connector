@@ -42,14 +42,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         json.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
         json.put("exclude", collectionToString(payload.getExclude()));
         json.put("page", payload.getPage());
-        json.put("newHeads", Lists.transform(payload.getNewHeads(), new Function<BranchHead, String>()
-        {
-            @Override
-            public String apply(@Nullable BranchHead input)
-            {
-                return input.getName() + ":" + input.getHead();
-            }
-        }));
+        json.put("include", collectionToString(payload.getInclude()));
         json.put("nodesToBranches", payload.getNodesToBranches());
     }
 
@@ -57,35 +50,19 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     protected BitbucketSynchronizeChangesetMessage deserializeInternal(JSONObject json) throws Exception
     {
         Date refreshAfterSynchronizedAt;
-        List<BranchHead> newHeads;
         List<String> exclude;
+        List<String> include;
         int page;
         Map<String, String> nodesToBranches;
 
         refreshAfterSynchronizedAt = getDateFormat().parse(json.optString("refreshAfterSynchronizedAt"));
         exclude = collectionFromString(json.optString("exclude"));
         page = json.optInt("page");
-        newHeads = toBranchHeads(json.optJSONArray("newHeads"));
+        include = collectionFromString(json.optString("include"));
         nodesToBranches = asMap(json.optJSONObject("nodesToBranches"));
 
-        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, newHeads, exclude,
+        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude,
                 page, nodesToBranches, false, 0);
-    }
-
-    private List<BranchHead> toBranchHeads(JSONArray optJSONArray)
-    {
-        List<BranchHead> ret = new ArrayList<BranchHead>();
-        if (optJSONArray == null)
-        {
-            return ret;
-        }
-        for (int i = 0; i < optJSONArray.length(); i++)
-        {
-            String input = optJSONArray.optString(i);
-            int index = input.lastIndexOf(":");
-            ret.add(new BranchHead(input.substring(0, index), input.substring(index + 1)));
-        }
-        return ret;
     }
 
     protected Map<String, String> asMap(JSONObject object)

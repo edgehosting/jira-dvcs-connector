@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import junit.framework.Assert;
 
 import org.mockito.Matchers;
@@ -141,6 +142,36 @@ public class BitbucketCommunicatorTest
         public void removeAllBranchHeadsInRepository(int repositoryId)
         {
             heads.removeAll(repositoryId);
+        }
+
+        @Override
+        public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public List<Branch> getBranches(final int repositoryId)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public void removeBranch(final int repositoryId, final Branch branch)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public void removeAllBranchesInRepository(final int repositoryId)
+        {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         public List<String> getHeads(int repositoryId)

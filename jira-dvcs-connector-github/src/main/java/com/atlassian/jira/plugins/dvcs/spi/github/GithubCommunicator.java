@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -263,7 +264,7 @@ public class GithubCommunicator implements DvcsCommunicator
             @Override
             public Iterator<Changeset> iterator()
             {
-                List<BranchHead> branches = getBranches(repository);
+                List<Branch> branches = getBranches(repository);
                 return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
             }
         };
@@ -407,29 +408,33 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    public List<BranchHead> getBranches(Repository repository)
+    @Override
+    public List<Branch> getBranches(Repository repository)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
 
-        List<BranchHead> branches = new ArrayList<BranchHead>();
+        List<Branch> branches = new ArrayList<Branch>();
         try
         {
             final List<RepositoryBranch> ghBranches = repositoryService.getBranches(RepositoryId.create(
                     repository.getOrgName(), repository.getSlug()));
             log.debug("Found branches: " + ghBranches.size());
 
+            List<BranchHead> branchHeads = new ArrayList<BranchHead>();
             for (RepositoryBranch ghBranch : ghBranches)
             {
                 BranchHead branchTip = new BranchHead(ghBranch.getName(), ghBranch.getCommit().getSha());
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
-                    branches.add(0, branchTip);
+                    branchHeads.add(0, branchTip);
                 } else
                 {
-                    branches.add(branchTip);
+                    branchHeads.add(branchTip);
                 }
+                Branch branch = new Branch(ghBranch.getName());
+                branch.setHeads(branchHeads);
+                branches.add(branch);
             }
-
         } catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());

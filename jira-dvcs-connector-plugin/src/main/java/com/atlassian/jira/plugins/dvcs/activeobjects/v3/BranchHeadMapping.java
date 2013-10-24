@@ -10,12 +10,14 @@ public interface BranchHeadMapping extends Entity
     public static final String REPOSITORY_ID = "REPOSITORY_ID";
     public static final String HEAD = "HEAD";
     public static final String BRANCH_NAME = "BRANCH_NAME";
-    
+
     RepositoryMapping getRepository();
     String getHead();
+    @Deprecated
     String getBranchName();
 
     void setRepository(RepositoryMapping repository);
     void setHead(String node);
+    @Deprecated
     void setBranchName(String name);
 }

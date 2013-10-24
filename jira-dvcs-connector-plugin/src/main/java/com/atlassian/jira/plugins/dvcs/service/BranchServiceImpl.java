@@ -1,10 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BranchServiceImpl implements BranchService
 {
@@ -17,9 +24,41 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
+    public void removeAllBranchesInRepository(int repositoryId)
+    {
+        branchDao.removeAllBranchesInRepository(repositoryId);
+    }
+
+    @Override
     public void removeAllBranchHeadsInRepository(int repositoryId)
     {
         branchDao.removeAllBranchHeadsInRepository(repositoryId);
+    }
+
+    @Override
+    public void updateBranches(final Repository repository, final List<Branch> newBranches)
+    {
+        List<Branch> oldBranches = branchDao.getBranches(repository.getId());
+        for (Branch branch : newBranches)
+        {
+            if (oldBranches == null || !oldBranches.contains(branch))
+            {
+                Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
+                branchDao.createBranch(repository.getId(), branch, issueKeys);
+            }
+        }
+
+        // Removing closed branches
+        if (oldBranches != null)
+        {
+            for (Branch oldBranch : oldBranches)
+            {
+                if (!newBranches.contains(oldBranch))
+                {
+                    branchDao.removeBranch(repository.getId(), oldBranch);
+                }
+            }
+        }
     }
 
     @Override
@@ -31,24 +70,30 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
-    public void updateBranchHeads(Repository repository, List<BranchHead> newBranchHeads, List<BranchHead> oldBranchHeads)
+    public void updateBranchHeads(Repository repository, List<Branch> newBranches, List<BranchHead> oldBranchHeads)
     {
-        if (newBranchHeads != null)
+        if (newBranches != null)
         {
-            for (BranchHead branchHead : newBranchHeads)
+            List<BranchHead> headAlreadyThere = new ArrayList<BranchHead>();
+            for (Branch branch : newBranches)
             {
-                if (oldBranchHeads == null || !oldBranchHeads.contains(branchHead))
+                for (BranchHead branchHead : branch.getHeads())
                 {
-                    branchDao.createBranchHead(repository.getId(), branchHead);
+                    if (oldBranchHeads == null || !oldBranchHeads.contains(branchHead))
+                    {
+                        branchDao.createBranchHead(repository.getId(), branchHead);
+                    } else
+                    {
+                        headAlreadyThere.add(branchHead);
+                    }
                 }
             }
-
             // Removing old branch heads
             if (oldBranchHeads != null)
             {
                 for (BranchHead oldBranchHead : oldBranchHeads)
                 {
-                    if (!newBranchHeads.contains(oldBranchHead))
+                    if (!headAlreadyThere.contains(oldBranchHead))
                     {
                         branchDao.removeBranchHead(repository.getId(), oldBranchHead);
                     }
