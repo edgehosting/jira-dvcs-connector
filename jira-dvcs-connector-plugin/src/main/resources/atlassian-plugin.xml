@@ -90,6 +90,10 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService</interface>
     </component>
 
+    <component key="dvcsBranchService" name="DVCS Branch Service"  class="com.atlassian.jira.plugins.dvcs.service.api.DvcsBranchServiceImpl" public="true">
+        <interface>com.atlassian.jira.plugins.dvcs.service.api.DvcsBranchService</interface>
+    </component>
+
     <!-- Active Objects -->
     <ao key="ao-module" name="Active Objects Module">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>

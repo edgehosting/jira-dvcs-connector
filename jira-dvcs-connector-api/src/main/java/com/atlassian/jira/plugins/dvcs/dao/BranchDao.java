@@ -56,4 +56,6 @@ public interface BranchDao
     void removeBranch(int repositoryId, Branch branch);
 
     void removeAllBranchesInRepository(int repositoryId);
+
+    List<Branch> getBranchesForRepository(int repositoryId);
 }

@@ -199,7 +199,7 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
     {
-        final String baseWhereClause = ActiveObjectsUtils.renderListStringsOperator(IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final String baseWhereClause = ActiveObjectsUtils.renderListStringsOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
@@ -208,7 +208,36 @@ public class BranchDaoImpl implements BranchDao
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
                         Query.select()
+                                .alias(IssueToBranchMapping.class, "mapping")
+                                .alias(BranchMapping.class, "branch")
+                                .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .where(baseWhereClause));
+
+                return Arrays.asList(mappings);
+            }
+        });
+
+        return Lists.transform(branches, new Function<BranchMapping, Branch>()
+        {
+            @Override
+            public Branch apply(BranchMapping input)
+            {
+                return new Branch(input.getID(), input.getName(), input.getRepository().getID());
+            }
+        });
+    }
+
+    @Override
+    public List<Branch> getBranchesForRepository(final int repositoryId)
+    {
+        final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
+        {
+            @Override
+            public List<BranchMapping> doInTransaction()
+            {
+                BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
+                        Query.select()
+                                .where(BranchMapping.REPOSITORY_ID + " = ?", repositoryId));
 
                 return Arrays.asList(mappings);
             }

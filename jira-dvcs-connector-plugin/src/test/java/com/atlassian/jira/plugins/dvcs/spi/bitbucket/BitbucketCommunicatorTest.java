@@ -174,6 +174,12 @@ public class BitbucketCommunicatorTest
             throw new UnsupportedOperationException("Not implemented");
         }
 
+        @Override
+        public List<Branch> getBranchesForRepository(final int repositoryId)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
         public List<String> getHeads(int repositoryId)
         {
             return Lists.transform(heads.get(repositoryId), new Function<BranchHead, String>()

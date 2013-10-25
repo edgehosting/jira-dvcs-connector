@@ -17,4 +17,8 @@ public interface BranchService
     void removeAllBranchesInRepository(int repositoryId);
 
     void updateBranchHeads(Repository repository, List<Branch> newBranches, List<BranchHead> oldBranchHeads);
+
+    List<Branch> getByIssueKey(Iterable<String> issueKeys);
+
+    List<Branch> getForRepository(Repository repository);
 }

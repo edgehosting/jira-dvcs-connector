@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
@@ -100,5 +101,17 @@ public class BranchServiceImpl implements BranchService
                 }
             }
         }
+    }
+
+    @Override
+    public List<Branch> getByIssueKey(Iterable<String> issueKeys)
+    {
+        return branchDao.getBranchesForIssue(issueKeys);
+    }
+
+    @Override
+    public List<Branch> getForRepository(Repository repository)
+    {
+        return branchDao.getBranchesForRepository(repository.getId());
     }
 }

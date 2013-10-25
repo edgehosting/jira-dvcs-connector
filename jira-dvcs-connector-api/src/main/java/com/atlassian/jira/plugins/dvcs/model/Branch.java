@@ -1,7 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
 import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement (name = "repository")
+@XmlAccessorType (XmlAccessType.FIELD)
 public class Branch
 {
     private int id;
