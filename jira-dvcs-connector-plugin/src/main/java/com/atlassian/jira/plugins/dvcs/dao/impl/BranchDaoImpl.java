@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -210,8 +211,10 @@ public class BranchDaoImpl implements BranchDao
                         Query.select()
                                 .alias(IssueToBranchMapping.class, "mapping")
                                 .alias(BranchMapping.class, "branch")
+                                .alias(RepositoryMapping.class, "repo")
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
-                                .where(baseWhereClause));
+                                .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, Boolean.FALSE, Boolean.TRUE));
 
                 return Arrays.asList(mappings);
             }
@@ -237,7 +240,8 @@ public class BranchDaoImpl implements BranchDao
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
                         Query.select()
-                                .where(BranchMapping.REPOSITORY_ID + " = ?", repositoryId));
+                                .alias(RepositoryMapping.class, "repo")
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + BranchMapping.REPOSITORY_ID + " = ?", Boolean.FALSE, Boolean.TRUE, repositoryId));
 
                 return Arrays.asList(mappings);
             }
