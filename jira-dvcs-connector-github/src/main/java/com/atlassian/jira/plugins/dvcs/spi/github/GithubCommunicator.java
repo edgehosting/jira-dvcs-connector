@@ -420,21 +420,22 @@ public class GithubCommunicator implements DvcsCommunicator
                     repository.getOrgName(), repository.getSlug()));
             log.debug("Found branches: " + ghBranches.size());
 
-            List<BranchHead> branchHeads = new ArrayList<BranchHead>();
             for (RepositoryBranch ghBranch : ghBranches)
             {
+                List<BranchHead> branchHeads = new ArrayList<BranchHead>();
                 BranchHead branchTip = new BranchHead(ghBranch.getName(), ghBranch.getCommit().getSha());
-                if ("master".equalsIgnoreCase(ghBranch.getName()))
-                {
-                    branchHeads.add(0, branchTip);
-                } else
-                {
-                    branchHeads.add(branchTip);
-                }
+                branchHeads.add(branchTip);
                 Branch branch = new Branch(ghBranch.getName());
                 branch.setRepositoryId(repository.getId());
                 branch.setHeads(branchHeads);
-                branches.add(branch);
+
+                if ("master".equalsIgnoreCase(ghBranch.getName()))
+                {
+                    branches.add(0, branch);
+                } else
+                {
+                    branches.add(branch);
+                }
             }
         } catch (IOException e)
         {
