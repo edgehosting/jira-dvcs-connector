@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
@@ -291,8 +292,11 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         {
             return Lists.newArrayList();
         }
-        Query select = Query.select();
-        select.setWhereClause(ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", prIds).toString());
+        Query select = Query.select()
+                .alias(RepositoryMapping.class, "repo")
+                .alias(RepositoryPullRequestMapping.class, "pr")
+                .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
+                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), Boolean.FALSE, Boolean.TRUE);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
