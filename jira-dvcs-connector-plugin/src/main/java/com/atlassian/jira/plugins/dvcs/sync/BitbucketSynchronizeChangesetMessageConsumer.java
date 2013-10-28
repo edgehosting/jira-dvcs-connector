@@ -10,12 +10,9 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
@@ -41,7 +38,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTrans
  */
 public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeChangesetMessageConsumer.class);
+
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
 
@@ -78,59 +75,46 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
         List<BitbucketNewChangeset> csets = page.getValues();
-        Exception errorOnPage = null;
         boolean softSync = payload.isSoftSync();
 
         for (BitbucketNewChangeset ncset : csets)
         {
-            try
+            Repository repo = payload.getRepository();
+            Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
+            if (fromDB != null)
             {
-                Repository repo = payload.getRepository();
-                Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
-                if (fromDB != null)
-                {
-                    continue;
-                }
-                assignBranch(ncset, payload);
-                Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
-                cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
-                cset.setSynchronizedAt(new Date());
-                Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
-
-                MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
-
-                changesetService.create(cset, issues);
-
-                if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(cset.getDate()))
-                {
-                    payload.getRepository().setLastCommitDate(cset.getDate());
-                    repositoryService.save(payload.getRepository());
-                }
-
-                payload.getProgress().inProgress( //
-                        payload.getProgress().getChangesetCount() + 1, //
-                        payload.getProgress().getJiraCount() + issues.size(), //
-                        0 //
-                        );
-            } catch (Exception e)
-            {
-                errorOnPage = e;
-                payload.getProgress().setError("Error during sync. See server logs.");
-                LOGGER.error(e.getMessage(), e);
+                continue;
             }
+            assignBranch(ncset, payload);
+            Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
+            cset.setSynchronizedAt(new Date());
+            Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
+            
+            if (CollectionUtils.isNotEmpty(issues))
+            {
+                cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
+            }
+
+            MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
+
+            changesetService.create(cset, issues);
+
+            if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(cset.getDate()))
+            {
+                payload.getRepository().setLastCommitDate(cset.getDate());
+                repositoryService.save(payload.getRepository());
+            }
+
+            payload.getProgress().inProgress( //
+                    payload.getProgress().getChangesetCount() + 1, //
+                    payload.getProgress().getJiraCount() + issues.size(), //
+                    0 //
+                    );
         }
 
-        if (errorOnPage == null)
+        if (StringUtils.isNotBlank(page.getNext()))
         {
-            if (StringUtils.isNotBlank(page.getNext()))
-            {
-                fireNextPage(page, payload, softSync, message.getTags());
-            }
-
-            messagingService.ok(this, message);
-        } else
-        {
-            messagingService.fail(this, message, errorOnPage);
+            fireNextPage(page, payload, softSync, message.getTags());
         }
     }
 

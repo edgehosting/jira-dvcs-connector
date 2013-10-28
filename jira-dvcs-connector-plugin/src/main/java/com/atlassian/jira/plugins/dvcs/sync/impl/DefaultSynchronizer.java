@@ -39,6 +39,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
@@ -74,6 +75,12 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
     @Resource
     private RepositoryActivityDao repositoryActivityDao;
+    
+    /**
+     * Injected {@link GitHubEventService} dependency.
+     */
+    @Resource
+    private GitHubEventService gitHubEventService;
 
     @Resource
     private PostponeOndemandPrSyncListener posponePrSyncHelper;
@@ -112,7 +119,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
                     changesetService.removeAllInRepository(repo.getId());
                     branchService.removeAllBranchHeadsInRepository(repo.getId());
+                    gitHubEventService.removeAll(repo);
                     branchService.removeAllBranchesInRepository(repo.getId());
+
                     repo.setLastCommitDate(null);
                 }
                 if (pullRequestSync)
@@ -154,6 +163,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
                 } else
                 {
+                    String[] synchronizationTags = new String[] {messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId)};
                     if (changestesSync)
                     {
                         Date synchronizationStartedAt = new Date();
@@ -168,7 +178,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                                         null, softSync, auditId);
                                 MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                                         SynchronizeChangesetMessage.class, //
-                                        GithubSynchronizeChangesetMessageConsumer.KEY //
+                                        GithubSynchronizeChangesetMessageConsumer.ADDRESS //
                                         );
                                 messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                             }
@@ -179,7 +189,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     }
                     if (pullRequestSync)
                     {
-                        // TODO
+                        gitHubEventService.synchronize(repo, softSync, synchronizationTags);
                     }
                 }
             } catch (Exception e)

@@ -1,11 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubEvent;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
- * Business layer of the {@link GitHubEvent}.
+ * Business layer related to GitHub events.
  * 
  * @author Stanislav Dvorscak
  * 
@@ -14,42 +12,23 @@ public interface GitHubEventService
 {
 
     /**
-     * Saves or updates provided {@link GitHubEvent}.
+     * Removes all events for provided repository.
      * 
-     * @param gitHubEvent
-     *            to save/update
+     * @param repository
+     *            for which repository
      */
-    void save(GitHubEvent gitHubEvent);
+    void removeAll(Repository repository);
 
     /**
-     * @param gitHubId
-     *            {@link GitHubEvent#getId()}
-     * @return {@link GitHubEvent}
-     */
-    GitHubEvent getByGitHubId(String gitHubId);
-
-    /**
-     * @param gitHubRepository
-     *            over which repository
-     * @return Returns last {@link GitHubEvent}.
-     */
-    GitHubEvent getLast(GitHubRepository gitHubRepository);
-
-    /**
-     * @param gitHubRepository
-     *            over which repository
-     * @return Returns last {@link GitHubEvent#isSavePoint()}.
-     */
-    GitHubEvent getLastSavePoint(GitHubRepository gitHubRepository);
-
-    /**
-     * Synchronizes all events for the provided domain information.
+     * Synchronizes all events for a provided repository.
      * 
-     * @param domainRepository
-     *            for repository
-     * @param domain
-     *            for repository
+     * @param repository
+     *            for which one
+     * @param isSoftSync
+     *            is current synchronization soft?
+     * @param synchronizationTags
+     *            synchronization tags which are used by synchronization over messaging
      */
-    void synchronize(final Repository domainRepository, final GitHubRepository domain);
+    void synchronize(Repository repository, boolean isSoftSync, String[] synchronizationTags);
 
 }

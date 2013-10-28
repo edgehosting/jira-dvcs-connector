@@ -244,34 +244,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 
     private PageableQuery repoQuery(final int repoId)
     {
-        return new PageableQuery()
-        {
-            private Query q;
-            @Override
-            public Query q()
-            {
-                q = Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
-                return q;
-            }
-            @Override
-            public Query page(Integer page)
-            {
-                pageQuery(q, page);
-                return q;
-            }
-        };
-    }
-
-    private static Query pageQuery(Query q, Integer page)
-    {
-        q.setLimit(BIG_DATA_PAGESIZE);
-        if (page == null)
-        {
-            q.setOffset(0);
-        } else {
-            q.setOffset(BIG_DATA_PAGESIZE * page);
-        }
-        return q;
+        return new PageableQuery(repoId);
     }
 
     private Query statusQueryLimitOne(int repoId, String status)
@@ -306,8 +279,31 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         });
     }
 
-    interface PageableQuery {
-        Query page(Integer page);
-        Query q();
+    class PageableQuery {
+        private Query q;
+        private PageableQuery(int repoId)
+        {
+            super();
+            this.q = Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
+        }
+        Query page(Integer page) {
+            pageQuery(q, page);
+            return q;
+        }
+        Query q() {
+            return q;
+        }
+    }
+
+    private static Query pageQuery(Query q, Integer page)
+    {
+        q.setLimit(BIG_DATA_PAGESIZE);
+        if (page == null)
+        {
+            q.setOffset(0);
+        } else {
+            q.setOffset(BIG_DATA_PAGESIZE * page);
+        }
+        return q;
     }
 }

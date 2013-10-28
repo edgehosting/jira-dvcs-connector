@@ -13,7 +13,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -57,9 +56,6 @@ public class RepositoryServiceTest
 
 	@Mock
 	private PluginSettingsFactory settings;
-
-	@Mock
-    private RepositoryActivitySynchronizer activitySyncerMock;
 
 	@Mock
 	private PostponeOndemandPrSyncListener posponePrSyncHelper;

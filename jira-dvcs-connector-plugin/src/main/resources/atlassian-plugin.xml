@@ -110,23 +110,8 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
-        
-<!--        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubUserMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubRepositoryMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubEventMapping</entity>
-       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitMapping</entity>
-       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitCommentMapping</entity>
-       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubCommitLineCommentMapping</entity>
-       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushMapping</entity>
-       	<entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPushCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestActionMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestCommentMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.github.activeobjects.GitHubPullRequestLineCommentMapping</entity>
-        
-        <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects.BitbucketPullRequestContextMapping</entity>-->
+
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping</entity>
 
         <!-- Messaging -->
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
@@ -266,114 +251,27 @@
     <!-- Bitbucket -->
     
     <!-- GitHub -->
-    
-    <!-- GitHub - DAOs -->
-    <component key="gitHubUserDAO" name="GitHub User DAO"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubUserDAOImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubUserDAO</interface>
-    </component>
-    <component key="gitHubRepositoryDAO" name="GitHub Repository DAO"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubRepositoryDAOImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubRepositoryDAO</interface>
-    </component>
-
-	<component key="gitHubCommitDAO" name="GitHub Commit DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitDAOImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitDAO</interface>
-	</component>
-	<component key="gitHubCommitCommentDAO" name="GitHub Commit Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitCommentDAOImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitCommentDAO</interface>
-	</component>
-	<component key="gitHubCommitLineCommentDAO" name="GitHub Commit Line Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubCommitLineCommentDAOImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubCommitLineCommentDAO</interface>
-	</component>
-	<component key="gitHubPushDAO" name="GitHub Push DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPushDAOImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPushDAO</interface>
-	</component>
-	<component key="gitHubPullRequestDAO" name="GitHub Pull Request DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestDAOImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestDAO</interface>
-	</component>
-	<component key="gitHubPullRequestCommentDAO" name="GitHub Pull Request Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestCommentDAOImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestCommentDAO</interface>
-	</component>
-	<component key="gitHubPullRequestLineCommentDAO" name="GitHub Pull Request Line Comment DAO"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubPullRequestLineCommentDAOImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubPullRequestLineCommentDAO</interface>
-	</component>
-	<component key="GitHubEventDAO" name="GitHub Event DAO"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.dao.impl.GitHubEventDAOImpl">
+	<component key="gitHubEventDAO" name="GitHub Event DAO" class="com.atlassian.jira.plugins.dvcs.dao.impl.GitHubEventDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO</interface>
 	</component>
-	
-	<!-- GitHub - Services -->
-	<component key="gitHubUserService" name="GitHub User Service"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubUserServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubUserService</interface>
-	</component>
-	<component key="gitHubRepositoryService" name="GitHub Repository Service"
-		class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubRepositoryServiceImpl">
-		<interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubRepositoryService</interface>
-	</component>
-	<component key="gitHubCommitService" name="gitHubCommitService"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitService</interface>
-	</component>
-	<component key="gitHubCommitCommentService" name="gitHubCommitCommentService" 
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitCommentServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitCommentService</interface>
-	</component>
-	<component key="gitHubCommitLineCommentService" name="gitHubCommitLineCommentService"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubCommitLineCommentServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubCommitLineCommentService</interface>
-	</component>
-	<component key="gitHubPushService" name="gitHubPushService"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPushServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPushService</interface>
-	</component>
-	<component key="gitHubPullRequestService" name="gitHubPullRequestService"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPullRequestServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestService</interface>
-	</component>
-	<component key="gitHubPullRequestCommentService"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPullRequestCommentServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestCommentService</interface>
-	</component>
-	<component key="gitHubPullRequestLineCommentServiceImpl" name="gitHubPullRequestLineCommentServiceImpl"
-	    class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubPullRequestLineCommentServiceImpl">
-	    <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubPullRequestLineCommentService</interface>
-	</component>
-	<component key="GitHubEventService" name="GitHub Event Service"
-    	class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubEventServiceImpl">
+	<component key="gitHubEventService" name="GitHub Event Service" class="com.atlassian.jira.plugins.dvcs.service.GitHubEventServiceImpl">
     	<interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService</interface>
     </component>
 
     <!-- GitHub - Events -->
-    <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.DefaultGitHubEventProcessor">
+    <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.DefaultGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     <component key="gitHubEventProcessorAggregatorImpl" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubEventProcessorAggregatorImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator</interface>
     </component>
-    <component key="pushPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PushPayloadGitHubEventProcessor">
+    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="commitCommentPayloadGitHubEventProcessor"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.CommitCommentPayloadGitHubEventProcessor">
+    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestReviewCommentPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PullRequestPayloadGitHubEventProcessor">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
-    </component>
-    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.PullRequestReviewCommentPayloadGitHubEventProcessor">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
-    </component>
-    <component key="issueCommentPayloadEventProcessor"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.event.IssueCommentPayloadEventProcessor">
+    <component key="issueCommentPayloadEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.IssueCommentPayloadEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     
@@ -516,6 +414,12 @@
     </component>
     <component key="synchronizeActivityMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="gitHubPullRequestSynchronizeMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestSynchronizeMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="gitHubPullRequestSynchronizeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessageSerializer">
+    <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
@@ -679,19 +583,6 @@
 
     <!-- Web Panels -->
     <web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
-
-    <!-- 
-        Activity synchronizer
-     -->
-     
-    <component key="delegatingRepositoryActivitySynchronizer" name="Delegating Repository Activity Synchronizer"
-        class="com.atlassian.jira.plugins.dvcs.sync.impl.DelegatingRepositoryActivitySynchronizer" />
-        
-    <component key="bitbucketRepositoryActivitySynchronizer" name="Bitbucket Repository Activity Synchronizer"
-        class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.activity.BitbucketRepositoryActivitySynchronizer" />
-        
-    <component key="githubRepositoryActivitySynchronizer" name="Github Repository Activity Synchronizer"
-        class="com.atlassian.jira.plugins.dvcs.spi.github.activity.GithubRepositoryActivitySynchronizer" />
         
     <component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
         class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
@@ -707,12 +598,5 @@
     <component key="changesetIssueActionFactory" name="ChangesetIssueActionFactory"
         class="com.atlassian.jira.plugins.dvcs.webwork.render.ChangesetIssueActionFactory" 
         interface="com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory" />
-        
-
-    <!--  -->
-    <component key="columnNameResolverService" name="Column Name Resolver Service"
-        class="com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverServiceImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.service.ColumnNameResolverService</interface>
-    </component>
 
 </atlassian-plugin>

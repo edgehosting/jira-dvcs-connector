@@ -76,18 +76,11 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         BitbucketPullRequestBaseActivityEnvelope activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
-            pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
-            activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(),
-                    repo.getOrgName(), repo.getSlug(), repo.getActivityLastSync());
-        } catch (Exception e)
-        {
-            LOGGER.error("Failed to process " + payload.getRepository().getName(), e);
-            messagingService.fail(this, message, e);
-            return;
-        }
+
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
+        pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
+        activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
+                repo.getActivityLastSync());
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(infos);
@@ -96,37 +89,30 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
-            try
+            Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
+
+            if (activityDate == null)
             {
-                Date activityDate = ClientUtils.extractActivityDate(info.getActivity());
-
-                if (activityDate == null)
-                {
-                    Log.info("Date for the activity could not be found.");
-                    continue;
-                }
-                if ((lastSync == null) || (activityDate.after(lastSync)))
-                {
-                    lastSync = activityDate;
-                    repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
-                }
-
-                int localPrId = processActivity(message, payload, info, pullRestpoint);
-                markProcessed(payload, info, localPrId);
-
-                payload.getProgress().inPullRequestProgress(processedSize(payload),
-                        jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
-            } catch (Exception e)
-            {
-                LOGGER.warn("Failed to process activity from date " + info.getActivity().getDate(), e);
+                Log.info("Date for the activity could not be found.");
+                continue;
             }
+            if ((lastSync == null) || (activityDate.after(lastSync)))
+            {
+                lastSync = activityDate;
+                repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
+            }
+
+            int localPrId = processActivity(message, payload, info, pullRestpoint);
+            markProcessed(payload, info, localPrId);
+
+            payload.getProgress().inPullRequestProgress(processedSize(payload),
+                    jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
         }
         if (!isLastPage)
         {
             fireNextPage(message, payload, activityPage.getNext(), lastSync);
         }
 
-        messagingService.ok(this, message);
     }
 
     protected int processedSize(BitbucketSynchronizeActivityMessage payload)

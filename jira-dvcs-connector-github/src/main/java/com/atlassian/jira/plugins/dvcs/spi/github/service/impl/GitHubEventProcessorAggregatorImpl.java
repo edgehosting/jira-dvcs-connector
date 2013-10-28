@@ -8,7 +8,6 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 
@@ -96,12 +95,12 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository domainRepository, GitHubRepository domain, Event event)
+    public void process(Repository domain, Event event, boolean isSoftSync, String[] synchronizationTags)
     {
         GitHubEventProcessor<EventPayload> resolvedEventProcessor = resolveEventProcessor(event.getPayload().getClass());
         if (resolvedEventProcessor != null)
         {
-            resolvedEventProcessor.process(domainRepository, domain, event);
+            resolvedEventProcessor.process(domain, event, isSoftSync, synchronizationTags);
         }
     }
 

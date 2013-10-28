@@ -4,7 +4,6 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.github.model.GitHubRepository;
 
 /**
  * Defines the contract for the GitHub event processing.
@@ -20,14 +19,16 @@ public interface GitHubEventProcessor<T_Payload extends EventPayload>
     /**
      * Processes incoming event.
      * 
-     * @param domainRepository
-     *            current proceed repository
-     * @param domain
+     * @param repository
      *            current proceed repository
      * @param event
      *            to process
+     * @param isSoftSync
+     *            is soft synchronization?
+     * @param synchronizationTags
+     *            tags of current synchronization
      */
-    void process(Repository domainRepository, GitHubRepository domain, Event event);
+    void process(Repository repository, Event event, boolean isSoftSync, String[] synchronizationTags);
 
     /**
      * @return The type of the payload which is supported by this processor.
