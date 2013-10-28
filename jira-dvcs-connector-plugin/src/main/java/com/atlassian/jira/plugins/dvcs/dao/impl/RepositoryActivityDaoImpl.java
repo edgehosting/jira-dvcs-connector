@@ -292,7 +292,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         {
             return Lists.newArrayList();
         }
-        Query select = Query.select()
+        Query select = Query.select("ID, *")
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
@@ -380,7 +380,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public RepositoryCommitMapping getCommitByNode(Repository domain, int pullRequestId, String node)
     {
         Query query = Query
-                .select()
+                .select("ID, *")
                 .alias(RepositoryCommitMapping.class, "COMMIT")
                 .alias(RepositoryPullRequestToCommitMapping.class, "PR_TO_COMMIT")
                 .alias(RepositoryPullRequestMapping.class, "PR")
