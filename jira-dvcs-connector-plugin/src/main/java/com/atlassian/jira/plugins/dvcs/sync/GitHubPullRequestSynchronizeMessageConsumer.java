@@ -92,19 +92,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     @Override
     public void onReceive(Message<GitHubPullRequestSynchronizeMessage> message, GitHubPullRequestSynchronizeMessage payload)
     {
-        try {
-            Repository repository = payload.getRepository();
-            PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
-            RepositoryPullRequestMapping localPullRequest = updateLocalPullRequest(repository, remotePullRequest);
-            repositoryActivityDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
-            messagingService.ok(this, message);
-        } catch (Exception e) {
-            messagingService.fail(this, message, e);
-            LOGGER.error(
-                    "Pull Request was not synchronized, Repository ID: " + payload.getRepository().getId() + " PR Number: "
-                            + payload.getPullRequestNumber(), e);
-        }
+        Repository repository = payload.getRepository();
+        PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
+        RepositoryPullRequestMapping localPullRequest = updateLocalPullRequest(repository, remotePullRequest);
+        repositoryActivityDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
     }
 
     /**

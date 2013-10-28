@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -57,52 +58,47 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     {
         String[] tags = message.getTags();
 
-        try
+        Repository repo = getRepository(payload);
+        String node = getNode(payload);
+        String branch = getBranch(payload);
+        boolean softSync = getSoftSync(payload);
+        int priority = softSync? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY;
+
+        if (changesetService.getByNode(repo.getId(), node) == null)
         {
-            Repository repo = getRepository(payload);
-            String node = getNode(payload);
-            String branch = getBranch(payload);
-            boolean softSync = getSoftSync(payload);
-            int priority = softSync? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY;
+            Date synchronizedAt = new Date();
+            Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
+            changeset.setSynchronizedAt(synchronizedAt);
+            changeset.setBranch(branch);
 
-            if (changesetService.getByNode(repo.getId(), node) == null)
+            Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
+            if (CollectionUtils.isNotEmpty(issues))
             {
-                Date synchronizedAt = new Date();
-                Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
-                changeset.setSynchronizedAt(synchronizedAt);
-                changeset.setBranch(branch);
+                changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getDetailChangeset(repo, changeset);
+                
+            }
+            markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
 
-                Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
-                markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
+            changesetService.create(changeset, issues);
 
-                changesetService.create(changeset, issues);
+            payload.getProgress().inProgress( //
+                    payload.getProgress().getChangesetCount() + 1, //
+                    payload.getProgress().getJiraCount() + issues.size(), //
+                    0 //
+                    );
 
-                payload.getProgress().inProgress( //
-                        payload.getProgress().getChangesetCount() + 1, //
-                        payload.getProgress().getJiraCount() + issues.size(), //
-                        0 //
-                        );
-
-                for (String parentChangesetNode : changeset.getParents())
-                {
-                    if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
-                        messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), priority, tags);
-                    }
-                }
-
-                if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(changeset.getDate()))
-                {
-                    repo.setLastCommitDate(changeset.getDate());
-                    repositoryService.save(repo);
+            for (String parentChangesetNode : changeset.getParents())
+            {
+                if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
+                    messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), priority, tags);
                 }
             }
-            messagingService.ok(this, message);
 
-        } catch (Exception e)
-        {
-            LOGGER.error(e.getMessage(), e);
-            ((DefaultProgress) payload.getProgress()).setError("Error during sync. See server logs.");
-            messagingService.fail(this, message, e);
+            if (repo.getLastCommitDate() == null || repo.getLastCommitDate().before(changeset.getDate()))
+            {
+                repo.setLastCommitDate(changeset.getDate());
+                repositoryService.save(repo);
+            }
         }
     }
 

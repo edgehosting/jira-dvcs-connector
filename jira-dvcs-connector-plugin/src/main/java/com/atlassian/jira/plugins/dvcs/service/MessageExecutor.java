@@ -268,6 +268,7 @@ public class MessageExecutor
                     discard(message);
                     consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
                 }
+                messagingService.ok(consumer, message);
 
             } catch (Exception e)
             {
