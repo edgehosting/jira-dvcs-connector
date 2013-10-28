@@ -431,14 +431,14 @@
         <supports-ajax-load>true</supports-ajax-load>
     </issue-tabpanel>
     
-    <issue-tabpanel key="dvcs-pullrequests-tabpanel" name="Dvcs PullRequests Tab Panel"
+<!--    <issue-tabpanel key="dvcs-pullrequests-tabpanel" name="Dvcs PullRequests Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsActivityTabPanel">
 
         <description>Show Dvcs Pull Requests activities related to an issue in an issue tab panel.</description>
         <label>Pull Requests</label>
-        <!--<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>-->
+        &lt;!&ndash;<resource type="velocity" name="view" location="templates/com/tsc/jira/github/issuetabpanels/view.vm"/>&ndash;&gt;
         <supports-ajax-load>true</supports-ajax-load>
-    </issue-tabpanel>
+    </issue-tabpanel>-->
 
     <web-panel key="dvcs-commits-greenhopper-tab" location="atl.gh.issue.details.tab" weight="100">
 
