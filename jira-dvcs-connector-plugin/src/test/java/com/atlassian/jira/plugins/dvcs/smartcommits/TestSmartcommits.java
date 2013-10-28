@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.concurrent.Executors;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -20,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -33,7 +31,6 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
 
 /**
  * @author Martin Skurla
@@ -55,9 +52,6 @@ public final class TestSmartcommits
 
     @Mock
     DvcsCommunicator communicatorMock;
-
-    @Mock
-    private RepositoryActivitySynchronizer activitySyncerMock;
 
     @Captor
 	private ArgumentCaptor<Changeset> savedChangesetCaptor;
@@ -93,7 +87,6 @@ public final class TestSmartcommits
                 mock(RepositoryService.class),
                 changesetServiceMock,
                 branchServiceMock,
-                activitySyncerMock,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
         //Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);
@@ -124,7 +117,6 @@ public final class TestSmartcommits
                 mock(RepositoryService.class),
                 changesetServiceMock,
                 branchServiceMock,
-                activitySyncerMock,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS)); // soft sync
 
         //Synchronizer synchronizer = new DefaultSynchronizer(Executors.newSingleThreadScheduledExecutor(), changesetsProcessorMock);

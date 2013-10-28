@@ -1,5 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import net.java.ao.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
@@ -15,20 +32,6 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
 
 /**
  *
@@ -398,9 +401,8 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     @Override
     public RepositoryCommitMapping getCommitByNode(Repository repository, String node)
     {
-        Query query = Query.select()
-                .where(RepositoryCommitMapping.DOMAIN + " = ? AND COMMIT." //
-                        + RepositoryCommitMapping.NODE + " = ?", repository.getId(), node);
+        Query query = Query.select().where(RepositoryCommitMapping.DOMAIN + " = ? AND " + RepositoryCommitMapping.NODE + " = ?",
+                repository.getId(), node);
 
         RepositoryCommitMapping[] found = activeObjects.find(RepositoryCommitMapping.class, query);
         if (found.length == 0)

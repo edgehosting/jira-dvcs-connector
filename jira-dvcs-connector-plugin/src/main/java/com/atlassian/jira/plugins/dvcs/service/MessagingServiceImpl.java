@@ -275,6 +275,7 @@ public class MessagingServiceImpl implements MessagingService
             }
         }
 
+        @SuppressWarnings("unchecked")
         MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payload.getClass());
 
         Message<P> message = new Message<P>();
@@ -346,8 +347,8 @@ public class MessagingServiceImpl implements MessagingService
     @Override
     public <P extends  HasProgress> P deserializePayload(Message<P> message)
     {
+        @SuppressWarnings("unchecked")
         MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(message.getPayloadType());
-
         return payloadSerializer.deserialize(message);
     }
 

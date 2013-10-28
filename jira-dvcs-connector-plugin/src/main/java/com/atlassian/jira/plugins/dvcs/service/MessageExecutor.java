@@ -284,7 +284,7 @@ public class MessageExecutor
             }
         }
 
-        protected <PR extends HasProgress> void tryEndProgress(Message<PR> message, MessageConsumer<PR> consumer, Progress progress)
+        protected void tryEndProgress(Message<P> message, MessageConsumer<P> consumer, Progress progress)
         {
             try
             {

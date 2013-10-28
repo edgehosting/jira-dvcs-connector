@@ -8,7 +8,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivitySynchronizer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -33,12 +32,10 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
 
     private final DvcsCommunicator communicator;
 
-    private final RepositoryActivitySynchronizer activitySynchronizer;
-
     private final EnumSet<SynchronizationFlag> synchronizationFlags;
 
     public DefaultSynchronisationOperation(DvcsCommunicator communicator, Repository repository, RepositoryService repositoryService,
-            ChangesetService changesetService, BranchService branchService, RepositoryActivitySynchronizer activitySynchronizer,
+            ChangesetService changesetService, BranchService branchService,
             EnumSet<SynchronizationFlag> synchronizationFlags)
     {
         this.communicator = communicator;
@@ -47,7 +44,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         this.changesetService = changesetService;
         this.branchService = branchService;
         this.progress = new DefaultProgress();
-        this.activitySynchronizer = activitySynchronizer;
         this.synchronizationFlags = synchronizationFlags;
     }
 
@@ -66,10 +62,6 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
             syncChangesets();
         }
 
-        if (synchronizationFlags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
-        {
-            syncActivity();
-        }
     }
 
     private void syncChangesets()
@@ -219,8 +211,4 @@ public class DefaultSynchronisationOperation implements SynchronisationOperation
         return synchronizationFlags.contains(SynchronizationFlag.SOFT_SYNC);
     }
 
-    private void syncActivity()
-    {
-        activitySynchronizer.synchronize(repository, progress, isSoftSync());
-    }
 }

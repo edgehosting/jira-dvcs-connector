@@ -7,18 +7,18 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMe
 public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSupport<SynchronizeChangesetMessage>
 {
 
-    private static final String ID = GithubSynchronizeChangesetMessageConsumer.class.getCanonicalName();
-    public static final String KEY = SynchronizeChangesetMessage.class.getCanonicalName();
+    private static final String QUEUE = GithubSynchronizeChangesetMessageConsumer.class.getCanonicalName();
+    public static final String ADDRESS = SynchronizeChangesetMessage.class.getCanonicalName();
 
     public String getQueue()
     {
-        return ID;
+        return QUEUE;
     }
 
     @Override
     public MessageAddress<SynchronizeChangesetMessage> getAddress()
     {
-        return messagingService.get(SynchronizeChangesetMessage.class, KEY);
+        return messagingService.get(SynchronizeChangesetMessage.class, ADDRESS);
     }
 
     @Override
