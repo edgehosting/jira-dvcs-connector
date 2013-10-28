@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -23,7 +24,7 @@ public interface DvcsCommunicator
 
 	List<Repository> getRepositories(Organization organization);
     
-    List<BranchHead> getBranches(Repository repository);
+    List<Branch> getBranches(Repository repository);
 
     Changeset getChangeset(Repository repository, String node);
 

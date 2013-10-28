@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -202,10 +203,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         try
         {
-            //remote branch head list
-            final List<BranchHead> newBranchHeads = getBranches(repository);
-            log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranchHeads);
-            if (newBranchHeads.isEmpty())
+            //remote branch list
+            final List<Branch> newBranches = getBranches(repository);
+            log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranches);
+            if (newBranches.isEmpty())
             {
                 // this can happen only when empty repository
                 return Collections.emptyList();
@@ -224,14 +225,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     @Override
                     public Iterator<Changeset> iterator()
                     {
-                        return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, newBranchHeads);
+                        return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, newBranches);
                     }
 
                 };
             } else
             {
 
-                List<String> includeNodes = extractBranchHeads(newBranchHeads);
+                List<String> includeNodes = extractBranchHeadsFromBranches(newBranches);
                 List<String> excludeNodes = extractBranchHeads(oldBranchHeads);
                 if (includeNodes != null && excludeNodes != null)
                 {
@@ -242,9 +243,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 if (includeNodes == null || !includeNodes.isEmpty())
                 {
                     Map<String, String> changesetBranch = new HashMap<String, String>();
-                    for (BranchHead branchHead : newBranchHeads)
+                    for (Branch branch : newBranches)
                     {
-                        changesetBranch.put(branchHead.getHead(), branchHead.getName());
+                        for (BranchHead branchHead : branch.getHeads())
+                        {
+                            changesetBranch.put(branchHead.getHead(), branchHead.getName());
+                        }
                     }
 
                     BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
@@ -265,7 +269,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             }
 
-            branchService.updateBranchHeads(repository, newBranchHeads, oldBranchHeads);
+            branchService.updateBranchHeads(repository, newBranches, oldBranchHeads);
 
             return result;
         }
@@ -283,18 +287,22 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 includeNodes, excludeNodes);
     }
 
-    public List<BranchHead> getOldBranches(Repository repository)
+    private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
     {
-        return branchService.getListOfBranchHeads(repository);
+        List<String> result = new ArrayList<String>();
+        for (Branch branch : branches)
+        {
+            for (BranchHead branchHead : branch.getHeads())
+            {
+                result.add(branchHead.getHead());
+            }
+        }
+
+        return result;
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)
     {
-        if (branchHeads == null)
-        {
-            return null;
-        }
-
         List<String> result = new ArrayList<String>();
         for (BranchHead branchHead : branchHeads)
         {
@@ -305,27 +313,34 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public List<BranchHead> getBranches(Repository repository)
+    public List<Branch> getBranches(Repository repository)
     {
-        List<BranchHead> branches = new ArrayList<BranchHead>();
+        List<Branch> branches = new ArrayList<Branch>();
         BitbucketBranchesAndTags branchesAndTags = retrieveBranchesAndTags(repository);
 
-            List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
-            for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+        List<BitbucketBranch> bitbucketBranches = branchesAndTags.getBranches();
+        for (BitbucketBranch bitbucketBranch : bitbucketBranches)
+        {
+            List<String> bitbucketHeads = bitbucketBranch.getHeads();
+            List<BranchHead> heads = new ArrayList<BranchHead>();
+
+            for (String head : bitbucketHeads)
             {
-                List<String> heads = bitbucketBranch.getHeads();
-                for (String head : heads)
+                // make sure "default" branch is first in the list
+                if (bitbucketBranch.isMainbranch())
                 {
-                    // make sure "default" branch is first in the list
-                    if (bitbucketBranch.isMainbranch())
-                    {
-                        branches.add(0, new BranchHead(bitbucketBranch.getName(), head));
-                    } else
-                    {
-                        branches.add(new BranchHead(bitbucketBranch.getName(), head));
-                    }
+                    heads.add(0, new BranchHead(bitbucketBranch.getName(), head));
+                } else
+                {
+                    heads.add(new BranchHead(bitbucketBranch.getName(), head));
                 }
             }
+
+            Branch branch = new Branch(bitbucketBranch.getName());
+            branch.setRepositoryId(repository.getId());
+            branch.setHeads(heads);
+            branches.add(branch);
+        }
 
         return branches;
     }

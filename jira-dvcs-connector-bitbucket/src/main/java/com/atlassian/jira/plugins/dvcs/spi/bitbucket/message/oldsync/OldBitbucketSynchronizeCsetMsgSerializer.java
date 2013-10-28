@@ -36,14 +36,6 @@ public class OldBitbucketSynchronizeCsetMsgSerializer extends AbstractMessagePay
         json.put("branch", payload.getBranch());
         json.put("node", payload.getNode());
         json.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
-        json.put("newHeads", Lists.transform(payload.getNewHeads(), new Function<BranchHead, String>()
-        {
-            @Override
-            public String apply(@Nullable BranchHead input)
-            {
-                return input.getName() + ":" + input.getHead();
-            }
-        }));
     }
 
     @Override
@@ -52,14 +44,12 @@ public class OldBitbucketSynchronizeCsetMsgSerializer extends AbstractMessagePay
         String branch;
         String node;
         Date refreshAfterSynchronizedAt;
-        List<BranchHead> newHeads;
 
         branch = json.getString("branch");
         node = json.getString("node");
         refreshAfterSynchronizedAt = getDateFormat().parse(json.getString("refreshAfterSynchronizedAt"));
-        newHeads = toBranchHeads(json.optJSONArray("newHeads"));
 
-        return new OldBitbucketSynchronizeCsetMsg(null, branch, node, refreshAfterSynchronizedAt, null, newHeads, false, 0);
+        return new OldBitbucketSynchronizeCsetMsg(null, branch, node, refreshAfterSynchronizedAt, null, false, 0);
     }
 
     private List<BranchHead> toBranchHeads(JSONArray optJSONArray)

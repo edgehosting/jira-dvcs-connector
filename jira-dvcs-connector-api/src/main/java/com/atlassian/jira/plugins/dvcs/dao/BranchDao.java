@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -38,4 +40,22 @@ public interface BranchDao
      * @param repositoryId
      */
     void removeAllBranchHeadsInRepository(int repositoryId);
+
+    /**
+     * Returns branches for the issue
+     *
+     * @param issueKeys
+     * @return
+     */
+    List<Branch> getBranchesForIssue(Iterable<String> issueKeys);
+
+    List<Branch> getBranches(int repositoryId);
+
+    void createBranch(int repositoryId, Branch branch, Set<String> issueKeys);
+
+    void removeBranch(int repositoryId, Branch branch);
+
+    void removeAllBranchesInRepository(int repositoryId);
+
+    List<Branch> getBranchesForRepository(int repositoryId);
 }

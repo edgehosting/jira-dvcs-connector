@@ -27,16 +27,13 @@ public class OldBitbucketSynchronizeCsetMsg extends BaseProgressEnabledMessage i
 
     private Date refreshAfterSynchronizedAt;
 
-    private List<BranchHead> newHeads;
-
     public OldBitbucketSynchronizeCsetMsg(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, List<BranchHead> newHeads, boolean softSync, int syncAuditId)
+            Progress progress, boolean softSync, int syncAuditId)
     {
         super(progress, syncAuditId, softSync, repository);
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
-        this.newHeads = newHeads;
     }
 
     public String getBranch()
@@ -53,10 +50,4 @@ public class OldBitbucketSynchronizeCsetMsg extends BaseProgressEnabledMessage i
     {
         return refreshAfterSynchronizedAt;
     }
-
-    public List<BranchHead> getNewHeads()
-    {
-        return newHeads;
-    }
-
 }
