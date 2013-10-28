@@ -13,11 +13,9 @@ public interface BranchHeadMapping extends Entity
 
     RepositoryMapping getRepository();
     String getHead();
-    @Deprecated
     String getBranchName();
 
     void setRepository(RepositoryMapping repository);
     void setHead(String node);
-    @Deprecated
     void setBranchName(String name);
 }

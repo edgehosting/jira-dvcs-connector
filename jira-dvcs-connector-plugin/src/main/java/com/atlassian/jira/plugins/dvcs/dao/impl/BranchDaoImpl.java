@@ -77,7 +77,7 @@ public class BranchDaoImpl implements BranchDao
 
                 BranchMapping branchMapping = activeObjects.create(BranchMapping.class, map);
 
-                associateBranchToChangeset(branchMapping, issueKeys);
+                associateBranchToIssue(branchMapping, issueKeys);
 
                 return null;
             }
@@ -257,7 +257,7 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    private void associateBranchToChangeset(BranchMapping branchMapping, Set<String> extractedIssues)
+    private void associateBranchToIssue(BranchMapping branchMapping, Set<String> extractedIssues)
     {
         // remove all assoc issues-branch
         Query query = Query.select().where( IssueToBranchMapping.BRANCH_ID + " = ? ", branchMapping);
