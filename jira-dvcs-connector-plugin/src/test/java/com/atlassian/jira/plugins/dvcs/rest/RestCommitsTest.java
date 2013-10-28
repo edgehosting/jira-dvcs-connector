@@ -15,10 +15,9 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
-import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
@@ -81,6 +80,9 @@ public class RestCommitsTest
     private PullRequestService pullRequestService;
 
     @Mock
+    private BranchService branchService;
+
+    @Mock
     private IssueManager issueManager;
 
     @Mock
@@ -130,7 +132,7 @@ public class RestCommitsTest
 
         when(repositoryService.getUser(any(Repository.class), anyString(), anyString())).thenReturn(new DvcsUser("USERNAME", "FULL_NAME", "RAW_AUTHOR", "AVATAR", "URL"));
 
-        devToolsResource = new DevToolsResource(repositoryService, changesetService, pullRequestService, issueAndProjectKeyManager);
+        devToolsResource = new DevToolsResource(repositoryService, changesetService, pullRequestService, branchService, issueAndProjectKeyManager);
     }
 
     class RepositoryBuilder

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
@@ -294,8 +295,11 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         {
             return Lists.newArrayList();
         }
-        Query select = Query.select();
-        select.setWhereClause(ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", prIds).toString());
+        Query select = Query.select("ID, *")
+                .alias(RepositoryMapping.class, "repo")
+                .alias(RepositoryPullRequestMapping.class, "pr")
+                .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
+                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), Boolean.FALSE, Boolean.TRUE);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
@@ -379,7 +383,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public RepositoryCommitMapping getCommitByNode(Repository domain, int pullRequestId, String node)
     {
         Query query = Query
-                .select()
+                .select("ID, *")
                 .alias(RepositoryCommitMapping.class, "COMMIT")
                 .alias(RepositoryPullRequestToCommitMapping.class, "PR_TO_COMMIT")
                 .alias(RepositoryPullRequestMapping.class, "PR")

@@ -52,8 +52,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private LinkedIssueService linkedIssueService;
     @Resource
     private MessagingService messagingService;
-    @Resource
-    private BranchService branchService;
 
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
@@ -69,20 +67,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         Repository repo = payload.getRepository();
         int pageNum = payload.getPage();
 
-        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, createInclude(payload), payload.getExclude());
+        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
         process(message, payload, page);
         //
-    }
-
-    private List<String> createInclude(BitbucketSynchronizeChangesetMessage payload)
-    {
-        List<BranchHead> newHeads = payload.getNewHeads();
-        List<String> newHeadsNodes = extractBranchHeads(newHeads);
-        if (newHeadsNodes != null && payload.getExclude() != null)
-        {
-            newHeadsNodes.removeAll(payload.getExclude());
-        }
-        return newHeadsNodes;
     }
 
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
@@ -151,7 +138,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getNewHeads(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
                                 .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 

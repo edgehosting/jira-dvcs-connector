@@ -586,8 +586,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         changesetService.removeAllInRepository(repository.getId());
         // remove progress
         synchronizer.removeProgress(repository);
-        // delete branch heads saved for repository
+        // delete branches saved for repository
         branchService.removeAllBranchHeadsInRepository(repository.getId());
+        branchService.removeAllBranchesInRepository(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
         // remove pull requests things

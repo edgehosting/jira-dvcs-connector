@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
 import java.util.Date;
+import java.util.List;
 
 public class PullRequest
 {
@@ -15,6 +16,7 @@ public class PullRequest
     private Date createdOn;
     private Date updatedOn;
     private String author;
+    private List<Reviewer> reviewers;
 
     public PullRequest(final int id)
     {
@@ -129,5 +131,15 @@ public class PullRequest
     public void setUpdatedOn(final Date updatedOn)
     {
         this.updatedOn = updatedOn;
+    }
+
+    public List<Reviewer> getReviewers()
+    {
+        return reviewers;
+    }
+
+    public void setReviewers(final List<Reviewer> reviewers)
+    {
+        this.reviewers = reviewers;
     }
 }

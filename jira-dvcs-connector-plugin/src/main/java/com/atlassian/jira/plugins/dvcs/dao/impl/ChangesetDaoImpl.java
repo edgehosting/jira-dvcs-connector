@@ -1,23 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.Table;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -33,6 +15,22 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -302,7 +300,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
-                Query query = Query.select()
+                Query query = Query.select("ID, *")
                         .alias(ChangesetMapping.class, "chm")
                         .alias(RepositoryToChangesetMapping.class, "rtchm")
                         .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
@@ -331,7 +329,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select()
+                        Query.select("ID, *")
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
@@ -358,7 +356,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                Query query = Query.select()
+                Query query = Query.select("ID, *")
                         .alias(ChangesetMapping.class, "CHANGESET")
                         .alias(IssueToChangesetMapping.class, "ISSUE")
                         .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)

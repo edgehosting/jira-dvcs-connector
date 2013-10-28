@@ -8,6 +8,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,20 +22,22 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 
+import javax.annotation.Nullable;
+
 /**
  * Iterates all new commits in all branches.
  */
 public class BranchedChangesetIterator implements Iterator<Changeset>
 {
     private ChangesetIterator changesetIterator;
-    private final ListIterator<BranchHead> branchesIterator;
+    private final ListIterator<Branch> branchesIterator;
     private final ChangesetCache changesetCache;
     private final Repository repository;
     private final DvcsCommunicator dvcsCommunicator;
 
 
     public BranchedChangesetIterator(ChangesetCache changesetCache, DvcsCommunicator dvcsCommunicator,
-            					   Repository repository, List<BranchHead> branches)
+            					   Repository repository, List<Branch> branches)
     {
         this.changesetCache = changesetCache;
         this.dvcsCommunicator = dvcsCommunicator;
@@ -49,7 +55,7 @@ public class BranchedChangesetIterator implements Iterator<Changeset>
         
         if (branchesIterator.hasNext())
         {
-            BranchHead nextBranch = branchesIterator.next();
+            Branch nextBranch = branchesIterator.next();
             changesetIterator = new ChangesetIterator(dvcsCommunicator, repository, nextBranch, changesetCache);
             return hasNext();
         }
@@ -86,14 +92,22 @@ class ChangesetIterator implements Iterator<Changeset>
     private final ChangesetCache changesetCache;
     private static final Logger log = LoggerFactory.getLogger(ChangesetIterator.class);
 
-    public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, BranchHead branchTip,
+    public ChangesetIterator(DvcsCommunicator dvcsCommunicator, Repository repository, Branch branch,
             ChangesetCache changesetCache)
     {
         this.dvcsCommunicator = dvcsCommunicator;
         this.repository = repository;
         this.changesetCache = changesetCache;
-        this.branchName = branchTip.getName();
-        addNodes(branchTip.getHead());
+        this.branchName = branch.getName();
+
+        addNodes(Iterables.transform(branch.getHeads(), new Function<BranchHead, String>()
+        {
+            @Override
+            public String apply(@Nullable final BranchHead input)
+            {
+                return input.getHead();
+            }
+        }));
     }
 
     @Override
@@ -125,7 +139,7 @@ class ChangesetIterator implements Iterator<Changeset>
             }
             
             List<String> parents = currentChangeset.getParents();
-            addNodes(parents.toArray(new String[0]));
+            addNodes(parents);
             return currentChangeset;
         } catch (Exception e)
         {
@@ -160,7 +174,7 @@ class ChangesetIterator implements Iterator<Changeset>
         throw new UnsupportedOperationException();
     }
     
-    private void addNodes(String... nodes)
+    private void addNodes(Iterable<String> nodes)
     {
         for (String node : nodes)
         {

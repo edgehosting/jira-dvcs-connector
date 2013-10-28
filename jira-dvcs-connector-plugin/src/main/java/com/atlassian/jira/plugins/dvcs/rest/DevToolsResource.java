@@ -14,6 +14,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,8 @@ public class DevToolsResource
 
     private final PullRequestService pullRequestService;
 
+    private final BranchService branchService;
+
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     /**
@@ -68,14 +71,16 @@ public class DevToolsResource
      * @param repositoryService
      * @param changesetService
      * @param pullRequestService
+     * @param branchService
      * @param issueAndProjectKeyManager
      */
     public DevToolsResource(RepositoryService repositoryService, ChangesetService changesetService,
-            final PullRequestService pullRequestService, IssueAndProjectKeyManager issueAndProjectKeyManager)
+            PullRequestService pullRequestService, BranchService branchService, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.repositoryService = repositoryService;
         this.changesetService = changesetService;
         this.pullRequestService = pullRequestService;
+        this.branchService = branchService;
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
@@ -299,5 +304,40 @@ public class DevToolsResource
         protected abstract T createRepository();
         protected abstract void setData(T restRepository, Repository repository);
 
+    }
+
+    @GET
+    @Path("/branch")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response getBranches(@QueryParam("issue") String issueKey)
+    {
+        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
+        if (issue == null)
+        {
+            return Status.notFound().message("Issue not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+        {
+            throw new AuthorizationException();
+        }
+
+        Project project = issue.getProjectObject();
+
+        if (project == null)
+        {
+            return Status.notFound().message("Project was not found").response();
+        }
+
+        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+        {
+            throw new AuthorizationException();
+        }
+
+        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
+
+        Map<String,Object> result = new HashMap<String, Object>();
+        result.put("branches", branchService.getByIssueKey(issueKeys));
+        return Response.ok(result).build();
     }
 }

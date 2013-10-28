@@ -1,22 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
-
-import java.util.List;
 
 public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSupport<OldBitbucketSynchronizeCsetMsg>
 {
     private static final String ID = OldBitbucketSynchronizeCsetMsgConsumer.class.getCanonicalName();
     public static final String KEY = OldBitbucketSynchronizeCsetMsg.class.getCanonicalName();
-
-    protected void updateBranchHeads(Repository repo, List<BranchHead> newBranchHeads)
-    {
-        List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
-        branchService.updateBranchHeads(repo, newBranchHeads, oldBranchHeads);
-    }
 
     @Override
     public String getQueue()
@@ -54,8 +45,8 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
                 payload.getBranch(), //
                 parentChangesetNode, //
                 payload.getRefreshAfterSynchronizedAt(), //
-                payload.getProgress(), payload.getNewHeads() //
-                , payload.isSoftSync(), payload.getSyncAuditId()
+                payload.getProgress(),
+                payload.isSoftSync(), payload.getSyncAuditId()
         );
     }
 
