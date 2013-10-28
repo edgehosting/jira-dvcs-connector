@@ -300,7 +300,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
-                Query query = Query.select()
+                Query query = Query.select("ID, *")
                         .alias(ChangesetMapping.class, "chm")
                         .alias(RepositoryToChangesetMapping.class, "rtchm")
                         .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
@@ -329,7 +329,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select()
+                        Query.select("ID, *")
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
@@ -356,7 +356,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                Query query = Query.select()
+                Query query = Query.select("ID, *")
                         .alias(ChangesetMapping.class, "CHANGESET")
                         .alias(IssueToChangesetMapping.class, "ISSUE")
                         .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
