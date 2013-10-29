@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -270,15 +271,16 @@ public class MessageExecutor
                 }
                 messagingService.ok(consumer, message);
 
-            } catch (Exception e)
+            } catch (Throwable t)
             {
-                LOGGER.error(e.getMessage(), e);
-                messagingService.fail(consumer, message, e);
+                LOGGER.error(t.getMessage(), t);
+                messagingService.fail(consumer, message, t);
 
                 if (progress != null)
                 {
                     progress.setError("Error during sync. See server logs.");
                 }
+                Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
                 tryEndProgress(message, consumer, progress);
