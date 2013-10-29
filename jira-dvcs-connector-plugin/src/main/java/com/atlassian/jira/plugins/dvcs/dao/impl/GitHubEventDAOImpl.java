@@ -7,7 +7,6 @@ import javax.annotation.Resource;
 import net.java.ao.Query;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -28,12 +27,6 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      */
     @Resource
     private ActiveObjects activeObjects;
-    
-    /**
-     * Injected {@link QueryHelper} dependency.
-     */
-    @Resource
-    private QueryHelper queryHelper;
 
     /**
      * {@inheritDoc}
@@ -108,7 +101,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     {
         Query query = Query.select();
         query.where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.SAVE_POINT + " = ? ", repository.getId(), true);
-        query.setOrderClause(queryHelper.getSqlColumnName(GitHubEventMapping.CREATED_AT) + " desc, " + queryHelper.getSqlColumnName("ID") +  " desc");
+        query.setOrderClause(GitHubEventMapping.CREATED_AT + " desc, " + "ID" +  " desc");
         query.setLimit(1);
 
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
