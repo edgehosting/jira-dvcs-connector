@@ -197,6 +197,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 log.error(e.getMessage(), e);
                 Progress progress = getProgress(repo.getId());
                 progress.setError("Error during sync. See server logs.");
+                syncAudit.setException(auditId, e, false);
             } finally
             {
                 messagingService.tryEndProgress(repo, getProgress(repo.getId()), null, auditId);
