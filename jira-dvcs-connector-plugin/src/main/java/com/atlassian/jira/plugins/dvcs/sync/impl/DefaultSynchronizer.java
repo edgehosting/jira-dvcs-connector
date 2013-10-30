@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Resource;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.google.common.base.Throwables;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,12 +193,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         gitHubEventService.synchronize(repo, softSync, synchronizationTags);
                     }
                 }
-            } catch (Exception e)
+            } catch (Throwable t)
             {
-                log.error(e.getMessage(), e);
+                log.error(t.getMessage(), t);
                 Progress progress = getProgress(repo.getId());
                 progress.setError("Error during sync. See server logs.");
-                syncAudit.setException(auditId, e, false);
+                syncAudit.setException(auditId, t, false);
+                Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
                 messagingService.tryEndProgress(repo, getProgress(repo.getId()), null, auditId);

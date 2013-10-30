@@ -14,7 +14,7 @@ public interface IssueToBranchMapping extends Entity
     BranchMapping getBranch();
     String getIssueKey();
 
-    void getBranch(BranchMapping branch);
+    void setBranch(BranchMapping branch);
     void setIssueKey(String issueKey);
 
 }
