@@ -108,13 +108,13 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     @Override
     public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
-            String remoteStatus, Date updatedOn, String sourceRepo)
+            RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
       request.setName(name);
       request.setSourceBranch(sourceBranch);
       request.setDestinationBranch(dstBranch);
-      request.setLastStatus(com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status.fromBbString(remoteStatus).name());
+      request.setLastStatus(status.name());
       request.setSourceRepo(sourceRepo);
       request.setUpdatedOn(updatedOn);
       activeObjects.executeInTransaction(new TransactionCallback<Void>()
