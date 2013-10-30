@@ -240,8 +240,10 @@ public class BranchDaoImpl implements BranchDao
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
                         Query.select("ID, *")
+                                .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")
-                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + BranchMapping.REPOSITORY_ID + " = ?", Boolean.FALSE, Boolean.TRUE, repositoryId));
+                                .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND branch." + BranchMapping.REPOSITORY_ID + " = ?", Boolean.FALSE, Boolean.TRUE, repositoryId));
 
                 return Arrays.asList(mappings);
             }
