@@ -12,7 +12,7 @@ public interface RepositoryActivityDao
     // C-U-D
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
 
-    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, String remoteStatus,
+    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, RepositoryPullRequestMapping.Status status,
             Date updatedOn, String sourceRepo);
 
     /**
