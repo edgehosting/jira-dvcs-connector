@@ -116,7 +116,7 @@ function updateSyncStatus(repo) {
             var startSyncDateTime = new Date(repo.sync.startTime);
             syncRepoIconElement.attr("title", "Synchronizing... (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")");
             syncRepoIcon = "running";
-            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong> " + repo.sync.pullRequestActivityCount + " </strong> Pull Requests, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong> " + repo.sync.pullRequestActivityCount + " </strong> pull requests, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
                 syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
         }

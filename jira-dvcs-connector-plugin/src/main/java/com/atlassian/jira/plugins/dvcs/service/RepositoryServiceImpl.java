@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -69,7 +69,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private RepositoryDao repositoryDao;
 
     @Resource
-    private RepositoryActivityDao repositoryActivityDao;
+    private RepositoryPullRequestDao repositoryPullRequestDao;
 
     @Resource
     private Synchronizer synchronizer;
@@ -592,7 +592,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // delete repository record itself
         repositoryDao.remove(repository.getId());
         // remove pull requests things
-        repositoryActivityDao.removeAll(repository);
+        repositoryPullRequestDao.removeAll(repository);
         // remove sync logs
         syncAuditDao.removeAllForRepo(repository.getId());
     }

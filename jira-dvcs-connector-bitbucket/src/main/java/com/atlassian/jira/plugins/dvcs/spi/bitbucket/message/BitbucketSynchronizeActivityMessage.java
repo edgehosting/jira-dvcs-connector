@@ -60,5 +60,4 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
     {
         return lastSyncDate;
     }
-
 }

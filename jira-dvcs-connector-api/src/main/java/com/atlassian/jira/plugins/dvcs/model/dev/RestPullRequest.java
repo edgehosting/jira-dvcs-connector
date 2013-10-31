@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class RestPullRequest
 {
-    private RestAuthor author;
+    private RestUser author;
     private long createdOn;
     private long updatedOn;
     private long id;
@@ -21,13 +22,14 @@ public class RestPullRequest
     private String status;
     private RestRef source;
     private RestRef destination;
+    private List<RestReviewer> reviewers;
 
-    public RestAuthor getAuthor()
+    public RestUser getAuthor()
     {
         return author;
     }
 
-    public void setAuthor(final RestAuthor author)
+    public void setAuthor(final RestUser author)
     {
         this.author = author;
     }
@@ -110,6 +112,16 @@ public class RestPullRequest
     public void setDestination(final RestRef destination)
     {
         this.destination = destination;
+    }
+
+    public List<RestReviewer> getReviewers()
+    {
+        return reviewers;
+    }
+
+    public void setReviewers(final List<RestReviewer> reviewers)
+    {
+        this.reviewers = reviewers;
     }
 }
 

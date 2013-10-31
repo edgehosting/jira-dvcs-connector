@@ -24,7 +24,7 @@ public class BitbucketPullRequest implements Serializable
     private String description;
     private String status;
     private BitbucketAccount user;
-    private BitbucketPullRequestLinks links;
+    private BitbucketLinks links;
     private BitbucketPullRequestHead source;
     private BitbucketPullRequestHead destination;
     private Date createdOn;
@@ -75,12 +75,12 @@ public class BitbucketPullRequest implements Serializable
         this.description = description;
     }
 
-    public BitbucketPullRequestLinks getLinks()
+    public BitbucketLinks getLinks()
     {
         return links;
     }
 
-    public void setLinks(BitbucketPullRequestLinks links)
+    public void setLinks(BitbucketLinks links)
     {
         this.links = links;
     }

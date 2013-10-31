@@ -1,20 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPageIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivityEnvelope;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalsIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommitIterator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewerIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -45,16 +50,16 @@ public class PullRequestRemoteRestpoint
 
     }
 
-    public BitbucketPullRequestBaseActivityEnvelope getRepositoryActivityPage(int page, String owner, String repoSlug, final Date upToDate) {
+    public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> getRepositoryActivityPage(int page, String owner, String repoSlug, final Date upToDate) {
 
         String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s&page=%s", owner, repoSlug, REPO_ACTIVITY_PAGESIZE, page);
-        ResponseCallback<BitbucketPullRequestBaseActivityEnvelope> callback = new ResponseCallback<BitbucketPullRequestBaseActivityEnvelope>()
+        ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>> callback = new ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
         {
             @Override
-            public BitbucketPullRequestBaseActivityEnvelope onResponse(RemoteResponse response)
+            public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
-                BitbucketPullRequestBaseActivityEnvelope remote =
-                        ClientUtils.fromJson(response.getResponse(),new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType() );
+                BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> remote =
+                        ClientUtils.fromJson(response.getResponse(),new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>(){}.getType() );
 
                 if (remote != null && remote.getValues() != null && !remote.getValues().isEmpty())
                 {
@@ -83,19 +88,29 @@ public class PullRequestRemoteRestpoint
 
     }
 
+    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String owner, String repoSlug, String localId)
+    {
+        String url = String.format("/repositories/%s/%s/pullrequests/%s/commits", owner, repoSlug, localId);
 
+        return new BitbucketPullRequestCommitIterator(requestor, url);
+    }
 
-    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String urlIncludingApi) {
-
+    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String urlIncludingApi)
+    {
         return new BitbucketPullRequestCommitIterator(requestor, urlIncludingApi);
     }
 
-
-    public BitbucketPullRequest getPullRequestDetail(String owner, String repoSlug, String localId) {
+    public BitbucketPullRequest getPullRequestDetail(String owner, String repoSlug, String localId)
+    {
 
         String url = String.format("/repositories/%s/%s/pullrequests/%s", owner, repoSlug, localId);
 
-        return requestor.get(url, null, new ResponseCallback<BitbucketPullRequest>()
+        return getPullRequestDetail(url);
+    }
+
+    public BitbucketPullRequest getPullRequestDetail(String urlIncludingApi)
+    {
+        return requestor.get(urlIncludingApi, null, new ResponseCallback<BitbucketPullRequest>()
         {
 
             @Override
@@ -107,8 +122,16 @@ public class PullRequestRemoteRestpoint
             }
 
         });
-
     }
 
+    public Iterable<BitbucketPullRequestReviewer> getPullRequestReviewers(String urlIncludingApi)
+    {
+        return new BitbucketPullRequestReviewerIterator(requestor, urlIncludingApi);
+    }
+
+    public Iterable<BitbucketPullRequestApprovalActivity> getPullRequestApprovals(String urlIncludingApi)
+    {
+        return new BitbucketPullRequestApprovalsIterator(requestor, urlIncludingApi);
+    }
 }
 
