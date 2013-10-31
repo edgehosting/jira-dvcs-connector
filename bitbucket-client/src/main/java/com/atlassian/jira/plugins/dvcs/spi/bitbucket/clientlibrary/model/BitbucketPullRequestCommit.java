@@ -18,7 +18,7 @@ public class BitbucketPullRequestCommit implements Serializable
     private static final long serialVersionUID = 8212352604704981087L;
 
     private BitbucketPullRequestCommitAuthor author;
-    private BitbucketPullRequestLinks links;
+    private BitbucketLinks links;
     private Date date;
     private String message;
     private String hash;
@@ -30,12 +30,12 @@ public class BitbucketPullRequestCommit implements Serializable
         super();
     }
 
-    public BitbucketPullRequestLinks getLinks()
+    public BitbucketLinks getLinks()
     {
         return links;
     }
 
-    public void setLinks(final BitbucketPullRequestLinks links)
+    public void setLinks(final BitbucketLinks links)
     {
         this.links = links;
     }

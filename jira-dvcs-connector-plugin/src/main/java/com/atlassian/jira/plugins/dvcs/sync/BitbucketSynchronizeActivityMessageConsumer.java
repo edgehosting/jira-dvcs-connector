@@ -1,22 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.jfree.util.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.Reviewer;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
@@ -26,15 +17,29 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivityEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
+import org.apache.commons.lang.StringUtils;
+import org.jfree.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeActivityMessage}-s.
@@ -74,7 +79,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         Repository repo = payload.getRepository();
         int jiraCount = payload.getProgress().getJiraCount();
 
-        BitbucketPullRequestBaseActivityEnvelope activityPage = null;
+        BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
 
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
@@ -102,7 +107,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
             }
 
-            int localPrId = processActivity(message, payload, info, pullRestpoint);
+            int localPrId = processActivity(payload, info, pullRestpoint);
             markProcessed(payload, info, localPrId);
 
             payload.getProgress().inPullRequestProgress(processedSize(payload),
@@ -123,7 +128,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     protected void markProcessed(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info, Integer prLocalId)
     {
         payload.getProcessedPullRequests().add(info.getPullRequest().getId().intValue());
-        payload.getProcessedPullRequestsLocal().add(prLocalId);
     }
 
     private void fireNextPage(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload, String nextUrl, Date lastSync)
@@ -146,7 +150,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return infos.isEmpty() || infos.size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE;
     }
 
-    private int processActivity(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info,
+    private int processActivity(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info,
             PullRequestRemoteRestpoint pullRestpoint)
     {
         Repository repo = payload.getRepository();
@@ -156,7 +160,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (isUpdateActivity(info.getActivity()) && !payload.getProcessedPullRequestsLocal().contains(localPullRequest.getID()))
         {
             loadPullRequestCommits(repo, pullRestpoint, localPullRequest.getID(), (BitbucketPullRequestUpdateActivity) info.getActivity(),
-                     localPullRequest, info.getPullRequest().getLinks().getCommits().getHref());
+                     localPullRequest, info.getPullRequest());
+            payload.getProcessedPullRequestsLocal().add(localPullRequest.getID());
         }
         return localPullRequest.getID();
     }
@@ -164,21 +169,23 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private RepositoryPullRequestMapping ensurePullRequestPresent(Repository repo, PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info, BitbucketSynchronizeActivityMessage payload)
     {
         BitbucketPullRequest remote = null;
+        Map<String, Reviewer> reviewers = null;
         Integer remoteId = info.getPullRequest().getId().intValue();
 
         // have a detail within this synchronization ?
         if (!payload.getProcessedPullRequests().contains(remoteId))
         {
-            try
+            BitbucketLink pullRequestLink = info.getPullRequest().getLinks().getSelf();
+            if (pullRequestLink != null && !StringUtils.isBlank(pullRequestLink.getHref()))
             {
+                remote = pullRestpoint.getPullRequestDetail(pullRequestLink.getHref());
+            } else
+            {
+                // if there is no pull request link fall back to the generated pull request url
                 remote = pullRestpoint.getPullRequestDetail(repo.getOrgName(), repo.getSlug(), info
-                    .getPullRequest().getId() + "");
-            } catch (Exception e)
-            {
-                Log.error("Could not retrieve pull request details", e);
-                remote = new BitbucketPullRequest();
-                remote.setId(info.getPullRequest().getId());
+                        .getPullRequest().getId() + "");
             }
+            reviewers = loadPulRequestReviewers(pullRestpoint, remote);
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
 
@@ -191,11 +198,80 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (remote != null && hasChanged(local, remote))
         {
             dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                    .getBranch().getName(), remote.getDestination().getBranch().getName(), remote.getStatus(),
+                    .getBranch().getName(), remote.getDestination().getBranch().getName(),
+                    RepositoryPullRequestMapping.Status.fromBbString(remote.getStatus()),
                     remote.getUpdatedOn(), remote.getSource().getRepository().getFullName());
         }
 
+        if (reviewers != null)
+        {
+            updatePulRequestReviewers(local.getID(), repo.getId(), reviewers);
+        }
+
         return local;
+    }
+
+    private void updatePulRequestReviewers(final int pullRequestId, final int repositoryId, final Map<String,Reviewer> reviewerIndex)
+    {
+        PullRequestReviewerMapping[] oldReviewers = dao.getReviewers(pullRequestId);
+        for (PullRequestReviewerMapping reviewerMapping : oldReviewers)
+        {
+            Reviewer reviewer = reviewerIndex.remove(reviewerMapping.getUsername());
+            if (reviewer == null)
+            {
+                dao.removeReviewer(reviewerMapping);
+            } else
+            {
+                if (reviewer.isApproved() != reviewerMapping.isApproved())
+                {
+                    // update approval
+                    reviewerMapping.setApproved(reviewer.isApproved());
+                    dao.saveReviewer(reviewerMapping);
+                }
+            }
+        }
+
+        for (String username : reviewerIndex.keySet())
+        {
+            Reviewer reviewer = reviewerIndex.get(username);
+            dao.createReviewer(pullRequestId, repositoryId, reviewer);
+        }
+    }
+
+    private Map<String, Reviewer> loadPulRequestReviewers(final PullRequestRemoteRestpoint pullRestpoint, final BitbucketPullRequest remote)
+    {
+        BitbucketLink reviewersLink = remote.getLinks().getReviewers();
+        BitbucketLink approvalsLink = remote.getLinks().getApprovals();
+
+        Map<String, Reviewer> reviewersIndex = new LinkedHashMap<String, Reviewer>();
+
+        if (reviewersLink != null)
+        {
+            Iterable<BitbucketPullRequestReviewer> bitbucketReviewers = pullRestpoint.getPullRequestReviewers(reviewersLink.getHref());
+            for (BitbucketPullRequestReviewer bitbucketReviewer : bitbucketReviewers)
+            {
+                Reviewer reviewer = new Reviewer(bitbucketReviewer.getUser().getUsername(), false);
+                reviewersIndex.put(bitbucketReviewer.getUser().getUsername(), reviewer);
+            }
+        }
+
+        if (approvalsLink != null)
+        {
+            Iterable<BitbucketPullRequestApprovalActivity> bitbucketApprovals = pullRestpoint.getPullRequestApprovals(approvalsLink.getHref());
+            for (BitbucketPullRequestApprovalActivity bitbucketApproval : bitbucketApprovals)
+            {
+                Reviewer reviewer = reviewersIndex.get(bitbucketApproval.getUser().getUsername());
+                if (reviewer == null)
+                {
+                    reviewersIndex.put(bitbucketApproval.getUser().getUsername(), new Reviewer(bitbucketApproval.getUser().getUsername(), true));
+                } else
+                {
+                    reviewer.setApproved(true);
+                }
+            }
+        }
+
+        return reviewersIndex;
     }
 
     private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote)
@@ -203,12 +279,21 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return !remote.getUpdatedOn().equals(local.getUpdatedOn());
     }
 
-    public void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
-            int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestMapping savedPullRequest, String commitsUrl)
+    private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
+            int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestMapping savedPullRequest, BitbucketPullRequest remotePullRequest)
     {
         try
         {
-            Iterable<BitbucketPullRequestCommit> commitsIterator = pullRestpoint.getPullRequestCommits(commitsUrl);
+            BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
+            Iterable<BitbucketPullRequestCommit> commitsIterator = null;
+            if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
+            {
+                commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
+            } else
+            {
+                // if there is no commits link, fall back to use generated commits url
+                commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
+            }
 
             for (BitbucketPullRequestCommit commit : commitsIterator)
             {

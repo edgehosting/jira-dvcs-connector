@@ -5,23 +5,23 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.google.gson.reflect.TypeToken;
 
-public class BitbucketPullRequestCommitIterator extends BitbucketPageIterator<BitbucketPullRequestCommit>
+public class BitbucketPullRequestReviewerIterator extends BitbucketPageIterator<BitbucketPullRequestReviewer>
 {
     /**
      * @param urlIncludingApi
-     *            i.e.
-     *            /api/2.0/repositories/erik/bitbucket/pullrequests/3/commits
+     *
+     *            /api/2.0/repositories/{user}/{slug}/pullrequests/{id}/reviewers
      */
-    public BitbucketPullRequestCommitIterator(RemoteRequestor requestor, String urlIncludingApi)
+    public BitbucketPullRequestReviewerIterator(RemoteRequestor requestor, String urlIncludingApi)
     {
         super(requestor, urlIncludingApi);
     }
 
     @Override
-    protected BitbucketPullRequestPage<BitbucketPullRequestCommit> transformFromJson(final RemoteResponse response)
+    protected BitbucketPullRequestPage<BitbucketPullRequestReviewer> transformFromJson(final RemoteResponse response)
     {
         return ClientUtils.fromJson(response.getResponse(),
-                new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestCommit>>()
+                new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestReviewer>>()
                 {
                 }.getType());
     }

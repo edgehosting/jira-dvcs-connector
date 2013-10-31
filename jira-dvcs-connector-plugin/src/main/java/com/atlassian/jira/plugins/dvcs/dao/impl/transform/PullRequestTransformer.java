@@ -1,13 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.Reviewer;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PullRequestTransformer
 {
@@ -42,8 +47,26 @@ public class PullRequestTransformer
         pullRequest.setCreatedOn(pullRequestMapping.getCreatedOn());
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());
+        pullRequest.setReviewers(transform(pullRequestMapping.getReviewers()));
 
         return pullRequest;
+    }
+
+    private List<Reviewer> transform(final PullRequestReviewerMapping[] reviewerMappings)
+    {
+        if (reviewerMappings == null)
+        {
+            return null;
+        }
+
+        List<Reviewer> reviewers = new ArrayList<Reviewer>();
+        for (PullRequestReviewerMapping reviewerMapping : reviewerMappings)
+        {
+            Reviewer reviewer = new Reviewer(reviewerMapping.getUsername(), reviewerMapping.isApproved());
+            reviewers.add(reviewer);
+        }
+
+        return  reviewers;
     }
 
     private String createRepositoryUrl(String hostUrl, String repositoryLabel)

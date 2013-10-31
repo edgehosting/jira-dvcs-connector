@@ -1,5 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.Reviewer;
+import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,30 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -47,20 +46,20 @@ import com.google.common.collect.Lists;
  * @author jhocman@atlassian.com
  *
  */
-public class RepositoryActivityDaoImpl implements RepositoryActivityDao
+public class RepositoryPullRequestDaoImpl implements RepositoryActivityDao
 {
 
     /**
      * Logger of this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryActivityDaoImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryPullRequestDaoImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
      */
     private final ActiveObjects activeObjects;
 
-    public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
+    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects)
     {
         super();
         this.activeObjects = activeObjects;
@@ -108,13 +107,13 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
 
     @Override
     public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
-            String remoteStatus, Date updatedOn, String sourceRepo)
+            RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
       request.setName(name);
       request.setSourceBranch(sourceBranch);
       request.setDestinationBranch(dstBranch);
-      request.setLastStatus(com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status.fromBbString(remoteStatus).name());
+      request.setLastStatus(status.name());
       request.setSourceRepo(sourceRepo);
       request.setUpdatedOn(updatedOn);
       activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -349,7 +348,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestReviewerMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
                 RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
@@ -423,6 +422,58 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     + repository.getId() + " Commit Node: " + node);
 
         }
+    }
+
+    @Override
+    public PullRequestReviewerMapping[] getReviewers(final int pullRequestId)
+    {
+        PullRequestReviewerMapping[] result = activeObjects.find(PullRequestReviewerMapping.class, Query.select().where(PullRequestReviewerMapping.PULL_REQUEST_ID + " = ?", pullRequestId));
+
+        return result;
+    }
+
+    @Override
+    public void removeReviewer(final PullRequestReviewerMapping reviewerMapping)
+    {
+        LOGGER.debug("deleting reviewer with id = [ {} ]", reviewerMapping.getID());
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                activeObjects.delete(reviewerMapping);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void saveReviewer(final PullRequestReviewerMapping reviewerMapping)
+    {
+        LOGGER.debug("saving reviewer with id = [ {} ]", reviewerMapping.getID());
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                reviewerMapping.save();
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createReviewer(final int pullRequestId, final int repositoryId, final Reviewer reviewer)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(PullRequestReviewerMapping.USERNAME, reviewer.getUsername());
+        params.put(PullRequestReviewerMapping.APPROVED, reviewer.isApproved());
+        params.put(PullRequestReviewerMapping.PULL_REQUEST_ID, pullRequestId);
+        params.put(PullRequestReviewerMapping.DOMAIN, repositoryId);
+
+        activeObjects.create(PullRequestReviewerMapping.class, params);
     }
 
 

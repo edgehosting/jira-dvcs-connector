@@ -6,18 +6,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class RestAuthor
+public class RestUser
 {
     private String avatar;
     private String emailAddress;
     private String name;
+    private String username;
 
-    public RestAuthor()
+    public RestUser()
     {
     }
 
-    public RestAuthor(final String name, final String emailAddress, final String avatar)
+    public RestUser(final String username, final String name, final String emailAddress, final String avatar)
     {
+        this.username = username;
         this.name = name;
         this.emailAddress = emailAddress;
         this.avatar = avatar;
@@ -51,5 +53,15 @@ public class RestAuthor
     public void setAvatar(final String avatar)
     {
         this.avatar = avatar;
+    }
+
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public void setUsername(final String username)
+    {
+        this.username = username;
     }
 }

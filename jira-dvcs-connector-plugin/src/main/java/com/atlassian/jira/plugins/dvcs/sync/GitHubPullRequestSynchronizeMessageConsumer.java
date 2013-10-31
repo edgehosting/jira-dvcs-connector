@@ -41,7 +41,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Logger of this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubPullRequestSynchronizeMessage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubPullRequestSynchronizeMessageConsumer.class);
 
     /**
      * @see #getQueue()
@@ -119,7 +119,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         } else
         {
             repositoryActivityDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest.getBase()
-                    .getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest).name(), remotePullRequest
+                    .getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()));
         }
         return localPullRequest;

@@ -236,6 +236,11 @@
             <version>${testkit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-bitbucket</artifactId>
+            <version>1.4.4-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

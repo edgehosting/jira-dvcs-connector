@@ -20,6 +20,7 @@ public class BitbucketUser implements Serializable
 
     private String username;
     private String displayName;
+    private BitbucketLinks links;
 
     public String getUsername()
     {
@@ -39,5 +40,15 @@ public class BitbucketUser implements Serializable
     public void setDisplayName(String displayName)
     {
         this.displayName = displayName;
+    }
+
+    public BitbucketLinks getLinks()
+    {
+        return links;
+    }
+
+    public void setLinks(final BitbucketLinks links)
+    {
+        this.links = links;
     }
 }
