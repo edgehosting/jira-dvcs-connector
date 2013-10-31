@@ -7,7 +7,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  *
  *  @author Miroslav Stencel <mstencel@atlassian.com>
  */
-public class BitbucketPullRequestLink
+public class BitbucketLink
 {
     private String href;
 

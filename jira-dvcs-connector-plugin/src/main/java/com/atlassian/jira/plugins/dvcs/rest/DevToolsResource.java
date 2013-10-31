@@ -14,6 +14,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.atlassian.jira.plugins.dvcs.model.Reviewer;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestReviewer;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,6 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
@@ -134,7 +136,7 @@ public class DevToolsResource
         {
             DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
             RestChangeset restChangeset = new RestChangeset();
-            restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
+            restChangeset.setAuthor(new RestUser(user.getUsername(), user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
             restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
             restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
             restChangeset.setId(changeset.getRawNode());
@@ -205,7 +207,7 @@ public class DevToolsResource
         {
             DvcsUser user = repositoryService.getUser(repository, pullRequest.getAuthor(), pullRequest.getAuthor());
             RestPullRequest restPullRequest = new RestPullRequest();
-            restPullRequest.setAuthor(new RestAuthor(user.getFullName(), null, user.getAvatar()));
+            restPullRequest.setAuthor(new RestUser(user.getUsername(), user.getFullName(), null, user.getAvatar()));
             restPullRequest.setCreatedOn(pullRequest.getCreatedOn().getTime());
             restPullRequest.setTitle(pullRequest.getName());
             restPullRequest.setId(pullRequest.getRemoteId());
@@ -215,9 +217,23 @@ public class DevToolsResource
             restPullRequest.setSource(createRef(pullRequest.getSource()));
             restPullRequest.setDestination(createRef(pullRequest.getDestination()));
             restPullRequests.add(restPullRequest);
+            restPullRequest.setReviewers(createReviewers(repository, pullRequest.getReviewers()));
         }
 
         return restPullRequests;
+    }
+
+    private List<RestReviewer> createReviewers(final Repository repository, final List<Reviewer> reviewers)
+    {
+        List<RestReviewer> restReviewers = new ArrayList<RestReviewer>();
+
+        for (Reviewer reviewer : reviewers)
+        {
+            DvcsUser user = repositoryService.getUser(repository, reviewer.getUsername(), reviewer.getUsername());
+            RestReviewer restReviewer = new RestReviewer(new RestUser(user.getUsername(), user.getFullName(), null, user.getAvatar()), reviewer.isApproved());
+            restReviewers.add(restReviewer);
+        }
+        return restReviewers;
     }
 
     private RestRef createRef(PullRequestRef ref)

@@ -20,7 +20,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
@@ -75,7 +75,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private RepositoryDao repositoryDao;
 
     @Resource
-    private RepositoryActivityDao repositoryActivityDao;
+    private RepositoryPullRequestDao repositoryPullRequestDao;
     
     /**
      * Injected {@link GitHubEventService} dependency.
@@ -127,7 +127,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 }
                 if (pullRequestSync)
                 {
-                    repositoryActivityDao.removeAll(repo);
+                    repositoryPullRequestDao.removeAll(repo);
                     repo.setActivityLastSync(null);
                 }
                 repositoryDao.save(repo);

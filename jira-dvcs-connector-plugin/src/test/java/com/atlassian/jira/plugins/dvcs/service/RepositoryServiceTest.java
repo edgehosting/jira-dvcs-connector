@@ -12,7 +12,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -37,7 +37,7 @@ public class RepositoryServiceTest
 	private RepositoryDao repositoryDao;
 
 	@Mock
-	private RepositoryActivityDao repositoryActivityDao;
+	private RepositoryPullRequestDao repositoryPullRequestDao;
 
 	@Mock
     private BranchService branchService;
@@ -239,7 +239,7 @@ public class RepositoryServiceTest
 
 		Mockito.verify(changesetService).removeAllInRepository(8);
 		Mockito.verify(repositoryDao).remove(8);
-		Mockito.verify(repositoryActivityDao).removeAll(sampleRepository);
+		Mockito.verify(repositoryPullRequestDao).removeAll(sampleRepository);
 	}
 
 	@Test

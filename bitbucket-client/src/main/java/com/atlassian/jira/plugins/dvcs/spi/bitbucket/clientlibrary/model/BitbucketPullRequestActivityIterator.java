@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Date;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 //TODO failure recoveries ... after merge with default
 public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketPullRequestActivityInfo>,
@@ -22,7 +21,7 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     private boolean wasDateOver = false;
     private final String forUser;
     private final String forRepoSlug;
-    private BitbucketPullRequestBaseActivityEnvelope currentPage = null;
+    private BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> currentPage = null;
 
     // services
     private final RemoteRequestor requestor;
@@ -123,17 +122,17 @@ public class BitbucketPullRequestActivityIterator implements Iterator<BitbucketP
     	}
     }
     
-    private ResponseCallback<BitbucketPullRequestBaseActivityEnvelope> createResponseCallback()
+    private ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>> createResponseCallback()
     {
-        return new ResponseCallback<BitbucketPullRequestBaseActivityEnvelope>()
+        return new ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
         {
             @Override
-            public BitbucketPullRequestBaseActivityEnvelope onResponse(RemoteResponse response)
+            public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
-                BitbucketPullRequestBaseActivityEnvelope remote = 
+                BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> remote =
                         ClientUtils.fromJson(
                                                                   response.getResponse(), 
-                                                                  new TypeToken<BitbucketPullRequestBaseActivityEnvelope>(){}.getType()
+                                                                  new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>(){}.getType()
                                                               );
 
                 if (remote != null && remote.getValues() != null && !remote.getValues().isEmpty())

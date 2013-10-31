@@ -3,20 +3,19 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 import java.io.Serializable;
 import java.util.List;
 
-public class BitbucketPullRequestBaseActivityEnvelope implements Serializable
+public class BitbucketPullRequestPage<T> implements Serializable
 {
-    private static final long serialVersionUID = -4076516797342633690L;
-    private List<BitbucketPullRequestActivityInfo> values;
+    private List<T> values;
     private Integer pagelen;
     private Integer size;
     private String next;
 
-    public List<BitbucketPullRequestActivityInfo> getValues()
+    public List<T> getValues()
     {
         return values;
     }
 
-    public void setValues(List<BitbucketPullRequestActivityInfo> values)
+    public void setValues(List<T> values)
     {
         this.values = values;
     }

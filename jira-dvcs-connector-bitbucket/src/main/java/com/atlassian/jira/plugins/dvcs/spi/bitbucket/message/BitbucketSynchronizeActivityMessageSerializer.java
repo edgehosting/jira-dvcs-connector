@@ -48,6 +48,7 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         {
             lastSyncDate = getDateFormat().parse(lastSyncOrNull);
         }
+
         return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0);
     }
 

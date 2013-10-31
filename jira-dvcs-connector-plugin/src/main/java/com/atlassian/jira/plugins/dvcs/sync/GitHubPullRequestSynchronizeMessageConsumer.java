@@ -17,7 +17,7 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
@@ -41,7 +41,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Logger of this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubPullRequestSynchronizeMessage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubPullRequestSynchronizeMessageConsumer.class);
 
     /**
      * @see #getQueue()
@@ -54,10 +54,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     public static final String ADDRESS = GitHubPullRequestSynchronizeMessage.class.getCanonicalName();
 
     /**
-     * Injected {@link RepositoryActivityDao} dependency.
+     * Injected {@link com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao} dependency.
      */
     @Resource
-    private RepositoryActivityDao repositoryActivityDao;
+    private RepositoryPullRequestDao repositoryPullRequestDao;
 
     /**
      * Injected {@link RepositoryService} dependency.
@@ -95,7 +95,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Repository repository = payload.getRepository();
         PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
         RepositoryPullRequestMapping localPullRequest = updateLocalPullRequest(repository, remotePullRequest);
-        repositoryActivityDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
     }
 
@@ -110,15 +110,15 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest)
     {
-        RepositoryPullRequestMapping localPullRequest = repositoryActivityDao.findRequestByRemoteId(repository, remotePullRequest.getId());
+        RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository, remotePullRequest.getId());
         if (localPullRequest == null)
         {
             Map<String, Object> activity = new HashMap<String, Object>();
             map(activity, repository, remotePullRequest);
-            localPullRequest = repositoryActivityDao.savePullRequest(repository, activity);
+            localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
         } else
         {
-            repositoryActivityDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest.getBase()
+            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest.getBase()
                     .getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()));
         }
@@ -135,13 +135,13 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         for (RepositoryCommit remoteCommit : remoteCommits)
         {
-            RepositoryCommitMapping commit = repositoryActivityDao.getCommitByNode(repository, remoteCommit.getSha());
+            RepositoryCommitMapping commit = repositoryPullRequestDao.getCommitByNode(repository, remoteCommit.getSha());
             if (commit == null)
             {
                 Map<String, Object> commitData = new HashMap<String, Object>();
                 map(commitData, remoteCommit);
-                commit = repositoryActivityDao.saveCommit(repository, commitData);
-                repositoryActivityDao.linkCommit(repository, localPullRequest, commit);
+                commit = repositoryPullRequestDao.saveCommit(repository, commitData);
+                repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
             } else
             {
                 remainingCommitsToDelete.remove(commit);
@@ -150,7 +150,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         for (RepositoryCommitMapping commit : remainingCommitsToDelete)
         {
-            repositoryActivityDao.unlinkCommit(repository, localPullRequest, commit);
+            repositoryPullRequestDao.unlinkCommit(repository, localPullRequest, commit);
         }
     }
 
