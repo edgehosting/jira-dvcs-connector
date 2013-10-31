@@ -8,7 +8,7 @@ import java.util.Set;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.Reviewer;
 
-public interface RepositoryActivityDao
+public interface RepositoryPullRequestDao
 {
     // C-U-D
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);

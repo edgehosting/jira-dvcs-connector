@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
  * @author jhocman@atlassian.com
  *
  */
-public class RepositoryPullRequestDaoImpl implements RepositoryActivityDao
+public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 {
 
     /**

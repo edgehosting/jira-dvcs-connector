@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
@@ -15,11 +15,11 @@ import java.util.List;
  */
 public class PullRequestServiceImpl implements PullRequestService
 {
-    private final RepositoryActivityDao pulLRequestDao;
+    private final RepositoryPullRequestDao pulLRequestDao;
 
     private final PullRequestTransformer transformer;
 
-    public PullRequestServiceImpl(final RepositoryActivityDao pulLRequestDao, final RepositoryService repositoryService)
+    public PullRequestServiceImpl(final RepositoryPullRequestDao pulLRequestDao, final RepositoryService repositoryService)
     {
         this.pulLRequestDao = pulLRequestDao;
         transformer = new PullRequestTransformer(repositoryService);

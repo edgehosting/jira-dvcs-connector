@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -64,7 +64,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Resource
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     @Resource
-    private RepositoryActivityDao dao;
+    private RepositoryPullRequestDao dao;
     @Resource
     private RepositoryDao repositoryDao;
 
