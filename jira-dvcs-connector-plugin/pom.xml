@@ -17,6 +17,13 @@
         <developerConnection>scm:hg:ssh://hg@bitbucket.org/atlassian/jira-bitbucket-connector</developerConnection>
         <url>https://bitbucket.org/atlassian/jira-bitbucket-connector</url>
     </scm>
+    <repositories>
+    	<repository>
+            <id>atlassian-m2-repository</id>
+            <name>Atlassian Public Repository</name>
+            <url>https://maven.atlassian.com/public</url>
+        </repository>
+    </repositories>
     <artifactId>jira-dvcs-connector-plugin</artifactId>
     <version>1.4.4-SNAPSHOT</version>
     <name>JIRA DVCS Connector Plugin</name>
