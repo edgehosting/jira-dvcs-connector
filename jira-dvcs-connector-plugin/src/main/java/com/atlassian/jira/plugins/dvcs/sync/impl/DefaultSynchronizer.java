@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.google.common.base.Throwables;
 import org.apache.commons.collections.CollectionUtils;
@@ -56,6 +57,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
+    private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+
     @Resource
     private MessagingService messagingService;
 
@@ -89,6 +92,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private SyncAuditLogDao syncAudit;
 
+    @Resource
+    private FeatureManager featureManager;
 
     public DefaultSynchronizer()
     {
@@ -98,6 +103,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flags)
     {
+        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
+        {
+            log.info("The synchronization is disabled.");
+            return;
+        }
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
