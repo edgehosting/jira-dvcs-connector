@@ -7,7 +7,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager {
     
-    private static final String SETTINGS_KEY = "dvcsInvalidOrganizations";
+    private static final String SETTINGS_KEY = "dvcs.connector.invalidOrganizations";
     
     private final PluginSettingsFactory pluginSettingsFactory;
     
@@ -35,7 +35,7 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
         if  (invalidOrganizations != null)
         {
             invalidOrganizations.remove(organizationIdString);
-            pluginSettingsFactory.createGlobalSettings().put("dvcsInvalidOrganizations", invalidOrganizations);
+            pluginSettingsFactory.createGlobalSettings().put(SETTINGS_KEY, invalidOrganizations);
         }
         
     }
