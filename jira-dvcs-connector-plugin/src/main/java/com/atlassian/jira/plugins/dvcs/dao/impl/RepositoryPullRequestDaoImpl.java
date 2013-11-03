@@ -187,12 +187,12 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
 
         Set<String> currentIssueKeys = new HashSet<String>();
-        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName()));
+        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName(), repositoryPullRequestMapping.getSourceBranch()));
 
         // commits
         for (RepositoryCommitMapping commit : repositoryPullRequestMapping.getCommits())
         {
-                currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
         }
 
         // updates information to reflect current state
