@@ -489,6 +489,39 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
+    public String getBranchUrl(final Repository repository, final Branch branch)
+    {
+        return MessageFormat.format("{0}/{1}/{2}/tree/{3}", repository.getOrgHostUrl(), repository.getOrgName(),
+                repository.getSlug(), branch.getName());
+    }
+
+    @Override
+    public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
+    {
+        return MessageFormat.format("{0}/{1}/{2}/compare/{3}...{4}",
+                repository.getOrgHostUrl(),
+                repository.getOrgName(),
+                repository.getSlug(),
+                getRef(sourceSlug, sourceBranch),
+                getRef(destinationSlug, destinationBranch)
+                );
+    }
+
+    private String getRef(String slug, String branch)
+    {
+        String ref = null;
+        if (slug != null)
+        {
+            ref = slug + ":" + branch;
+        } else
+        {
+            ref = branch;
+        }
+
+        return ref;
+    }
+
+    @Override
     public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
 

@@ -12,7 +12,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -165,6 +164,18 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
     {
         delegate.inviteUser(organization, groupSlugs, userEmail);
+    }
+
+    @Override
+    public String getBranchUrl(final Repository repository, final Branch branch)
+    {
+        return delegate.getBranchUrl(repository, branch);
+    }
+
+    @Override
+    public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
+    {
+        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
     }
 
     @Override
