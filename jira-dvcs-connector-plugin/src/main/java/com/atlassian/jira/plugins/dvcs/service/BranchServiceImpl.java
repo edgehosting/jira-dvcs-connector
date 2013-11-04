@@ -6,6 +6,8 @@ import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
 import java.util.ArrayList;
@@ -18,10 +20,12 @@ public class BranchServiceImpl implements BranchService
 {
 
     private final BranchDao branchDao;
+    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    public BranchServiceImpl(BranchDao branchDao)
+    public BranchServiceImpl(BranchDao branchDao, DvcsCommunicatorProvider dvcsCommunicatorProvider)
     {
         this.branchDao = branchDao;
+        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
     }
 
     @Override
@@ -113,5 +117,12 @@ public class BranchServiceImpl implements BranchService
     public List<Branch> getForRepository(Repository repository)
     {
         return branchDao.getBranchesForRepository(repository.getId());
+    }
+
+    @Override
+    public String getBranchUrl(Repository repository, Branch branch)
+    {
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+        return communicator.getBranchUrl(repository, branch);
     }
 }
