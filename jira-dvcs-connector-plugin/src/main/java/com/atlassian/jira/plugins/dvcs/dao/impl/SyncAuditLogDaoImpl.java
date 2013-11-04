@@ -57,7 +57,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class, 
                         repoQuery(repoId)
                         .offset(ROTATION_SIZE)
-                        .limit(1).q()
+                        .q()
                         .order(SyncAuditLogMapping.START_DATE + " ASC"));
             }
         });
