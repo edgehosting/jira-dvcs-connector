@@ -8,6 +8,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkService;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.ApplicationUsers;
@@ -33,7 +34,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public static final String GITHUB = "github";
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    private DvcsLinkService dvcsLinkService;
+    private OrganizationService organizationService;
 
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
@@ -105,7 +106,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.webResourceManager = webResourceManager;
         this.eventPublisher = eventPublisher;
         this.featureManager = featureManager;
-        this.dvcsLinkService = dvcsLinkService;
+        this.organizationService = dvcsLinkService;
     }
 
     @Override
@@ -138,8 +139,8 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     }
 
     private boolean isGithubConnected() {
-        List<Organization> githubOrganizationList = dvcsLinkService.getDvcsLinks(false, GITHUB);
-        List<Organization> githubEnterpriseOrganizationList = dvcsLinkService.getDvcsLinks(false,GITHUB_ENTERPRISE);
+        List<Organization> githubOrganizationList = organizationService.getAll(false,GITHUB);
+        List<Organization> githubEnterpriseOrganizationList = organizationService.getAll(false,GITHUB_ENTERPRISE);
         return githubOrganizationList.size() > 0 || githubEnterpriseOrganizationList.size() > 0;
     }
 
