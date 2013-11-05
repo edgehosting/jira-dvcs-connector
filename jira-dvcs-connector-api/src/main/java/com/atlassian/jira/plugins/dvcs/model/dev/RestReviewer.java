@@ -10,15 +10,17 @@ public class RestReviewer
 {
     private RestUser user;
     private boolean approved;
+    private String role;
 
     public RestReviewer()
     {
     }
 
-    public RestReviewer(final RestUser user, final boolean approved)
+    public RestReviewer(final RestUser user, final boolean approved, final String role)
     {
         this.user = user;
         this.approved = approved;
+        this.role = role;
     }
 
     public RestUser getUser()
@@ -39,5 +41,15 @@ public class RestReviewer
     public void setApproved(final boolean approved)
     {
         this.approved = approved;
+    }
+
+    public String getRole()
+    {
+        return role;
+    }
+
+    public void setRole(final String role)
+    {
+        this.role = role;
     }
 }

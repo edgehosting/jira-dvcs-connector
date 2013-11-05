@@ -470,9 +470,9 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(PullRequestReviewerMapping.USERNAME, reviewer.getUsername());
         params.put(PullRequestReviewerMapping.APPROVED, reviewer.isApproved());
+        params.put(PullRequestReviewerMapping.ROLE, reviewer.getRole());
         params.put(PullRequestReviewerMapping.PULL_REQUEST_ID, pullRequestId);
         params.put(PullRequestReviewerMapping.DOMAIN, repositoryId);
-
         activeObjects.create(PullRequestReviewerMapping.class, params);
     }
 

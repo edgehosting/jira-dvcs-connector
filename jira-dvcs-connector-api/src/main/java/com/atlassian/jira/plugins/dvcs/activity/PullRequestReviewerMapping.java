@@ -7,6 +7,7 @@ public interface PullRequestReviewerMapping extends RepositoryDomainMapping
 {
     String USERNAME = "USERNAME";
     String APPROVED = "APPROVED";
+    String ROLE = "ROLE";
     String PULL_REQUEST_ID = "PULL_REQUEST_ID";
 
     //
@@ -22,6 +23,11 @@ public interface PullRequestReviewerMapping extends RepositoryDomainMapping
      */
     boolean isApproved();
 
+    /**
+     * @return role of the reviewer
+     */
+    String getRole();
+
     RepositoryPullRequestMapping getPullRequest();
     //
     // setters
@@ -29,4 +35,6 @@ public interface PullRequestReviewerMapping extends RepositoryDomainMapping
     void setUsername(String username);
 
     void setApproved(boolean approved);
+
+    void setRole(String role);
 }

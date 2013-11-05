@@ -4,11 +4,13 @@ public class Reviewer
 {
     private String username;
     private boolean approved;
+    private String role;
 
-    public Reviewer(final String username, final boolean approved)
+    public Reviewer(final String username, final boolean approved, final String role)
     {
         this.approved = approved;
         this.username = username;
+        this.role = role;
     }
 
     public boolean isApproved()
@@ -29,6 +31,16 @@ public class Reviewer
     public void setUsername(final String username)
     {
         this.username = username;
+    }
+
+    public String getRole()
+    {
+        return role;
+    }
+
+    public void setRole(final String role)
+    {
+        this.role = role;
     }
 
     @Override

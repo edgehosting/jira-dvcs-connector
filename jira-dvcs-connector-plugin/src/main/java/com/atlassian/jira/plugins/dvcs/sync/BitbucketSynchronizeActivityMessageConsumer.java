@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -222,10 +223,22 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 dao.removeReviewer(reviewerMapping);
             } else
             {
+                boolean markedForSave = false;
                 if (reviewer.isApproved() != reviewerMapping.isApproved())
                 {
                     // update approval
                     reviewerMapping.setApproved(reviewer.isApproved());
+                    markedForSave = true;
+                }
+
+                if (StringUtils.equals(reviewer.getRole(),reviewerMapping.getRole()))
+                {
+                    reviewerMapping.setRole(reviewer.getRole());
+                    markedForSave = true;
+                }
+
+                if (markedForSave)
+                {
                     dao.saveReviewer(reviewerMapping);
                 }
             }
@@ -240,33 +253,46 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private Map<String, Reviewer> loadPulRequestReviewers(final PullRequestRemoteRestpoint pullRestpoint, final BitbucketPullRequest remote)
     {
-        BitbucketLink reviewersLink = remote.getLinks().getReviewers();
-        BitbucketLink approvalsLink = remote.getLinks().getApprovals();
+        List<BitbucketPullRequestParticipant> participants = remote.getParticipants();
 
         Map<String, Reviewer> reviewersIndex = new LinkedHashMap<String, Reviewer>();
 
-        if (reviewersLink != null)
+        if (participants != null)
         {
-            Iterable<BitbucketPullRequestReviewer> bitbucketReviewers = pullRestpoint.getPullRequestReviewers(reviewersLink.getHref());
-            for (BitbucketPullRequestReviewer bitbucketReviewer : bitbucketReviewers)
+            for (BitbucketPullRequestParticipant participant : participants)
             {
-                Reviewer reviewer = new Reviewer(bitbucketReviewer.getUser().getUsername(), false);
-                reviewersIndex.put(bitbucketReviewer.getUser().getUsername(), reviewer);
+                Reviewer reviewer = new Reviewer(participant.getUser().getUsername(), participant.isApproved(), participant.getRole());
+                reviewersIndex.put(participant.getUser().getUsername(), reviewer);
             }
-        }
-
-        if (approvalsLink != null)
+        } else
         {
-            Iterable<BitbucketPullRequestApprovalActivity> bitbucketApprovals = pullRestpoint.getPullRequestApprovals(approvalsLink.getHref());
-            for (BitbucketPullRequestApprovalActivity bitbucketApproval : bitbucketApprovals)
+            //FIXME we fallback to reviewers and approvals links if participants are not present, remove it after participants are at production
+            BitbucketLink reviewersLink = remote.getLinks().getReviewers();
+            BitbucketLink approvalsLink = remote.getLinks().getApprovals();
+
+            if (reviewersLink != null)
             {
-                Reviewer reviewer = reviewersIndex.get(bitbucketApproval.getUser().getUsername());
-                if (reviewer == null)
+                Iterable<BitbucketPullRequestReviewer> bitbucketReviewers = pullRestpoint.getPullRequestReviewers(reviewersLink.getHref());
+                for (BitbucketPullRequestReviewer bitbucketReviewer : bitbucketReviewers)
                 {
-                    reviewersIndex.put(bitbucketApproval.getUser().getUsername(), new Reviewer(bitbucketApproval.getUser().getUsername(), true));
-                } else
+                    Reviewer reviewer = new Reviewer(bitbucketReviewer.getUser().getUsername(), false, "REVIEWER");
+                    reviewersIndex.put(bitbucketReviewer.getUser().getUsername(), reviewer);
+                }
+            }
+
+            if (approvalsLink != null)
+            {
+                Iterable<BitbucketPullRequestApprovalActivity> bitbucketApprovals = pullRestpoint.getPullRequestApprovals(approvalsLink.getHref());
+                for (BitbucketPullRequestApprovalActivity bitbucketApproval : bitbucketApprovals)
                 {
-                    reviewer.setApproved(true);
+                    Reviewer reviewer = reviewersIndex.get(bitbucketApproval.getUser().getUsername());
+                    if (reviewer == null)
+                    {
+                        reviewersIndex.put(bitbucketApproval.getUser().getUsername(), new Reviewer(bitbucketApproval.getUser().getUsername(), true, "REVIEWER"));
+                    } else
+                    {
+                        reviewer.setApproved(true);
+                    }
                 }
             }
         }
