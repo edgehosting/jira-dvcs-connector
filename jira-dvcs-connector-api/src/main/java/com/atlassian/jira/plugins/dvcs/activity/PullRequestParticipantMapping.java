@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.schema.Table;
 
-@Table("PR_REVIEWER")
-public interface PullRequestReviewerMapping extends RepositoryDomainMapping
+@Table("PR_PARTICIPANT")
+public interface PullRequestParticipantMapping extends RepositoryDomainMapping
 {
     String USERNAME = "USERNAME";
     String APPROVED = "APPROVED";
@@ -14,17 +14,17 @@ public interface PullRequestReviewerMapping extends RepositoryDomainMapping
     // getters
     //
     /**
-     * @return username of the reviewer
+     * @return username of the participant
      */
     String getUsername();
 
     /**
-     * @return whether the reviewer approved the pull request
+     * @return whether the participant approved the pull request
      */
     boolean isApproved();
 
     /**
-     * @return role of the reviewer
+     * @return role of the participant
      */
     String getRole();
 

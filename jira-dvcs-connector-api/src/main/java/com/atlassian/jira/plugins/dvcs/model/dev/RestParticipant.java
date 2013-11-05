@@ -6,17 +6,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class RestReviewer
+public class RestParticipant
 {
     private RestUser user;
     private boolean approved;
     private String role;
 
-    public RestReviewer()
+    public RestParticipant()
     {
     }
 
-    public RestReviewer(final RestUser user, final boolean approved, final String role)
+    public RestParticipant(final RestUser user, final boolean approved, final String role)
     {
         this.user = user;
         this.approved = approved;

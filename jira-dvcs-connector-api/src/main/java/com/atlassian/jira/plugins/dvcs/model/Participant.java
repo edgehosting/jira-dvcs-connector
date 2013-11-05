@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-public class Reviewer
+public class Participant
 {
     private String username;
     private boolean approved;
     private String role;
 
-    public Reviewer(final String username, final boolean approved, final String role)
+    public Participant(final String username, final boolean approved, final String role)
     {
         this.approved = approved;
         this.username = username;
@@ -49,9 +49,9 @@ public class Reviewer
         if (this == o) { return true; }
         if (o == null || getClass() != o.getClass()) { return false; }
 
-        final Reviewer reviewer = (Reviewer) o;
+        final Participant participant = (Participant) o;
 
-        if (!username.equals(reviewer.username)) { return false; }
+        if (!username.equals(participant.username)) { return false; }
 
         return true;
     }

@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
@@ -10,8 +10,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Reviewer;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -348,7 +348,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestReviewerMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
                 RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
@@ -425,55 +425,55 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public PullRequestReviewerMapping[] getReviewers(final int pullRequestId)
+    public PullRequestParticipantMapping[] getParticipants(final int pullRequestId)
     {
-        PullRequestReviewerMapping[] result = activeObjects.find(PullRequestReviewerMapping.class, Query.select().where(PullRequestReviewerMapping.PULL_REQUEST_ID + " = ?", pullRequestId));
+        PullRequestParticipantMapping[] result = activeObjects.find(PullRequestParticipantMapping.class, Query.select().where(PullRequestParticipantMapping.PULL_REQUEST_ID + " = ?", pullRequestId));
 
         return result;
     }
 
     @Override
-    public void removeReviewer(final PullRequestReviewerMapping reviewerMapping)
+    public void removeParticipant(final PullRequestParticipantMapping participantMapping)
     {
-        LOGGER.debug("deleting reviewer with id = [ {} ]", reviewerMapping.getID());
+        LOGGER.debug("deleting participant with id = [ {} ]", participantMapping.getID());
 
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
             public Void doInTransaction()
             {
-                activeObjects.delete(reviewerMapping);
+                activeObjects.delete(participantMapping);
                 return null;
             }
         });
     }
 
     @Override
-    public void saveReviewer(final PullRequestReviewerMapping reviewerMapping)
+    public void saveParticipant(final PullRequestParticipantMapping participantMapping)
     {
-        LOGGER.debug("saving reviewer with id = [ {} ]", reviewerMapping.getID());
+        LOGGER.debug("saving participant with id = [ {} ]", participantMapping.getID());
 
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
             public Void doInTransaction()
             {
-                reviewerMapping.save();
+                participantMapping.save();
                 return null;
             }
         });
     }
 
     @Override
-    public void createReviewer(final int pullRequestId, final int repositoryId, final Reviewer reviewer)
+    public void createParticipant(final int pullRequestId, final int repositoryId, final Participant participant)
     {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(PullRequestReviewerMapping.USERNAME, reviewer.getUsername());
-        params.put(PullRequestReviewerMapping.APPROVED, reviewer.isApproved());
-        params.put(PullRequestReviewerMapping.ROLE, reviewer.getRole());
-        params.put(PullRequestReviewerMapping.PULL_REQUEST_ID, pullRequestId);
-        params.put(PullRequestReviewerMapping.DOMAIN, repositoryId);
-        activeObjects.create(PullRequestReviewerMapping.class, params);
+        params.put(PullRequestParticipantMapping.USERNAME, participant.getUsername());
+        params.put(PullRequestParticipantMapping.APPROVED, participant.isApproved());
+        params.put(PullRequestParticipantMapping.ROLE, participant.getRole());
+        params.put(PullRequestParticipantMapping.PULL_REQUEST_ID, pullRequestId);
+        params.put(PullRequestParticipantMapping.DOMAIN, repositoryId);
+        activeObjects.create(PullRequestParticipantMapping.class, params);
     }
 
 
