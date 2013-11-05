@@ -1,40 +1,36 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.api.DvcsLinkService;
-import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.ApplicationUsers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
     private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
     public static final String GITHUB = "github";
     public static final String GITHUB_ENTERPRISE = "githube";
-
-    private OrganizationService organizationService;
 
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
@@ -79,12 +75,14 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
                 return "";
             }
         }
-    }
 
+    }
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
     private final PermissionManager permissionManager;
+
     private final RepositoryService repositoryService;
+    private final OrganizationService organizationService;
 
     private final SoyTemplateRenderer soyTemplateRenderer;
     private final WebResourceManager webResourceManager;
@@ -97,7 +95,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public DvcsTabPanel(PermissionManager permissionManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher,
-            FeatureManager featureManager, DvcsLinkService dvcsLinkService)
+            FeatureManager featureManager, OrganizationService organizationService)
     {
         this.permissionManager = permissionManager;
         this.renderer = renderer;
@@ -106,7 +104,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.webResourceManager = webResourceManager;
         this.eventPublisher = eventPublisher;
         this.featureManager = featureManager;
-        this.organizationService = dvcsLinkService;
+        this.organizationService = organizationService;
     }
 
     @Override
