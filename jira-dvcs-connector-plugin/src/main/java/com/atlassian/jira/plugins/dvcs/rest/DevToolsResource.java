@@ -14,8 +14,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.atlassian.jira.plugins.dvcs.model.Reviewer;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestReviewer;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestParticipant;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import org.slf4j.Logger;
@@ -217,23 +217,23 @@ public class DevToolsResource
             restPullRequest.setSource(createRef(pullRequest.getSource()));
             restPullRequest.setDestination(createRef(pullRequest.getDestination()));
             restPullRequests.add(restPullRequest);
-            restPullRequest.setReviewers(createReviewers(repository, pullRequest.getReviewers()));
+            restPullRequest.setParticipants(createParticipants(repository, pullRequest.getParticipants()));
         }
 
         return restPullRequests;
     }
 
-    private List<RestReviewer> createReviewers(final Repository repository, final List<Reviewer> reviewers)
+    private List<RestParticipant> createParticipants(final Repository repository, final List<Participant> participants)
     {
-        List<RestReviewer> restReviewers = new ArrayList<RestReviewer>();
+        List<RestParticipant> restParticipants = new ArrayList<RestParticipant>();
 
-        for (Reviewer reviewer : reviewers)
+        for (Participant participant : participants)
         {
-            DvcsUser user = repositoryService.getUser(repository, reviewer.getUsername(), reviewer.getUsername());
-            RestReviewer restReviewer = new RestReviewer(new RestUser(user.getUsername(), user.getFullName(), null, user.getAvatar()), reviewer.isApproved());
-            restReviewers.add(restReviewer);
+            DvcsUser user = repositoryService.getUser(repository, participant.getUsername(), participant.getUsername());
+            RestParticipant restParticipant = new RestParticipant(new RestUser(user.getUsername(), user.getFullName(), null, user.getAvatar()), participant.isApproved(), participant.getRole());
+            restParticipants.add(restParticipant);
         }
-        return restReviewers;
+        return restParticipants;
     }
 
     private RestRef createRef(PullRequestRef ref)

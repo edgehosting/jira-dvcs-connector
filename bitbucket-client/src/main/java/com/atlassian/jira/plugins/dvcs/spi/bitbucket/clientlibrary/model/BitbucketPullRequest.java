@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * BitbucketPullRequest
@@ -24,11 +25,13 @@ public class BitbucketPullRequest implements Serializable
     private String description;
     private String status;
     private BitbucketAccount user;
+    private BitbucketAccount author;
     private BitbucketLinks links;
     private BitbucketPullRequestHead source;
     private BitbucketPullRequestHead destination;
     private Date createdOn;
     private Date updatedOn;
+    private List<BitbucketPullRequestParticipant> participants;
 
     public BitbucketPullRequest()
     {
@@ -133,5 +136,25 @@ public class BitbucketPullRequest implements Serializable
     public void setUpdatedOn(Date updatedOn)
     {
         this.updatedOn = updatedOn;
+    }
+
+    public List<BitbucketPullRequestParticipant> getParticipants()
+    {
+        return participants;
+    }
+
+    public void setParticipants(final List<BitbucketPullRequestParticipant> participants)
+    {
+        this.participants = participants;
+    }
+
+    public BitbucketAccount getAuthor()
+    {
+        return author;
+    }
+
+    public void setAuthor(final BitbucketAccount author)
+    {
+        this.author = author;
     }
 }

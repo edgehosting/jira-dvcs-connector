@@ -16,7 +16,7 @@ public class PullRequest
     private Date createdOn;
     private Date updatedOn;
     private String author;
-    private List<Reviewer> reviewers;
+    private List<Participant> participants;
 
     public PullRequest(final int id)
     {
@@ -133,13 +133,13 @@ public class PullRequest
         this.updatedOn = updatedOn;
     }
 
-    public List<Reviewer> getReviewers()
+    public List<Participant> getParticipants()
     {
-        return reviewers;
+        return participants;
     }
 
-    public void setReviewers(final List<Reviewer> reviewers)
+    public void setParticipants(final List<Participant> participants)
     {
-        this.reviewers = reviewers;
+        this.participants = participants;
     }
 }
