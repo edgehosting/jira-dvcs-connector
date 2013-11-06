@@ -25,6 +25,7 @@ public class BitbucketPullRequest implements Serializable
     private String description;
     private String status;
     private BitbucketAccount user;
+    private BitbucketAccount author;
     private BitbucketLinks links;
     private BitbucketPullRequestHead source;
     private BitbucketPullRequestHead destination;
@@ -145,5 +146,15 @@ public class BitbucketPullRequest implements Serializable
     public void setParticipants(final List<BitbucketPullRequestParticipant> participants)
     {
         this.participants = participants;
+    }
+
+    public BitbucketAccount getAuthor()
+    {
+        return author;
+    }
+
+    public void setAuthor(final BitbucketAccount author)
+    {
+        this.author = author;
     }
 }
