@@ -171,7 +171,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     @Override
     public int getParallelThreads()
     {
-        return 1;
+        return MessageConsumer.THREADS_PER_CONSUMER;
     }
 
     @Override

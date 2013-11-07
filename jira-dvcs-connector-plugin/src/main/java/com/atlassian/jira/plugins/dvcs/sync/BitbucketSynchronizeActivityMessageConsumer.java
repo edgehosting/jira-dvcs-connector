@@ -430,7 +430,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Override
     public int getParallelThreads()
     {
-        return 1;
+        return MessageConsumer.THREADS_PER_CONSUMER;
     }
 
     @Override

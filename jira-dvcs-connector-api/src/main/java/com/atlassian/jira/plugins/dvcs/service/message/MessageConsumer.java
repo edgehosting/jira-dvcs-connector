@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.Message;
  */
 public interface MessageConsumer<P extends HasProgress>
 {
+    int THREADS_PER_CONSUMER = Integer.getInteger("dvcs.connector.synchronization.threads_per_consumer", 2);
 
     /**
      * @return Identity of consumer resp. consumer queue.

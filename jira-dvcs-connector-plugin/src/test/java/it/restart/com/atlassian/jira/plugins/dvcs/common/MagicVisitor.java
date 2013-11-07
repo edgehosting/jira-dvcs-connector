@@ -17,7 +17,7 @@ public class MagicVisitor
     
     public  <P extends Page> P visit(Class<P> pageClass, Object... args)
     {
-        return visit(jira.getPageBinder().delayedBind(pageClass, args).bind().getUrl(), pageClass);
+        return visit(jira.getPageBinder().delayedBind(pageClass, args).bind().getUrl(), pageClass, args);
     }
     
     public  <P extends Page> P visit(Class<P> pageClass)
@@ -29,5 +29,11 @@ public class MagicVisitor
     {
         jira.getTester().gotoUrl(url);
         return jira.getPageBinder().bind(pageClass);
+    }
+
+    public <P> P visit(String url, Class<P> pageClass, Object... args)
+    {
+        jira.getTester().gotoUrl(url);
+        return jira.getPageBinder().bind(pageClass, args);
     }
 }
