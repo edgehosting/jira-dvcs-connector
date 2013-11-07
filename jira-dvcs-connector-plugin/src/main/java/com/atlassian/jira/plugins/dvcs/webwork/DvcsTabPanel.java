@@ -97,7 +97,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public DvcsTabPanel(PermissionManager permissionManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher,
-            FeatureManager featureManager, DvcsLinkService dvcsLinkService)
+            FeatureManager featureManager, OrganizationService organizationService)
     {
         this.permissionManager = permissionManager;
         this.renderer = renderer;
@@ -106,7 +106,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.webResourceManager = webResourceManager;
         this.eventPublisher = eventPublisher;
         this.featureManager = featureManager;
-        this.organizationService = dvcsLinkService;
+        this.organizationService = organizationService;
     }
 
     @Override
@@ -133,9 +133,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public boolean showPanel(Issue issue, User user)
     {
         ApplicationUser auser = ApplicationUsers.from(user);
+        boolean optedIn = featureManager.isEnabledForUser(auser,LABS_OPT_IN);
         return (permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
-                && (!featureManager.isEnabledForUser(auser,LABS_OPT_IN)
-                    ||(featureManager.isEnabledForUser(auser,LABS_OPT_IN) && isGithubConnected())));
+                && (!optedIn || isGithubConnected()));
     }
 
     private boolean isGithubConnected() {
