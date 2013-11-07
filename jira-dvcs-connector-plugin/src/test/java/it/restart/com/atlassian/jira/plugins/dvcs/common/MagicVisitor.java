@@ -30,4 +30,10 @@ public class MagicVisitor
         jira.getTester().gotoUrl(url);
         return jira.getPageBinder().bind(pageClass);
     }
+
+    public <P> P visit(String url, Class<P> pageClass, Object... args)
+    {
+        jira.getTester().gotoUrl(url);
+        return jira.getPageBinder().bind(pageClass, args);
+    }
 }
