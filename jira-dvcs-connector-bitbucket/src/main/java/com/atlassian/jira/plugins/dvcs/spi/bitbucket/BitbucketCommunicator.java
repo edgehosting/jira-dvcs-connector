@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -492,6 +493,21 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         return MessageFormat.format("{0}/{1}/{2}/changeset/{3}?dvcsconnector={4}", repository.getOrgHostUrl(),
                 repository.getOrgName(), repository.getSlug(), changeset.getNode(), pluginVersion);
+    }
+
+    @Override
+    public String getBranchUrl(Repository repository, Branch branch)
+    {
+        return MessageFormat.format("{0}/{1}/{2}/branch/{3}", repository.getOrgHostUrl(),
+                repository.getOrgName(), repository.getSlug(), branch.getName());
+    }
+
+    @Override
+    public String getCreatePullRequestUrl(Repository repository, String sourceSlug, final String sourceBranch, String destinationSlug, final String destinationBranch, String eventSource)
+    {
+        return URLPathFormatter.format("{0}/{1}/{2}/pull-request/new?source={3}/{4}&dest={5}/{6}&event_source={7}", repository.getOrgHostUrl(),
+                repository.getOrgName(), repository.getSlug(), sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
+
     }
 
     /**

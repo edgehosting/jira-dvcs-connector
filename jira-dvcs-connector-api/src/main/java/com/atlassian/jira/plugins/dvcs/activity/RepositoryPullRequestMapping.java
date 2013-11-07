@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import java.util.Date;
-import java.util.List;
 
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
@@ -22,7 +21,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String LAST_STATUS = "LAST_STATUS";
     String CREATED_ON = "CREATED_ON";
     String UPDATED_ON = "UPDATED_ON";
-    String REVIEWERS = "REVIEWERS";
+    String PARTICIPANTS = "PARTICIPANTS";
 
     public enum Status {
         OPEN("open"), DECLINED("rejected"), MERGED("fulfilled");
@@ -80,7 +79,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String getSourceRepo();
 
     @OneToMany (reverse = "getPullRequest")
-    PullRequestReviewerMapping[] getReviewers();
+    PullRequestParticipantMapping[] getParticipants();
     //
     // setters
     //

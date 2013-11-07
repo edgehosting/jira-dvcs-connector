@@ -19,6 +19,7 @@ public class BitbucketLinks implements Serializable
     private BitbucketLink diff;
     private BitbucketLink approvals;
     private BitbucketLink reviewers;
+    private BitbucketLink avatar;
 
     public BitbucketLink getSelf()
     {
@@ -118,5 +119,15 @@ public class BitbucketLinks implements Serializable
     public void setReviewers(final BitbucketLink reviewers)
     {
         this.reviewers = reviewers;
+    }
+
+    public BitbucketLink getAvatar()
+    {
+        return avatar;
+    }
+
+    public void setAvatar(final BitbucketLink avatar)
+    {
+        this.avatar = avatar;
     }
 }

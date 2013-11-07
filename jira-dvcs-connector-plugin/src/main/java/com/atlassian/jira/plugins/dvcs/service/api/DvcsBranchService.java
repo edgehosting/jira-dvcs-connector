@@ -15,4 +15,6 @@ public interface DvcsBranchService
     List<Branch> getBranches(Repository repository);
 
     List<Branch> getBranches(Iterable<String> issueKeys);
+
+    String getBranchUrl(Repository repository, Branch branch);
 }

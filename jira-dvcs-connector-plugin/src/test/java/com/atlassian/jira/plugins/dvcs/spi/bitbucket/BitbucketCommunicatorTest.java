@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import junit.framework.Assert;
 
 import org.mockito.Matchers;
@@ -90,6 +91,9 @@ public class BitbucketCommunicatorTest
     private PluginInformation pluginInformation;
 
     private DvcsCommunicator communicator;
+
+    @Mock
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -203,7 +207,7 @@ public class BitbucketCommunicatorTest
         when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
 
         branchDao = new BranchDaoMock();
-        branchService = new BranchServiceImpl(branchDao);
+        branchService = new BranchServiceImpl(branchDao, dvcsCommunicatorProvider);
 
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 

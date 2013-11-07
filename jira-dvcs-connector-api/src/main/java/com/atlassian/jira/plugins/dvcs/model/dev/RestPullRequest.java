@@ -22,7 +22,7 @@ public class RestPullRequest
     private String status;
     private RestRef source;
     private RestRef destination;
-    private List<RestReviewer> reviewers;
+    private List<RestParticipant> participants;
 
     public RestUser getAuthor()
     {
@@ -114,14 +114,14 @@ public class RestPullRequest
         this.destination = destination;
     }
 
-    public List<RestReviewer> getReviewers()
+    public List<RestParticipant> getParticipants()
     {
-        return reviewers;
+        return participants;
     }
 
-    public void setReviewers(final List<RestReviewer> reviewers)
+    public void setParticipants(final List<RestParticipant> participants)
     {
-        this.reviewers = reviewers;
+        this.participants = participants;
     }
 }
 

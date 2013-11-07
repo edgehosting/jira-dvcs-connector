@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Reviewer;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 
 public interface RepositoryPullRequestDao
 {
@@ -56,11 +56,11 @@ public interface RepositoryPullRequestDao
 
     RepositoryCommitMapping getCommitByNode(Repository domain, String node);
 
-    PullRequestReviewerMapping[] getReviewers(int pullRequestId);
+    PullRequestParticipantMapping[] getParticipants(int pullRequestId);
 
-    void removeReviewer(PullRequestReviewerMapping reviewerMapping);
+    void removeParticipant(PullRequestParticipantMapping participantMapping);
 
-    void saveReviewer(PullRequestReviewerMapping reviewerMapping);
+    void saveParticipant(PullRequestParticipantMapping participantMapping);
 
-    void createReviewer(int pullRequestId, int repositoryId, Reviewer reviewer);
+    void createParticipant(int pullRequestId, int repositoryId, Participant participant);
 }

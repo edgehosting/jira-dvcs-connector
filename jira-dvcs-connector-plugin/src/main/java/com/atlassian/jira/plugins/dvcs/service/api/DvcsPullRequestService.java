@@ -24,4 +24,6 @@ public interface DvcsPullRequestService
      * @return list of (@link PullRequest}
      */
     List<PullRequest> getPullRequests(Iterable<String> issueKeys);
+
+    String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource);
 }

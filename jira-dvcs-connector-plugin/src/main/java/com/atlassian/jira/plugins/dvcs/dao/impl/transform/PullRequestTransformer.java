@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestReviewerMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Reviewer;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,26 +46,26 @@ public class PullRequestTransformer
         pullRequest.setCreatedOn(pullRequestMapping.getCreatedOn());
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());
-        pullRequest.setReviewers(transform(pullRequestMapping.getReviewers()));
+        pullRequest.setParticipants(transform(pullRequestMapping.getParticipants()));
 
         return pullRequest;
     }
 
-    private List<Reviewer> transform(final PullRequestReviewerMapping[] reviewerMappings)
+    private List<Participant> transform(final PullRequestParticipantMapping[] participantMappings)
     {
-        if (reviewerMappings == null)
+        if (participantMappings == null)
         {
             return null;
         }
 
-        List<Reviewer> reviewers = new ArrayList<Reviewer>();
-        for (PullRequestReviewerMapping reviewerMapping : reviewerMappings)
+        List<Participant> participants = new ArrayList<Participant>();
+        for (PullRequestParticipantMapping participantMapping : participantMappings)
         {
-            Reviewer reviewer = new Reviewer(reviewerMapping.getUsername(), reviewerMapping.isApproved());
-            reviewers.add(reviewer);
+            Participant participant = new Participant(participantMapping.getUsername(), participantMapping.isApproved(), participantMapping.getRole());
+            participants.add(participant);
         }
 
-        return  reviewers;
+        return participants;
     }
 
     private String createRepositoryUrl(String hostUrl, String repositoryLabel)
