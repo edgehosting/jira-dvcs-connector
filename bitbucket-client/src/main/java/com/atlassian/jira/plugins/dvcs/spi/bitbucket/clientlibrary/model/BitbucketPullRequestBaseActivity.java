@@ -26,7 +26,7 @@ public class BitbucketPullRequestBaseActivity implements Serializable
     private Date createdOn;
     private Date date;
     
-    private BitbucketActivityUser user;
+    private BitbucketUser user;
     
     public BitbucketPullRequestBaseActivity()
     {
@@ -43,12 +43,12 @@ public class BitbucketPullRequestBaseActivity implements Serializable
         this.updatedOn = updatedOn;
     }
 
-    public BitbucketActivityUser getUser()
+    public BitbucketUser getUser()
     {
         return user;
     }
 
-    public void setUser(BitbucketActivityUser user)
+    public void setUser(BitbucketUser user)
     {
         this.user = user;
     }

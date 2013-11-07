@@ -17,7 +17,7 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
@@ -35,7 +35,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     private static final GenericMessageAction DEFAULT_MESSAGE = new GenericMessageAction("No pull requests found.");
     private final PermissionManager permissionManager;
     private final RepositoryService repositoryService;
-    private final RepositoryActivityDao activityDao;
+    private final RepositoryPullRequestDao activityDao;
     private final IssueActionFactory issueActionFactory;
     private final TemplateRenderer templateRenderer;
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
@@ -56,7 +56,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     };
 
     public DvcsActivityTabPanel(PermissionManager permissionManager,
-            RepositoryService repositoryService, RepositoryActivityDao activityDao,
+            RepositoryService repositoryService, RepositoryPullRequestDao activityDao,
             @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.permissionManager = permissionManager;

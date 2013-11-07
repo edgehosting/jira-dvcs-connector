@@ -110,6 +110,7 @@
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping</entity>
 
@@ -585,7 +586,7 @@
     <web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser" class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel" />
         
     <component key="repositoryActivityDaoImpl" name="Repository Activity Dao Impl"
-        class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryActivityDaoImpl" />
+        class="com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryPullRequestDaoImpl" />
 
     <component key="syncAuditLogDaoImpl" name="Sync Audit Log Dao Impl"
         class="com.atlassian.jira.plugins.dvcs.dao.impl.SyncAuditLogDaoImpl" />

@@ -20,7 +20,7 @@ public class BitbucketPullRequestRepository
 
     private String slug;
 
-    private BitbucketPullRequestLinks links;
+    private BitbucketLinks links;
 
     private String fullName;
 
@@ -49,12 +49,12 @@ public class BitbucketPullRequestRepository
         this.slug = slug;
     }
 
-    public BitbucketPullRequestLinks getLinks()
+    public BitbucketLinks getLinks()
     {
         return links;
     }
 
-    public void setLinks(BitbucketPullRequestLinks links)
+    public void setLinks(BitbucketLinks links)
     {
         this.links = links;
     }

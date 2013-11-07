@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.activity;
 import java.util.Date;
 
 import net.java.ao.ManyToMany;
+import net.java.ao.OneToMany;
 import net.java.ao.schema.Table;
 
 @Table("PULL_REQUEST")
@@ -20,6 +21,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String LAST_STATUS = "LAST_STATUS";
     String CREATED_ON = "CREATED_ON";
     String UPDATED_ON = "UPDATED_ON";
+    String PARTICIPANTS = "PARTICIPANTS";
 
     public enum Status {
         OPEN("open"), DECLINED("rejected"), MERGED("fulfilled");
@@ -71,11 +73,13 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     String getAuthor();
 
-    @ManyToMany(RepositoryPullRequestToCommitMapping.class)
+    @ManyToMany(reverse = "getRequest", through = "getCommit", value = RepositoryPullRequestToCommitMapping.class)
     RepositoryCommitMapping[] getCommits();
 
     String getSourceRepo();
 
+    @OneToMany (reverse = "getPullRequest")
+    PullRequestParticipantMapping[] getParticipants();
     //
     // setters
     //

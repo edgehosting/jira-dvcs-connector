@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class RestChangeset
 {
-    private RestAuthor author;
+    private RestUser author;
     private long authorTimestamp;
     private String displayId;
     private String id;
@@ -21,12 +21,12 @@ public class RestChangeset
     {
     }
 
-    public RestAuthor getAuthor()
+    public RestUser getAuthor()
     {
         return author;
     }
 
-    public void setAuthor(final RestAuthor author)
+    public void setAuthor(final RestUser author)
     {
         this.author = author;
     }

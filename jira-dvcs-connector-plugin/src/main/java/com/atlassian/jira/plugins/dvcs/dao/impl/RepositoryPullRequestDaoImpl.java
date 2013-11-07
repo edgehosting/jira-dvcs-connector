@@ -1,5 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,30 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryActivityDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -47,20 +46,20 @@ import com.google.common.collect.Lists;
  * @author jhocman@atlassian.com
  *
  */
-public class RepositoryActivityDaoImpl implements RepositoryActivityDao
+public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 {
 
     /**
      * Logger of this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryActivityDaoImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryPullRequestDaoImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
      */
     private final ActiveObjects activeObjects;
 
-    public RepositoryActivityDaoImpl(ActiveObjects activeObjects)
+    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects)
     {
         super();
         this.activeObjects = activeObjects;
@@ -188,12 +187,12 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
 
         Set<String> currentIssueKeys = new HashSet<String>();
-        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName()));
+        currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName(), repositoryPullRequestMapping.getSourceBranch()));
 
         // commits
         for (RepositoryCommitMapping commit : repositoryPullRequestMapping.getCommits())
         {
-                currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
         }
 
         // updates information to reflect current state
@@ -349,7 +348,7 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
                 RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
@@ -423,6 +422,58 @@ public class RepositoryActivityDaoImpl implements RepositoryActivityDao
                     + repository.getId() + " Commit Node: " + node);
 
         }
+    }
+
+    @Override
+    public PullRequestParticipantMapping[] getParticipants(final int pullRequestId)
+    {
+        PullRequestParticipantMapping[] result = activeObjects.find(PullRequestParticipantMapping.class, Query.select().where(PullRequestParticipantMapping.PULL_REQUEST_ID + " = ?", pullRequestId));
+
+        return result;
+    }
+
+    @Override
+    public void removeParticipant(final PullRequestParticipantMapping participantMapping)
+    {
+        LOGGER.debug("deleting participant with id = [ {} ]", participantMapping.getID());
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                activeObjects.delete(participantMapping);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void saveParticipant(final PullRequestParticipantMapping participantMapping)
+    {
+        LOGGER.debug("saving participant with id = [ {} ]", participantMapping.getID());
+
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction()
+            {
+                participantMapping.save();
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createParticipant(final int pullRequestId, final int repositoryId, final Participant participant)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(PullRequestParticipantMapping.USERNAME, participant.getUsername());
+        params.put(PullRequestParticipantMapping.APPROVED, participant.isApproved());
+        params.put(PullRequestParticipantMapping.ROLE, participant.getRole());
+        params.put(PullRequestParticipantMapping.PULL_REQUEST_ID, pullRequestId);
+        params.put(PullRequestParticipantMapping.DOMAIN, repositoryId);
+        activeObjects.create(PullRequestParticipantMapping.class, params);
     }
 
 

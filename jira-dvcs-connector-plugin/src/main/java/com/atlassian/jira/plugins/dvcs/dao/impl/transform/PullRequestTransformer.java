@@ -1,13 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PullRequestTransformer
 {
@@ -42,8 +46,26 @@ public class PullRequestTransformer
         pullRequest.setCreatedOn(pullRequestMapping.getCreatedOn());
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());
+        pullRequest.setParticipants(transform(pullRequestMapping.getParticipants()));
 
         return pullRequest;
+    }
+
+    private List<Participant> transform(final PullRequestParticipantMapping[] participantMappings)
+    {
+        if (participantMappings == null)
+        {
+            return null;
+        }
+
+        List<Participant> participants = new ArrayList<Participant>();
+        for (PullRequestParticipantMapping participantMapping : participantMappings)
+        {
+            Participant participant = new Participant(participantMapping.getUsername(), participantMapping.isApproved(), participantMapping.getRole());
+            participants.add(participant);
+        }
+
+        return participants;
     }
 
     private String createRepositoryUrl(String hostUrl, String repositoryLabel)

@@ -21,4 +21,6 @@ public interface BranchService
     List<Branch> getByIssueKey(Iterable<String> issueKeys);
 
     List<Branch> getForRepository(Repository repository);
+
+    String getBranchUrl(Repository repository, Branch branch);
 }

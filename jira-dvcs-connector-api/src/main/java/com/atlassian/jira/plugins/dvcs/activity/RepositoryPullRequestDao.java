@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 
-public interface RepositoryActivityDao
+public interface RepositoryPullRequestDao
 {
     // C-U-D
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
@@ -55,5 +56,11 @@ public interface RepositoryActivityDao
 
     RepositoryCommitMapping getCommitByNode(Repository domain, String node);
 
+    PullRequestParticipantMapping[] getParticipants(int pullRequestId);
 
+    void removeParticipant(PullRequestParticipantMapping participantMapping);
+
+    void saveParticipant(PullRequestParticipantMapping participantMapping);
+
+    void createParticipant(int pullRequestId, int repositoryId, Participant participant);
 }

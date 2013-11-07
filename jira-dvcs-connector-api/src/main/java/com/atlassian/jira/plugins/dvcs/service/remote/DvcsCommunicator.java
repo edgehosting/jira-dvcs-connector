@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 /**
@@ -86,4 +87,7 @@ public interface DvcsCommunicator
      */
     void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail);
 
+    String getBranchUrl(Repository repository, Branch branch);
+
+    String getCreatePullRequestUrl(Repository repository, String sourceSlug, final String sourceBranch, String destinationSlug, final String destinationBranch, String eventSource);
 }

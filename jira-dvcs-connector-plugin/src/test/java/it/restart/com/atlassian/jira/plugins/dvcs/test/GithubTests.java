@@ -52,7 +52,14 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in github
-        new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+        try
+        {
+            new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+        } catch (Exception e)
+        {
+            // deliberately ignoring the exception
+            //FIXME should be fixed to remove OAuth correctly
+        }
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
