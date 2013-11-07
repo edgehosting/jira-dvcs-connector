@@ -140,8 +140,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private boolean isGithubConnected() {
         List<Organization> githubOrganizationList = organizationService.getAll(false,GITHUB);
+        if (githubOrganizationList.size() > 0)
+        {
+            return true;
+        }
         List<Organization> githubEnterpriseOrganizationList = organizationService.getAll(false,GITHUB_ENTERPRISE);
-        return githubOrganizationList.size() > 0 || githubEnterpriseOrganizationList.size() > 0;
+        return githubEnterpriseOrganizationList.size() > 0;
     }
 
 }
