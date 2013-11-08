@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestParticipant;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
@@ -29,7 +30,6 @@ import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
@@ -311,7 +311,7 @@ public class DevToolsResource
                 restRepositories.add(restRepository);
             }
 
-            RestDevResponse result = new RestDevResponse();
+            RestDevResponse<T> result = new RestDevResponse<T>();
             result.setRepositories(restRepositories);
             return Response.ok(result).build();
         }

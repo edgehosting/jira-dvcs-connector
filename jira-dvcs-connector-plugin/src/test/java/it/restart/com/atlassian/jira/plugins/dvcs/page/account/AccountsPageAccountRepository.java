@@ -139,6 +139,13 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public void synchronize()
     {
         synchronizationButton.click();
+        try
+        {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 
@@ -169,6 +176,13 @@ public class AccountsPageAccountRepository extends WebDriverElement
         synchronizationButton.javascript().execute(script);
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
+        try
+        {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 

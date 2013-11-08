@@ -12,20 +12,20 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class RestDevResponse
+public class RestDevResponse<T extends  RestRepository>
 {
-    private List<? extends RestRepository> repositories;
+    private List<T> repositories;
 
     public RestDevResponse()
     {
     }
 
-    public List<? extends RestRepository> getRepositories()
+    public List<T> getRepositories()
     {
         return repositories;
     }
 
-    public void setRepositories(final List<? extends RestRepository> repositories)
+    public void setRepositories(final List<T> repositories)
     {
         this.repositories = repositories;
     }
