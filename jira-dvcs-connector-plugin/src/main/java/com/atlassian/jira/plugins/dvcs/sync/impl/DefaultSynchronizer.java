@@ -95,6 +95,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private FeatureManager featureManager;
 
+    // map of ALL Synchronisation Progresses - running and finished ones
+    private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
+
     public DefaultSynchronizer()
     {
         super();
@@ -398,19 +401,19 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public Progress getProgress(int repositoryId)
     {
-        return SynchronizationProgessHolder.getProgress(repositoryId);
+        return progressMap.get(repositoryId);
     }
 
     @Override
     public void putProgress(Repository repository, Progress progress)
     {
-        SynchronizationProgessHolder.progressMap.put(repository.getId(), progress);
+        progressMap.put(repository.getId(), progress);
     }
 
     @Override
     public void removeProgress(Repository repository)
     {
-        SynchronizationProgessHolder.removeProgress(repository.getId());
+        progressMap.remove(repository.getId());
     }
 
     @Override
@@ -437,21 +440,4 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             this.oldHeadsHashes = oldHeadsHashes;
         }
     }
-
-    public static class SynchronizationProgessHolder
-    {
-        // map of ALL Synchronisation Progresses - running and finished ones
-        static final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
-
-        public static void removeProgress(int id)
-        {
-            progressMap.remove(id);
-        }
-
-        public static Progress getProgress(int id)
-        {
-            return progressMap.get(id);
-        }
-    }
-
 }
