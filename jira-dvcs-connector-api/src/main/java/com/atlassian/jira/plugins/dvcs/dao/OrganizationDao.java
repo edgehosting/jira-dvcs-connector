@@ -75,5 +75,5 @@ public interface OrganizationDao
 	
 	Organization findIntegratedAccount();
 
-
+    boolean existsOrganizationWithType(String... types);
 }

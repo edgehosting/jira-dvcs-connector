@@ -231,4 +231,9 @@ public class OrganizationServiceImpl implements OrganizationService
         return dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType()).getGroupsForOrganization(organization);
     }
 
+    @Override
+    public boolean existsOrganizationWithType(final String... types)
+    {
+        return organizationDao.existsOrganizationWithType(types);
+    }
 }

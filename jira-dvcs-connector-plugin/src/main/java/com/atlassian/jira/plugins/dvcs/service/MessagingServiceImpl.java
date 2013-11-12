@@ -669,7 +669,7 @@ public class MessagingServiceImpl implements MessagingService
         Class<P> payloadType;
         try
         {
-            payloadType = (Class<P>) Class.forName(source.getPayloadType());
+            payloadType = (Class<P>) Class.forName(source.getPayloadType(), true, getClass().getClassLoader());
         } catch (ClassNotFoundException e)
         {
             throw new RuntimeException(e);

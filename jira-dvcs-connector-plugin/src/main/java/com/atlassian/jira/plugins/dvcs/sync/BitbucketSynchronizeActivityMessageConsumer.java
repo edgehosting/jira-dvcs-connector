@@ -424,7 +424,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)
     {
         return activity instanceof BitbucketPullRequestUpdateActivity
-                && "open".equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getStatus());
+                && RepositoryPullRequestMapping.Status.OPEN.name().equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getState());
     }
 
     @Override
