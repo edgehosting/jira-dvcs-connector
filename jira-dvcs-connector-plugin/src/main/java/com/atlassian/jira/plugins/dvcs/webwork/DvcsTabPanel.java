@@ -10,6 +10,8 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -28,9 +30,7 @@ import java.util.List;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
-    private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
-    public static final String GITHUB = "github";
-    public static final String GITHUB_ENTERPRISE = "githube";
+    public static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
 
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
@@ -131,18 +131,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     public boolean showPanel(Issue issue, User user)
     {
         ApplicationUser auser = ApplicationUsers.from(user);
-        boolean optedIn = featureManager.isEnabledForUser(auser,LABS_OPT_IN);
         return (permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
-                && (!optedIn || isGithubConnected()));
+                && (!featureManager.isEnabledForUser(auser,LABS_OPT_IN) || isGithubConnected()));
     }
 
-    private boolean isGithubConnected() {
-        List<Organization> githubOrganizationList = organizationService.getAll(false,GITHUB);
-        if (githubOrganizationList.size() > 0)
-        {
-            return true;
-        }
-        List<Organization> githubEnterpriseOrganizationList = organizationService.getAll(false,GITHUB_ENTERPRISE);
-        return githubEnterpriseOrganizationList.size() > 0;
+    private boolean isGithubConnected()
+    {
+        return organizationService.existsOrganizationWithType(GithubCommunicator.GITHUB, GithubEnterpriseCommunicator.GITHUB_ENTERPRISE);
     }
 }
