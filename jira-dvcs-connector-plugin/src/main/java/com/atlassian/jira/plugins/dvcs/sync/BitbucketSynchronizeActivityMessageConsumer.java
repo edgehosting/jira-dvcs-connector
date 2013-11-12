@@ -399,11 +399,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (request.getAuthor() != null)
         {
             author = request.getAuthor().getUsername();
-        } else
-        {
-            // Falling back to user if author is not returned
-            //FIXME Remove user from PullRequest if Bitbucket returns author on production
-            author = request.getUser().getUsername();
         }
 
         ret.put(RepositoryPullRequestMapping.AUTHOR, author);
