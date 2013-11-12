@@ -42,9 +42,8 @@ public class ViewVersionControlCondition implements Condition
         Issue issue = (Issue) context.get("issue");
         ApplicationUser auser = ApplicationUsers.from(user);
 
-        boolean optedIn = featureManager.isEnabledForUser(auser, DvcsTabPanel.LABS_OPT_IN);
         return (permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
-                && (!optedIn || isGithubConnected()));
+                && (!featureManager.isEnabledForUser(auser, DvcsTabPanel.LABS_OPT_IN) || isGithubConnected()));
     }
 
     private boolean isGithubConnected()
