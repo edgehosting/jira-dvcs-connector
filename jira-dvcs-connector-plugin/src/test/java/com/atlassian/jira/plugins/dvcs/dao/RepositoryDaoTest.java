@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import java.util.Date;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -19,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -48,6 +50,7 @@ public class RepositoryDaoTest
     {
         MockitoAnnotations.initMocks(this);
         repositoryDao = new RepositoryDaoImpl(activeObjects);
+        ReflectionTestUtils.setField(repositoryDao, "synchronizer", synchronizer);
     }
 
 	@Test
