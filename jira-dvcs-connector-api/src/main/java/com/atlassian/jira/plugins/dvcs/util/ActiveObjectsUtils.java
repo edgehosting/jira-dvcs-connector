@@ -52,14 +52,13 @@ public class ActiveObjectsUtils
         }
         newQuery.where(query.getWhereClause(), query.getWhereParams())
                 .group(query.getGroupClause())
+                .limit(query.getLimit())
                 .offset(query.getOffset());
 
         if (!forCount)
         {
             newQuery
-                .order(query.getOrderClause())
-                .limit(query.getLimit());
-
+                .order(query.getOrderClause());
         }
         if (query.getTable() != null)
         {
