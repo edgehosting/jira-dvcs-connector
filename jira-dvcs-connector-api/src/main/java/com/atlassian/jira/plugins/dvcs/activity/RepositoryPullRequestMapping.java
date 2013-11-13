@@ -24,24 +24,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String PARTICIPANTS = "PARTICIPANTS";
 
     public enum Status {
-        OPEN("open"), DECLINED("rejected"), MERGED("fulfilled");
-        private String bbString;
-        private Status(String bbString)
-        {
-            this.bbString = bbString;
-        }
-        public static Status fromBbString(String string)
-        {
-            Status[] values = values();
-            for (Status status : values)
-            {
-                if (status.bbString.equalsIgnoreCase(string))
-                {
-                    return status;
-                }
-            }
-            return OPEN;
-        }
+        OPEN, DECLINED, MERGED;
     }
 
     //

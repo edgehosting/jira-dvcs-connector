@@ -201,7 +201,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         {
             dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
                     .getBranch().getName(), remote.getDestination().getBranch().getName(),
-                    RepositoryPullRequestMapping.Status.fromBbString(remote.getStatus()),
+                    resolveBitbucketStatus(remote.getState()),
                     remote.getUpdatedOn(), remote.getSource().getRepository().getFullName());
         }
 
@@ -211,6 +211,18 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
 
         return local;
+    }
+
+    private RepositoryPullRequestMapping.Status resolveBitbucketStatus(String string)
+    {
+        for (RepositoryPullRequestMapping.Status status : RepositoryPullRequestMapping.Status.values())
+        {
+            if (status.name().equalsIgnoreCase(string))
+            {
+                return status;
+            }
+        }
+        return RepositoryPullRequestMapping.Status.OPEN;
     }
 
     private void updatePulRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
@@ -387,11 +399,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (request.getAuthor() != null)
         {
             author = request.getAuthor().getUsername();
-        } else
-        {
-            // Falling back to user if author is not returned
-            //FIXME Remove user from PullRequest if Bitbucket returns author on production
-            author = request.getUser().getUsername();
         }
 
         ret.put(RepositoryPullRequestMapping.AUTHOR, author);
@@ -399,7 +406,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.UPDATED_ON, request.getUpdatedOn());
         ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
-        ret.put(RepositoryPullRequestMapping.LAST_STATUS, RepositoryPullRequestMapping.Status.fromBbString(request.getStatus()).name());
+        ret.put(RepositoryPullRequestMapping.LAST_STATUS, resolveBitbucketStatus(request.getState()).name());
         // in case that fork has been deleted, the source repository is null
         if (request.getSource().getRepository() != null)
         {
@@ -412,7 +419,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)
     {
         return activity instanceof BitbucketPullRequestUpdateActivity
-                && "open".equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getStatus());
+                && RepositoryPullRequestMapping.Status.OPEN.name().equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getState());
     }
 
     @Override
@@ -430,7 +437,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Override
     public int getParallelThreads()
     {
-        return 1;
+        return MessageConsumer.THREADS_PER_CONSUMER;
     }
 
     @Override

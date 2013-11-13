@@ -123,7 +123,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     @Override
     public int getParallelThreads()
     {
-        return 2;
+        return MessageConsumer.THREADS_PER_CONSUMER;
     }
 
     protected abstract Repository getRepository(P payload);

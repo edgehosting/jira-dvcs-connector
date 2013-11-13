@@ -23,7 +23,7 @@ public class BitbucketPullRequest implements Serializable
     private Long id;
     private String title;
     private String description;
-    private String status;
+    private String state;
     private BitbucketAccount user;
     private BitbucketAccount author;
     private BitbucketLinks links;
@@ -108,14 +108,14 @@ public class BitbucketPullRequest implements Serializable
         this.destination = destination;
     }
 
-    public String getStatus()
+    public String getState()
     {
-        return status;
+        return state;
     }
 
-    public void setStatus(String status)
+    public void setState(String state)
     {
-        this.status = status;
+        this.state = state;
     }
 
     public Date getCreatedOn()

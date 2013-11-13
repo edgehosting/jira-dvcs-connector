@@ -106,10 +106,14 @@ public class MessageExecutor
      * Stops messaging executor.
      */
     @PreDestroy
-    public void destroy()
+    public void destroy() throws Exception
     {
         stop = true;
         executor.shutdown();
+        if (!executor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            LOGGER.error("Unable properly shutdown message queue.");
+        }
     }
 
     /**

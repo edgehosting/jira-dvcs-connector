@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -21,8 +22,9 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer.SynchronizationProgessHolder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+
+import javax.annotation.Resource;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -30,6 +32,9 @@ public class RepositoryDaoImpl implements RepositoryDao
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
     private final ActiveObjects activeObjects;
+
+    @Resource
+    private Synchronizer synchronizer;
 
     public RepositoryDaoImpl(ActiveObjects activeObjects)
     {
@@ -61,7 +66,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         repository.setLastActivityDate(lastDate);
         repository.setLogo(repositoryMapping.getLogo());
         // set sync progress
-        repository.setSync((DefaultProgress) SynchronizationProgessHolder.getProgress(repository.getId()));
+        repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
         repository.setFork(repositoryMapping.isFork());
 
         if (repository.isFork())

@@ -6,6 +6,7 @@ import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -131,14 +132,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     void removeOAuth()
     {
         // remove OAuth in github
-        try
-        {
-            new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
-        } catch (Exception e)
-        {
-            // deliberately ignoring the exception
-            //FIXME should be fixed to remove OAuth correctly
-        }
+        new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
 
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
