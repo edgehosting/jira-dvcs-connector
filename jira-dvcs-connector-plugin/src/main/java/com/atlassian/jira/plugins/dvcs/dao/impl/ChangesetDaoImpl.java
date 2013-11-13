@@ -301,6 +301,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public ChangesetMapping doInTransaction()
             {
                 Query query = Query.select("ID, *")
+                        .from(ChangesetMapping.class)
                         .alias(ChangesetMapping.class, "chm")
                         .alias(RepositoryToChangesetMapping.class, "rtchm")
                         .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)

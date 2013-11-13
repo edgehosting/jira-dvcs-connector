@@ -133,6 +133,7 @@ public class BranchDaoImpl implements BranchDao
             {
                 // delete association issues - branch
                 Query query = Query.select()
+                        .from(IssueToBranchMapping.class)
                         .alias(IssueToBranchMapping.class, "mapping")
                         .alias(BranchMapping.class, "branch")
                         .join(BranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
@@ -159,6 +160,7 @@ public class BranchDaoImpl implements BranchDao
 
         // delete association issues - branch
         Query query = Query.select()
+                .from(IssueToBranchMapping.class)
                 .alias(IssueToBranchMapping.class, "mapping")
                 .alias(BranchMapping.class, "branch")
                 .join(BranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
@@ -240,6 +242,7 @@ public class BranchDaoImpl implements BranchDao
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
                         Query.select("ID, *")
+                                .from(BranchMapping.class)
                                 .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")

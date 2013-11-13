@@ -39,10 +39,18 @@ public class ActiveObjectsUtils
         return deleted;
     }
 
-    public static Query copyQuery(Query query, boolean forCount)
+    private static Query copyQuery(Query query, boolean forCount)
     {
-        Query newQuery = Query.select(Joiner.on(",").join(query.getFields()))
-                .where(query.getWhereClause(), query.getWhereParams())
+        Query newQuery;
+        Iterable<String> fields = query.getFields();
+        if (fields.iterator().hasNext())
+        {
+            newQuery = Query.select(Joiner.on(",").join(query.getFields()));
+        } else
+        {
+            newQuery = Query.select();
+        }
+        newQuery.where(query.getWhereClause(), query.getWhereParams())
                 .group(query.getGroupClause())
                 .offset(query.getOffset());
 
