@@ -25,29 +25,41 @@ public class ActiveObjectsUtils
         //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
         log.debug("Deleting type {}", entityType);
         int deleted = 0;
-        int remainingEntities = activeObjects.count(entityType, query);
+        int remainingEntities = activeObjects.count(entityType, copyQuery(query, true));
         while (remainingEntities > 0)
         {
 
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, remainingEntities);
             // BBC-453 we need to copy Query as ActiveObjects.find will mangle query for all types annotated by @Preload
-            T[] entities = activeObjects.find(entityType, copyQuery(query).limit(DELETE_WINDOW_SIZE));
+            T[] entities = activeObjects.find(entityType, copyQuery(query, false).limit(DELETE_WINDOW_SIZE));
             activeObjects.delete(entities);
             deleted++;
-            remainingEntities = activeObjects.count(entityType, query);
+            remainingEntities = activeObjects.count(entityType, copyQuery(query, true));
         }
         return deleted;
     }
 
-    public static Query copyQuery(Query query)
+    private static Query copyQuery(Query query, boolean forCount)
     {
-        Query newQuery = Query.select(Joiner.on(",").join(query.getFields()))
-                .where(query.getWhereClause(), query.getWhereParams())
-                .order(query.getOrderClause())
+        Query newQuery;
+        Iterable<String> fields = query.getFields();
+        if (fields.iterator().hasNext())
+        {
+            newQuery = Query.select(Joiner.on(",").join(query.getFields()));
+        } else
+        {
+            newQuery = Query.select();
+        }
+        newQuery.where(query.getWhereClause(), query.getWhereParams())
                 .group(query.getGroupClause())
-                .offset(query.getOffset())
-                .limit(query.getLimit());
+                .limit(query.getLimit())
+                .offset(query.getOffset());
 
+        if (!forCount)
+        {
+            newQuery
+                .order(query.getOrderClause());
+        }
         if (query.getTable() != null)
         {
             newQuery.from(query.getTable());

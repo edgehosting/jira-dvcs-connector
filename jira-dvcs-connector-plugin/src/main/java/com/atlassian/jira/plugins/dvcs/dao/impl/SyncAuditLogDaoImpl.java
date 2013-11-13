@@ -20,7 +20,8 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {
-    private static final int BIG_DATA_PAGESIZE = 500;
+    private static final int BIG_DATA_PAGESIZE = 200;
+    private static final int ROTATION_SIZE = 400;
 
     private final ActiveObjects ao;
 
@@ -39,6 +40,9 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
+                //
+                rotate(repoId);
+                //
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put(SyncAuditLogMapping.REPO_ID, repoId);
                 data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
@@ -46,6 +50,16 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
                 data.put(SyncAuditLogMapping.TOTAL_ERRORS , 0);
                 return ao.create(SyncAuditLogMapping.class, data);
+            }
+
+            private void rotate(int repoId) 
+            {
+                ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class,
+                        repoQuery(repoId)
+                        .offset(ROTATION_SIZE)
+                        .limit(ROTATION_SIZE)
+                        .q()
+                        .order(SyncAuditLogMapping.START_DATE + " ASC"));
             }
         });
     }
@@ -285,6 +299,15 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         {
             super();
             this.q = Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
+        }
+        PageableQuery offset(int offset)
+        {
+            q.setOffset(offset);
+            return this;
+        }
+        PageableQuery limit (int limit) {
+            q.setLimit(limit);
+            return this;
         }
         Query page(Integer page) {
             pageQuery(q, page);
