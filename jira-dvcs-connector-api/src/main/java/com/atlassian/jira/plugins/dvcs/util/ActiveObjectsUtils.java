@@ -40,7 +40,7 @@ public class ActiveObjectsUtils
             T[] entities = activeObjects.find(entityType, copyQuery(query).limit(DELETE_WINDOW_SIZE));
             activeObjects.delete(entities);
             deleted++;
-            remainingEntities = activeObjects.count(entityType, query);
+            remainingEntities = activeObjects.count(entityType, countQuery);
         }
         return deleted;
     }
