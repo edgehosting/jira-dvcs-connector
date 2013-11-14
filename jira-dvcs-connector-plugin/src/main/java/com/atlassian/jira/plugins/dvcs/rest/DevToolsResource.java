@@ -218,6 +218,7 @@ public class DevToolsResource
             restPullRequest.setDestination(createRef(pullRequest.getDestination()));
             restPullRequests.add(restPullRequest);
             restPullRequest.setParticipants(createParticipants(repository, pullRequest.getParticipants()));
+            restPullRequest.setCommentCount(restPullRequest.getCommentCount());
         }
 
         return restPullRequests;

@@ -23,6 +23,7 @@ public class RestPullRequest
     private RestRef source;
     private RestRef destination;
     private List<RestParticipant> participants;
+    private int commentCount;
 
     public RestUser getAuthor()
     {
@@ -122,6 +123,16 @@ public class RestPullRequest
     public void setParticipants(final List<RestParticipant> participants)
     {
         this.participants = participants;
+    }
+
+    public int getCommentCount()
+    {
+        return commentCount;
+    }
+
+    public void setCommentCount(final int commentCount)
+    {
+        this.commentCount = commentCount;
     }
 }
 
