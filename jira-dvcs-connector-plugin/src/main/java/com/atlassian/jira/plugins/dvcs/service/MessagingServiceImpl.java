@@ -1,24 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -42,6 +23,23 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -160,19 +158,6 @@ public class MessagingServiceImpl implements MessagingService
         {
             payloadTypeToPayloadSerializer.put(payloadSerializer.getPayloadType(), payloadSerializer);
         }
-
-        new Thread(new Runnable()
-        {
-
-            @Override
-            public void run()
-            {
-                waitForAO();
-                initRunningToFail();
-                restartConsumers();
-            }
-
-        }).start();
     }
 
     /**
@@ -760,5 +745,22 @@ public class MessagingServiceImpl implements MessagingService
                 syncAudit.finish(auditId);
             }
         }
+    }
+
+    @Override
+    public void onStart()
+    {
+        new Thread(new Runnable()
+        {
+
+            @Override
+            public void run()
+            {
+                waitForAO();
+                initRunningToFail();
+                restartConsumers();
+            }
+
+        }).start();
     }
 }

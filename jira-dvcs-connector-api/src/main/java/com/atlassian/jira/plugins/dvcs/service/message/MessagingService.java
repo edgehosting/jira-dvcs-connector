@@ -168,4 +168,6 @@ public interface MessagingService
     <P extends HasProgress> void tryEndProgress(Repository repo, Progress progress, MessageConsumer<P> consumer, int auditId);
 
     <P extends  HasProgress> P deserializePayload(Message<P> message);
+
+    void onStart();
 }
