@@ -190,7 +190,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             }
             participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
 
-            commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
+            if (remote.getLinks().getComments() != null)
+            {
+                commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
+            }
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
 
