@@ -173,6 +173,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketPullRequest remote = null;
         Map<String, Participant> participantIndex = null;
         Integer remoteId = info.getPullRequest().getId().intValue();
+        int commentCount = 0;
 
         // have a detail within this synchronization ?
         if (!payload.getProcessedPullRequests().contains(remoteId))
@@ -188,21 +189,26 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                         .getPullRequest().getId() + "");
             }
             participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
+
+            if (remote.getLinks().getComments() != null)
+            {
+                commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
+            }
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
 
         // don't have this pull request, let's save it
         if (local == null)
         {
-            local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo));
+            local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo, commentCount));
         }
         // maybe update
-        if (remote != null && hasChanged(local, remote))
+        if (remote != null && hasChanged(local, remote, commentCount))
         {
             dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
                     .getBranch().getName(), remote.getDestination().getBranch().getName(),
                     resolveBitbucketStatus(remote.getState()),
-                    remote.getUpdatedOn(), remote.getSource().getRepository().getFullName());
+                    remote.getUpdatedOn(), remote.getSource().getRepository().getFullName(), commentCount);
         }
 
         if (participantIndex != null)
@@ -313,9 +319,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return participantsIndex;
     }
 
-    private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote)
+    private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote, int commentCount)
     {
-        return !remote.getUpdatedOn().equals(local.getUpdatedOn());
+        return (local.getCommentCount() != commentCount) || !remote.getUpdatedOn().equals(local.getUpdatedOn());
     }
 
     private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
@@ -387,7 +393,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
 
-    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository)
+    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository, int commentCount)
     {
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
@@ -412,6 +418,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         {
             ret.put(RepositoryPullRequestMapping.SOURCE_REPO, request.getSource().getRepository().getFullName());
         }
+
+        ret.put(RepositoryPullRequestMapping.COMMENT_COUNT, commentCount);
 
         return ret;
     }

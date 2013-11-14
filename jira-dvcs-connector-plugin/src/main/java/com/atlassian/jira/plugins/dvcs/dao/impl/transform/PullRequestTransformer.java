@@ -47,6 +47,7 @@ public class PullRequestTransformer
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());
         pullRequest.setParticipants(transform(pullRequestMapping.getParticipants()));
+        pullRequest.setCommentCount(pullRequestMapping.getCommentCount());
 
         return pullRequest;
     }

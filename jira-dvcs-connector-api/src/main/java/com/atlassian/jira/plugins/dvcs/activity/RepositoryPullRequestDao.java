@@ -14,7 +14,7 @@ public interface RepositoryPullRequestDao
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
 
     RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, RepositoryPullRequestMapping.Status status,
-            Date updatedOn, String sourceRepo);
+            Date updatedOn, String sourceRepo, final int commentCount);
 
     /**
      * Updates issue keys related to commits of provided repository.
