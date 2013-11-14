@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPageIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
@@ -132,6 +131,34 @@ public class PullRequestRemoteRestpoint
     public Iterable<BitbucketPullRequestApprovalActivity> getPullRequestApprovals(String urlIncludingApi)
     {
         return new BitbucketPullRequestApprovalsIterator(requestor, urlIncludingApi);
+    }
+
+    public int getCount(String urlIncludingApi)
+    {
+        String url = urlIncludingApi + "?pagelen=0";
+
+        return requestor.get(url, null, new ResponseCallback<Integer>()
+        {
+            @Override
+            public Integer onResponse(RemoteResponse response)
+            {
+
+                BitbucketPullRequestPage<?> remote = transformFromJson(response);
+                if (remote.getSize() == null)
+                {
+                    return 0;
+                }
+                return remote.getSize();
+            }
+        });
+    }
+
+    private BitbucketPullRequestPage<?> transformFromJson(final RemoteResponse response)
+    {
+        return ClientUtils.fromJson(response.getResponse(),
+                new TypeToken<BitbucketPullRequestPage<?>>()
+                {
+                }.getType());
     }
 }
 
