@@ -185,12 +185,23 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             }
 
             @Override
+            public Option<Html> renderSummaryAsHtml(final URI baseUri, final StreamsEntry entry)
+            {
+                return renderSummaryAsHtml(entry);
+            }
+
             public Option<Html> renderSummaryAsHtml(StreamsEntry entry)
             {
                 return Option.none();
             }
 
+
             @Override
+            public Option<Html> renderContentAsHtml(final URI baseUri, final StreamsEntry entry)
+            {
+                return renderContentAsHtml(entry);
+            }
+
             public Option<Html> renderContentAsHtml(StreamsEntry entry)
             {
 
