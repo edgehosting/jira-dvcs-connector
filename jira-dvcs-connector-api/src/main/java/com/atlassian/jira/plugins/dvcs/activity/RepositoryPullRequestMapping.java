@@ -4,8 +4,10 @@ import java.util.Date;
 
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("PULL_REQUEST")
 public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 {

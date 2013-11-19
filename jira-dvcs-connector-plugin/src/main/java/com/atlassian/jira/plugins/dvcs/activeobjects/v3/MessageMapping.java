@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import net.java.ao.Preload;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -14,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.model.Message;
  * @author Stanislav Dvorscak
  *
  */
+@Preload
 @Table("MESSAGE")
 public interface MessageMapping extends Entity
 {

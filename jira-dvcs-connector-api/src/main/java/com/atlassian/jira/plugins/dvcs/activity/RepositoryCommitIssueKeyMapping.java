@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
 /**
@@ -9,6 +10,7 @@ import net.java.ao.schema.Table;
  * @author Stanislav Dvorscak
  * 
  */
+@Preload
 @Table("COMMIT_ISSUE_KEY")
 public interface RepositoryCommitIssueKeyMapping extends RepositoryDomainMapping
 {
