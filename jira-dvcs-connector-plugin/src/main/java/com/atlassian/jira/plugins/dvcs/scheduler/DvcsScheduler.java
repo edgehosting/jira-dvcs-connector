@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -26,12 +27,14 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
     private long interval = DEFAULT_INTERVAL;
     private final OrganizationService organizationService;
     private final RepositoryService repositoryService;
+    private final MessagingService messagingService;
 
-    public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService)
+    public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService, MessagingService messagingService)
     {
         this.pluginScheduler = pluginScheduler;
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -40,6 +43,7 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
         log.debug("onStart");
         this.interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         reschedule();
+        messagingService.onStart();
     }
 
     public void reschedule()

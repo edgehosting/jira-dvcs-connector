@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("PR_PARTICIPANT")
 public interface PullRequestParticipantMapping extends RepositoryDomainMapping
 {

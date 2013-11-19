@@ -17,6 +17,7 @@ public class PullRequest
     private Date updatedOn;
     private String author;
     private List<Participant> participants;
+    private int commentCount;
 
     public PullRequest(final int id)
     {
@@ -141,5 +142,15 @@ public class PullRequest
     public void setParticipants(final List<Participant> participants)
     {
         this.participants = participants;
+    }
+
+    public int getCommentCount()
+    {
+        return commentCount;
+    }
+
+    public void setCommentCount(final int commentCount)
+    {
+        this.commentCount = commentCount;
     }
 }

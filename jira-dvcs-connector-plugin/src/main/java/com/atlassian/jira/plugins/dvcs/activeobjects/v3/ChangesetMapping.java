@@ -5,9 +5,11 @@ import java.util.Date;
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.Preload;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("ChangesetMapping")
 public interface ChangesetMapping extends Entity
 {

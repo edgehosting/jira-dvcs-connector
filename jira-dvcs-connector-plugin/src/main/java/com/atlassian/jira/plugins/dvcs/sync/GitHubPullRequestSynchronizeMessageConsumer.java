@@ -120,7 +120,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest.getBase()
                     .getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest), remotePullRequest
-                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()));
+                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()), remotePullRequest.getComments());
         }
         return localPullRequest;
     }
@@ -212,6 +212,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getBase().getRef());
         target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getHead().getRef());
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
+        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
 
     private void map(Map<String, Object> target, RepositoryCommit source)

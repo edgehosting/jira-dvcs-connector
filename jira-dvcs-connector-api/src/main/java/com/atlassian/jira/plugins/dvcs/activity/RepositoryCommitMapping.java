@@ -2,10 +2,12 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import java.util.Date;
 
+import net.java.ao.Preload;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("COMMIT")
 public interface RepositoryCommitMapping extends RepositoryDomainMapping
 {

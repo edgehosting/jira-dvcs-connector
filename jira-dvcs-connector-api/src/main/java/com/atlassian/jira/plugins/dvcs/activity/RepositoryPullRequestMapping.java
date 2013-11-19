@@ -4,8 +4,10 @@ import java.util.Date;
 
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.Preload;
 import net.java.ao.schema.Table;
 
+@Preload
 @Table("PULL_REQUEST")
 public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 {
@@ -22,6 +24,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String CREATED_ON = "CREATED_ON";
     String UPDATED_ON = "UPDATED_ON";
     String PARTICIPANTS = "PARTICIPANTS";
+    String COMMENT_COUNT = "COMMENT_COUNT";
 
     public enum Status {
         OPEN, DECLINED, MERGED;
@@ -63,6 +66,9 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     @OneToMany (reverse = "getPullRequest")
     PullRequestParticipantMapping[] getParticipants();
+
+    int getCommentCount();
+
     //
     // setters
     //
@@ -87,4 +93,6 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     void setAuthor(String author);
 
     void setSourceRepo(String sourceRepo);
+
+    void setCommentCount(int commentCount);
 }

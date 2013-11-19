@@ -98,7 +98,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
-    private Iterable<StreamsEntry> transformEntries(Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
+    private Iterable<StreamsEntry> transformEntries(final ActivityRequest activityRequest, Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
     {
         List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
         Set<String> alreadyAddedChangesetRawNodes = new HashSet<String>(entries.size(), 1.0F);
@@ -114,7 +114,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 // to activity stream
                 if (!alreadyAddedChangesetRawNodes.contains(getNode(changeset)))
                 {
-                    StreamsEntry streamsEntry = toStreamsEntry(changeset);
+                    StreamsEntry streamsEntry = toStreamsEntry(activityRequest, changeset);
                     if (streamsEntry != null)
                     {
                         entries.add(streamsEntry);
@@ -144,7 +144,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
      * @param changeset the changeset entry
      * @return the transformed streams entry
      */
-    private StreamsEntry toStreamsEntry(final Changeset changeset)
+    private StreamsEntry toStreamsEntry(final ActivityRequest activityRequest, final Changeset changeset)
     {
         final Repository repository = repositoryService.get(changeset.getRepositoryId());
 
@@ -185,12 +185,23 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             }
 
             @Override
+            public Option<Html> renderSummaryAsHtml(final URI baseUri, final StreamsEntry entry)
+            {
+                return renderSummaryAsHtml(entry);
+            }
+
             public Option<Html> renderSummaryAsHtml(StreamsEntry entry)
             {
                 return Option.none();
             }
 
+
             @Override
+            public Option<Html> renderContentAsHtml(final URI baseUri, final StreamsEntry entry)
+            {
+                return renderContentAsHtml(entry);
+            }
+
             public Option<Html> renderContentAsHtml(StreamsEntry entry)
             {
 
@@ -229,11 +240,11 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             } catch (URISyntaxException e)
             {
                 // we use anonymous profile
-                userProfile = userProfileAccessor.getAnonymousUserProfile();
+                userProfile = userProfileAccessor.getAnonymousUserProfile(activityRequest.getContextUri());
             }
         } else
         {
-            userProfile = userProfileAccessor.getAnonymousUserProfile();
+            userProfile = userProfileAccessor.getAnonymousUserProfile(activityRequest.getContextUri());
         }
 
         return new StreamsEntry(StreamsEntry.params()
@@ -275,7 +286,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                     if (cancelled.get())
                         throw new CancelledException();
                     log.debug("Found changeset entries: " + changesetEntries);
-                    streamEntries = transformEntries(changesetEntries, cancelled);
+                    streamEntries = transformEntries(activityRequest, changesetEntries, cancelled);
                 }
                 return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
             }

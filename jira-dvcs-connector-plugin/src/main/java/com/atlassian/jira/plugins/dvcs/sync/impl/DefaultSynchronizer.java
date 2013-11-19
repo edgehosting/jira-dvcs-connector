@@ -58,6 +58,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+    private final String ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.pullrequest.github";
 
     @Resource
     private MessagingService messagingService;
@@ -201,7 +202,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                         updateBranchHeads(repo, branches, oldBranchHeads);
                         updateBranches(repo, branches);
                     }
-                    if (pullRequestSync)
+                    if (pullRequestSync && featureManager.isEnabled(ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE))
                     {
                         gitHubEventService.synchronize(repo, softSync, synchronizationTags);
                     }

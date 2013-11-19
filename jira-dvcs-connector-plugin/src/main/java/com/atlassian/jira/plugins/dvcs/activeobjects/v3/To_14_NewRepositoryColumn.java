@@ -14,10 +14,12 @@ public class To_14_NewRepositoryColumn implements ActiveObjectsUpgradeTask
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
-        log.debug("upgrade [ " + getModelVersion() + " ]");
+        log.info("upgrade [ " + getModelVersion() + " ]");
 
-        activeObjects.migrate(RepositoryMapping.class);
+        activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
+                IssueToChangesetMapping.class, RepositoryToChangesetMapping.class, BranchHeadMapping.class);
 
+        log.info("upgrade [ " + getModelVersion() + " ]: finished");
     }
 
     @Override

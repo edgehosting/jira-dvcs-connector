@@ -107,7 +107,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 
     @Override
     public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
-            RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo)
+            RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo, final int commentCount)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
       request.setName(name);
@@ -116,6 +116,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
       request.setLastStatus(status.name());
       request.setSourceRepo(sourceRepo);
       request.setUpdatedOn(updatedOn);
+      request.setCommentCount(commentCount);
       activeObjects.executeInTransaction(new TransactionCallback<Void>()
       {
           @Override
