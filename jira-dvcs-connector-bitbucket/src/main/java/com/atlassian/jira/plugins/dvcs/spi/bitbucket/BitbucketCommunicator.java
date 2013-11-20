@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -382,39 +383,54 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
-
-            if (!hookDoesExist(repository, postCommitUrl, remoteClient)) {
+            if (!hookDoesExist(repository, postCommitUrl, remoteClient, ServiceRemoteRestpoint.SERVICE_TYPE_POST)) {
 	            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
 	                    repository.getSlug(), postCommitUrl);
             }
-
         } catch (BitbucketRequestException e)
         {
             throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook", e);
         }
+        try
+        {
+            if (!hookDoesExist(repository, postCommitUrl, remoteClient, ServiceRemoteRestpoint.SERVICE_TYPE_PULL_REQUEST_POST)) {
+	            remoteClient.getServicesRest().addPullRequestPOSTService(repository.getOrgName(), // owner
+	                    repository.getSlug(), postCommitUrl);
+            }
+
+
+        } catch (BitbucketRequestException e)
+        {
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add pull request postcommit hook", e);
+        }
     }
 
 	private boolean hookDoesExist(Repository repository, String postCommitUrl,
-            BitbucketRemoteClient remoteClient)
+            BitbucketRemoteClient remoteClient, String type)
     {
 	    List<BitbucketServiceEnvelope> services = remoteClient.getServicesRest().getAllServices(
 	            repository.getOrgName(), // owner
 	            repository.getSlug());
 	    for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
 	    {
-	        for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
-	        {
-	            boolean fieldNameIsUrl = serviceField.getName().equals("URL");
-	            boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
+            String serviceType = bitbucketServiceEnvelope.getService().getType();
+            if (type.equals(serviceType))
+            {
+                for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
+                {
+                    boolean fieldNameIsUrl = serviceField.getName().equals("URL");
+                    boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
 
-	            if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
-	            {
-	                return true;
-	            }
-	        }
+                    if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
+                    {
+                        return true;
+                    }
+                }
+            }
 	    }
 	    return false;
     }
