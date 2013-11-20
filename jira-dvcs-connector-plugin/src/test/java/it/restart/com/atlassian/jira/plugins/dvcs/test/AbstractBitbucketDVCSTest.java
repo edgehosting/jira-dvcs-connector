@@ -1,28 +1,30 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketCreatePullRequestPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketPullRequestPage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Abstract, common implementation for all Bitbucket tests
@@ -213,18 +215,42 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      */
     protected String openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
     {
-        BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
-        String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
+        BitbucketClientBuilderFactory bitbucketClientBuilderFactory = new DefaultBitbucketClientBuilderFactory(new Encryptor() {
 
-        // Give a time to Bitbucket after creation of pullRequest
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
-        return url;
+            @Override
+            public String encrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+
+            @Override
+            public String decrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+        }, "DVCS Connector Tests");
+        Credential credential = new Credential();
+        credential.setAdminUsername(owner);
+        credential.setAdminPassword(AbstractBitbucketDVCSTest.PASSWORD);
+        BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", owner, credential).apiVersion(2).build();
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
+
+        BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base);
+
+        return pullRequest.getLinks().getHtml().getHref();
+
+//        BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
+//        String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
+//
+//        // Give a time to Bitbucket after creation of pullRequest
+//        try
+//        {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException e)
+//        {
+//            // nop
+//        }
+//        return url;
     }
     
     protected String openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner)

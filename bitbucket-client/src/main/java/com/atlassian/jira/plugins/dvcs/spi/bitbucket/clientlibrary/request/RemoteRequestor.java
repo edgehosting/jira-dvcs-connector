@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import org.apache.http.entity.ContentType;
+
 import java.util.Map;
 
 public interface RemoteRequestor
@@ -25,6 +27,7 @@ public interface RemoteRequestor
      */
     <T> T post(String uri,  Map<String, ? extends Object> parameters, ResponseCallback<T> callback);
 
+    <T> T post(String uri, String body, ContentType contentType, ResponseCallback<T> callback);
     /**
      * Executes put request with the provided parameters.
      * After successful request, {@link ResponseCallback#onResponse(RemoteResponse)} is called on the provided callback.

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityIterator;
@@ -8,17 +9,22 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalsIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommitIterator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestHead;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewerIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
+import org.apache.http.entity.ContentType;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -159,6 +165,38 @@ public class PullRequestRemoteRestpoint
                 new TypeToken<BitbucketPullRequestPage<?>>()
                 {
                 }.getType());
+    }
+
+    public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceBranch, String destinationBranch)
+    {
+        BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
+        bitbucketPullRequest.setTitle(title);
+        bitbucketPullRequest.setDescription(description);
+
+        BitbucketPullRequestHead source = new BitbucketPullRequestHead();
+        source.setBranch(new BitbucketBranch(sourceBranch));
+        source.setRepository(new BitbucketPullRequestRepository(owner, repoSlug));
+        bitbucketPullRequest.setSource(source);
+
+        BitbucketPullRequestHead destination = new BitbucketPullRequestHead();
+        destination.setBranch(new BitbucketBranch(destinationBranch));
+        destination.setRepository(new BitbucketPullRequestRepository(owner, repoSlug));
+        bitbucketPullRequest.setDestination(destination);
+
+        String url = String.format("/repositories/%s/%s/pullrequests", owner, repoSlug);
+
+        return requestor.post(url, ClientUtils.toJson(bitbucketPullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
+        {
+
+            @Override
+            public BitbucketPullRequest onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketPullRequest>()
+                {
+                }.getType());
+            }
+
+        });
     }
 }
 

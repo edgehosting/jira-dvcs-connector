@@ -26,6 +26,12 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
     }
 
+    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, String userAgent)
+    {
+        this.encryptor = encryptor;
+        this.userAgent = userAgent;
+    }
+
     @Override
     public BitbucketClientBuilder forOrganization(Organization organization)
     {

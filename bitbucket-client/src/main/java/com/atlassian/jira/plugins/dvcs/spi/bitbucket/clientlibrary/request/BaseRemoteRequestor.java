@@ -11,6 +11,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
 import org.apache.http.impl.client.cache.CacheConfig;
@@ -94,6 +96,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
     public  <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
+    }
+
+    @Override
+    public <T> T post(final String uri, final String body, final ContentType contentType, final ResponseCallback<T> callback)
+    {
+        HttpPost method = new HttpPost();
+        return requestWithBody(method, uri, body, contentType, callback);
     }
 
 
@@ -220,6 +229,38 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             createConnection(client, method, uri, params);
             setPayloadParams(method, params);
+
+            HttpResponse httpResponse = client.execute(method);
+            response = checkAndCreateRemoteResponse(method, client, httpResponse);
+
+            return callback.onResponse(response);
+
+        } catch (BitbucketRequestException e)
+        {
+            throw e; // Unauthorized or NotFound exceptions will be rethrown
+        } catch (IOException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } catch (URISyntaxException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } finally
+        {
+            closeResponse(response);
+        }
+    }
+
+    private <T> T requestWithBody(HttpEntityEnclosingRequestBase method, String uri, String body, ContentType contentType, ResponseCallback<T> callback)
+    {
+        HttpClient client = newDefaultHttpClient();
+        RemoteResponse response = null;
+
+        try
+        {
+            createConnection(client, method, uri, null);
+            setBody(method, body, contentType);
 
             HttpResponse httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
@@ -473,6 +514,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
             });
 
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            method.setEntity(entity);
+        }
+    }
+
+    private void setBody(HttpEntityEnclosingRequestBase method, String body, ContentType contentType)
+    {
+        if (body != null)
+        {
+            StringEntity entity = new StringEntity(body, contentType);
             method.setEntity(entity);
         }
     }
