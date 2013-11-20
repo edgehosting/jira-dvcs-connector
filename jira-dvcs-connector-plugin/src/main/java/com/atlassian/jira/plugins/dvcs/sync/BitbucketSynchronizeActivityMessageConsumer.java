@@ -84,15 +84,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
 
+        Date lastSync = payload.getLastSyncDate();
+
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
         activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
-                repo.getActivityLastSync());
+                lastSync);
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(infos);
 
-        Date lastSync = payload.getLastSyncDate();
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
@@ -105,8 +106,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             }
             if ((lastSync == null) || (activityDate.after(lastSync)))
             {
-                lastSync = activityDate;
-                repositoryDao.setLastActivitySyncDate(repo.getId(), lastSync);
+                repositoryDao.setLastActivitySyncDate(repo.getId(), activityDate);
             }
 
             int localPrId = processActivity(payload, info, pullRestpoint);
@@ -321,7 +321,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private boolean hasChanged(RepositoryPullRequestMapping local, BitbucketPullRequest remote, int commentCount)
     {
-        return (local.getCommentCount() != commentCount) || !remote.getUpdatedOn().equals(local.getUpdatedOn());
+        // the pull request has changed if it was updated or it is the same but comments changed
+        return remote.getUpdatedOn().after(local.getUpdatedOn())
+                || ((local.getCommentCount() != commentCount) && remote.getUpdatedOn().equals(local.getUpdatedOn()));
     }
 
     private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
