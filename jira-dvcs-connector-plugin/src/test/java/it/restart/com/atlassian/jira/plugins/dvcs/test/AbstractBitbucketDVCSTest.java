@@ -213,38 +213,38 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *            to which base
      * @return pull request url
      */
-    protected String openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
+    protected BitbucketPullRequest openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base);
 
-        return pullRequest.getLinks().getHtml().getHref();
+        return pullRequest;
     }
 
-    protected String openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner)
+    protected BitbucketPullRequest openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, AbstractBitbucketDVCSTest.FORK_ACCOUNT_PASSWORD);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, forkOwner, repositoryName, head, base);
 
-        return pullRequest.getLinks().getHtml().getHref();
+        return pullRequest;
     }
-    
-    /**
-     * Update pull request over provided repository
-     * 
-     * @param owner
-     *            repository owner
-     * @param repositoryName
-     *               repository name
-     * @return pull request url
-     */
-    protected String updatePullRequest(String owner, String repositoryName)
-    {
-        BitbucketCreatePullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
-        return pullRequestPage.createPullRequest(null, null, null, null, owner + "/" + repositoryName);
-    }
+
+//    /**
+//     * Update pull request over provided repository
+//     *
+//     * @param owner
+//     *            repository owner
+//     * @param repositoryName
+//     *               repository name
+//     * @return pull request url
+//     */
+//    protected String updatePullRequest(String owner, String repositoryName)
+//    {
+//        BitbucketCreatePullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
+//        return pullRequestPage.createPullRequest(null, null, null, null, owner + "/" + repositoryName);
+//    }
 
     /**
      * Closes provided pull request.
@@ -253,22 +253,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *            repository owner
      * @param repositoryName
      *               repository name
-     * @param pullRequestUrl
-     *            pull request url to close
+     * @param pullRequest
+     *            pull request to close
      */
-    protected void closePullRequest(String owner, String repositoryName, String pullRequestUrl)
+    protected void declinePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
     {
-        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-        pullRequestPage.declinePullRequest();
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
 
-        // Give a time to Bitbucket after declining of pullRequest
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
+        pullRequestRemoteRestpoint.declinePullRequest(owner, repositoryName, pullRequest.getId(), null);
     }
     
     /**
@@ -278,13 +270,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *                 repository owner
      * @param repositoryName
      *                 repository name
-     * @param pullRequestUrl
-     *                  url of pull request to close
+     * @param pullRequest
+     *                  pull request to close
      */
-    protected void approvePullRequest(String owner, String repositoryName, String pullRequestUrl)
+    protected void approvePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
     {
-        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-        pullRequestPage.approvePullRequest();
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
+
+        pullRequestRemoteRestpoint.approvePullRequest(owner, repositoryName, pullRequest.getId());
     }
     
     /**
@@ -294,22 +287,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *                 repository owner
      * @param repositoryName
      *                 repository name
-     * @param pullRequestUrl
+     * @param pullRequest
      *                 url of pull request to merge
      */
-    protected void mergePullRequest(String owner, String repositoryName, String pullRequestUrl)
+    protected void mergePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
     {
-        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-        pullRequestPage.mergePullRequest();
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
 
-        // Give a time to Bitbucket after merging of pullRequest
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
+        pullRequestRemoteRestpoint.mergePullRequest(owner, repositoryName, pullRequest.getId(), "Merge message", true);
     }
     
     /**

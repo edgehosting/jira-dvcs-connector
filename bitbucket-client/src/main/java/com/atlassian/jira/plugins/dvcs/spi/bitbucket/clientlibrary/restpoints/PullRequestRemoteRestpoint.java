@@ -179,6 +179,62 @@ public class PullRequestRemoteRestpoint
         return createBitbucketPullRequest(owner, repoSlug, title, description, bitbucketPullRequestRepository, sourceBranch, destinationBranch);
     }
 
+    public void declinePullRequest(String owner, String repoSlug, long pullRequestId, String message)
+    {
+        String url = String.format("/repositories/%s/%s/pullrequests/%s/decline", owner, repoSlug, pullRequestId);
+
+        Map<String, String> parameters = null;
+        if (message != null)
+        {
+            parameters = new HashMap<String, String>();
+            parameters.put("message", message);
+        }
+
+        requestor.post(url, parameters, new ResponseCallback<Void>()
+        {
+            @Override
+            public Void onResponse(RemoteResponse response)
+            {
+                return null;
+            }
+
+        });
+    }
+
+    public void approvePullRequest(final String owner, final String repoSlug, final long pullRequestId)
+    {
+        String url = String.format("/repositories/%s/%s/pullrequests/%s/approve", owner, repoSlug, pullRequestId);
+
+        requestor.post(url, null, new ResponseCallback<Void>()
+        {
+            @Override
+            public Void onResponse(RemoteResponse response)
+            {
+                return null;
+            }
+
+        });
+    }
+
+    public void mergePullRequest(String owner, String repoSlug, long pullRequestId, String message, boolean closeSourceBranch)
+    {
+        String url = String.format("/repositories/%s/%s/pullrequests/%s/merge", owner, repoSlug, pullRequestId);
+
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("message", message);
+        parameters.put("close_source_branch", Boolean.toString(closeSourceBranch));
+
+        requestor.post(url, parameters, new ResponseCallback<Void>()
+        {
+            @Override
+            public Void onResponse(RemoteResponse response)
+            {
+                return null;
+            }
+
+        });
+    }
+
     private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch)
     {
         BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
