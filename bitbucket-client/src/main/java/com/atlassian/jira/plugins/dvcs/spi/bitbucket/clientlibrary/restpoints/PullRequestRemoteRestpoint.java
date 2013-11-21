@@ -169,18 +169,29 @@ public class PullRequestRemoteRestpoint
 
     public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceBranch, String destinationBranch)
     {
+        return createBitbucketPullRequest(owner, repoSlug, title, description, null, sourceBranch, destinationBranch);
+    }
+
+    public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceOwner, String sourceRepository, String sourceBranch, String destinationBranch)
+    {
+        BitbucketPullRequestRepository bitbucketPullRequestRepository = new BitbucketPullRequestRepository();
+        bitbucketPullRequestRepository.setFullName(sourceOwner + "/" + sourceRepository);
+        return createBitbucketPullRequest(owner, repoSlug, title, description, bitbucketPullRequestRepository, sourceBranch, destinationBranch);
+    }
+
+    private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch)
+    {
         BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
         bitbucketPullRequest.setTitle(title);
         bitbucketPullRequest.setDescription(description);
 
         BitbucketPullRequestHead source = new BitbucketPullRequestHead();
         source.setBranch(new BitbucketBranch(sourceBranch));
-        source.setRepository(new BitbucketPullRequestRepository(owner, repoSlug));
+        source.setRepository(sourceRepository);
         bitbucketPullRequest.setSource(source);
 
         BitbucketPullRequestHead destination = new BitbucketPullRequestHead();
         destination.setBranch(new BitbucketBranch(destinationBranch));
-        destination.setRepository(new BitbucketPullRequestRepository(owner, repoSlug));
         bitbucketPullRequest.setDestination(destination);
 
         String url = String.format("/repositories/%s/%s/pullrequests", owner, repoSlug);

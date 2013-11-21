@@ -215,58 +215,20 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      */
     protected String openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
     {
-        BitbucketClientBuilderFactory bitbucketClientBuilderFactory = new DefaultBitbucketClientBuilderFactory(new Encryptor() {
-
-            @Override
-            public String encrypt(final String input, final String organizationName, final String hostUrl)
-            {
-                return input;
-            }
-
-            @Override
-            public String decrypt(final String input, final String organizationName, final String hostUrl)
-            {
-                return input;
-            }
-        }, "DVCS Connector Tests");
-        Credential credential = new Credential();
-        credential.setAdminUsername(owner);
-        credential.setAdminPassword(AbstractBitbucketDVCSTest.PASSWORD);
-        BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", owner, credential).apiVersion(2).build();
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base);
 
         return pullRequest.getLinks().getHtml().getHref();
-
-//        BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
-//        String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
-//
-//        // Give a time to Bitbucket after creation of pullRequest
-//        try
-//        {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e)
-//        {
-//            // nop
-//        }
-//        return url;
     }
-    
+
     protected String openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner)
     {
-        BitbucketCreatePullRequestPage createPullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(forkOwner, repositoryName));
-        String url = createPullRequestPage.createPullRequest(title, description, head, base, owner + "/" + repositoryName);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, AbstractBitbucketDVCSTest.FORK_ACCOUNT_PASSWORD);
 
-        // Give a time to Bitbucket after creation of pullRequest
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
-        return url;
+        BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, forkOwner, repositoryName, head, base);
+
+        return pullRequest.getLinks().getHtml().getHref();
     }
     
     /**
@@ -464,6 +426,30 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     private String getUriKey(String owner, String slug)
     {
         return owner + "/" + slug;
+    }
+
+    private PullRequestRemoteRestpoint getPullRequestRemoteRestpoint(String owner, String password)
+    {
+        BitbucketClientBuilderFactory bitbucketClientBuilderFactory = new DefaultBitbucketClientBuilderFactory(new Encryptor()
+        {
+
+            @Override
+            public String encrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+
+            @Override
+            public String decrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+        }, "DVCS Connector Tests");
+        Credential credential = new Credential();
+        credential.setAdminUsername(owner);
+        credential.setAdminPassword(password);
+        BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", null, credential).apiVersion(2).build();
+        return bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
     }
 
     public static class RepositoryInfo
