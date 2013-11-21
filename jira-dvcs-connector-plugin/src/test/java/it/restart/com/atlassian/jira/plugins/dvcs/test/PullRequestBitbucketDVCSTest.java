@@ -110,7 +110,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -179,7 +179,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest expectedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, expectedPullRequestName, "Open PR description", fixBranchName,
+        BitbucketPullRequest expectedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
                 getDefaultBranchName());
 
         // Assert PR Updated information
@@ -191,7 +191,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName);
 
-        BitbucketPullRequest updatedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, expectedPullRequestName, "Open PR description", fixBranchName,
+        BitbucketPullRequest updatedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
                 getDefaultBranchName());
 
         // test of synchronization
@@ -251,7 +251,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -320,7 +320,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -392,7 +392,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -460,14 +460,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(forkedRepository.getOwner(), forkedRepository.getSlug(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, getDefaultBranchName());
 
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
-
         BitbucketPullRequest pullRequest = openForkPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", getDefaultBranchName(),
-                getDefaultBranchName(), FORK_ACCOUNT_NAME);
-
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);
+                getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
@@ -487,6 +481,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         RestDevResponse<RestPrRepository> response = getPullRequestResponse();
 
         Assert.assertEquals(response.getRepositories().size(), 1);
+
         RestPrRepository restPrRepository = response.getRepositories().get(0);
         Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);

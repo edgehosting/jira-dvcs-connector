@@ -2,8 +2,6 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketCreatePullRequestPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -213,38 +211,23 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *            to which base
      * @return pull request url
      */
-    protected BitbucketPullRequest openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
+    protected BitbucketPullRequest openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base)
     {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base);
 
         return pullRequest;
     }
 
-    protected BitbucketPullRequest openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner)
+    protected BitbucketPullRequest openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner, String forkPassword)
     {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, AbstractBitbucketDVCSTest.FORK_ACCOUNT_PASSWORD);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, forkPassword);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, forkOwner, repositoryName, head, base);
 
         return pullRequest;
     }
-
-//    /**
-//     * Update pull request over provided repository
-//     *
-//     * @param owner
-//     *            repository owner
-//     * @param repositoryName
-//     *               repository name
-//     * @return pull request url
-//     */
-//    protected String updatePullRequest(String owner, String repositoryName)
-//    {
-//        BitbucketCreatePullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketCreatePullRequestPage.class, BitbucketCreatePullRequestPage.getUrl(owner, repositoryName));
-//        return pullRequestPage.createPullRequest(null, null, null, null, owner + "/" + repositoryName);
-//    }
 
     /**
      * Closes provided pull request.
@@ -308,19 +291,10 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      */
     protected String commentPullRequest(String pullRequestUrl, String comment)
     {
-        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-        String url = pullRequestPage.commentPullRequest(comment);
+//        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
+//        String url = pullRequestPage.commentPullRequest(comment);
 
-        // Give a time to Bitbucket after commenting of pullRequest
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
-
-        return url;
+        return null;
     }
 
     protected String getDefaultBranchName()
