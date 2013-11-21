@@ -323,7 +323,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     {
         // the pull request has changed if it was updated or it is the same but comments changed
         return remote.getUpdatedOn().after(local.getUpdatedOn())
-                || ((local.getCommentCount() != commentCount) && remote.getUpdatedOn().equals(local.getUpdatedOn()));
+                || local.getCommentCount() != commentCount;
     }
 
     private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
