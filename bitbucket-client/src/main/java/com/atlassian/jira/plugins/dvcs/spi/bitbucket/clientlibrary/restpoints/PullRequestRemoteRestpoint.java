@@ -190,30 +190,14 @@ public class PullRequestRemoteRestpoint
             parameters.put("message", message);
         }
 
-        requestor.post(url, parameters, new ResponseCallback<Void>()
-        {
-            @Override
-            public Void onResponse(RemoteResponse response)
-            {
-                return null;
-            }
-
-        });
+        requestor.post(url, parameters, ResponseCallback.EMPTY);
     }
 
     public void approvePullRequest(final String owner, final String repoSlug, final long pullRequestId)
     {
         String url = String.format("/repositories/%s/%s/pullrequests/%s/approve", owner, repoSlug, pullRequestId);
 
-        requestor.post(url, null, new ResponseCallback<Void>()
-        {
-            @Override
-            public Void onResponse(RemoteResponse response)
-            {
-                return null;
-            }
-
-        });
+        requestor.post(url, null, ResponseCallback.EMPTY);
     }
 
     public void mergePullRequest(String owner, String repoSlug, long pullRequestId, String message, boolean closeSourceBranch)
@@ -224,15 +208,7 @@ public class PullRequestRemoteRestpoint
         parameters.put("message", message);
         parameters.put("close_source_branch", Boolean.toString(closeSourceBranch));
 
-        requestor.post(url, parameters, new ResponseCallback<Void>()
-        {
-            @Override
-            public Void onResponse(RemoteResponse response)
-            {
-                return null;
-            }
-
-        });
+        requestor.post(url, parameters, ResponseCallback.EMPTY);
     }
 
     private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch)
