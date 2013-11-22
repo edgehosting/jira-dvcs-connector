@@ -211,6 +211,16 @@ public class PullRequestRemoteRestpoint
         requestor.post(url, parameters, ResponseCallback.EMPTY);
     }
 
+    public void commentPullRequest(String owner, String repoSlug, long pullRequestId, String comment)
+    {
+        String url = String.format("/api/1.0/repositories/%s/%s/pullrequests/%s/comments", owner, repoSlug, pullRequestId);
+
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("content", comment);
+
+        requestor.post(url, parameters, ResponseCallback.EMPTY);
+    }
+
     private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch)
     {
         BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();

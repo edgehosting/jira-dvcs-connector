@@ -496,6 +496,76 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
     }
 
+    /**
+     * Test that "Numer of Comments on Pull Request" is working.
+     */
+    @Test
+    public void testCommentsPullRequestBranch()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String fixBranchName = issueKey + "_fix";
+        String[] commitNodeOpen = new String[2];
+
+        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+
+        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+
+        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+
+        // Give a time to Bitbucket after creation of pullRequest
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+
+        commentPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest, "Test comment 1");
+        commentPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest, "Test comment 2");
+
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
+        account.refresh();
+
+        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
+
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+
+        Assert.assertEquals(response.getRepositories().size(), 1);
+        RestPrRepository restPrRepository = response.getRepositories().get(0);
+        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
+        RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
+        Assert.assertEquals(restPullRequest.getCommentCount(), 2);
+        Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
+        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
+        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+    }
 
     private RestDevResponse<RestPrRepository> getPullRequestResponse()
     {

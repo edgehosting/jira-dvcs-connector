@@ -283,18 +283,16 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     /**
      * Adds comment to provided pull request.
      * 
-     * @param pullRequestUrl
-     *            pull request url
+     * @param pullRequest
+     *            pull request
      * @param comment
      *            message
      * @return created remote comment
      */
-    protected String commentPullRequest(String pullRequestUrl, String comment)
+    protected void commentPullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String comment)
     {
-//        BitbucketPullRequestPage pullRequestPage = new MagicVisitor(getJiraTestedProduct()).visit(BitbucketPullRequestPage.class, pullRequestUrl);
-//        String url = pullRequestPage.commentPullRequest(comment);
-
-        return null;
+       PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
+       pullRequestRemoteRestpoint.commentPullRequest(owner, repositoryName, pullRequest.getId(), comment);
     }
 
     protected String getDefaultBranchName()
