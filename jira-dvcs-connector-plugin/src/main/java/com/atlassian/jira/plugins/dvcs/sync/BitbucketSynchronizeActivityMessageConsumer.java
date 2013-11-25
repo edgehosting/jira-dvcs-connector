@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -84,7 +85,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
 
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).build();
+        BitbucketClientBuilder bitbucketClientBuilder = bitbucketClientBuilderFactory.forRepository(repo);
+        if (payload.getPageNum() == 1)
+        {
+            bitbucketClientBuilder.cached();
+        }
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.apiVersion(2).build();
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
         activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
                 repo.getActivityLastSync());
