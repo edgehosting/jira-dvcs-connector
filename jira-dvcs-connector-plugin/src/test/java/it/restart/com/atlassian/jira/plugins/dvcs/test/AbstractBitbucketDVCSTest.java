@@ -239,9 +239,9 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      * @param pullRequest
      *            pull request to close
      */
-    protected void declinePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
+    protected void declinePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
     {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
         pullRequestRemoteRestpoint.declinePullRequest(owner, repositoryName, pullRequest.getId(), null);
     }
@@ -256,9 +256,9 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      * @param pullRequest
      *                  pull request to close
      */
-    protected void approvePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
+    protected void approvePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
     {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
         pullRequestRemoteRestpoint.approvePullRequest(owner, repositoryName, pullRequest.getId());
     }
@@ -273,9 +273,9 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      * @param pullRequest
      *                 url of pull request to merge
      */
-    protected void mergePullRequest(String owner, String repositoryName, BitbucketPullRequest pullRequest)
+    protected void mergePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
     {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, AbstractBitbucketDVCSTest.PASSWORD);
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
         pullRequestRemoteRestpoint.mergePullRequest(owner, repositoryName, pullRequest.getId(), "Merge message", true);
     }

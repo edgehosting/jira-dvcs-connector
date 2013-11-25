@@ -262,7 +262,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        declinePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequest);
+        declinePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
@@ -331,7 +331,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        approvePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequest);
+        approvePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
@@ -403,7 +403,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        mergePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequest);
+        mergePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
