@@ -12,10 +12,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Basic
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import com.google.common.base.Function;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -23,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Abstract, common implementation for all Bitbucket tests
@@ -183,14 +186,24 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *            e.g.: owner/name
      * @return forked repository URI
      */
-    protected BitbucketRepository fork(String owner, String repositoryName, String forkAccount, String forkPassword)
+    protected BitbucketRepository fork(final String owner, final String repositoryName, final String forkAccount, final String forkPassword)
     {
-        RepositoryRemoteRestpoint forkRepositoryService = createRepositoryService(forkAccount, forkPassword);
-        
+        final RepositoryRemoteRestpoint forkRepositoryService = createRepositoryService(forkAccount, forkPassword);
+
         BitbucketRepository remoteRepository = forkRepositoryService.forkRepository(owner, repositoryName, repositoryName, true);
 
         String result = getUriKey(remoteRepository.getOwner(), remoteRepository.getSlug());
         uriToRemoteRepository.put(result, new RepositoryInfo(remoteRepository, forkRepositoryService));
+
+        getJiraTestedProduct().getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
+        {
+            @Override
+            public Boolean apply(@Nullable final WebDriver input)
+            {
+                return isRepositoryExists(forkAccount, repositoryName, forkRepositoryService);
+            }
+        }, 5000);
+
         dvcs.createTestLocalRepository(forkAccount, repositoryName, forkAccount, forkPassword);
 
         return remoteRepository;
