@@ -250,6 +250,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
         if (flags.contains(SynchronizationFlag.WEBHOOK_SYNC))
         {
+            log.info("Postponing post commit hook synchronisation. It will start after the running synchronisation finishes.");
+
             EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
             if (currentFlags == null)
             {
