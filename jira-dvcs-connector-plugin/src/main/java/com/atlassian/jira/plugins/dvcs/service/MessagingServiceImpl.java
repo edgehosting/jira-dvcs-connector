@@ -19,6 +19,8 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
@@ -28,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -110,6 +113,9 @@ public class MessagingServiceImpl implements MessagingService
 
     @Resource
     private SyncAuditLogDao syncAudit;
+
+    @Resource
+    private Synchronizer synchronizer;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -739,6 +745,13 @@ public class MessagingServiceImpl implements MessagingService
             if (progress != null && !progress.isFinished())
             {
                 progress.finish();
+
+                EnumSet<SynchronizationFlag> flags = progress.getRunAgainFlags();
+                if (flags != null)
+                {
+                    progress.setRunAgainFlags(null);
+                    synchronizer.doSync(repository, flags);
+                }
             }
             if (auditId > 0)
             {

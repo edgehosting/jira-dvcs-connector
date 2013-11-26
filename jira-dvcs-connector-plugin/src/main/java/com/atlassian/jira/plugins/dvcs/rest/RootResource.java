@@ -142,7 +142,7 @@ public class RootResource
         log.info("Postcommit hook started synchronization for repository [{}].", id);
 
         repositoryService.sync(id,
-                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS, SynchronizationFlag.WEBHOOK_SYNC));
 
         return Response.ok().build();
     }

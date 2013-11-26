@@ -112,12 +112,14 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             log.info("The synchronization is disabled.");
             return;
         }
+
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
         int auditId = 0;
 
-        if (skipSync(repo)) {
+        if (skipSync(repo, flags))
+        {
             return;
         }
 
@@ -237,10 +239,27 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return softSync ? SyncAuditLogMapping.SYNC_TYPE_SOFT : SyncAuditLogMapping.SYNC_TYPE_FULL;
     }
 
-    private boolean skipSync(Repository repository)
+    private boolean skipSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
         Progress progress = getProgress(repository.getId());
-        return progress != null && !progress.isFinished();
+
+        if (progress == null || progress.isFinished())
+        {
+            return false;
+        }
+
+        if (flags.contains(SynchronizationFlag.WEBHOOK_SYNC))
+        {
+            EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
+            if (currentFlags == null)
+            {
+                progress.setRunAgainFlags(flags);
+            } else
+            {
+                currentFlags.addAll(flags);
+            }
+        }
+        return true;
     }
 
     private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId)
