@@ -57,12 +57,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private static final String REVIEWER_ROLE = "REVIEWER";
 
     @Resource
-    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    @Resource
-    private ChangesetService changesetService;
-    @Resource
-    private RepositoryService repositoryService;
-    @Resource
     private MessagingService messagingService;
     @Resource
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;

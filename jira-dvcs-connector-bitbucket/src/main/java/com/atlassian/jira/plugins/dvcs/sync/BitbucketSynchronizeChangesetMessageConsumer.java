@@ -1,21 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -23,12 +11,20 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -42,8 +38,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
 
-    @Resource
-    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    @Resource(name = "cachingBitbucketCommunicator")
+    private CachingDvcsCommunicator cachingCommunicator;
     @Resource
     private ChangesetService changesetService;
     @Resource
@@ -60,8 +56,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     @Override
     public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload)
     {
-        CachingDvcsCommunicator cachingCommunicator = (CachingDvcsCommunicator) dvcsCommunicatorProvider
-                .getCommunicator(BitbucketCommunicator.BITBUCKET);
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
         Repository repo = payload.getRepository();

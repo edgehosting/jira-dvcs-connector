@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryBranch;
@@ -60,8 +62,6 @@ public class GithubCommunicatorTest
     private UserService userService;
     @Mock
     private User githubUser;
-    @Mock
-    private MessagingService messagingService;
 
     // tested object
     private DvcsCommunicator communicator;

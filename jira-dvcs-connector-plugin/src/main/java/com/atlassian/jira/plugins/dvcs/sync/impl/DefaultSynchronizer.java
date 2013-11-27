@@ -58,7 +58,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private final String ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.pullrequest.github";
 
     @Resource
     private MessagingService messagingService;
@@ -70,9 +69,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private BranchService branchService;
 
     @Resource
-    private ChangesetCache changesetCache;
-
-    @Resource
     private DvcsCommunicatorProvider communicatorProvider;
 
     @Resource
@@ -81,12 +77,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private RepositoryPullRequestDao repositoryPullRequestDao;
     
-    /**
-     * Injected {@link GitHubEventService} dependency.
-     */
-    @Resource
-    private GitHubEventService gitHubEventService;
-
     @Resource
     private PostponeOndemandPrSyncListener posponePrSyncHelper;
 
@@ -95,6 +85,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
     @Resource
     private FeatureManager featureManager;
+
+    /**
+     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
+     */
+    @Resource
+    private GitHubEventService gitHubEventService;
+
 
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
@@ -136,13 +133,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
                     changesetService.removeAllInRepository(repo.getId());
                     branchService.removeAllBranchHeadsInRepository(repo.getId());
-                    gitHubEventService.removeAll(repo);
                     branchService.removeAllBranchesInRepository(repo.getId());
 
                     repo.setLastCommitDate(null);
                 }
                 if (pullRequestSync)
                 {
+                    gitHubEventService.removeAll(repo);
                     repositoryPullRequestDao.removeAll(repo);
                     repo.setActivityLastSync(null);
                 }
@@ -162,53 +159,15 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (repo.getDvcsType().equals(BitbucketCommunicator.BITBUCKET))
+                if (!posponePrSyncHelper.isAfterPostponedTime())
                 {
-                    if (changestesSync)
-                    {
-                        // sync csets
-                        BranchFilterInfo filterNodes = getFilterNodes(repo);
-                        processBitbucketCsetSync(repo, softSync, filterNodes, auditId);
-                        updateBranchHeads(repo, filterNodes.newBranches, filterNodes.oldHeads);
-                        updateBranches(repo, filterNodes.newBranches);
-                    }
-                    // sync pull requests
-                    if (pullRequestSync && posponePrSyncHelper.isAfterPostponedTime())
-                    {
-                        processBitbucketPrSync(repo, softSync, auditId);
-                    }
-
-                } else
-                {
-                    String[] synchronizationTags = new String[] {messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId)};
-                    if (changestesSync)
-                    {
-                        Date synchronizationStartedAt = new Date();
-                        List<Branch> branches = communicatorProvider.getCommunicator(repo.getDvcsType()).getBranches(repo);
-                        for (Branch branch : branches)
-                        {
-                            for (BranchHead branchHead : branch.getHeads())
-                            {
-                                SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
-                                        branch.getName(), branchHead.getHead(), //
-                                        synchronizationStartedAt, //
-                                        null, softSync, auditId);
-                                MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
-                                        SynchronizeChangesetMessage.class, //
-                                        GithubSynchronizeChangesetMessageConsumer.ADDRESS //
-                                        );
-                                messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
-                            }
-                        }
-                        List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
-                        updateBranchHeads(repo, branches, oldBranchHeads);
-                        updateBranches(repo, branches);
-                    }
-                    if (pullRequestSync && featureManager.isEnabled(ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE))
-                    {
-                        gitHubEventService.synchronize(repo, softSync, synchronizationTags);
-                    }
+                    flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
+
+                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
+                        .getCommunicator(repo.getDvcsType());
+
+                communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)
             {
                 log.error(t.getMessage(), t);
@@ -264,78 +223,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return true;
     }
 
-    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId)
-    {
-        List<Branch> newBranches = filterNodes.newBranches;
-
-        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
-        {
-            log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
-            Date synchronizationStartedAt = new Date();
-            for (Branch branch : newBranches)
-            {
-                for (BranchHead branchHead : branch.getHeads())
-                {
-                    OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
-                            branchHead.getName(), branchHead.getHead(), //
-                            synchronizationStartedAt, //
-                            null, softSync, auditId);
-                    MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
-                            OldBitbucketSynchronizeCsetMsg.class, //
-                            OldBitbucketSynchronizeCsetMsgConsumer.KEY //
-                            );
-                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
-                }
-            }
-        } else
-        {
-            if (CollectionUtils.isEmpty(getInclude(filterNodes))) {
-                log.debug("No new changesets detected for repository [{}].", repository.getSlug());
-                return;
-            }
-            MessageAddress<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
-                    BitbucketSynchronizeChangesetMessage.class,
-                    BitbucketSynchronizeChangesetMessageConsumer.KEY
-                    );
-            Date synchronizationStartedAt = new Date();
-
-            BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newBranches), softSync, auditId);
-
-            messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
-        }
-    }
-
-    private List<String> createInclude(BranchFilterInfo filterNodes)
-    {
-        List<String> newHeadsNodes = extractBranchHeadsFromBranches(filterNodes.newBranches);
-        if (newHeadsNodes != null && filterNodes.oldHeadsHashes != null)
-        {
-            newHeadsNodes.removeAll(filterNodes.oldHeadsHashes);
-        }
-        return newHeadsNodes;
-    }
-
-    protected void processBitbucketPrSync(Repository repo, boolean softSync, int auditId)
-    {
-        MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
-                BitbucketSynchronizeActivityMessage.class, //
-                BitbucketSynchronizeActivityMessageConsumer.KEY //
-                );
-        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId), softSync? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY,
-                messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
-    }
-
-    private Collection<String> getInclude(BranchFilterInfo filterNodes)
-    {
-        List<String> newNodes = extractBranchHeadsFromBranches(filterNodes.newBranches);
-        if (newNodes != null && filterNodes.oldHeadsHashes != null)
-        {
-            newNodes.removeAll(filterNodes.oldHeadsHashes);
-        }
-        return newNodes;
-    }
-
     private void updateBranches(Repository repo, List<Branch> newBranches)
     {
         branchService.updateBranches(repo, newBranches);
@@ -344,19 +231,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private void updateBranchHeads(Repository repo, List<Branch> newBranches, List<BranchHead> oldHeads)
     {
         branchService.updateBranchHeads(repo, newBranches, oldHeads);
-    }
-
-    protected BranchFilterInfo getFilterNodes(Repository repository)
-    {
-        CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                .getCommunicator(BitbucketCommunicator.BITBUCKET);
-        List<Branch> newBranches = communicator.getBranches(repository);
-        List<BranchHead> oldBranches = branchService.getListOfBranchHeads(repository);
-
-        List<String> exclude = extractBranchHeads(oldBranches);
-
-        BranchFilterInfo filter = new BranchFilterInfo(newBranches, oldBranches, exclude);
-        return filter;
     }
 
     private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
@@ -388,19 +262,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             result.add(branchHead.getHead());
         }
         return result;
-    }
-
-    private Map<String, String> asNodeToBranches(List<Branch> list)
-    {
-        Map<String, String> changesetBranch = new HashMap<String, String>();
-        for (Branch branch : list)
-        {
-                for (BranchHead branchHead : branch.getHeads())
-                {
-                    changesetBranch.put(branchHead.getHead(), branch.getName());
-                }
-        }
-        return changesetBranch;
     }
 
     @Override
@@ -446,20 +307,5 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void afterPropertiesSet() throws Exception
     {
-    }
-
-    private static class BranchFilterInfo
-    {
-        private List<Branch> newBranches;
-        private List<BranchHead> oldHeads;
-        private List<String> oldHeadsHashes;
-
-        public BranchFilterInfo(List<Branch> newBranches, List<BranchHead> oldHeads, List<String> oldHeadsHashes)
-        {
-            super();
-            this.newBranches = newBranches;
-            this.oldHeads = oldHeads;
-            this.oldHeadsHashes = oldHeadsHashes;
-        }
     }
 }

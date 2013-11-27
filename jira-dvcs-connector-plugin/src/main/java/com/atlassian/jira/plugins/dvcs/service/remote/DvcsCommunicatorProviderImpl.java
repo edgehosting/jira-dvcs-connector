@@ -2,14 +2,12 @@ package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 
+import javax.annotation.Resource;
+
 public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
 {
-    private final DvcsCommunicator[] dvcsCommunicators;
-    
-    public DvcsCommunicatorProviderImpl(CachingDvcsCommunicator... dvcsCommunicators)
-    {
-        this.dvcsCommunicators = dvcsCommunicators;
-    }
+    @Resource
+    private DvcsCommunicator[] dvcsCommunicators;
 
     /**
      * {@inheritDoc}
