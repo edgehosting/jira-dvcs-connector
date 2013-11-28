@@ -9,6 +9,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.Acc
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in github
-        new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+        new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
