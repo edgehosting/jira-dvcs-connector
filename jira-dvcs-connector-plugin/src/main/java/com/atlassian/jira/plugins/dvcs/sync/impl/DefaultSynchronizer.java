@@ -1,12 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Resource;
@@ -14,7 +10,6 @@ import javax.annotation.Resource;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.google.common.base.Throwables;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -30,9 +25,7 @@ import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -78,7 +71,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private RepositoryPullRequestDao repositoryPullRequestDao;
     
     @Resource
-    private PostponeOndemandPrSyncListener posponePrSyncHelper;
+    private PostponeOndemandPrSyncListener postponePrSyncHelper;
 
     @Resource
     private SyncAuditLogDao syncAudit;
@@ -159,7 +152,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!posponePrSyncHelper.isAfterPostponedTime())
+                if (!postponePrSyncHelper.isAfterPostponedTime())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
