@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import junit.framework.Assert;
 
@@ -25,6 +26,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.collections.Sets;
@@ -75,6 +77,9 @@ public class BitbucketCommunicatorTest
     private ChangesetCache changesetCache;
 
     private BranchService branchService;
+
+    @Mock
+    private MessagingService messagingService;
 
     private BranchDao branchDao;
     @Mock
@@ -207,13 +212,17 @@ public class BitbucketCommunicatorTest
         when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
 
         branchDao = new BranchDaoMock();
-        branchService = new BranchServiceImpl(branchDao, dvcsCommunicatorProvider);
+        branchService = new BranchServiceImpl();
+        ReflectionTestUtils.setField(branchService, "branchDao", branchDao);
+        ReflectionTestUtils.setField(branchService, "dvcsCommunicatorProvider", dvcsCommunicatorProvider);
 
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
         when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
 
-        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, branchService, changesetCache);
+        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, changesetCache);
+        ReflectionTestUtils.setField(communicator, "branchService", branchService);
+        ReflectionTestUtils.setField(communicator, "messagingService", messagingService);
 
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);

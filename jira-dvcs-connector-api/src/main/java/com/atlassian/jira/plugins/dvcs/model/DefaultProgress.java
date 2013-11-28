@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -52,6 +55,9 @@ public class DefaultProgress implements Progress
 
     @XmlTransient
     private int auditLogId;
+
+    @XmlTransient
+    private EnumSet<SynchronizationFlag> runAgain;
 
     public DefaultProgress()
     {
@@ -120,6 +126,16 @@ public class DefaultProgress implements Progress
     public void setError(String error)
     {
         this.error = error;
+    }
+
+    public EnumSet<SynchronizationFlag> getRunAgainFlags()
+    {
+        return runAgain;
+    }
+
+    public void setRunAgainFlags(final EnumSet<SynchronizationFlag> runAgain)
+    {
+        this.runAgain = runAgain;
     }
 
     @Override
