@@ -14,6 +14,7 @@ import net.java.ao.RawEntity;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryContext;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryJoin;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryOrder;
@@ -38,6 +39,11 @@ public abstract class QueryTemplate
 {
 
     /**
+     * @see #QueryTemplate(QueryHelper)
+     */
+    private final QueryHelper queryHelper;
+
+    /**
      * Entity aliases.
      */
     private final Map<Class<? extends RawEntity<?>>, String> aliases = new ConcurrentHashMap<Class<? extends RawEntity<?>>, String>();
@@ -60,8 +66,9 @@ public abstract class QueryTemplate
     /**
      * Constructor.
      */
-    public QueryTemplate()
+    public QueryTemplate(QueryHelper queryHelper)
     {
+        this.queryHelper = queryHelper;
         build();
     }
 
@@ -285,8 +292,15 @@ public abstract class QueryTemplate
         final Map<String, Object> initialParameterValues = new HashMap<String, Object>();
 
         final Query result = Query.select("ID, *");
+
         QueryContext context = new QueryContext()
         {
+
+            @Override
+            public QueryHelper getQueryHelper()
+            {
+                return queryHelper;
+            }
 
             @Override
             public void pushParameter(String parameterName)
@@ -310,7 +324,7 @@ public abstract class QueryTemplate
                     throw new RuntimeException("Each entity must be aliased. There was no alias for provided entity: " + entity);
                 }
 
-                return result;
+                return queryHelper.getAlias(result);
             }
 
             @Override
@@ -404,7 +418,8 @@ public abstract class QueryTemplate
             }
         }
         String orderClause = order.toString().trim();
-        if (!orderClause.isEmpty()) {
+        if (!orderClause.isEmpty())
+        {
             context.getQuery().order(orderClause);
         }
     }

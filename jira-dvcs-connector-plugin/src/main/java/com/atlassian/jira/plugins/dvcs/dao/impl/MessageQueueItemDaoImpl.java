@@ -110,7 +110,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public MessageQueueItemMapping[] getByMessageId(int id)
     {
-        Query query = new QueryTemplate()
+        Query query = new QueryTemplate(queryHelper)
         {
 
             @Override
@@ -130,7 +130,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public MessageQueueItemMapping getByQueueAndMessage(String queue, int messageId)
     {
-        Query query = new QueryTemplate()
+        Query query = new QueryTemplate(queryHelper)
         {
 
             @Override
@@ -154,7 +154,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public void getByTagAndState(String tag, MessageState state, final StreamCallback<MessageQueueItemMapping> stream)
     {
-        Query query = new QueryTemplate()
+        Query query = new QueryTemplate(queryHelper)
         {
 
             @Override
@@ -192,7 +192,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public void getByState(MessageState state, final StreamCallback<MessageQueueItemMapping> stream)
     {
-        Query query = new QueryTemplate()
+        Query query = new QueryTemplate(queryHelper)
         {
 
             @Override
@@ -222,7 +222,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public MessageQueueItemMapping getNextItemForProcessing(String queue, String address)
     {
-        Query query = new QueryTemplate()
+        Query query = new QueryTemplate(queryHelper)
         {
 
             @Override
