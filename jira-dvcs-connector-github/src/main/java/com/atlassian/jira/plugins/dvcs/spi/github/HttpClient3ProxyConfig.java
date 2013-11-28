@@ -84,7 +84,7 @@ public class HttpClient3ProxyConfig {
         if (StringUtils.isBlank(httpNonProxyHosts))
         {
             // checking if property was misspelt, notice there is no 's' at the end of this property
-            if (StringUtils.isBlank(System.getProperty("http.nonProxyHost")))
+            if (StringUtils.isNotBlank(System.getProperty("http.nonProxyHost")))
             {
                 log.warn("The system property http.nonProxyHost is set. You probably meant to set http.nonProxyHosts.");
             }
