@@ -55,7 +55,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             private void rotate(int repoId) 
             {
                 ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class,
-                        Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.START_DATE + " = ?" , repoId, new Date(System.currentTimeMillis() + ROTATION_PERIOD))
+                        Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.START_DATE + " < ?" , repoId, new Date(System.currentTimeMillis() - ROTATION_PERIOD))
                         );
             }
         });
