@@ -150,4 +150,5 @@ public interface RepositoryService
 
     DvcsUser getUser(Repository repository, String author, String raw_author);
 
+    List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted);
 }

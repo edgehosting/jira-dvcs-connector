@@ -22,6 +22,12 @@ public class DvcsRepositoryServiceImpl implements DvcsRepositoryService
     }
 
     @Override
+    public List<Repository> getRepositories(String dvcsType, boolean includeDeleted)
+    {
+        return repositoryService.getAllRepositories(dvcsType, includeDeleted);
+    }
+
+    @Override
     public List<Repository> getRepositories(int organizationId, boolean includeDeleted)
     {
         return repositoryService.getAllByOrganization(organizationId, includeDeleted);

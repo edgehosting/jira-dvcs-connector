@@ -187,6 +187,40 @@ public class RepositoryDaoImpl implements RepositoryDao
     }
 
     @Override
+    public List<Repository> getAllByType(final String dvcsType, final boolean includeDeleted)
+    {
+
+        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        {
+            @Override
+            public List<RepositoryMapping> doInTransaction()
+            {
+
+                Query select = Query.select()
+                        .alias(OrganizationMapping.class, "org")
+                        .alias(RepositoryMapping.class, "repo")
+                        .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID");
+
+                if (!includeDeleted)
+                {
+                    select.where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? ", dvcsType, Boolean.FALSE);
+                } else
+                {
+                    select.where("org." + OrganizationMapping.DVCS_TYPE + " = ?", dvcsType);
+                }
+
+                final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
+                return Arrays.asList(repos);
+            }
+        });
+
+        final Collection<Repository> repositories = transformRepositories(repositoryMappings);
+
+        return new ArrayList<Repository>(repositories);
+
+    }
+
+    @Override
     public boolean existsLinkedRepositories(final boolean includeDeleted)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()

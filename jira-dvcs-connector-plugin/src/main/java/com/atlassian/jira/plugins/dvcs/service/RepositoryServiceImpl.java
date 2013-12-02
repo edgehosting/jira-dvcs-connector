@@ -444,6 +444,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         return repositoryDao.getAll(includeDeleted);
     }
 
+    @Override
+    public List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted)
+    {
+        return repositoryDao.getAllByType(dvcsType, includeDeleted);
+    }
+
     /**
      * {@inheritDoc}
      */
