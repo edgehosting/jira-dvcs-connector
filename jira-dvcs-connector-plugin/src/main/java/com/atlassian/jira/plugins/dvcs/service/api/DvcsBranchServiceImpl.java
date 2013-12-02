@@ -29,6 +29,12 @@ public class DvcsBranchServiceImpl implements DvcsBranchService
     }
 
     @Override
+    public List<Branch> getBranches(Iterable<String> issueKeys, String dvcsType)
+    {
+        return ImmutableList.copyOf(branchService.getByIssueKey(issueKeys, dvcsType));
+    }
+
+    @Override
     public String getBranchUrl(Repository repository, Branch branch)
     {
         return branchService.getBranchUrl(repository, branch);

@@ -107,6 +107,12 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
+    public List<Branch> getByIssueKey(Iterable<String> issueKeys, String dvcsType)
+    {
+        return branchDao.getBranchesForIssue(issueKeys, dvcsType);
+    }
+
+    @Override
     public List<Branch> getForRepository(Repository repository)
     {
         return branchDao.getBranchesForRepository(repository.getId());
