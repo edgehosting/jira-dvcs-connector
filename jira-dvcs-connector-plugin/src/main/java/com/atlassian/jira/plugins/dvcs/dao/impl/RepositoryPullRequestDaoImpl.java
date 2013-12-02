@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
@@ -300,6 +301,24 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
                 .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), Boolean.FALSE, Boolean.TRUE);
+        return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
+    }
+
+    @Override
+    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys, final String dvcsType)
+    {
+        Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
+        if (prIds.isEmpty())
+        {
+            return Lists.newArrayList();
+        }
+        Query select = Query.select("ID, *")
+                .alias(RepositoryMapping.class, "repo")
+                .alias(RepositoryPullRequestMapping.class, "pr")
+                .alias(OrganizationMapping.class, "org")
+                .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
+                .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
+                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), dvcsType, Boolean.FALSE, Boolean.TRUE);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 

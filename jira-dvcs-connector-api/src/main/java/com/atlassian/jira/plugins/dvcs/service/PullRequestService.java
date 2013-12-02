@@ -16,4 +16,6 @@ public interface PullRequestService
     public List<PullRequest> getByIssueKeys(Iterable<String> issueKeys);
 
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource);
+
+    List<PullRequest> getByIssueKeys(Iterable<String> issueKeys, String dvcsType);
 }

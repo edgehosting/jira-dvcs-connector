@@ -63,4 +63,6 @@ public interface RepositoryPullRequestDao
     void saveParticipant(PullRequestParticipantMapping participantMapping);
 
     void createParticipant(int pullRequestId, int repositoryId, Participant participant);
+
+    List<RepositoryPullRequestMapping> getPullRequestsForIssue(Iterable<String> issueKeys, String dvcsType);
 }

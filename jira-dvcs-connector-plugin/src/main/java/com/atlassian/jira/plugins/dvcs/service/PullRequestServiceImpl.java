@@ -37,6 +37,12 @@ public class PullRequestServiceImpl implements PullRequestService
         return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys));
     }
 
+    @Override
+    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
+    {
+        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
+    }
+
     private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
     {
         List<PullRequest> pullRequests = new ArrayList<PullRequest>();
