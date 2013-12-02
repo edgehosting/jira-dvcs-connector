@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -20,7 +21,7 @@ public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
 
-    public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId)
+    public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
     {
 
         if (changesetMapping == null)
@@ -43,6 +44,15 @@ public class ChangesetTransformer
             if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
             {
                 continue;
+            }
+
+            if (dvcsType != null)
+            {
+                OrganizationMapping organizationMapping = repositoryMapping.getOrganization();
+                if (!dvcsType.equals(organizationMapping.getDvcsType()))
+                {
+                   continue;
+                }
             }
 
             if (repositories == null)
@@ -168,8 +178,6 @@ public class ChangesetTransformer
 
         return new FileData(files, fileCount);
     }
-
-
 
     private static class FileData
     {

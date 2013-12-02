@@ -48,12 +48,17 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
     {
-        return transformer.transform(changesetMapping, defaultRepositoryId);
+        return transformer.transform(changesetMapping, defaultRepositoryId, null);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping)
     {
-        return transformer.transform(changesetMapping, 0);
+        return transformer.transform(changesetMapping, 0, null);
+    }
+
+    private Changeset transform(ChangesetMapping changesetMapping, String dvcsType)
+    {
+        return transformer.transform(changesetMapping, 0, dvcsType);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
@@ -63,6 +68,22 @@ public class ChangesetDaoImpl implements ChangesetDao
         for (ChangesetMapping changesetMapping : changesetMappings)
         {
             Changeset changeset = transform(changesetMapping);
+            if (changeset != null)
+            {
+                changesets.add(changeset);
+            }
+        }
+
+        return changesets;
+    }
+
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
+    {
+        List<Changeset> changesets = new ArrayList<Changeset>();
+
+        for (ChangesetMapping changesetMapping : changesetMappings)
+        {
+            Changeset changeset = transform(changesetMapping, dvcsType);
             if (changeset != null)
             {
                 changesets.add(changeset);
@@ -321,6 +342,21 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
+        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+
+        return transform(changesetMappings);
+    }
+
+    @Override
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, final boolean newestFirst)
+    {
+        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+
+        return transform(changesetMappings, dvcsType);
+    }
+
+    private List<ChangesetMapping> getChangesetMappingsByIssueKey(Iterable<String> issueKeys, final boolean newestFirst)
+    {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);
         final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
@@ -341,7 +377,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
         });
 
-        return transform(changesetMappings);
+        return changesetMappings;
     }
 
     @Override

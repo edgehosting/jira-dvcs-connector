@@ -60,7 +60,7 @@ public class To_10_LastChangesetNodeMigrator implements ActiveObjectsUpgradeTask
                 {
                     log.error("Repository '{}' within organization id '{}' has set LAST_COMMIT_DATE, but there are 0 "
                             + "changesets associated with this repository !",
-                            repository.getName(), repository.getOrganizationId());
+                            repository.getName(), repository.getOrganization().getID());
                 }
             }
         }

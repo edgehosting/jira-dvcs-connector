@@ -25,7 +25,7 @@ public interface RepositoryMapping extends Entity
     public static final String FORK_OF_NAME = "FORK_OF_NAME";
     public static final String FORK_OF_OWNER = "FORK_OF_OWNER";
 
-    int getOrganizationId();
+    OrganizationMapping getOrganization();
     String getSlug();
     String getName();
     Date getLastCommitDate();
@@ -42,7 +42,7 @@ public interface RepositoryMapping extends Entity
     String getForkOfSlug();
     String getForkOfOwner();
 
-    void setOrganizationId(int organizationId);
+    void setOrganization(OrganizationMapping organization);
     void setSlug(String slug);
     void setName(String name);
     void setLastCommitDate(Date lastCommitDate);
