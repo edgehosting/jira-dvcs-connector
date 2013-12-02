@@ -51,6 +51,8 @@ public class RepositoryDaoTest
         MockitoAnnotations.initMocks(this);
         repositoryDao = new RepositoryDaoImpl(activeObjects);
         ReflectionTestUtils.setField(repositoryDao, "synchronizer", synchronizer);
+        when(organizationMapping.getID()).thenReturn(1);
+        when(repositoryMapping.getOrganization()).thenReturn(organizationMapping);
     }
 
 	@Test
