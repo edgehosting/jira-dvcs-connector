@@ -296,11 +296,12 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         {
             return Lists.newArrayList();
         }
+        final String whereClause = ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString();
         Query select = Query.select("ID, *")
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
-                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), Boolean.FALSE, Boolean.TRUE);
+                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, Boolean.FALSE, Boolean.TRUE);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
@@ -312,13 +313,14 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         {
             return Lists.newArrayList();
         }
+        final String whereClause = ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString();
         Query select = Query.select("ID, *")
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .alias(OrganizationMapping.class, "org")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
-                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString(), dvcsType, Boolean.FALSE, Boolean.TRUE);
+                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, dvcsType, Boolean.FALSE, Boolean.TRUE);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 

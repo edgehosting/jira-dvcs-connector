@@ -46,7 +46,7 @@ public class ChangesetTransformer
                 continue;
             }
 
-            if (dvcsType != null)
+            if (StringUtils.isEmpty(dvcsType))
             {
                 OrganizationMapping organizationMapping = repositoryMapping.getOrganization();
                 if (!dvcsType.equals(organizationMapping.getDvcsType()))
