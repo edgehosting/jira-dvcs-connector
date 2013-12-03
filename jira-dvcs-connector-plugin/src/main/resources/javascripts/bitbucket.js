@@ -97,7 +97,7 @@ function updateSyncStatus(repo) {
             var title = syncRepoIconElement.attr("data-title");
             if (repo.sync.finishTime) {
               var finishSyncDateTime = new Date(repo.sync.finishTime);
-              title = title + " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
+              title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
             }
             syncRepoIconElement.attr("title", title);
             if (repo.sync.error) {
@@ -116,7 +116,7 @@ function updateSyncStatus(repo) {
             var title = "Synchronizing...";
             if (repo.sync.startTime) {
                var startSyncDateTime = new Date(repo.sync.startTime);
-                title = title + " (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")";
+                title += " (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")";
             }
             syncRepoIconElement.attr("title", title);
             syncRepoIcon = "running";
