@@ -424,6 +424,52 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>dev-oracle</id>
+            <properties>
+                <!-- Default: Oracle properties values feel free to customize it via 
+					-Doracle.xxx=xxx -->
+                <oracle.host>localhost</oracle.host>
+                <oracle.port>1521</oracle.port>
+                <oracle.database>jira</oracle.database>
+                <oracle.username>jira</oracle.username>
+                <oracle.password>jira</oracle.password>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-jira-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <products>
+                                <product>
+                                    <id>jira</id>
+                                    <version>${jira.version}</version>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-oracle-gh-enabled-5.0.1.zip</dataPath>
+                                    <dataSources>
+                                        <dataSource>
+                                            <jndi>jdbc/JiraDS</jndi>
+                                            <url>jdbc:oracle:thin:@//${oracle.host}:${oracle.port}/xe</url>
+                                            <driver>oracle.jdbc.OracleDriver</driver>
+                                            <username>${oracle.username}</username>
+                                            <password>${oracle.password}</password>
+                                            <libArtifacts>
+                                                <libArtifact>
+                                                    <groupId>com.oracle</groupId>
+                                                    <artifactId>ojdbc14</artifactId>
+                                                    <version>10.2.0.4</version>
+                                                </libArtifact>
+                                            </libArtifacts>
+                                        </dataSource>
+                                    </dataSources>
+                                </product>
+                            </products>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <distributionManagement>
         <repository>
