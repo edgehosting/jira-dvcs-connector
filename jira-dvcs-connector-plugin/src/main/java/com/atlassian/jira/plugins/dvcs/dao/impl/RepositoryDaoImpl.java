@@ -49,10 +49,10 @@ public class RepositoryDaoImpl implements RepositoryDao
             return null;
         }
 
-        OrganizationMapping organizationMapping = repositoryMapping.getOrganization();
+        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
         log.debug("Repository transformation: [{}] ", repositoryMapping);
 
-        Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganization().getID(), null,
+        Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());

@@ -37,13 +37,14 @@ public class ChangesetDaoImpl implements ChangesetDao
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
 
     private final ActiveObjects activeObjects;
-    private final ChangesetTransformer transformer = new ChangesetTransformer();
+    private final ChangesetTransformer transformer;
     private QueryHelper queryHelper;
 
     public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;
+        this.transformer = new ChangesetTransformer(activeObjects);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)

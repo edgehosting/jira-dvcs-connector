@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -20,6 +21,12 @@ import java.util.List;
 public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
+    private final ActiveObjects activeObjects;
+
+    public ChangesetTransformer(final ActiveObjects activeObjects)
+    {
+        this.activeObjects = activeObjects;
+    }
 
     public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
     {
@@ -48,7 +55,8 @@ public class ChangesetTransformer
 
             if (!StringUtils.isEmpty(dvcsType))
             {
-                OrganizationMapping organizationMapping = repositoryMapping.getOrganization();
+                OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
+
                 if (!dvcsType.equals(organizationMapping.getDvcsType()))
                 {
                    continue;
