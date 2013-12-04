@@ -197,7 +197,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
     }
 
-    private void mtarget.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());ap(Map<String, Object> target, Repository repository, PullRequest source)
+    private void map(Map<String, Object> target, Repository repository, PullRequest source)
     {
         target.put(RepositoryPullRequestMapping.REMOTE_ID, source.getId());
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
@@ -212,7 +212,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getBase().getRef());
         target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getHead().getRef());
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
-
+        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
 
     private void map(Map<String, Object> target, RepositoryCommit source)
@@ -225,7 +225,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
     {
-        if ("opened".equalsIgnoreCase(pullRequest.getState()))
+        if ("open".equalsIgnoreCase(pullRequest.getState()))
         {
             return RepositoryPullRequestMapping.Status.OPEN;
         } else if ("closed".equalsIgnoreCase(pullRequest.getState()))
