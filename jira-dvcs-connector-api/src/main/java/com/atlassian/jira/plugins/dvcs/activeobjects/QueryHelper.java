@@ -72,6 +72,12 @@ public interface QueryHelper
     }
 
     /**
+     * @param plainAlias
+     * @return transforms plain alias into valid SQL alias
+     */
+    public String getAlias(String plainAlias);
+
+    /**
      * @param plainTableName
      * @return transforms plain table name into full SQL table name - escaped and extended by schema prefix
      */

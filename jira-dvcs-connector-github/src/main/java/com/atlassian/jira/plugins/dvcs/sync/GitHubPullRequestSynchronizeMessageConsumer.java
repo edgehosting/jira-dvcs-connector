@@ -225,7 +225,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
     {
-        if ("opened".equalsIgnoreCase(pullRequest.getState()))
+        if ("open".equalsIgnoreCase(pullRequest.getState()))
         {
             return RepositoryPullRequestMapping.Status.OPEN;
         } else if ("closed".equalsIgnoreCase(pullRequest.getState()))

@@ -21,7 +21,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {
     private static final int BIG_DATA_PAGESIZE = 200;
-    private static final int ROTATION_SIZE = 400;
+    private static final int ROTATION_PERIOD = 1000 * 60 * 60 * 24 * 7;
 
     private final ActiveObjects ao;
 
@@ -55,11 +55,8 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
             private void rotate(int repoId) 
             {
                 ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class,
-                        repoQuery(repoId)
-                        .offset(ROTATION_SIZE)
-                        .limit(ROTATION_SIZE)
-                        .q()
-                        .order(SyncAuditLogMapping.START_DATE + " ASC"));
+                        Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.START_DATE + " < ?" , repoId, new Date(System.currentTimeMillis() - ROTATION_PERIOD))
+                        );
             }
         });
     }

@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -68,6 +69,24 @@ public class QueryHelperImpl implements QueryHelper
                 throw new RuntimeException(e);
 
             }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAlias(String plainAlias)
+    {
+        init();
+        // TODO: BUG inside AO in case of ORACLE:
+        // AO does not quote aliases except of group by clause
+        // mixed quoted and unquoted aliases are problems, because oracle does automatically upper case of unquoted aliases
+        // this workaround does that all aliases in case of oracle will be upper-cased, regardless if it is quoted or not.
+        if (DatabaseType.ORACLE.equals(dataSourceProvider.getDatabaseType())) {
+            return plainAlias.toUpperCase();
+        } else {
+            return plainAlias; 
         }
     }
 
