@@ -210,7 +210,7 @@ public class DevToolsResource
             restPullRequest.setAuthor(new RestUser(user.getUsername(), user.getFullName(), null, user.getAvatar()));
             restPullRequest.setCreatedOn(pullRequest.getCreatedOn().getTime());
             restPullRequest.setTitle(pullRequest.getName());
-            restPullRequest.setId(pullRequest.getRemoteId());
+            restPullRequest.setId(pullRequest.getId());
             restPullRequest.setUrl(pullRequest.getUrl());
             restPullRequest.setUpdatedOn(pullRequest.getUpdatedOn().getTime());
             restPullRequest.setStatus(pullRequest.getStatus());
