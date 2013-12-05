@@ -110,7 +110,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest)
     {
-        RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository, remotePullRequest.getId());
+        RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository, remotePullRequest.getNumber());
         if (localPullRequest == null)
         {
             Map<String, Object> activity = new HashMap<String, Object>();
@@ -199,7 +199,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void map(Map<String, Object> target, Repository repository, PullRequest source)
     {
-        target.put(RepositoryPullRequestMapping.REMOTE_ID, source.getId());
+        target.put(RepositoryPullRequestMapping.REMOTE_ID, source.getNumber());
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
 
         target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
