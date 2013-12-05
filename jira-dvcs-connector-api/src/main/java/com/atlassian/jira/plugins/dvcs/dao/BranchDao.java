@@ -58,4 +58,6 @@ public interface BranchDao
     void removeAllBranchesInRepository(int repositoryId);
 
     List<Branch> getBranchesForRepository(int repositoryId);
+
+    List<Branch> getBranchesForIssue(Iterable<String> issueKeys, String dvcsType);
 }

@@ -50,4 +50,6 @@ public interface RepositoryDao
      * @param date last synchronization date
      */
     void setLastActivitySyncDate(Integer repositoryId, Date date);
+
+    List<Repository> getAllByType(String dvcsType, boolean includeDeleted);
 }

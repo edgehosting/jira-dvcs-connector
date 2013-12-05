@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -217,6 +218,41 @@ public class BranchDaoImpl implements BranchDao
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
                                 .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, Boolean.FALSE, Boolean.TRUE));
+
+                return Arrays.asList(mappings);
+            }
+        });
+
+        return Lists.transform(branches, new Function<BranchMapping, Branch>()
+        {
+            @Override
+            public Branch apply(BranchMapping input)
+            {
+                return new Branch(input.getID(), input.getName(), input.getRepository().getID());
+            }
+        });
+    }
+
+    @Override
+    public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys, final String dvcsType)
+    {
+        final String baseWhereClause = ActiveObjectsUtils.renderListStringsOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+
+        final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
+        {
+            @Override
+            public List<BranchMapping> doInTransaction()
+            {
+                BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
+                        Query.select("ID, *")
+                                .alias(IssueToBranchMapping.class, "mapping")
+                                .alias(BranchMapping.class, "branch")
+                                .alias(RepositoryMapping.class, "repo")
+                                .alias(OrganizationMapping.class, "org")
+                                .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
+                                .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
+                                .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
+                                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, dvcsType, Boolean.FALSE, Boolean.TRUE));
 
                 return Arrays.asList(mappings);
             }

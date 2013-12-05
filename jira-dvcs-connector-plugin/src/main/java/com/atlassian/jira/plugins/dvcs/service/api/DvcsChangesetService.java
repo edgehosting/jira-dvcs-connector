@@ -38,6 +38,15 @@ public interface DvcsChangesetService
     List<Changeset> getChangesets(Iterable<String> issueKeys);
 
     /**
+     * Find all changesets by one or more issue keys for certain dvcs type
+     *
+     * @param issueKeys the list of issue keys to find
+     * @param dvcsType the dvcs type
+     * @return list of (@link Changeset}
+     */
+    List<Changeset> getChangesets(Iterable<String> issueKeys, String dvcsType);
+
+    /**
      * Find all changesets by defining a {@link GlobalFilter}.
      * Result is ordered in date descending order (latest first), limited by maxResults
      *

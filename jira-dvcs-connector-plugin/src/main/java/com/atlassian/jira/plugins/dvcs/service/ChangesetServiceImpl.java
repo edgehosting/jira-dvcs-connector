@@ -98,6 +98,13 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst)
+    {
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, newestFirst);
+        return checkChangesetVersion(changesets);
+    }
+
+    @Override
     public String getCommitUrl(Repository repository, Changeset changeset)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());

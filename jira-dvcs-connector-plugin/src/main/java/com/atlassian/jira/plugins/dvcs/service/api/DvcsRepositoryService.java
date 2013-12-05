@@ -50,4 +50,6 @@ public interface DvcsRepositoryService
      * @return {@link DvcsUser}
      */
     DvcsUser getDvcsUser(Repository repository, String author, String rawAuthor);
+
+    List<Repository> getRepositories(String dvcsType, boolean includeDeleted);
 }

@@ -107,6 +107,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             }
             if ((lastSync == null) || (activityDate.after(lastSync)))
             {
+                lastSync = activityDate;
                 repositoryDao.setLastActivitySyncDate(repo.getId(), activityDate);
             }
 
@@ -118,7 +119,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
         if (!isLastPage)
         {
-            fireNextPage(message, payload, activityPage.getNext(), lastSync);
+            fireNextPage(message, payload, activityPage.getNext(), payload.getLastSyncDate());
         }
 
     }
