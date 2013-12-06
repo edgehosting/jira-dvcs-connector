@@ -38,11 +38,12 @@ public interface GitHubEventDAO
     void removeAll(Repository repository);
 
     /**
+     * @param repository
      * @param gitHubId
      *            {@link GitHubEvent#getId()}
      * @return resolved {@link GitHubEventMapping} by remote id
      */
-    GitHubEventMapping getByGitHubId(String gitHubId);
+    GitHubEventMapping getByGitHubId(Repository repository, String gitHubId);
 
     /**
      * @param repository

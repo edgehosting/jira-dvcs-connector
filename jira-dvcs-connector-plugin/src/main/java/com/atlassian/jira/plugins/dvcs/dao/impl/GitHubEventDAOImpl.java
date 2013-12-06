@@ -90,15 +90,17 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
      * {@inheritDoc}
      */
     @Override
-    public GitHubEventMapping getByGitHubId(String gitHubId)
+    public GitHubEventMapping getByGitHubId(Repository repository, String gitHubId)
     {
-        Query query = Query.select().where(GitHubEventMapping.GIT_HUB_ID + " = ? ", gitHubId);
+        Query query = Query.select().where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repository.getId(), gitHubId);
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
         if (founded.length > 1)
         {
             throw new RuntimeException("Multiple GitHubEvents exists with the same id: " + gitHubId);
         }
-        return founded.length == 1 ? founded[0] : null;
+        final GitHubEventMapping gitHubEventMapping = founded.length == 1 ? founded[0] : null;
+
+        return gitHubEventMapping;
     }
 
     /**
