@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -50,7 +51,7 @@ import javax.annotation.Resource;
  * @author Stanislav Dvorscak
  *
  */
-public class MessagingServiceImpl implements MessagingService
+public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
 
     private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
@@ -169,18 +170,20 @@ public class MessagingServiceImpl implements MessagingService
     /**
      * Wait until AO is fully accessible.
      */
-    private void waitForAO()
+    private boolean waitForAO()
     {
-        boolean aoInitialized = false;
+        int countOfRetry = 15;
         do
         {
             try
             {
                 LOGGER.debug("Attempting to wait for AO.");
                 activeObjects.count(MessageMapping.class);
-                aoInitialized = true;
+                LOGGER.debug("Attempting to wait for AO - DONE.");
+                return true;
             } catch (PluginException e)
             {
+                countOfRetry--;
                 try
                 {
                     Thread.sleep(5000);
@@ -189,8 +192,9 @@ public class MessagingServiceImpl implements MessagingService
                     // nothing to do
                 }
             }
-        } while (!aoInitialized);
-        LOGGER.debug("Attempting to wait for AO - DONE.");
+        } while (countOfRetry > 0 && !stop);
+        LOGGER.debug("Attempting to wait for AO - UNSUCCESSFUL.");
+        return false;
     }
 
     /**
@@ -198,6 +202,7 @@ public class MessagingServiceImpl implements MessagingService
      */
     private void initRunningToFail()
     {
+        LOGGER.debug("Setting messages in running state to fail");
         messageQueueItemDao.getByState(MessageState.RUNNING, new StreamCallback<MessageQueueItemMapping>()
         {
 
@@ -220,25 +225,17 @@ public class MessagingServiceImpl implements MessagingService
      */
     private void restartConsumers()
     {
-        new Thread(new Runnable()
+        LOGGER.debug("Restarting message consumers");
+        Set<String> addresses = new HashSet<String>();
+        for (MessageConsumer<?> consumer : consumers)
         {
+            addresses.add(consumer.getAddress().getId());
+        }
 
-            @Override
-            public void run()
-            {
-                Set<String> addresses = new HashSet<String>();
-                for (MessageConsumer<?> consumer : consumers)
-                {
-                    addresses.add(consumer.getAddress().getId());
-                }
-
-                for (String address : addresses)
-                {
-                    messageExecutor.notify(address);
-                }
-            }
-
-        }).start();
+        for (String address : addresses)
+        {
+            messageExecutor.notify(address);
+        }
     }
 
     /**
@@ -769,11 +766,21 @@ public class MessagingServiceImpl implements MessagingService
             @Override
             public void run()
             {
-                waitForAO();
-                initRunningToFail();
-                restartConsumers();
+                if (waitForAO())
+                {
+                    initRunningToFail();
+                    restartConsumers();
+                }
             }
 
         }).start();
+    }
+
+    private boolean stop = false;
+
+    @Override
+    public void destroy() throws Exception
+    {
+        stop = true;
     }
 }
