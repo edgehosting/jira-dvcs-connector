@@ -180,6 +180,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 LOGGER.debug("Attempting to wait for AO.");
                 activeObjects.count(MessageMapping.class);
                 LOGGER.debug("Attempting to wait for AO - DONE.");
+                stop = true;
                 return true;
             } catch (PluginException e)
             {
@@ -773,10 +774,10 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 }
             }
 
-        }).start();
+        }, "WaitForAO").start();
     }
 
-    private boolean stop = false;
+    private volatile boolean stop = false;
 
     @Override
     public void destroy() throws Exception
