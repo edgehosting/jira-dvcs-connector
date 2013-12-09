@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -7,6 +8,8 @@ import java.util.Arrays;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
@@ -23,6 +26,8 @@ import com.google.common.collect.Iterables;
  */
 public class QueryHelperImpl implements QueryHelper
 {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueryHelperImpl.class);
 
     /**
      * Injected {@link PluginAccessor} dependency.
@@ -58,16 +63,29 @@ public class QueryHelperImpl implements QueryHelper
     {
         if (!initialized)
         {
+            Connection connection = null;
             try
             {
                 this.schema = dataSourceProvider.getSchema();
-                this.quote = dataSourceProvider.getDataSource().getConnection().getMetaData().getIdentifierQuoteString();
+                
+                connection = dataSourceProvider.getDataSource().getConnection();
+                this.quote = connection.getMetaData().getIdentifierQuoteString();
                 initialized = true;
 
             } catch (SQLException e)
             {
                 throw new RuntimeException(e);
-
+                
+            } finally {
+                if (connection != null) {
+                    try
+                    {
+                        connection.close();
+                    } catch (SQLException e)
+                    {
+                        LOGGER.error("Unable to close connection!", e);
+                    }
+                }
             }
         }
     }
