@@ -14,7 +14,7 @@ public class AccountsConfigLifecycler implements LifecycleAware
     @Override
     public void onStart()
     {
-        configService.reload(true);
+        configService.scheduleReload();
     }
 
 }

@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.ondemand;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -60,8 +59,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
-    private volatile boolean firstAsyncReload = true;
-
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
             PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
     {
@@ -86,52 +83,58 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void reload(boolean runAsync)
+    public void scheduleReload()
     {
-        //
-        // supported only at ondemand instances
-        //
         if (!supportsIntegratedAccounts())
         {
             return;
         }
 
-        if (runAsync)
-        {
-            if (firstAsyncReload)
-            {
-                scheduleReload();
-            } else
-            {
-                executorService.submit(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        reloadInternal();
-                    }
-                });
-            }
-        } else
-        {
-            reloadInternal();
-        }
-    }
-
-    private void scheduleReload()
-    {
-        // we use the scheduler because AO is not available in LifecycleAware.onStart()
         Map<String, Object> data = Maps.newHashMap();
         data.put("bitbucketAccountsConfigService", this);
         data.put("pluginScheduler", pluginScheduler);
 
-        long randomStartTimeWithinInterval = System.currentTimeMillis() + (long) (new Random().nextDouble() * TimeUnit.HOURS.toMillis(1));
-        Date startTime = new Date(randomStartTimeWithinInterval);
-
-        pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, startTime,
+        pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
                 TimeUnit.HOURS.toMillis(1));
-        firstAsyncReload = false;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reloadAsync()
+    {
+        if (!supportsIntegratedAccounts())
+        {
+            return;
+        }
+
+        executorService.submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                reloadInternal();
+            }
+        });
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reload()
+    {
+        if (!supportsIntegratedAccounts())
+        {
+            return;
+        }
+
+        reloadInternal();
     }
 
     private void reloadInternal()

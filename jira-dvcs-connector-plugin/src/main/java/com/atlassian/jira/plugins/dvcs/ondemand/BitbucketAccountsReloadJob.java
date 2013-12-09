@@ -13,7 +13,10 @@ public class BitbucketAccountsReloadJob implements PluginJob
     {
         BitbucketAccountsConfigService accountsConfigService = (BitbucketAccountsConfigService) stringObjectMap.get("bitbucketAccountsConfigService");
         PluginScheduler pluginScheduler = (PluginScheduler) stringObjectMap.get("pluginScheduler");
-        accountsConfigService.reload(false);
+
+        // "unschedule" should happen at first, 
+        // because an error can happened after that and job will be never unscheduled
         pluginScheduler.unscheduleJob(JOB_NAME);
+        accountsConfigService.reload();
     }
 }
