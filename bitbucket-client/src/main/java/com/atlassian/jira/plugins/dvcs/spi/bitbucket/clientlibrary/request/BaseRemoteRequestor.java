@@ -240,6 +240,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
+            client.getConnectionManager().shutdown();
         }
     }
 
@@ -281,6 +282,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
+            client.getConnectionManager().shutdown();
         }
     }
 
@@ -322,7 +324,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             response.setResponse(httpResponse.getEntity().getContent());
         }
-        response.setHttpClient(client);
+
         return response;
     }
 
