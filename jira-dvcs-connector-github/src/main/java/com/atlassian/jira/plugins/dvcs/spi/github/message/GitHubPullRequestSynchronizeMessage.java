@@ -20,6 +20,25 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
     private final int pullRequestNumber;
 
     /**
+     * @see #getChangeType()
+     */
+    private final ChangeType changeType;
+
+    /**
+     * @see #getChangeType()
+     * @author Stanislav Dvorscak
+     * 
+     */
+    public static enum ChangeType
+    {
+        
+        PULL_REQUEST,
+        PULL_REQUEST_COMMENT, 
+        PULL_REQUEST_REVIEW_COMMENT, 
+
+    }
+
+    /**
      * Constructor.
      * 
      * @param progress
@@ -34,10 +53,11 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
      *            {@link #getPullRequestNumber()}
      */
     public GitHubPullRequestSynchronizeMessage(Progress progress, int syncAuditId, boolean softSync, Repository repository,
-            int pullRequestNumber)
+            int pullRequestNumber, ChangeType changeType)
     {
         super(progress, syncAuditId, softSync, repository);
         this.pullRequestNumber = pullRequestNumber;
+        this.changeType = changeType;
     }
 
     /**
@@ -46,6 +66,14 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
     public int getPullRequestNumber()
     {
         return pullRequestNumber;
+    }
+
+    /**
+     * @return type of change, which was realized on pull request.
+     */
+    public ChangeType getChangeType()
+    {
+        return changeType;
     }
 
 }

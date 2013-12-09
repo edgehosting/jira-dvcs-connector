@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage.ChangeType;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.AbstractGitHubEventProcessor;
 
 /**
@@ -44,7 +45,7 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
 
         Progress progress = synchronizer.getProgress(repository.getId());
         GitHubPullRequestSynchronizeMessage message = new GitHubPullRequestSynchronizeMessage(progress, progress.getAuditLogId(),
-                isSoftSync, repository, pullRequest.getNumber());
+                isSoftSync, repository, pullRequest.getNumber(), ChangeType.PULL_REQUEST);
         messagingService.publish(
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),
                 message, synchronizationTags);

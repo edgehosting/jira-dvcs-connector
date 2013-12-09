@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage.ChangeType;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.AbstractGitHubEventProcessor;
 
 /**
@@ -63,7 +64,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
 
         Progress progress = synchronizer.getProgress(repository.getId());
         GitHubPullRequestSynchronizeMessage message = new GitHubPullRequestSynchronizeMessage(progress, progress.getAuditLogId(),
-                isSoftSync, repository, pullRequest.getNumber());
+                isSoftSync, repository, pullRequest.getNumber(), ChangeType.PULL_REQUEST_COMMENT);
 
         messagingService.publish(
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),
