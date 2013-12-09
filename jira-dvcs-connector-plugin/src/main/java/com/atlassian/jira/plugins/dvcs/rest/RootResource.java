@@ -537,7 +537,7 @@ public class RootResource
     {
         try
         {
-            ondemandAccountConfig.reload(true);
+            ondemandAccountConfig.reloadAsync();
             return Response.ok("OK").build();
         } catch (Exception e)
         {
