@@ -331,33 +331,39 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
             int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestMapping savedPullRequest, BitbucketPullRequest remotePullRequest)
     {
-        try
+        if (activity.getSource() != null && activity.getSource().getRepository() != null)
         {
-            BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
-            Iterable<BitbucketPullRequestCommit> commitsIterator = null;
-            if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
+            try
             {
-                commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
-            } else
-            {
-                // if there is no commits link, fall back to use generated commits url
-                commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
-            }
-
-            for (BitbucketPullRequestCommit commit : commitsIterator)
-            {
-                RepositoryCommitMapping localCommit = dao.getCommitByNode(repo, localPullRequestId, commit.getHash());
-                if (localCommit == null)
+                BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
+                Iterable<BitbucketPullRequestCommit> commitsIterator = null;
+                if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
                 {
-                    localCommit = saveCommit(repo, commit, null, localPullRequestId);
-                    linkCommit(repo, localCommit, savedPullRequest);
-                } else {
-                    break;
+                    commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
+                } else
+                {
+                    // if there is no commits link, fall back to use generated commits url
+                    commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
                 }
+
+                for (BitbucketPullRequestCommit commit : commitsIterator)
+                {
+                    RepositoryCommitMapping localCommit = dao.getCommitByNode(repo, localPullRequestId, commit.getHash());
+                    if (localCommit == null)
+                    {
+                        localCommit = saveCommit(repo, commit, null, localPullRequestId);
+                        linkCommit(repo, localCommit, savedPullRequest);
+                    } else {
+                        break;
+                    }
+                }
+            } catch(BitbucketRequestException e)
+            {
+                LOGGER.warn("Could not get commits for pull request", e);
             }
-        } catch(BitbucketRequestException e)
+        } else
         {
-            LOGGER.warn("Could not get commits for pull request", e);
+            LOGGER.debug("The source repository is not available for pull request [{}]. Skipping loading commits.", remotePullRequest.getId());
         }
     }
 
