@@ -98,9 +98,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
         {
             throw new RuntimeException("Multiple GitHubEvents exists with the same id: " + gitHubId);
         }
-        final GitHubEventMapping gitHubEventMapping = founded.length == 1 ? founded[0] : null;
-
-        return gitHubEventMapping;
+        return founded.length == 1 ? founded[0] : null;
     }
 
     /**
