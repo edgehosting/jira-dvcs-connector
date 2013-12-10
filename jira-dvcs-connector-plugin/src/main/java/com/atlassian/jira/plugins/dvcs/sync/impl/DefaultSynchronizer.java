@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
     @Resource
     private RepositoryPullRequestDao repositoryPullRequestDao;
-    
+
     @Resource
     private PostponeOndemandPrSyncListener postponePrSyncHelper;
 
@@ -152,7 +153,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime())
+                if (repo.getDvcsType().startsWith(GithubCommunicator.GITHUB) && !postponePrSyncHelper.isAfterPostponedTime())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
