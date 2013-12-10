@@ -142,8 +142,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         } else
         {
             repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
-                    .getBase().getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest), remotePullRequest
-                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()), remotePullRequest.getComments());
+                    .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
+                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
         return localPullRequest;
     }
@@ -319,9 +319,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
         target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
         target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getBase().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getBase().getRef());
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getHead().getRef());
+        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
+        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
+        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
         target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
