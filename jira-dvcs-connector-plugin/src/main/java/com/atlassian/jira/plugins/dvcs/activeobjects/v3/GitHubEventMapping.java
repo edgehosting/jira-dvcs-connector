@@ -47,7 +47,6 @@ public interface GitHubEventMapping extends Entity
      * @return remote id of GithubEvent
      */
     @NotNull
-    @Unique
     String getGitHubId();
 
     /**
