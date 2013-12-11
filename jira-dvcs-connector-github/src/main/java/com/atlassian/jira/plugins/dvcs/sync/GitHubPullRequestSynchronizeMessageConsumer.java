@@ -1,25 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.eclipse.egit.github.core.Comment;
-import org.eclipse.egit.github.core.CommitComment;
-import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.PullRequestService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
@@ -33,7 +13,25 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage.ChangeType;
+import org.eclipse.egit.github.core.Comment;
+import org.eclipse.egit.github.core.CommitComment;
+import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.PullRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Resource;
 
 /**
  * Message consumer {@link GitHubPullRequestSynchronizeMessage}.
@@ -104,21 +102,12 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
                 remotePullRequest.getNumber());
 
-        if (localPullRequest == null || ChangeType.PULL_REQUEST.equals(payload.getChangeType()))
-        {
-            localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest);
-            repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest);
+        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
-        }
-
-        if (ChangeType.PULL_REQUEST_COMMENT.equals(payload.getChangeType()))
-        {
-            processPullRequestComments(repository, remotePullRequest, localPullRequest);
-        } else if (ChangeType.PULL_REQUEST_REVIEW_COMMENT.equals(payload.getChangeType()))
-        {
-            processPullRequestReviewComments(repository, remotePullRequest, localPullRequest);
-        }
+        processPullRequestComments(repository, remotePullRequest, localPullRequest);
+        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest);
     }
 
     /**
@@ -145,8 +134,25 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                     .getBase().getRef(), remotePullRequest.getHead().getRef(), resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()), remotePullRequest.getComments());
         }
+
+        Set<String> localParticipants = getLocalParticipants(localPullRequest);
+
+        addParticipant(localParticipants, repository, remotePullRequest.getUser(), localPullRequest, Participant.ROLE_PARTICIPANT);
+        addParticipant(localParticipants, repository, remotePullRequest.getMergedBy(), localPullRequest, Participant.ROLE_REVIEWER);
+        addParticipant(localParticipants, repository, remotePullRequest.getAssignee(), localPullRequest, Participant.ROLE_REVIEWER);
+
         return localPullRequest;
     }
+
+    private void addParticipant(Set<String> localParticipants, Repository repository, User user, RepositoryPullRequestMapping localPullRequest, String role)
+    {
+        if (user != null && localParticipants.add(user.getLogin()))
+        {
+            repositoryPullRequestDao.createParticipant(localPullRequest.getID(), repository.getId(), new Participant(user.getLogin(),
+                    false, role));
+        }
+    }
+
 
     private void updateLocalPullRequestCommits(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest)

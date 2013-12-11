@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventContext;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 
@@ -95,12 +96,12 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository domain, Event event, boolean isSoftSync, String[] synchronizationTags)
+    public void process(Repository domain, Event event, boolean isSoftSync, String[] synchronizationTags, GitHubEventContext context)
     {
         GitHubEventProcessor<EventPayload> resolvedEventProcessor = resolveEventProcessor(event.getPayload().getClass());
         if (resolvedEventProcessor != null)
         {
-            resolvedEventProcessor.process(domain, event, isSoftSync, synchronizationTags);
+            resolvedEventProcessor.process(domain, event, isSoftSync, synchronizationTags, context);
         }
     }
 

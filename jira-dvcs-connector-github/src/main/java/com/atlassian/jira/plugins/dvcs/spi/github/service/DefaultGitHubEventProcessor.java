@@ -18,7 +18,7 @@ public class DefaultGitHubEventProcessor implements GitHubEventProcessor<EventPa
      * {@inheritDoc}
      */
     @Override
-    public void process(Repository domain, Event event, boolean isSoftSync, String[] synchronizationTags)
+    public void process(Repository domain, Event event, boolean isSoftSync, String[] synchronizationTags, GitHubEventContext context)
     {
         // nothing to do
     }

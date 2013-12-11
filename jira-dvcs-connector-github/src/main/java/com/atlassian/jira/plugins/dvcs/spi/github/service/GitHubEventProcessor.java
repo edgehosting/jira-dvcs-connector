@@ -27,8 +27,10 @@ public interface GitHubEventProcessor<T_Payload extends EventPayload>
      *            is soft synchronization?
      * @param synchronizationTags
      *            tags of current synchronization
+     * @param context
+     *            context for GitHub event synchronization
      */
-    void process(Repository repository, Event event, boolean isSoftSync, String[] synchronizationTags);
+    void process(Repository repository, Event event, boolean isSoftSync, String[] synchronizationTags, GitHubEventContext context);
 
     /**
      * @return The type of the payload which is supported by this processor.
