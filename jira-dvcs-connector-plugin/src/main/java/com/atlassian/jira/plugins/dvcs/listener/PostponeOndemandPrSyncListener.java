@@ -21,6 +21,7 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
 
     private static final long POSTPONE_PR_SYNC_FRAME_MS = /* two days */ 2 * 24 * 60 * 60 * 1000;
     private static final String POSTPONE_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone";
+    private static final String POSTPONE_GITHUB_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone.github";
     private static final Logger log = LoggerFactory.getLogger(PostponeOndemandPrSyncListener.class);
 
     private final EventPublisher eventPublisher;
@@ -41,15 +42,15 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
         if ("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin".equals(event.getPlugin().getKey())
                 && featureManager.isEnabled(CoreFeatures.ON_DEMAND))
         {
-            String savedSetting = (String) pluginSettings.get(POSTPONE_PR_SYNC_UNTIL);
+            String savedSetting = (String) pluginSettings.get(POSTPONE_GITHUB_PR_SYNC_UNTIL);
             if (savedSetting == null)
             {
                 long postpone = randomPostponeTimeWithinTimeWindow();
                 long posponeUntil = postpone + System.currentTimeMillis();
 
-                pluginSettings.put(POSTPONE_PR_SYNC_UNTIL, posponeUntil + "");
+                pluginSettings.put(POSTPONE_GITHUB_PR_SYNC_UNTIL, posponeUntil + "");
 
-                log.info("Pull request synchronization will be postponed until " + new Date(posponeUntil));
+                log.info("GitHub pull request synchronization will be postponed until " + new Date(posponeUntil));
             }
         }
     }
@@ -63,14 +64,14 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
 
         try
         {
-            String savedSetting = (String) pluginSettings.get(POSTPONE_PR_SYNC_UNTIL);
+            String savedSetting = (String) pluginSettings.get(POSTPONE_GITHUB_PR_SYNC_UNTIL);
             long until = Long.parseLong(savedSetting);
 
             return System.currentTimeMillis() > until;
 
         } catch (NumberFormatException e)
         {
-            log.warn("Failed to get expected setting property: " + POSTPONE_PR_SYNC_UNTIL + ". " + e.getMessage());
+            log.warn("Failed to get expected setting property: " + POSTPONE_GITHUB_PR_SYNC_UNTIL + ". " + e.getMessage());
             return false;
         }
 

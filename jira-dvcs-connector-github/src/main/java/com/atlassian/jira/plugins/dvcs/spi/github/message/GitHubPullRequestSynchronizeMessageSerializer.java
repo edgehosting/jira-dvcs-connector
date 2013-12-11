@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage.ChangeType;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -37,12 +38,14 @@ public class GitHubPullRequestSynchronizeMessageSerializer extends AbstractMessa
     protected void serializeInternal(JSONObject json, GitHubPullRequestSynchronizeMessage payload) throws Exception
     {
         json.put("pullRequestNumber", payload.getPullRequestNumber());
+        json.put("changeType", payload.getChangeType());
     }
 
     @Override
     protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json) throws Exception
     {
-        return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"));
+        return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"), ChangeType.valueOf(json
+                .getString("changeType")));
     }
 
 }

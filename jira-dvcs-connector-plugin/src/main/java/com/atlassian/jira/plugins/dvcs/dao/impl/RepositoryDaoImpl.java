@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.collect.Lists;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -125,28 +126,20 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
     {
-        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        Query query = Query.select();
+        if (includeDeleted)
         {
-            @Override
-            public List<RepositoryMapping> doInTransaction()
-            {
-                Query query = Query.select();
-                if (includeDeleted)
-                {
-                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                } else
-                {
-                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
-                            Boolean.FALSE);
-                }
-                query.order(RepositoryMapping.NAME);
+            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+        } else
+        {
+            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
+                    Boolean.FALSE);
+        }
+        query.order(RepositoryMapping.NAME);
 
-                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
-                return Arrays.asList(rms);
-            }
-        });
+        final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
 
-        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer()
+        return (List<Repository>) CollectionUtils.collect(Arrays.asList(rms), new Transformer()
         {
 
             @Override
@@ -162,25 +155,40 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public List<Repository> getAll(final boolean includeDeleted)
     {
-
-        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        Query select = Query.select();
+        if (!includeDeleted)
         {
-            @Override
-            public List<RepositoryMapping> doInTransaction()
-            {
-                Query select = Query.select();
-                if (!includeDeleted)
-                {
-                    select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
-                }
-                select.order(RepositoryMapping.NAME);
+            select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
+        }
+        select.order(RepositoryMapping.NAME);
 
-                final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
-                return Arrays.asList(repos);
-            }
-        });
+        final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
 
-        final Collection<Repository> repositories = transformRepositories(repositoryMappings);
+        final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
+
+        return new ArrayList<Repository>(repositories);
+
+    }
+
+    @Override
+    public List<Repository> getAllByType(final String dvcsType, final boolean includeDeleted)
+    {
+        Query select = Query.select()
+                .alias(OrganizationMapping.class, "org")
+                .alias(RepositoryMapping.class, "repo")
+                .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID");
+
+        if (!includeDeleted)
+        {
+            select.where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? ", dvcsType, Boolean.FALSE);
+        } else
+        {
+            select.where("org." + OrganizationMapping.DVCS_TYPE + " = ?", dvcsType);
+        }
+
+        final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
+
+        final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
 
@@ -189,23 +197,16 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public boolean existsLinkedRepositories(final boolean includeDeleted)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
+        Query query = Query.select();
+        if (includeDeleted)
         {
-            @Override
-            public Boolean doInTransaction()
-            {
-                Query query = Query.select();
-                if (includeDeleted)
-                {
-                    query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
-                } else
-                {
-                    query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
-                }
+            query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
+        } else
+        {
+            query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
+        }
 
-                return activeObjects.count(RepositoryMapping.class, query) > 0;
-            }
-        });
+        return activeObjects.count(RepositoryMapping.class, query) > 0;
     }
 
     /**
@@ -323,18 +324,6 @@ public class RepositoryDaoImpl implements RepositoryDao
     public void remove(int repositoryId)
     {
         activeObjects.delete(activeObjects.get(RepositoryMapping.class, repositoryId));
-    }
-
-    private OrganizationMapping getOrganizationMapping(final int organizationId)
-    {
-        return activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
-        {
-            @Override
-            public OrganizationMapping doInTransaction()
-            {
-                return activeObjects.get(OrganizationMapping.class, organizationId);
-            }
-        });
     }
 
     @Override

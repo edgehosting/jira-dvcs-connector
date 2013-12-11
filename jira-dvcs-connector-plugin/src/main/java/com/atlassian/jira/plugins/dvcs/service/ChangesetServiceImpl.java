@@ -19,20 +19,25 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Sets;
 
+import javax.annotation.Resource;
+
 public class ChangesetServiceImpl implements ChangesetService
 {
     
     private final ConcurrencyService concurrencyService;
-    private final ChangesetDao changesetDao;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private final RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao, DvcsCommunicatorProvider dvcsCommunicatorProvider, RepositoryDao repositoryDao)
+    private final ChangesetDao changesetDao;
+
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    @Resource
+    private RepositoryDao repositoryDao;
+
+    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao)
     {
         this.concurrencyService = concurrencyService;
         this.changesetDao = changesetDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.repositoryDao = repositoryDao;
     }
 
     @Override
@@ -87,6 +92,13 @@ public class ChangesetServiceImpl implements ChangesetService
 
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst)
+    {
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, newestFirst);
+        return checkChangesetVersion(changesets);
+    }
+
+    @Override
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst)
     {
         List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, newestFirst);
         return checkChangesetVersion(changesets);

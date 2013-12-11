@@ -6,6 +6,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -36,6 +37,9 @@ public class BaseRemoteRequestorTest
     @Mock
     private HttpClient httpClient;
 
+    @Mock
+    private ClientConnectionManager connectionManager;
+
     /**
      * Captures performed requests.
      */
@@ -65,6 +69,7 @@ public class BaseRemoteRequestorTest
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         StatusLine statusLine = Mockito.mock(StatusLine.class);
 
+        Mockito.doReturn(connectionManager).when(httpClient).getConnectionManager();
         Mockito.doReturn(httpResponse).when(httpClient).execute(Mockito.<HttpUriRequest> any());
         Mockito.doReturn(new BasicHttpParams()).when(httpClient).getParams();
         Mockito.doReturn(statusLine).when(httpResponse).getStatusLine();

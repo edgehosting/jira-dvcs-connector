@@ -23,6 +23,12 @@ public class DvcsPullRequestServiceImpl implements DvcsPullRequestService
     }
 
     @Override
+    public List<PullRequest> getPullRequests(final Iterable<String> issueKeys, final String dvcsType)
+    {
+        return ImmutableList.copyOf(pullRequestService.getByIssueKeys(issueKeys, dvcsType));
+    }
+
+    @Override
     public String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource)
     {
         return pullRequestService.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);

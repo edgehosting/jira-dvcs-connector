@@ -19,6 +19,8 @@ public enum SynchronizationFlag
     /**
      * Performs pull request synchronization.
      */
-    SYNC_PULL_REQUESTS //
+    SYNC_PULL_REQUESTS, //
+
+    WEBHOOK_SYNC
 
 }

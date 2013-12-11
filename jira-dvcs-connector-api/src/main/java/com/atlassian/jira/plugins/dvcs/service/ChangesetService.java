@@ -40,6 +40,8 @@ public interface ChangesetService
      */
     List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst);
 
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
+
     String getCommitUrl(Repository repository, Changeset changeset);
 
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);

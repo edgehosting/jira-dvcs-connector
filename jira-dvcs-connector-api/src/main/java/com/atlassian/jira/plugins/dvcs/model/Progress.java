@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -112,4 +115,8 @@ public interface Progress
     void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors);
 
     void setError(String error);
+
+    EnumSet<SynchronizationFlag> getRunAgainFlags();
+
+    void setRunAgainFlags(EnumSet<SynchronizationFlag> flags);
 }

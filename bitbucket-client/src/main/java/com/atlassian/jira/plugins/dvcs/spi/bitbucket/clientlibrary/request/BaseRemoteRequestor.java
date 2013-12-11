@@ -363,7 +363,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             response.setResponse(httpResponse.getEntity().getContent());
         }
-        response.setHttpClient(client);
         return response;
     }
 

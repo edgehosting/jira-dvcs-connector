@@ -5,6 +5,8 @@ import java.util.Map;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
+
 /**
  * Holds context, used during {@link Query} building.
  * 
@@ -13,6 +15,11 @@ import net.java.ao.RawEntity;
  */
 public interface QueryContext
 {
+
+    /**
+     * @return Provides access to {@link QueryHelper} service.
+     */
+    QueryHelper getQueryHelper();
 
     /**
      * @return Current query.

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +92,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private SyncAuditLogDao syncAuditDao;
+
+    @Resource
+    private GitHubEventService gitHubEventService;
 
     /**
      * {@inheritDoc}
@@ -440,6 +444,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         return repositoryDao.getAll(includeDeleted);
     }
 
+    @Override
+    public List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted)
+    {
+        return repositoryDao.getAllByType(dvcsType, includeDeleted);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -592,6 +602,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // delete repository record itself
         repositoryDao.remove(repository.getId());
         // remove pull requests things
+        gitHubEventService.removeAll(repository);
         repositoryPullRequestDao.removeAll(repository);
         // remove sync logs
         syncAuditDao.removeAllForRepo(repository.getId());

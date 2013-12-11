@@ -33,7 +33,7 @@ public class PullRequestTransformer
 
         Repository repository = repositoryService.get(pullRequestMapping.getToRepositoryId());
 
-        final PullRequest pullRequest = new PullRequest(pullRequestMapping.getToRepositoryId());
+        final PullRequest pullRequest = new PullRequest(pullRequestMapping.getID());
         pullRequest.setRemoteId(pullRequestMapping.getRemoteId());
         pullRequest.setRepositoryId(pullRequestMapping.getToRepositoryId());
         pullRequest.setName(pullRequestMapping.getName());

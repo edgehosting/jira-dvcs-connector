@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -65,6 +66,9 @@ public class RepositoryServiceTest
 
 	@Mock
 	private SyncAuditLogDao syncAudit;
+
+    @Mock
+    private GitHubEventService gitHubEventService;
 
 	// tested object
 	//private RepositoryService repositoryService;

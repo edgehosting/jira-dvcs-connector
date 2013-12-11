@@ -59,8 +59,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
-    private volatile boolean firstAsyncReload = true;
-
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
             PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
     {
@@ -85,43 +83,58 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void reload(boolean runAsync)
+    public void scheduleReload()
     {
-        //
-        // supported only at ondemand instances
-        //
         if (!supportsIntegratedAccounts())
         {
             return;
         }
 
-        if (runAsync)
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("bitbucketAccountsConfigService", this);
+        data.put("pluginScheduler", pluginScheduler);
+
+        pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
+                TimeUnit.HOURS.toMillis(1));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reloadAsync()
+    {
+        if (!supportsIntegratedAccounts())
         {
-            if (firstAsyncReload)
-            {
-                // we use the scheduler because AO is not available in LifecycleAware.onStart()
-                Map<String, Object> data = Maps.newHashMap();
-                data.put("bitbucketAccountsConfigService", this);
-                data.put("pluginScheduler", pluginScheduler);
-                pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
-                        TimeUnit.HOURS.toMillis(1));
-                firstAsyncReload = false;
-            } else
-            {
-                executorService.submit(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        reloadInternal();
-                    }
-                });
-            }
-        } else
-        {
-            reloadInternal();
+            return;
         }
+
+        executorService.submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                reloadInternal();
+            }
+        });
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reload()
+    {
+        if (!supportsIntegratedAccounts())
+        {
+            return;
+        }
+
+        reloadInternal();
     }
 
     private void reloadInternal()

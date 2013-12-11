@@ -4,6 +4,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +14,20 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +68,8 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 
+import javax.annotation.Resource;
+
 public class BitbucketCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
@@ -65,19 +82,21 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
-    private final BranchService branchService;
+    @Resource
+    private BranchService branchService;
 
     private final ChangesetCache changesetCache;
 
+    @Resource
+    private MessagingService messagingService;
+
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
             PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            BranchService branchService,
             ChangesetCache changesetCache)
    {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.branchService = branchService;
         this.changesetCache = changesetCache;
     }
 
@@ -382,39 +401,54 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+
         try
         {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
-
-            if (!hookDoesExist(repository, postCommitUrl, remoteClient)) {
+            if (!hookDoesExist(repository, postCommitUrl, remoteClient, ServiceRemoteRestpoint.SERVICE_TYPE_POST)) {
 	            remoteClient.getServicesRest().addPOSTService(repository.getOrgName(), // owner
 	                    repository.getSlug(), postCommitUrl);
             }
-
         } catch (BitbucketRequestException e)
         {
             throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook", e);
         }
+        try
+        {
+            if (!hookDoesExist(repository, postCommitUrl, remoteClient, ServiceRemoteRestpoint.SERVICE_TYPE_PULL_REQUEST_POST)) {
+	            remoteClient.getServicesRest().addPullRequestPOSTService(repository.getOrgName(), // owner
+	                    repository.getSlug(), postCommitUrl);
+            }
+
+
+        } catch (BitbucketRequestException e)
+        {
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add pull request postcommit hook", e);
+        }
     }
 
 	private boolean hookDoesExist(Repository repository, String postCommitUrl,
-            BitbucketRemoteClient remoteClient)
+            BitbucketRemoteClient remoteClient, String type)
     {
 	    List<BitbucketServiceEnvelope> services = remoteClient.getServicesRest().getAllServices(
 	            repository.getOrgName(), // owner
 	            repository.getSlug());
 	    for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
 	    {
-	        for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
-	        {
-	            boolean fieldNameIsUrl = serviceField.getName().equals("URL");
-	            boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
+            String serviceType = bitbucketServiceEnvelope.getService().getType();
+            if (type.equals(serviceType))
+            {
+                for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
+                {
+                    boolean fieldNameIsUrl = serviceField.getName().equals("URL");
+                    boolean fieldValueIsRequiredPostCommitUrl = serviceField.getValue().equals(postCommitUrl);
 
-	            if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
-	            {
-	                return true;
-	            }
-	        }
+                    if (fieldNameIsUrl && fieldValueIsRequiredPostCommitUrl)
+                    {
+                        return true;
+                    }
+                }
+            }
 	    }
 	    return false;
     }
@@ -611,9 +645,144 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
+    @Override
+    public void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId)
+    {
+        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+        if (changestesSync)
+        {
+            // sync csets
+            BranchFilterInfo filterNodes = getFilterNodes(repo);
+            processBitbucketCsetSync(repo, softSync, filterNodes, auditId);
+
+            branchService.updateBranchHeads(repo, filterNodes.newBranches, filterNodes.oldHeads);
+            branchService.updateBranches(repo, filterNodes.newBranches);
+        }
+        // sync pull requests
+        if (pullRequestSync)
+        {
+            processBitbucketPrSync(repo, softSync, auditId);
+        }
+    }
+
+    protected BranchFilterInfo getFilterNodes(Repository repository)
+    {
+        List<Branch> newBranches = getBranches(repository);
+        List<BranchHead> oldBranches = branchService.getListOfBranchHeads(repository);
+
+        List<String> exclude = extractBranchHeads(oldBranches);
+
+        BranchFilterInfo filter = new BranchFilterInfo(newBranches, oldBranches, exclude);
+        return filter;
+    }
+
     public static String getApiUrl(String hostUrl)
     {
         return hostUrl + "/!api/1.0";
     }
 
+
+    private static class BranchFilterInfo
+    {
+        private List<Branch> newBranches;
+        private List<BranchHead> oldHeads;
+        private List<String> oldHeadsHashes;
+
+        public BranchFilterInfo(List<Branch> newBranches, List<BranchHead> oldHeads, List<String> oldHeadsHashes)
+        {
+            super();
+            this.newBranches = newBranches;
+            this.oldHeads = oldHeads;
+            this.oldHeadsHashes = oldHeadsHashes;
+        }
+    }
+
+    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId)
+    {
+        List<Branch> newBranches = filterNodes.newBranches;
+
+        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
+        {
+            log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
+            Date synchronizationStartedAt = new Date();
+            for (Branch branch : newBranches)
+            {
+                for (BranchHead branchHead : branch.getHeads())
+                {
+                    OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
+                            branchHead.getName(), branchHead.getHead(), //
+                            synchronizationStartedAt, //
+                            null, softSync, auditId);
+                    MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
+                            OldBitbucketSynchronizeCsetMsg.class, //
+                            OldBitbucketSynchronizeCsetMsgConsumer.KEY //
+                    );
+                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
+                }
+            }
+        } else
+        {
+            if (CollectionUtils.isEmpty(getInclude(filterNodes))) {
+                log.debug("No new changesets detected for repository [{}].", repository.getSlug());
+                return;
+            }
+            MessageAddress<BitbucketSynchronizeChangesetMessage> key = messagingService.get(
+                    BitbucketSynchronizeChangesetMessage.class,
+                    BitbucketSynchronizeChangesetMessageConsumer.KEY
+            );
+            Date synchronizationStartedAt = new Date();
+
+            BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
+                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newBranches), softSync, auditId);
+
+            messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
+        }
+    }
+
+    private List<String> createInclude(BranchFilterInfo filterNodes)
+    {
+        List<String> newHeadsNodes = extractBranchHeadsFromBranches(filterNodes.newBranches);
+        if (newHeadsNodes != null && filterNodes.oldHeadsHashes != null)
+        {
+            newHeadsNodes.removeAll(filterNodes.oldHeadsHashes);
+        }
+        return newHeadsNodes;
+    }
+
+    protected void processBitbucketPrSync(Repository repo, boolean softSync, int auditId)
+    {
+        MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
+                BitbucketSynchronizeActivityMessage.class, //
+                BitbucketSynchronizeActivityMessageConsumer.KEY //
+        );
+        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId), softSync? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY,
+                messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+    }
+
+    private Collection<String> getInclude(BranchFilterInfo filterNodes)
+    {
+        List<String> newNodes = extractBranchHeadsFromBranches(filterNodes.newBranches);
+        if (newNodes != null && filterNodes.oldHeadsHashes != null)
+        {
+            newNodes.removeAll(filterNodes.oldHeadsHashes);
+        }
+        return newNodes;
+    }
+
+
+    private Map<String, String> asNodeToBranches(List<Branch> list)
+    {
+        Map<String, String> changesetBranch = new HashMap<String, String>();
+        for (Branch branch : list)
+        {
+            for (BranchHead branchHead : branch.getHeads())
+            {
+                changesetBranch.put(branchHead.getHead(), branch.getName());
+            }
+        }
+        return changesetBranch;
+    }
 }

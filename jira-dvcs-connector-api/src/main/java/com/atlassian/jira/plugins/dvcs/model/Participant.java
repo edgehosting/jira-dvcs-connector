@@ -2,6 +2,10 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 public class Participant
 {
+    
+    public static final String ROLE_PARTICIPANT = "PARTICIPANT";
+    public static final String ROLE_REVIEWER = "REVIEWER";
+    
     private String username;
     private boolean approved;
     private String role;

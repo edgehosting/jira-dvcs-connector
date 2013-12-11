@@ -100,7 +100,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
                             // all previous records was already proceed - we can stop events' iterating
                             return Boolean.TRUE;
 
-                        } else if (gitHubEventDAO.getByGitHubId(event.getId()) != null)
+                        } else if (gitHubEventDAO.getByGitHubId(repository, event.getId()) != null)
                         {
                             // maybe partial synchronization, and there can exist remaining events which was fired at the same time
                             // or save point was not marked and there can still exists entries which was not already proceed
@@ -128,7 +128,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
         // marks last event as a save point - because all previous records was fully proceed
         if (lastProceedEventGitHubId != null)
         {
-            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(lastProceedEventGitHubId));
+            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, lastProceedEventGitHubId));
         }
     }
 

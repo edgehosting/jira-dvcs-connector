@@ -1,32 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import javax.annotation.Resource;
 
 public class BranchServiceImpl implements BranchService
 {
+    @Resource
+    private BranchDao branchDao;
 
-    private final BranchDao branchDao;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-
-    public BranchServiceImpl(BranchDao branchDao, DvcsCommunicatorProvider dvcsCommunicatorProvider)
-    {
-        this.branchDao = branchDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-    }
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     @Override
     public void removeAllBranchesInRepository(int repositoryId)
@@ -111,6 +104,12 @@ public class BranchServiceImpl implements BranchService
     public List<Branch> getByIssueKey(Iterable<String> issueKeys)
     {
         return branchDao.getBranchesForIssue(issueKeys);
+    }
+
+    @Override
+    public List<Branch> getByIssueKey(Iterable<String> issueKeys, String dvcsType)
+    {
+        return branchDao.getBranchesForIssue(issueKeys, dvcsType);
     }
 
     @Override

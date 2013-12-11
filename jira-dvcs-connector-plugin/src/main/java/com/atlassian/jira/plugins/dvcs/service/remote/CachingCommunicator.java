@@ -1,12 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -176,6 +178,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
     {
         return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
+    }
+
+    @Override
+    public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
+    {
+        delegate.startSynchronisation(repo, flags, auditId);
     }
 
     @Override

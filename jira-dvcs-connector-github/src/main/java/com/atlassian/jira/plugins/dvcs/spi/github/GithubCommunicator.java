@@ -9,6 +9,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,7 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -54,17 +64,36 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.google.common.collect.Iterators;
 
+import javax.annotation.Resource;
+
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
 
-    private final ChangesetCache changesetCache;
+    @Resource
+    private  MessagingService messagingService;
+
+    @Resource
+    private  BranchService branchService;
+
+    @Resource
+    private  ChangesetCache changesetCache;
+
+    /**
+     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
+     */
+    @Resource
+    private GitHubEventService gitHubEventService;
+
+    @Resource
+    private FeatureManager featureManager;
+
     protected final GithubClientProvider githubClientProvider;
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     protected final OAuthStore oAuthStore;
-    
+
     public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
             @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
@@ -505,6 +534,43 @@ public class GithubCommunicator implements DvcsCommunicator
                 getRef(sourceSlug, sourceBranch),
                 getRef(destinationSlug, destinationBranch)
                 );
+    }
+
+    @Override
+    public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
+    {
+        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+        String[] synchronizationTags = new String[] {messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId)};
+        if (changestesSync)
+        {
+            Date synchronizationStartedAt = new Date();
+            List<Branch> branches = getBranches(repo);
+            for (Branch branch : branches)
+            {
+                for (BranchHead branchHead : branch.getHeads())
+                {
+                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
+                            branch.getName(), branchHead.getHead(), //
+                            synchronizationStartedAt, //
+                            null, softSync, auditId);
+                    MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
+                            SynchronizeChangesetMessage.class, //
+                            GithubSynchronizeChangesetMessageConsumer.ADDRESS //
+                    );
+                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+                }
+            }
+            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
+            branchService.updateBranchHeads(repo, branches, oldBranchHeads);
+            branchService.updateBranches(repo, branches);
+        }
+        if (pullRequestSync)
+        {
+            gitHubEventService.synchronize(repo, softSync, synchronizationTags);
+        }
     }
 
     private String getRef(String slug, String branch)

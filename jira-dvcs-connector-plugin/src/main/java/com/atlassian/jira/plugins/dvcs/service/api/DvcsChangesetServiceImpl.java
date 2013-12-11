@@ -32,6 +32,12 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     }
 
     @Override
+    public List<Changeset> getChangesets(Iterable<String> issueKeys, String dvcsType)
+    {
+        return ImmutableList.copyOf(changesetService.getByIssueKey(issueKeys, dvcsType, false));
+    }
+
+    @Override
     public List<Changeset> getChangesets(int maxResults, GlobalFilter globalFilter)
     {
         return ImmutableList.copyOf(changesetService.getLatestChangesets(maxResults, globalFilter));
