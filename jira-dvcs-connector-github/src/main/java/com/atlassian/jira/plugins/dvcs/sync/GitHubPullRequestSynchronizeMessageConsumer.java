@@ -1,13 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
@@ -64,10 +62,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     private RepositoryPullRequestDao repositoryPullRequestDao;
 
     /**
-     * Injected {@link RepositoryService} dependency.
+     * Injected {@link com.atlassian.jira.plugins.dvcs.service.PullRequestService} dependency.
      */
     @Resource
-    private RepositoryService repositoryService;
+    private com.atlassian.jira.plugins.dvcs.service.PullRequestService pullRequestService;
 
     /**
      * Injected {@link GithubClientProvider} dependency.
@@ -102,12 +100,16 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
                 remotePullRequest.getNumber());
 
-        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest);
+        Map<String, Participant> participantIndex = new HashMap<String,Participant>();
+
+        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
-        processPullRequestComments(repository, remotePullRequest, localPullRequest);
-        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest);
+        processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
+        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
+
+        pullRequestService.updatePulRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
     }
 
     /**
@@ -121,7 +123,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      * @return created/updated local pull request
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest)
+            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
     {
         if (localPullRequest == null)
         {
@@ -135,24 +137,25 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getBase().getRepo()), remotePullRequest.getComments());
         }
 
-        Set<String> localParticipants = getLocalParticipants(localPullRequest);
-
-        addParticipant(localParticipants, repository, remotePullRequest.getUser(), localPullRequest, Participant.ROLE_PARTICIPANT);
-        addParticipant(localParticipants, repository, remotePullRequest.getMergedBy(), localPullRequest, Participant.ROLE_REVIEWER);
-        addParticipant(localParticipants, repository, remotePullRequest.getAssignee(), localPullRequest, Participant.ROLE_REVIEWER);
+        addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
+        addParticipant(participantIndex, remotePullRequest.getMergedBy(), Participant.ROLE_REVIEWER);
+        addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
         return localPullRequest;
     }
 
-    private void addParticipant(Set<String> localParticipants, Repository repository, User user, RepositoryPullRequestMapping localPullRequest, String role)
+    private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
     {
-        if (user != null && localParticipants.add(user.getLogin()))
+        if (user != null)
         {
-            repositoryPullRequestDao.createParticipant(localPullRequest.getID(), repository.getId(), new Participant(user.getLogin(),
-                    false, role));
+            Participant participant = participantIndex.get(user.getLogin());
+
+            if (participant == null)
+            {
+                participantIndex.put(user.getLogin(), new Participant(user.getLogin(), false, role));
+            }
         }
     }
-
 
     private void updateLocalPullRequestCommits(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest)
@@ -234,7 +237,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      * @param localPullRequest
      */
     private void processPullRequestComments(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest)
+            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
     {
         updateCommentsCount(remotePullRequest, localPullRequest);
 
@@ -249,14 +252,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             throw new RuntimeException(e);
         }
 
-        Set<String> localParticipants = getLocalParticipants(localPullRequest);
         for (Comment comment : pullRequestComments)
         {
-            if (localParticipants.add(comment.getUser().getLogin()))
-            {
-                repositoryPullRequestDao.createParticipant(localPullRequest.getID(), repository.getId(), new Participant(comment.getUser()
-                        .getLogin(), false, Participant.ROLE_PARTICIPANT));
-            }
+            addParticipant(participantIndex, comment.getUser(), Participant.ROLE_PARTICIPANT);
         }
     }
 
@@ -268,7 +266,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      * @param localPullRequest
      */
     private void processPullRequestReviewComments(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest)
+            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
     {
         updateCommentsCount(remotePullRequest, localPullRequest);
 
@@ -283,14 +281,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             throw new RuntimeException(e);
         }
 
-        Set<String> localParticipants = getLocalParticipants(localPullRequest);
         for (CommitComment comment : pullRequestReviewComments)
         {
-            if (localParticipants.add(comment.getUser().getLogin()))
-            {
-                repositoryPullRequestDao.createParticipant(localPullRequest.getID(), repository.getId(), new Participant(comment.getUser()
-                        .getLogin(), false, Participant.ROLE_PARTICIPANT));
-            }
+            addParticipant(participantIndex, comment.getUser(), Participant.ROLE_PARTICIPANT);
         }
     }
 
@@ -302,16 +295,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 localPullRequest.getSourceBranch(), localPullRequest.getDestinationBranch(),
                 RepositoryPullRequestMapping.Status.valueOf(localPullRequest.getLastStatus()), localPullRequest.getUpdatedOn(),
                 localPullRequest.getSourceRepo(), commentsCount);
-    }
-
-    private Set<String> getLocalParticipants(RepositoryPullRequestMapping localPullRequest)
-    {
-        Set<String> participants = new HashSet<String>();
-        for (PullRequestParticipantMapping participant : repositoryPullRequestDao.getParticipants(localPullRequest.getID()))
-        {
-            participants.add(participant.getUsername());
-        }
-        return participants;
     }
 
     private void map(Map<String, Object> target, Repository repository, PullRequest source)
