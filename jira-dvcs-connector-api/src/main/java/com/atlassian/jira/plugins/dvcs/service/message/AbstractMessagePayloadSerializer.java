@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -35,6 +37,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             json.put("repository", payload.getRepository().getId());
             json.put("softSync", payload.isSoftSync());
+            json.put("version", 1);
             //
             serializeInternal(json, payload);
             //
@@ -55,7 +58,8 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         {
             JSONObject jsoned = new JSONObject(message.getPayload());
 
-            P result = deserializeInternal(jsoned);
+            int version = jsoned.optInt("version", 0);
+            P result = deserializeInternal(jsoned, version);
             //
             BaseProgressEnabledMessage deserialized = (BaseProgressEnabledMessage) result;
 
@@ -99,11 +103,30 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
     }
 
     protected abstract void serializeInternal(JSONObject json, P payload) throws Exception;
-    protected abstract P deserializeInternal(JSONObject json) throws Exception;
+    protected abstract P deserializeInternal(JSONObject json, int version) throws Exception;
 
     protected final DateFormat getDateFormat()
     {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    }
+
+    protected final Date parseDate(JSONObject json, String dateElement, int version) throws ParseException
+    {
+        Date date = null;
+        if (version == 0)
+        {
+            String dateStringOrNull = json.optString(dateElement);
+            if (StringUtils.isNotBlank(dateStringOrNull))
+            {
+                date = getDateFormat().parse(dateStringOrNull);
+            }
+
+        } else if (version > 0)
+        {
+           date = new Date(json.optLong(dateElement));
+        }
+
+        return date;
     }
 
     public static class MessageDeserializationException extends RuntimeException

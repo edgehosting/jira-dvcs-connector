@@ -79,7 +79,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
 
-        Date lastSync = payload.getLastSyncDate();
+        Date lastSync = repo.getActivityLastSync();
 
         BitbucketClientBuilder bitbucketClientBuilder = bitbucketClientBuilderFactory.forRepository(repo);
         if (payload.getPageNum() == 1)
@@ -90,11 +90,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
         activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
-                lastSync);
+                payload.getLastSyncDate());
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(infos);
-
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
@@ -105,7 +104,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 Log.info("Date for the activity could not be found.");
                 continue;
             }
-            if ((lastSync == null) || (activityDate.after(lastSync)))
+            if ((lastSync == null || activityDate.after(lastSync)))
             {
                 lastSync = activityDate;
                 repositoryDao.setLastActivitySyncDate(repo.getId(), activityDate);

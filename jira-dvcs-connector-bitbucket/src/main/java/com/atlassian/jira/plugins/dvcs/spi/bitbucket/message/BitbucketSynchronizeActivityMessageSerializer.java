@@ -28,12 +28,12 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         json.put("processedPullRequestsLocal", payload.getProcessedPullRequestsLocal());
         if (payload.getLastSyncDate() != null)
         {
-            json.put("lastSyncDate", getDateFormat().format(payload.getLastSyncDate()));
+            json.put("lastSyncDate", payload.getLastSyncDate().getTime());
         }
     }
 
     @Override
-    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json) throws Exception
+    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
         Set<Integer> processedPullRequests;
         Set<Integer> processedPullRequestsLocal;
@@ -43,11 +43,7 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         page = json.optInt("page");
         processedPullRequests = asSet(json.optJSONArray("processedPullRequests"));
         processedPullRequestsLocal = asSet(json.optJSONArray("processedPullRequestsLocal"));
-        String lastSyncOrNull = json.optString("lastSyncDate");
-        if (StringUtils.isNotBlank(lastSyncOrNull))
-        {
-            lastSyncDate = getDateFormat().parse(lastSyncOrNull);
-        }
+         lastSyncDate = parseDate(json, "lastSyncDate", version);
 
         return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0);
     }
