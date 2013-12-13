@@ -260,18 +260,21 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
+                    if (consumer.shouldDiscard(message.getId(), message.getRetriesCount(), null, message.getTags()))
+                    {
+                       discard(message, null);
+                    }
                     throw e;
                 }
 
                 if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags()))
                 {
                     consumer.onReceive(message, payload);
+                    messagingService.ok(consumer, message);
                 } else
                 {
-                    discard(message);
-                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
+                    discard(message, payload);
                 }
-                messagingService.ok(consumer, message);
 
             } catch (Throwable t)
             {
@@ -305,9 +308,10 @@ public class MessageExecutor
             }
         }
 
-        private void discard(Message<P> message)
+        private void discard(Message<P> message, P payload)
         {
             messagingService.discard(message);
+            consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
         }
 
     }
