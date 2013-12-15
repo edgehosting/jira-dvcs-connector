@@ -463,10 +463,4 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return retryCount >= 3;
     }
 
-    @Override
-    public void afterDiscard(int messageId, int retryCount, BitbucketSynchronizeActivityMessage payload, String[] tags)
-    {
-
-    }
-
 }

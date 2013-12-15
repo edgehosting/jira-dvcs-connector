@@ -260,7 +260,7 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
-                    discard(message, null);
+                    messagingService.discard(message);
                     throw e;
                 }
 
@@ -270,7 +270,7 @@ public class MessageExecutor
                     messagingService.ok(consumer, message);
                 } else
                 {
-                    discard(message, payload);
+                    messagingService.discard(message);
                 }
 
             } catch (Throwable t)
@@ -304,13 +304,6 @@ public class MessageExecutor
                 // Any RuntimeException will be ignored in this step
             }
         }
-
-        private void discard(Message<P> message, P payload)
-        {
-            messagingService.discard(message);
-            consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
-        }
-
     }
 
 }
