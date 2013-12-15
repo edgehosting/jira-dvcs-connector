@@ -260,10 +260,7 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
-                    if (consumer.shouldDiscard(message.getId(), message.getRetriesCount(), null, message.getTags()))
-                    {
-                       discard(message, null);
-                    }
+                    discard(message, null);
                     throw e;
                 }
 
