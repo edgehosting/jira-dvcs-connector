@@ -115,6 +115,8 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         Date date = null;
         if (version == 0)
         {
+            // for payload format version 0 the date format is serialized as formatted string
+
             String dateStringOrNull = json.optString(dateElement);
             if (StringUtils.isNotBlank(dateStringOrNull))
             {
@@ -123,7 +125,8 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
         } else if (version > 0)
         {
-           date = new Date(json.optLong(dateElement));
+            // for payload format version 1 and higher date format is serialized as long
+            date = new Date(json.optLong(dateElement));
         }
 
         return date;

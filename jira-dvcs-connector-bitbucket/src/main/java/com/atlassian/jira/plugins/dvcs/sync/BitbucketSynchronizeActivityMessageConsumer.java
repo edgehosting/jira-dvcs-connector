@@ -104,7 +104,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 Log.info("Date for the activity could not be found.");
                 continue;
             }
-            if ((lastSync == null || activityDate.after(lastSync)))
+            if (lastSync == null || activityDate.after(lastSync))
             {
                 lastSync = activityDate;
                 repositoryDao.setLastActivitySyncDate(repo.getId(), activityDate);

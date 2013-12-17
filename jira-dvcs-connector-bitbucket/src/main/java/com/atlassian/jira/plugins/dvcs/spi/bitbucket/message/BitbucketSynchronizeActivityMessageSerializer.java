@@ -43,7 +43,7 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         page = json.optInt("page");
         processedPullRequests = asSet(json.optJSONArray("processedPullRequests"));
         processedPullRequestsLocal = asSet(json.optJSONArray("processedPullRequestsLocal"));
-         lastSyncDate = parseDate(json, "lastSyncDate", version);
+        lastSyncDate = parseDate(json, "lastSyncDate", version);
 
         return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0);
     }
