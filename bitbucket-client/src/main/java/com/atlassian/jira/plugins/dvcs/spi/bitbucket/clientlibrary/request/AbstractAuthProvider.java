@@ -17,7 +17,6 @@ public abstract class AbstractAuthProvider implements AuthProvider
 {
     private final String hostUrl;
     private int apiVersion = 1;
-    private String userAgent;
     private boolean cached;
     protected HttpClientProvider httpClientProvider;
 
@@ -44,18 +43,6 @@ public abstract class AbstractAuthProvider implements AuthProvider
     public String getHostUrl()
     {
         return hostUrl;
-    }
-
-    @Override
-    public void setUserAgent(String userAgent)
-    {
-        this.userAgent = userAgent;
-    }
-
-    @Override
-    public String getUserAgent()
-    {
-        return userAgent;
     }
 
     @Override
