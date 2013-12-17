@@ -38,6 +38,9 @@ public class BaseRemoteRequestorTest
     private HttpClient httpClient;
 
     @Mock
+    private HttpClientProvider httpClientProvider;
+
+    @Mock
     private ClientConnectionManager connectionManager;
 
     /**
@@ -57,14 +60,7 @@ public class BaseRemoteRequestorTest
         MockitoAnnotations.initMocks(this);
 
         ApiProvider apiProvider = Mockito.mock(ApiProvider.class);
-        testedObject = new BaseRemoteRequestor(apiProvider)
-        {
-            @Override
-            protected HttpClient newDefaultHttpClient()
-            {
-                return httpClient;
-            }
-        };
+        testedObject = new BaseRemoteRequestor(apiProvider, httpClientProvider);
 
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         StatusLine statusLine = Mockito.mock(StatusLine.class);
@@ -76,6 +72,7 @@ public class BaseRemoteRequestorTest
 
         Mockito.doReturn("http://bitbucket.org").when(apiProvider).getHostUrl();
         Mockito.doReturn("http://bitbucket.org/api").when(apiProvider).getApiUrl();
+        Mockito.doReturn(httpClient).when(httpClientProvider).getHttpClient();
     }
 
     /**
