@@ -153,7 +153,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (repo.getDvcsType().startsWith(GithubCommunicator.GITHUB) && !postponePrSyncHelper.isAfterPostponedTime())
+                if (!postponePrSyncHelper.isAfterPostponedTime())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
