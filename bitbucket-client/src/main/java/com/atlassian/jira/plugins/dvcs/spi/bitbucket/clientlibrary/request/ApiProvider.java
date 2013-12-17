@@ -8,15 +8,7 @@ public interface ApiProvider
 
     void setApiVersion(int apiVersion);
 
-    void setUserAgent(String userAgent);
-
-    String getUserAgent();
-
     void setCached(boolean cached);
 
     boolean isCached();
-
-    void setTimeout(int timeout);
-
-    int getTimeout();
 }

@@ -13,7 +13,5 @@ public interface BitbucketClientBuilder
 
     BitbucketClientBuilder apiVersion(int apiVersion);
 
-    BitbucketClientBuilder timeout(int timeout);
-
     BitbucketRemoteClient build();
 }

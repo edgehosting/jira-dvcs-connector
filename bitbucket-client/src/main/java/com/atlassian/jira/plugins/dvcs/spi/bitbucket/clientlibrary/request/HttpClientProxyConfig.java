@@ -53,7 +53,6 @@ public class HttpClientProxyConfig {
             }
 
             HttpHost proxy = new HttpHost(proxyHost, port);
-            
             client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
             
             if(proxyAuthenticationRequired() && client instanceof AbstractHttpClient )

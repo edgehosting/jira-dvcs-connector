@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.PreDestroy;
 
 /**
  * BaseRemoteRequestor
@@ -53,31 +57,23 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
-
-    private int connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
-    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
-
     protected final ApiProvider apiProvider;
     private final HttpClientProxyConfig proxyConfig;
 
     private static HttpCacheStorage storage;
 
+    private final HttpClientProvider httpClientProvider;
+
     private final boolean cached;
 
-    public BaseRemoteRequestor(ApiProvider apiProvider)
+    public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
         this.proxyConfig = new HttpClientProxyConfig();
         this.cached = apiProvider.isCached();
-        if (apiProvider.getTimeout() >= 0)
-        {
-            this.connectionTimeout = apiProvider.getTimeout();
-            this.socketTimeout = apiProvider.getTimeout();
-        }
+        this.httpClientProvider = httpClientProvider;
     }
-    
+
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
@@ -213,7 +209,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
+        HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
        
         try
@@ -240,7 +236,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            client.getConnectionManager().shutdown();
+            method.releaseConnection();
         }
     }
 
@@ -254,7 +250,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
+        HttpClient client = httpClientProvider.getHttpClient();
         if (cached)
         {
             client = new EtagCachingHttpClient(client, getStorage());
@@ -282,7 +278,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            client.getConnectionManager().shutdown();
+            method.releaseConnection();
         }
     }
 
@@ -420,14 +416,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, ? extends Object> params)
             throws IOException, URISyntaxException
     {
-        if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
-        {
-            HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
-        }
-
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
-        HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
-
         String remoteUrl;
         if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
             remoteUrl = uri;
@@ -437,7 +425,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             remoteUrl = apiUrl + uri;
         }
 
-        proxyConfig.configureProxy(client, remoteUrl);
+//        proxyConfig.configureProxy(client, remoteUrl);
         String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
@@ -447,11 +435,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         //
         onConnectionCreated(client, method, params);
 
-    }
-
-    protected HttpClient newDefaultHttpClient()
-    {
-        return new DefaultHttpClient();
     }
 
     protected interface ParameterProcessor
