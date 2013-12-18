@@ -24,7 +24,6 @@ public abstract class AbstractAuthProvider implements AuthProvider
 	{
 		this.hostUrl = hostUrl;
         this.httpClientProvider = httpClientProvider;
-
 	}
 
     @Override

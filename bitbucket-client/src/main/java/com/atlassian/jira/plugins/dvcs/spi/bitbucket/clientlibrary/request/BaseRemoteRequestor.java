@@ -1,24 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
-import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.PreDestroy;
 
 /**
  * BaseRemoteRequestor
@@ -58,9 +52,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
     protected final ApiProvider apiProvider;
-    private final HttpClientProxyConfig proxyConfig;
-
-    private static HttpCacheStorage storage;
 
     private final HttpClientProvider httpClientProvider;
 
@@ -69,7 +60,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
-        this.proxyConfig = new HttpClientProxyConfig();
         this.cached = apiProvider.isCached();
         this.httpClientProvider = httpClientProvider;
     }
@@ -250,11 +240,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = httpClientProvider.getHttpClient();
-        if (cached)
-        {
-            client = new EtagCachingHttpClient(client, getStorage());
-        }
+        HttpClient client = httpClientProvider.getHttpClient(cached);
+
         RemoteResponse response = null;
        
         try
@@ -425,8 +412,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             remoteUrl = apiUrl + uri;
         }
 
-//        proxyConfig.configureProxy(client, remoteUrl);
-        String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
+        String finalUrl = afterFinalUriConstructed(method
+                , remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
         logRequest(method, finalUrl, params);
@@ -489,22 +476,5 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 }
             }
         }
-    }
-
-    private static synchronized HttpCacheStorage getStorage()
-    {
-        if (storage == null)
-        {
-            CacheConfig config = new CacheConfig();
-            // if max cache entries value is not present the CacheConfig's default (CacheConfig.DEFAULT_MAX_CACHE_ENTRIES = 1000) will be used
-            Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
-            if (maxCacheEntries != null)
-            {
-                config.setMaxCacheEntries(maxCacheEntries);
-            }
-            storage = new BasicHttpCacheStorage(config);
-        }
-
-        return storage;
     }
 }
