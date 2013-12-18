@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
@@ -104,45 +105,54 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             return;
         }
 
-        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-        int auditId = 0;
-
-        if (skipSync(repo, flags))
-        {
-            return;
-        }
-
         if (repo.isLinked())
         {
-            if (!softSync)
-            {
-                //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                // Stopping synchronization to delete failed messages for repository
-                stopSynchronization(repo);
-                if (changestesSync)
-                {
-                    // we are doing full sync, lets delete all existing changesets
-                    // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                    changesetService.removeAllInRepository(repo.getId());
-                    branchService.removeAllBranchHeadsInRepository(repo.getId());
-                    branchService.removeAllBranchesInRepository(repo.getId());
+            Progress progress = null;
 
-                    repo.setLastCommitDate(null);
-                }
-                if (pullRequestSync)
+            synchronized (this)
+            {
+                if (skipSync(repo, flags))
                 {
-                    gitHubEventService.removeAll(repo);
-                    repositoryPullRequestDao.removeAll(repo);
-                    repo.setActivityLastSync(null);
+                    return;
                 }
-                repositoryDao.save(repo);
+
+                progress = startProgress(repo);
             }
 
+            boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
+            boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+            boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+            int auditId = 0;
             try
             {
-                auditId = startProgress(repo, softSync);
+                // audit
+                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(softSync), new Date(progress.getStartTime())).getID();
+                progress.setAuditLogId(auditId);
+
+                if (!softSync)
+                {
+                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
+                    // Stopping synchronization to delete failed messages for repository
+                    stopSynchronization(repo);
+                    if (changesetsSync)
+                    {
+                        // we are doing full sync, lets delete all existing changesets
+                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                        changesetService.removeAllInRepository(repo.getId());
+                        branchService.removeAllBranchHeadsInRepository(repo.getId());
+                        branchService.removeAllBranchesInRepository(repo.getId());
+
+                        repo.setLastCommitDate(null);
+                    }
+                    if (pullRequestSync)
+                    {
+                        gitHubEventService.removeAll(repo);
+                        repositoryPullRequestDao.removeAll(repo);
+                        repo.setActivityLastSync(null);
+                    }
+                    repositoryDao.save(repo);
+                }
 
                 // first retry all failed messages
                 try
@@ -165,26 +175,22 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             } catch (Throwable t)
             {
                 log.error(t.getMessage(), t);
-                Progress progress = getProgress(repo.getId());
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
-                messagingService.tryEndProgress(repo, getProgress(repo.getId()), null, auditId);
+                messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
     }
 
-    private int startProgress(Repository repository, boolean softSync)
+    private Progress startProgress(Repository repository)
     {
         DefaultProgress progress = new DefaultProgress();
         progress.start();
         putProgress(repository, progress);
-        // audit
-        int auditId = syncAudit.newSyncAuditLog(repository.getId(), getSyncType(softSync)).getID();
-        progress.setAuditLogId(auditId);
-        return auditId;
+        return progress;
     }
 
     protected String getSyncType(boolean softSync)
@@ -203,7 +209,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
         if (flags.contains(SynchronizationFlag.WEBHOOK_SYNC))
         {
-            log.info("Postponing post commit hook synchronisation. It will start after the running synchronisation finishes.");
+            log.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
 
             EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
             if (currentFlags == null)

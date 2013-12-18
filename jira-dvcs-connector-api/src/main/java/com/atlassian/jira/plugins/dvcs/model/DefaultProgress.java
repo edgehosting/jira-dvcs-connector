@@ -150,6 +150,7 @@ public class DefaultProgress implements Progress
         return finished;
     }
 
+    @Override
     public Long getStartTime()
     {
         return startTime;
@@ -160,6 +161,7 @@ public class DefaultProgress implements Progress
         this.startTime = startTime;
     }
 
+    @Override
     public Long getFinishTime()
     {
         return finishTime;
