@@ -17,6 +17,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.mockito.Matchers.anyBoolean;
+
 /**
  * Unit tests over {@link BaseRemoteRequestor} implementation.
  * 
@@ -73,6 +75,7 @@ public class BaseRemoteRequestorTest
         Mockito.doReturn("http://bitbucket.org").when(apiProvider).getHostUrl();
         Mockito.doReturn("http://bitbucket.org/api").when(apiProvider).getApiUrl();
         Mockito.doReturn(httpClient).when(httpClientProvider).getHttpClient();
+        Mockito.doReturn(httpClient).when(httpClientProvider).getHttpClient(anyBoolean());
     }
 
     /**
