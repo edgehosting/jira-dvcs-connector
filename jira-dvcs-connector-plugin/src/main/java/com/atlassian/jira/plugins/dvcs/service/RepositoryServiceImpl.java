@@ -599,13 +599,13 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // delete branches saved for repository
         branchService.removeAllBranchHeadsInRepository(repository.getId());
         branchService.removeAllBranchesInRepository(repository.getId());
-        // delete repository record itself
-        repositoryDao.remove(repository.getId());
         // remove pull requests things
         gitHubEventService.removeAll(repository);
         repositoryPullRequestDao.removeAll(repository);
         // remove sync logs
         syncAuditDao.removeAllForRepo(repository.getId());
+        // delete repository record itself
+        repositoryDao.remove(repository.getId());
     }
 
     /**
