@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
@@ -117,6 +118,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private Synchronizer synchronizer;
+
+    @Resource
+    private HttpClientProvider httpClientProvider;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -755,6 +759,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             {
                 syncAudit.finish(auditId);
             }
+
+            httpClientProvider.closeIdleConnections();
         }
     }
 
