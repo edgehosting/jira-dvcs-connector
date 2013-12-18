@@ -1,9 +1,8 @@
 package org.scribe.model;
 
-import java.io.IOException;
-import java.net.URI;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -11,15 +10,17 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.scribe.exceptions.OAuthConnectionException;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProxyConfig;
+import java.io.IOException;
+import java.net.URI;
 
 public class HttpClientOauthRequest extends OAuthRequest
 {
-    private HttpClientProxyConfig proxyConfig = new HttpClientProxyConfig();
-    
-    public HttpClientOauthRequest(Verb verb, String url)
+    private HttpClientProvider httpClientProvider = new HttpClientProvider();
+
+    public HttpClientOauthRequest(Verb verb, String url, HttpClientProvider httpClientProvider)
     {
         super(verb, url);
+        this.httpClientProvider = httpClientProvider;
     }
     
     public HttpClientOauthResponse sendViaHttpClient()
@@ -38,9 +39,8 @@ public class HttpClientOauthRequest extends OAuthRequest
     {
         String urlToGo = getCompleteUrl();
 
-        DefaultHttpClient client = new DefaultHttpClient();
-        proxyConfig.configureProxy(client, urlToGo);
-        
+        HttpClient client = httpClientProvider.getHttpClient();
+
         // always POST when doing oauth dance on bitbucket
         // see DefaultAp10Api#getAccessTokenVerb or getRequestTokenVerb
         HttpRequestBase requestMethod = new HttpPost();
@@ -49,8 +49,16 @@ public class HttpClientOauthRequest extends OAuthRequest
         setHeaders(requestMethod);
         setPayloadParams((HttpEntityEnclosingRequestBase) requestMethod);
         
-        HttpResponse response = client.execute(requestMethod);
-        
+        HttpResponse response = null;
+
+        try
+        {
+            response = client.execute(requestMethod);
+        } finally
+        {
+            requestMethod.releaseConnection();
+        }
+
         return new HttpClientOauthResponse(response);
     }
     

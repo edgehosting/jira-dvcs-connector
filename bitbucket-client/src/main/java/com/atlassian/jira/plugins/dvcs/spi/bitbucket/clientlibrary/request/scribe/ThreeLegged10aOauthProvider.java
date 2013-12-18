@@ -23,7 +23,6 @@ public class ThreeLegged10aOauthProvider extends AbstractAuthProvider
         this.key = key;
         this.secret = secret;
 		this.accessTokenWithSecret = accessTokenWithSecret;
-
 	}
 
 	@Override

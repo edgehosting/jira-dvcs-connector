@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.HttpClientOauthRequest;
 import org.scribe.model.HttpClientOauthResponse;
@@ -20,6 +21,7 @@ public class HttpClientThrreeLoOAuth10aServiceImpl implements OAuthService
 
     private OAuthConfig config;
     private DefaultApi10a api;
+    private HttpClientProvider httpClientProvider;
 
     /**
      * Default constructor
@@ -27,10 +29,11 @@ public class HttpClientThrreeLoOAuth10aServiceImpl implements OAuthService
      * @param api OAuth1.0a api information
      * @param config OAuth 1.0a configuration param object
      */
-    public HttpClientThrreeLoOAuth10aServiceImpl(DefaultApi10a api, OAuthConfig config)
+    public HttpClientThrreeLoOAuth10aServiceImpl(DefaultApi10a api, OAuthConfig config, HttpClientProvider httpClientProvider)
     {
       this.api = api;
       this.config = config;
+      this.httpClientProvider = httpClientProvider;
     }
 
     /**
@@ -39,7 +42,7 @@ public class HttpClientThrreeLoOAuth10aServiceImpl implements OAuthService
     public Token getRequestToken()
     {
       config.log("obtaining request token from " + api.getRequestTokenEndpoint());
-      HttpClientOauthRequest request = new HttpClientOauthRequest(api.getRequestTokenVerb(), api.getRequestTokenEndpoint());
+      HttpClientOauthRequest request = new HttpClientOauthRequest(api.getRequestTokenVerb(), api.getRequestTokenEndpoint(), httpClientProvider);
 
       config.log("setting oauth_callback to " + config.getCallback());
       request.addOAuthParameter(OAuthConstants.CALLBACK, config.getCallback());
@@ -74,7 +77,7 @@ public class HttpClientThrreeLoOAuth10aServiceImpl implements OAuthService
     public Token getAccessToken(Token requestToken, Verifier verifier)
     {
       config.log("obtaining access token from " + api.getAccessTokenEndpoint());
-      HttpClientOauthRequest request = new HttpClientOauthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
+      HttpClientOauthRequest request = new HttpClientOauthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint(), httpClientProvider);
       request.addOAuthParameter(OAuthConstants.TOKEN, requestToken.getToken());
       request.addOAuthParameter(OAuthConstants.VERIFIER, verifier.getValue());
 

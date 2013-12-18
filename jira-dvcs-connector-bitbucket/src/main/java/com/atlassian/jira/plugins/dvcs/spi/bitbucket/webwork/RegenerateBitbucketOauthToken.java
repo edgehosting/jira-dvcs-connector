@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.exceptions.OAuthConnectionException;
@@ -25,13 +26,15 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateBitbucketOauthToken.class);
     private final ApplicationProperties ap;
+    private final HttpClientProvider httpClientProvider;
 
     public RegenerateBitbucketOauthToken(EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
-            ApplicationProperties ap)
+            ApplicationProperties ap, HttpClientProvider httpClientProvider)
     {
         super(eventPublisher, organizationService, repositoryService);
         this.ap = ap;
+        this.httpClientProvider = httpClientProvider;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 
         ServiceBuilder sb = new ServiceBuilder().apiKey(organizationInstance.getCredential().getOauthKey())
                 .signatureType(SignatureType.Header).apiSecret(organizationInstance.getCredential().getOauthSecret())
-                .provider(new Bitbucket10aScribeApi(organizationInstance.getHostUrl()))
+                .provider(new Bitbucket10aScribeApi(organizationInstance.getHostUrl(), httpClientProvider))
                 .debugStream(new DebugOutputStream(log));
 
         if (!StringUtils.isBlank(callbackUrl))

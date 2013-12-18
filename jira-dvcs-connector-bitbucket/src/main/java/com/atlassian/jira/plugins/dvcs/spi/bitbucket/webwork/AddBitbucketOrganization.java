@@ -5,6 +5,7 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.SignatureType;
@@ -55,6 +56,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private String oauthBbSecret;
 
 	private final OrganizationService organizationService;
+    private final HttpClientProvider httpClientProvider;
 
     private final com.atlassian.sal.api.ApplicationProperties ap;
 
@@ -65,12 +67,14 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     public AddBitbucketOrganization(ApplicationProperties ap,
                                     EventPublisher eventPublisher,
                                     OAuthStore oAuthStore,
-                                    OrganizationService organizationService)
+                                    OrganizationService organizationService,
+                                    HttpClientProvider httpClientProvider)
     {
         super(eventPublisher);
         this.ap = ap;
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
+        this.httpClientProvider = httpClientProvider;
     }
 
     @Override
@@ -123,7 +127,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         ServiceBuilder sb = new ServiceBuilder().apiKey(oAuthStore.getClientId(Host.BITBUCKET.id))
                                                 .signatureType(SignatureType.Header)
                                                 .apiSecret(oAuthStore.getSecret(Host.BITBUCKET.id))
-                                                .provider(new Bitbucket10aScribeApi(url))
+                                                .provider(new Bitbucket10aScribeApi(url, httpClientProvider))
                                                 .debugStream(new DebugOutputStream(log));
 
         if (!StringUtils.isBlank(callbackUrl))
