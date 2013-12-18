@@ -11,4 +11,8 @@ public interface ApiProvider
     void setCached(boolean cached);
 
     boolean isCached();
+
+    void setCloseIdleConnections(boolean closeIdleConnections);
+
+    boolean isCloseIdleConnections();
 }

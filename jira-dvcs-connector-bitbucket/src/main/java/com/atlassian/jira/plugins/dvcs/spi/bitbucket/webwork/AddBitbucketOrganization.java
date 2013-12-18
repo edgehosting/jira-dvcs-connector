@@ -161,6 +161,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         Token accessTokenObj = service.getAccessToken(requestToken, verifier);
         accessToken = BitbucketOAuthAuthentication.generateAccessTokenString(accessTokenObj);
 
+        httpClientProvider.closeIdleConnections();
+
         return doAddOrganization();
     }
 

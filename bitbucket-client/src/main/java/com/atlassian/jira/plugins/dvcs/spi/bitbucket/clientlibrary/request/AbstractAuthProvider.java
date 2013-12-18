@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import org.apache.http.client.HttpClient;
-
 /**
  * 
  * AbstractAuthProvider
@@ -18,6 +16,8 @@ public abstract class AbstractAuthProvider implements AuthProvider
     private final String hostUrl;
     private int apiVersion = 1;
     private boolean cached;
+    private boolean closeIdleConnections;
+
     protected HttpClientProvider httpClientProvider;
 
     public AbstractAuthProvider(String hostUrl, HttpClientProvider httpClientProvider)
@@ -54,6 +54,18 @@ public abstract class AbstractAuthProvider implements AuthProvider
     public void setCached(boolean cached)
     {
         this.cached = cached;
+    }
+
+    @Override
+    public boolean isCloseIdleConnections()
+    {
+        return closeIdleConnections;
+    }
+
+    @Override
+    public void setCloseIdleConnections(final boolean closeIdleConnections)
+    {
+        this.closeIdleConnections = closeIdleConnections;
     }
 }
 

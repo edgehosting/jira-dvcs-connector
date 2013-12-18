@@ -55,12 +55,9 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private final HttpClientProvider httpClientProvider;
 
-    private final boolean cached;
-
     public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
-        this.cached = apiProvider.isCached();
         this.httpClientProvider = httpClientProvider;
     }
 
@@ -227,6 +224,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             closeResponse(response);
             method.releaseConnection();
+            if (apiProvider.isCloseIdleConnections())
+            {
+                httpClientProvider.closeIdleConnections();
+            }
         }
     }
 
@@ -240,7 +241,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = httpClientProvider.getHttpClient(cached);
+        HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
 
         RemoteResponse response = null;
        

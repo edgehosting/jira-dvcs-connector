@@ -11,6 +11,8 @@ public interface BitbucketClientBuilder
 {
     BitbucketClientBuilder cached();
 
+    BitbucketClientBuilder closeIdleConnections();
+
     BitbucketClientBuilder apiVersion(int apiVersion);
 
     BitbucketRemoteClient build();

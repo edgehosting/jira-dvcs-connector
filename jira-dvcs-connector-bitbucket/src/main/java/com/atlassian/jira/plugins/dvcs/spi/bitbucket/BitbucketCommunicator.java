@@ -401,7 +401,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build();
 
         try
         {
