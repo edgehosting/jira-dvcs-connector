@@ -67,7 +67,6 @@ public class HttpClientProvider
         HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), DEFAULT_CONNECT_TIMEOUT);
         HttpConnectionParams.setSoTimeout(httpClient.getParams(), DEFAULT_SOCKET_TIMEOUT);
 
-
         ProxySelectorRoutePlanner routePlanner = new ProxySelectorRoutePlanner(httpClient.getConnectionManager().getSchemeRegistry(), ProxySelector.getDefault());
         httpClient.setRoutePlanner(routePlanner);
         httpClient.setKeepAliveStrategy(new ConnectionKeepAliveStrategy(DEFAULT_CONNECTION_KEEP_ALIVE_DURATION));
