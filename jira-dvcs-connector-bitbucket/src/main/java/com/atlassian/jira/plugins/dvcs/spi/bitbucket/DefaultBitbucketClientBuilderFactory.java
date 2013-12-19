@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -19,11 +20,14 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
 
     private final Encryptor encryptor;
     private final String userAgent;
+    private final HttpClientProvider httpClientProvider;
 
-    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, PluginAccessor pluginAccessor)
+    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, PluginAccessor pluginAccessor, HttpClientProvider httpClientProvider)
     {
         this.encryptor = encryptor;
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
+        this.httpClientProvider = httpClientProvider;
+        httpClientProvider.setUserAgent(userAgent);
     }
 
     @Override
@@ -43,8 +47,7 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
     @Override
     public BitbucketClientBuilder noAuthClient(String hostUrl)
     {
-        AuthProvider authProvider = new NoAuthAuthProvider(hostUrl);
-        authProvider.setUserAgent(userAgent);
+        AuthProvider authProvider = new NoAuthAuthProvider(hostUrl, httpClientProvider);
         return new DefaultBitbucketRemoteClientBuilder(authProvider);
     }
 
@@ -67,26 +70,25 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
         // 3LO (key, secret, token)
         if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(secret) && StringUtils.isNotBlank(accessToken))
         {
-            oAuthProvider = new ThreeLegged10aOauthProvider(hostUrl, key, secret, accessToken);
+            oAuthProvider = new ThreeLegged10aOauthProvider(hostUrl, key, secret, accessToken, httpClientProvider);
         }
 
         // 2LO (key, secret)
         else if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(secret))
         {
-            oAuthProvider = new TwoLeggedOauthProvider(hostUrl, key, secret);
+            oAuthProvider = new TwoLeggedOauthProvider(hostUrl, key, secret, httpClientProvider);
         }
 
         // basic (username, password)
         else if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             String decryptedPassword = encryptor.decrypt(password, name, hostUrl);
-            oAuthProvider =  new BasicAuthAuthProvider(hostUrl, username,decryptedPassword);
+            oAuthProvider =  new BasicAuthAuthProvider(hostUrl, username,decryptedPassword, httpClientProvider);
         } else
         {
-            oAuthProvider = new NoAuthAuthProvider(hostUrl);
+            oAuthProvider = new NoAuthAuthProvider(hostUrl, httpClientProvider);
         }
 
-        oAuthProvider.setUserAgent(userAgent);
         return oAuthProvider;
     }
 }

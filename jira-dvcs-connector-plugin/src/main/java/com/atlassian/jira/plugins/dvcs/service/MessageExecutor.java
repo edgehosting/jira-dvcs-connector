@@ -260,18 +260,18 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
+                    messagingService.discard(message);
                     throw e;
                 }
 
                 if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags()))
                 {
                     consumer.onReceive(message, payload);
+                    messagingService.ok(consumer, message);
                 } else
                 {
-                    discard(message);
-                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
+                    messagingService.discard(message);
                 }
-                messagingService.ok(consumer, message);
 
             } catch (Throwable t)
             {
@@ -304,12 +304,6 @@ public class MessageExecutor
                 // Any RuntimeException will be ignored in this step
             }
         }
-
-        private void discard(Message<P> message)
-        {
-            messagingService.discard(message);
-        }
-
     }
 
 }

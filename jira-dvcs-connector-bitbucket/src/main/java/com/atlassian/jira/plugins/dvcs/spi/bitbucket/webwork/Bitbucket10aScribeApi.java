@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.OAuthConfig;
 import org.scribe.model.Token;
@@ -10,12 +11,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scrib
 public class Bitbucket10aScribeApi extends DefaultApi10a
 {
 	private final String hostUrl;
+    private final HttpClientProvider httpClientProvider;
 
-	public Bitbucket10aScribeApi(String hostUrl)
+	public Bitbucket10aScribeApi(String hostUrl, HttpClientProvider httpClientProvider)
 	{
 		super();
 		this.hostUrl = hostUrl;
-	}
+        this.httpClientProvider = httpClientProvider;
+    }
 
 	@Override
 	public String getRequestTokenEndpoint()
@@ -52,6 +55,6 @@ public class Bitbucket10aScribeApi extends DefaultApi10a
     @Override
     public OAuthService createService(OAuthConfig config)
     {
-        return new HttpClientThrreeLoOAuth10aServiceImpl(this, config);
+        return new HttpClientThrreeLoOAuth10aServiceImpl(this, config, httpClientProvider);
     }
 }

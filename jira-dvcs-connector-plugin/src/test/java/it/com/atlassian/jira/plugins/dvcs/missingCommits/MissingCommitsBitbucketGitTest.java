@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
@@ -29,9 +30,13 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     @BeforeClass
     public static void initializeBitbucketRepositoriesREST()
     {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                    DVCS_REPO_OWNER,
-                                                                   DVCS_REPO_PASSWORD);
+                                                                   DVCS_REPO_PASSWORD,
+                                                                   httpClientProvider);
         bitbucketRepositoriesREST = new BitbucketRepositoriesRemoteRestpoint(basicAuthProvider.provideRequestor());
     }
 
