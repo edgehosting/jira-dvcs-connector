@@ -20,6 +20,6 @@ public interface PullRequestService
 
     List<PullRequest> getByIssueKeys(Iterable<String> issueKeys, String dvcsType);
 
-    void updatePulRequestParticipants(int pullRequestId, int repositoryId, Map<String, Participant> participantIndex);
+    void updatePullRequestParticipants(int pullRequestId, int repositoryId, Map<String, Participant> participantIndex);
 
 }

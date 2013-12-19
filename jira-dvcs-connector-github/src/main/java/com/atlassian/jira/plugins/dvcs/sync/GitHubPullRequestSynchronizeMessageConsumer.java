@@ -109,7 +109,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
         processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
 
-        pullRequestService.updatePulRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
+        pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
     }
 
     /**
