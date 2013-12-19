@@ -123,6 +123,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Resource
     private HttpClientProvider httpClientProvider;
 
+    private final Object endProgressLock = new Object();
+
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
      */
@@ -734,7 +736,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private boolean endProgress(Repository repository, Progress progress)
     {
         int queuedCount;
-        synchronized(synchronizer)
+        synchronized(endProgressLock)
         {
             queuedCount = getQueuedCount(getTagForSynchronization(repository));
         }
