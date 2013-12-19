@@ -381,15 +381,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     @Override
     public boolean shouldDiscard(int messageId, int retryCount, GitHubPullRequestSynchronizeMessage payload, String[] tags)
     {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void afterDiscard(int messageId, int retryCount, GitHubPullRequestSynchronizeMessage payload, String[] tags)
-    {
+        return retryCount >= 3;
     }
 
 }

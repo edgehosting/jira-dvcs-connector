@@ -98,12 +98,6 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         }
     }
 
-    @Override
-    public void afterDiscard(int messageId, int retryCount, P payload, String[] tags)
-    {
-
-    }
-
     static void markChangesetForSmartCommit(Repository repo, Changeset changesetForSave, boolean mark)
     {
         if (repo.isSmartcommitsEnabled())
