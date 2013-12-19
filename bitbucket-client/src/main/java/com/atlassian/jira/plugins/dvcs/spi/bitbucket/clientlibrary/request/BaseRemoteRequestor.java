@@ -413,8 +413,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             remoteUrl = apiUrl + uri;
         }
 
-        String finalUrl = afterFinalUriConstructed(method
-                , remoteUrl, params);
+        String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
         logRequest(method, finalUrl, params);

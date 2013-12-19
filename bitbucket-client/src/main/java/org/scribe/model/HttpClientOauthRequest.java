@@ -7,7 +7,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.scribe.exceptions.OAuthConnectionException;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ import java.net.URI;
 
 public class HttpClientOauthRequest extends OAuthRequest
 {
-    private HttpClientProvider httpClientProvider = new HttpClientProvider();
+    private HttpClientProvider httpClientProvider;
 
     public HttpClientOauthRequest(Verb verb, String url, HttpClientProvider httpClientProvider)
     {

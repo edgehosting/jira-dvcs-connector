@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
 import org.apache.http.impl.client.cache.CacheConfig;
@@ -10,6 +12,7 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.HttpContext;
 
 import java.net.ProxySelector;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +28,33 @@ public class HttpClientProvider
     private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
     private static final int DEFAULT_MAX_TOTAL = Integer.getInteger("bitbucket.client.conmanager.maxtotal", 20);
     private static final int DEFAULT_MAX_PER_ROUTE = Integer.getInteger("bitbucket.client.conmanager.maxperroute", 15);
+    private static final long DEFAULT_CONNECTION_KEEP_ALIVE_DURATION = Long.getLong("bitbucket.client.conmanager.keepalive", 120000);
 
     private final AbstractHttpClient httpClient;
     private EtagCachingHttpClient cachingHttpClient;
+
+    private static class ConnectionKeepAliveStrategy extends DefaultConnectionKeepAliveStrategy
+    {
+        private final long defaultKeepAliveDuration;
+
+        public ConnectionKeepAliveStrategy(long defaultKeepAliveDuration)
+        {
+            this.defaultKeepAliveDuration = defaultKeepAliveDuration;
+        }
+
+        public long getKeepAliveDuration(HttpResponse response, HttpContext context)
+        {
+            long keepAliveDuration = super.getKeepAliveDuration(response, context);
+
+            if (keepAliveDuration == -1)
+            {
+                return defaultKeepAliveDuration;
+            } else
+            {
+                return keepAliveDuration;
+            }
+        }
+    }
 
     public HttpClientProvider()
     {
@@ -43,6 +70,8 @@ public class HttpClientProvider
 
         ProxySelectorRoutePlanner routePlanner = new ProxySelectorRoutePlanner(httpClient.getConnectionManager().getSchemeRegistry(), ProxySelector.getDefault());
         httpClient.setRoutePlanner(routePlanner);
+        httpClient.setKeepAliveStrategy(new ConnectionKeepAliveStrategy(DEFAULT_CONNECTION_KEEP_ALIVE_DURATION));
+        cachingHttpClient = new EtagCachingHttpClient(httpClient, createStorage());
     }
 
     public void setUserAgent(String userAgent)
@@ -59,7 +88,7 @@ public class HttpClientProvider
     {
         if (cached)
         {
-            return getCachingHttpClient();
+            return cachingHttpClient;
         }
         return httpClient;
     }
@@ -67,16 +96,6 @@ public class HttpClientProvider
     public void closeIdleConnections()
     {
         httpClient.getConnectionManager().closeIdleConnections(0, TimeUnit.MILLISECONDS);
-    }
-
-    private synchronized EtagCachingHttpClient getCachingHttpClient()
-    {
-         if (cachingHttpClient == null)
-         {
-             cachingHttpClient = new EtagCachingHttpClient(httpClient, createStorage());
-         }
-
-        return cachingHttpClient;
     }
 
     private HttpCacheStorage createStorage()
