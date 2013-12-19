@@ -93,7 +93,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 payload.getLastSyncDate());
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
-        boolean isLastPage = isLastPage(infos);
+        boolean isLastPage = isLastPage(activityPage);
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
@@ -148,9 +148,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY;
     }
 
-    private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)
+    private boolean isLastPage(BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage)
     {
-        return infos.isEmpty() || infos.size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE;
+        return activityPage.getValues().isEmpty() || activityPage.getValues().size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE || StringUtils.isEmpty(activityPage.getNext());
     }
 
     private int processActivity(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info,
