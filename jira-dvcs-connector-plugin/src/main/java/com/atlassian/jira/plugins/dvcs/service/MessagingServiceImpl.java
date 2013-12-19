@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,6 +122,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private HttpClientProvider httpClientProvider;
+
+    private final Object endProgressLock = new Object();
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -722,22 +725,22 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
-        if (consumer != null)
+        boolean finished = endProgress(repository, progress);
+        if (finished && auditId > 0)
         {
-            synchronized (consumer)
-            {
-                endProgress(repository, progress, auditId);
-            }
-        } else
-        {
-            endProgress(repository, progress, auditId);
+            Date finishDate = progress == null ? new Date() : new Date(progress.getFinishTime());
+            syncAudit.finish(auditId, finishDate);
         }
-
     }
 
-    private void endProgress(Repository repository, Progress progress, int auditId)
+    private boolean endProgress(Repository repository, Progress progress)
     {
-        if (getQueuedCount(getTagForSynchronization(repository)) == 0)
+        int queuedCount;
+        synchronized(endProgressLock)
+        {
+            queuedCount = getQueuedCount(getTagForSynchronization(repository));
+        }
+        if (queuedCount == 0)
         {
             try
             {
@@ -757,15 +760,15 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         synchronizer.doSync(repository, flags);
                     }
                 }
-                if (auditId > 0)
-                {
-                    syncAudit.finish(auditId);
-                }
+
+                return true;
             } finally
             {
                 httpClientProvider.closeIdleConnections();
             }
         }
+
+        return false;
     }
 
     @Override
