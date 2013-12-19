@@ -13,6 +13,8 @@ import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.ProxySelector;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +26,8 @@ import javax.annotation.PreDestroy;
  */
 public class HttpClientProvider
 {
+    private final Logger log = LoggerFactory.getLogger(HttpClientProvider.class);
+
     private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
     private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
     private static final int DEFAULT_MAX_TOTAL = Integer.getInteger("bitbucket.client.conmanager.maxtotal", 20);
@@ -94,6 +98,7 @@ public class HttpClientProvider
 
     public void closeIdleConnections()
     {
+        log.debug("Closing idle HttpClient connections");
         httpClient.getConnectionManager().closeIdleConnections(0, TimeUnit.MILLISECONDS);
     }
 
@@ -112,6 +117,7 @@ public class HttpClientProvider
     @PreDestroy
     private void destroy()
     {
+        log.debug("Shutting down HttpClient connection manager");
         httpClient.getConnectionManager().shutdown();
     }
 }
