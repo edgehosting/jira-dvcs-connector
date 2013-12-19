@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
@@ -117,6 +118,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private Synchronizer synchronizer;
+
+    @Resource
+    private HttpClientProvider httpClientProvider;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -735,25 +739,31 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     {
         if (getQueuedCount(getTagForSynchronization(repository)) == 0)
         {
-            // TODO error could be in PR synchronization and thus we can process smartcommits
-            if (progress == null || progress.getError() == null)
+            try
             {
-                smartcCommitsProcessor.startProcess(progress, repository, changesetService);
-            }
-            if (progress != null && !progress.isFinished())
-            {
-                progress.finish();
-
-                EnumSet<SynchronizationFlag> flags = progress.getRunAgainFlags();
-                if (flags != null)
+                // TODO error could be in PR synchronization and thus we can process smartcommits
+                if (progress == null || progress.getError() == null)
                 {
-                    progress.setRunAgainFlags(null);
-                    synchronizer.doSync(repository, flags);
+                    smartcCommitsProcessor.startProcess(progress, repository, changesetService);
                 }
-            }
-            if (auditId > 0)
+                if (progress != null && !progress.isFinished())
+                {
+                    progress.finish();
+
+                    EnumSet<SynchronizationFlag> flags = progress.getRunAgainFlags();
+                    if (flags != null)
+                    {
+                        progress.setRunAgainFlags(null);
+                        synchronizer.doSync(repository, flags);
+                    }
+                }
+                if (auditId > 0)
+                {
+                    syncAudit.finish(auditId);
+                }
+            } finally
             {
-                syncAudit.finish(auditId);
+                httpClientProvider.closeIdleConnections();
             }
         }
     }

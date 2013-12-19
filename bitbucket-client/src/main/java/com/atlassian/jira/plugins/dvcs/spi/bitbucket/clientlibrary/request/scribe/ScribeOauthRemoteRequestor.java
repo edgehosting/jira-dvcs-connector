@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.SignatureType;
@@ -28,9 +29,9 @@ public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
     protected final String key;
     protected final String secret;
 
-    public ScribeOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret)
+    public ScribeOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, HttpClientProvider httpClientProvider)
     {
-        super(apiProvider);
+        super(apiProvider, httpClientProvider);
         this.key = key;
         this.secret = secret;
     }

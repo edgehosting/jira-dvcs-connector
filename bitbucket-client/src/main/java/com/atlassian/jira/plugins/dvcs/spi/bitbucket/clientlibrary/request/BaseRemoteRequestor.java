@@ -2,21 +2,19 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
-import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,31 +51,16 @@ public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
-
-    private int connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
-    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
-
     protected final ApiProvider apiProvider;
-    private final HttpClientProxyConfig proxyConfig;
 
-    private static HttpCacheStorage storage;
+    private final HttpClientProvider httpClientProvider;
 
-    private final boolean cached;
-
-    public BaseRemoteRequestor(ApiProvider apiProvider)
+    public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
-        this.proxyConfig = new HttpClientProxyConfig();
-        this.cached = apiProvider.isCached();
-        if (apiProvider.getTimeout() >= 0)
-        {
-            this.connectionTimeout = apiProvider.getTimeout();
-            this.socketTimeout = apiProvider.getTimeout();
-        }
+        this.httpClientProvider = httpClientProvider;
     }
-    
+
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
@@ -213,7 +196,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
+        HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
        
         try
@@ -240,7 +223,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            client.getConnectionManager().shutdown();
+            method.releaseConnection();
+            if (apiProvider.isCloseIdleConnections())
+            {
+                httpClientProvider.closeIdleConnections();
+            }
         }
     }
 
@@ -254,11 +241,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
-        if (cached)
-        {
-            client = new EtagCachingHttpClient(client, getStorage());
-        }
+        HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
+
         RemoteResponse response = null;
        
         try
@@ -282,7 +266,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            client.getConnectionManager().shutdown();
+            method.releaseConnection();
         }
     }
 
@@ -420,14 +404,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, ? extends Object> params)
             throws IOException, URISyntaxException
     {
-        if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
-        {
-            HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
-        }
-
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
-        HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
-
         String remoteUrl;
         if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
             remoteUrl = uri;
@@ -437,7 +413,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
             remoteUrl = apiUrl + uri;
         }
 
-        proxyConfig.configureProxy(client, remoteUrl);
         String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
@@ -447,11 +422,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         //
         onConnectionCreated(client, method, params);
 
-    }
-
-    protected HttpClient newDefaultHttpClient()
-    {
-        return new DefaultHttpClient();
     }
 
     protected interface ParameterProcessor
@@ -506,22 +476,5 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 }
             }
         }
-    }
-
-    private static synchronized HttpCacheStorage getStorage()
-    {
-        if (storage == null)
-        {
-            CacheConfig config = new CacheConfig();
-            // if max cache entries value is not present the CacheConfig's default (CacheConfig.DEFAULT_MAX_CACHE_ENTRIES = 1000) will be used
-            Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
-            if (maxCacheEntries != null)
-            {
-                config.setMaxCacheEntries(maxCacheEntries);
-            }
-            storage = new BasicHttpCacheStorage(config);
-        }
-
-        return storage;
     }
 }

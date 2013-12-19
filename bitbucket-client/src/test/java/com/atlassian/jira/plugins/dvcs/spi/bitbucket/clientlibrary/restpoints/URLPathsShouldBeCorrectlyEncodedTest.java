@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -25,11 +26,16 @@ public class URLPathsShouldBeCorrectlyEncodedTest
     @BeforeClass
     public static void initializeAccountREST()
     {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+
+        httpClientProvider.setUserAgent("jirabitbucketconnector-test");
+
         BitbucketRemoteClient bitbucketRemoteClientWithOAuthAuth =
                 new BitbucketRemoteClient(new ThreeLegged10aOauthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                           OAUTH_KEY,
                                                                           OAUTH_SECRET,
-                                                                          OAUTH_ACCESS_TOKEN));
+                                                                          OAUTH_ACCESS_TOKEN,
+                                                                          httpClientProvider));
 
         accountRemoteRestpoint = bitbucketRemoteClientWithOAuthAuth.getAccountRest();
     }
