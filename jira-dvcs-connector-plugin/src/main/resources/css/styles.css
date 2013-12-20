@@ -94,7 +94,8 @@
 }
 
 h4.bitbucketLogo, h4.githubLogo, h4.githubeLogo {
-	padding-left: 27px;	
+	padding-left: 27px;
+    background-size: 20px 20px;
 }
 
 #postCommitServiceDetails{
@@ -260,7 +261,7 @@ select#urlSelect {
 	clear: none !important;
 }
 
-.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo {
+.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo, .aui.dvcsLogo {
 	float: left;
 	position: relative;
 	top: 2px;
