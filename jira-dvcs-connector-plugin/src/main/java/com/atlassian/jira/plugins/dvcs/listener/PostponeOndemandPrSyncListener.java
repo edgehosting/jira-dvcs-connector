@@ -19,8 +19,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 public class PostponeOndemandPrSyncListener implements InitializingBean, DisposableBean
 {
 
-    private static final long POSTPONE_PR_SYNC_FRAME_MS = /* six days */ 6 * 24 * 60 * 60 * 1000;
-    private static final long POSTPONE_PR_SYNC_START_OFFSET = /* one day */ 1 * 24 * 60 * 60 * 1000;
+    private static final long POSTPONE_PR_SYNC_FRAME_MS = /* two days */ 2 * 24 * 60 * 60 * 1000;
     private static final String POSTPONE_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone";
     private static final String POSTPONE_GITHUB_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone.github";
     private static final Logger log = LoggerFactory.getLogger(PostponeOndemandPrSyncListener.class);
@@ -47,7 +46,7 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
             if (savedSetting == null)
             {
                 long postpone = randomPostponeTimeWithinTimeWindow();
-                long postponeUntil = postpone + System.currentTimeMillis() + POSTPONE_PR_SYNC_START_OFFSET;
+                long postponeUntil = postpone + System.currentTimeMillis();
 
                 pluginSettings.put(POSTPONE_PR_SYNC_UNTIL, postponeUntil + "");
 

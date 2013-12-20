@@ -53,7 +53,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private final String DEV_STATUS_LAB_FEATURE = "jira.plugin.devstatus.labs";
 
     @Resource
     private MessagingService messagingService;
@@ -164,7 +163,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() && !featureManager.isEnabled(DEV_STATUS_LAB_FEATURE))
+                if (!postponePrSyncHelper.isAfterPostponedTime())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
