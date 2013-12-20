@@ -106,7 +106,13 @@
     #end
     
     <div class="dvcs-header-container">
-        <h4 class="aui $org.getDvcsType()Logo"><a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
+        <!--[if IE]>
+        <h4 class="aui dvcsLogo"><img class="aui-icon supported-app-icon" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
+        <![endif]-->
+        <![if ! IE]>
+        <h4 class="aui $org.getDvcsType()Logo">
+        <![endif]>
+        <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
         </h4>  
