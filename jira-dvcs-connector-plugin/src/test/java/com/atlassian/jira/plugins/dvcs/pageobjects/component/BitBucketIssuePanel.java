@@ -64,7 +64,7 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
     private List<BitBucketCommitEntry> waitForMessages()
     {
         // wait for one message to be present (setting timeout type to longest value)
-        Poller.waitUntilTrue(view.find(By.className("CommitContainer"), TimeoutType.PAGE_LOAD).timed().isPresent());
+        Poller.waitUntilTrue(view.find(By.className("CommitContainer"), TimeoutType.SLOW_PAGE_LOAD).timed().isPresent());
 
         //get all the messages
         List<BitBucketCommitEntry> commitMessageList = new ArrayList<BitBucketCommitEntry>();
