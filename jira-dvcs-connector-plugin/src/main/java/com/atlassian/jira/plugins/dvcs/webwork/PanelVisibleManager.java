@@ -9,25 +9,30 @@ import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseComm
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.user.ApplicationUsers;
+import com.atlassian.plugin.PluginAccessor;
 
 public class PanelVisibleManager
 {
+    private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
     private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
 
     private final FeatureManager featureManager;
     private final OrganizationService organizationService;
     private final PermissionManager permissionManager;
+    private final PluginAccessor pluginAccessor;
 
-    public PanelVisibleManager(FeatureManager featureManager, OrganizationService organizationService, PermissionManager permissionManager)
+    public PanelVisibleManager(FeatureManager featureManager, OrganizationService organizationService, PermissionManager permissionManager, PluginAccessor pluginAccessor)
     {
         this.featureManager = featureManager;
         this.organizationService = organizationService;
         this.permissionManager = permissionManager;
+        this.pluginAccessor = pluginAccessor;
     }
 
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
+        return !pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) &&
+                permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
                 (!featureManager.isEnabledForUser(ApplicationUsers.from(user), LABS_OPT_IN) || isGithubConnected());
     }
 
