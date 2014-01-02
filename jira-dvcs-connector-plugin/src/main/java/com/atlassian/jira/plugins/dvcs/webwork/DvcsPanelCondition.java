@@ -7,11 +7,11 @@ import com.atlassian.plugin.web.Condition;
 
 import java.util.Map;
 
-public class ViewVersionControlCondition implements Condition
+public class DvcsPanelCondition implements Condition
 {
     private final PanelVisibilityManager panelVisibilityManager;
 
-    public ViewVersionControlCondition(PanelVisibilityManager panelVisibilityManager)
+    public DvcsPanelCondition(PanelVisibilityManager panelVisibilityManager)
     {
         this.panelVisibilityManager = panelVisibilityManager;
     }
