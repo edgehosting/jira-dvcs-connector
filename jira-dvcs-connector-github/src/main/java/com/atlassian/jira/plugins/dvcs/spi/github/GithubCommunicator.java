@@ -319,7 +319,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	log.warn("Problem getting hooks from Github: " + e.getMessage());
+        	log.warn("Problem getting hooks from Github: " + e.getMessage(), e);
         	return Collections.EMPTY_MAP;
         }
     }
@@ -433,7 +433,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
         } catch (IOException e)
         {
-            log.info("Can not obtain branches list from repository [ {} ]", repository.getSlug());
+            log.info("Can not obtain branches list from repository [ "+repository.getSlug()+" ]", e);
             // we need tip changeset of the branch
 
             return Collections.emptyList();
