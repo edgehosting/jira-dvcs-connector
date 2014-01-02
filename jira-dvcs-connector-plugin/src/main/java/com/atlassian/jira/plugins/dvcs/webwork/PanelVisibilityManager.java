@@ -6,14 +6,14 @@ import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugin.PluginAccessor;
 
-public class PanelVisibleManager
+public class PanelVisibilityManager
 {
     private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
 
     private final PermissionManager permissionManager;
     private final PluginAccessor pluginAccessor;
 
-    public PanelVisibleManager(PermissionManager permissionManager, PluginAccessor pluginAccessor)
+    public PanelVisibilityManager(PermissionManager permissionManager, PluginAccessor pluginAccessor)
     {
         this.permissionManager = permissionManager;
         this.pluginAccessor = pluginAccessor;

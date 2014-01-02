@@ -43,7 +43,7 @@
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
-    <component key="panelVisibleManager" class="com.atlassian.jira.plugins.dvcs.webwork.PanelVisibleManager" />
+    <component key="panelVisibleManager" class="com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager" />
 
     <!-- ===============================================================================================================================
          smartcommits

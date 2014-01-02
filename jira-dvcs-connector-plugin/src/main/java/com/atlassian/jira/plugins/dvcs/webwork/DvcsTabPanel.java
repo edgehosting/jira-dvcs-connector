@@ -69,7 +69,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     }
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
-    private final PanelVisibleManager panelVisibleManager;
+    private final PanelVisibilityManager panelVisibilityManager;
 
     private final RepositoryService repositoryService;
 
@@ -80,11 +80,11 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private final EventPublisher eventPublisher;
 
-    public DvcsTabPanel(PanelVisibleManager panelVisibleManager,
+    public DvcsTabPanel(PanelVisibilityManager panelVisibilityManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher)
     {
-        this.panelVisibleManager = panelVisibleManager;
+        this.panelVisibilityManager = panelVisibilityManager;
         this.renderer = renderer;
         this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
@@ -115,7 +115,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        return panelVisibleManager.showPanel(issue, user);
+        return panelVisibilityManager.showPanel(issue, user);
     }
 
 }

@@ -9,11 +9,11 @@ import java.util.Map;
 
 public class ViewVersionControlCondition implements Condition
 {
-    private final PanelVisibleManager panelVisibleManager;
+    private final PanelVisibilityManager panelVisibilityManager;
 
-    public ViewVersionControlCondition(PanelVisibleManager panelVisibleManager)
+    public ViewVersionControlCondition(PanelVisibilityManager panelVisibilityManager)
     {
-        this.panelVisibleManager = panelVisibleManager;
+        this.panelVisibilityManager = panelVisibilityManager;
     }
 
     @Override
@@ -26,6 +26,6 @@ public class ViewVersionControlCondition implements Condition
     {
         User user = (User) context.get("user");
         Issue issue = (Issue) context.get("issue");
-        return panelVisibleManager.showPanel(issue, user);
+        return panelVisibilityManager.showPanel(issue, user);
     }
 }
