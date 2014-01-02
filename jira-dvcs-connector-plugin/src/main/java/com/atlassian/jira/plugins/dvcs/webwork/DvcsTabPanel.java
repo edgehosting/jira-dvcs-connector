@@ -2,22 +2,13 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
-import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
@@ -30,7 +21,6 @@ import java.util.List;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
-    public static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
 
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
@@ -79,10 +69,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     }
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
-    private final PermissionManager permissionManager;
+    private final PanelVisibleManager panelVisibleManager;
 
     private final RepositoryService repositoryService;
-    private final OrganizationService organizationService;
 
     private final SoyTemplateRenderer soyTemplateRenderer;
     private final WebResourceManager webResourceManager;
@@ -90,21 +79,17 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     private final ChangesetRenderer renderer;
 
     private final EventPublisher eventPublisher;
-    private final FeatureManager featureManager;
 
-    public DvcsTabPanel(PermissionManager permissionManager,
+    public DvcsTabPanel(PanelVisibleManager panelVisibleManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
-            WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher,
-            FeatureManager featureManager, OrganizationService organizationService)
+            WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher)
     {
-        this.permissionManager = permissionManager;
+        this.panelVisibleManager = panelVisibleManager;
         this.renderer = renderer;
         this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
         this.webResourceManager = webResourceManager;
         this.eventPublisher = eventPublisher;
-        this.featureManager = featureManager;
-        this.organizationService = organizationService;
     }
 
     @Override
@@ -130,13 +115,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        ApplicationUser auser = ApplicationUsers.from(user);
-        return (permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
-                && (!featureManager.isEnabledForUser(auser,LABS_OPT_IN) || isGithubConnected()));
+        return panelVisibleManager.showPanel(issue, user);
     }
 
-    private boolean isGithubConnected()
-    {
-        return organizationService.existsOrganizationWithType(GithubCommunicator.GITHUB, GithubEnterpriseCommunicator.GITHUB_ENTERPRISE);
-    }
 }
