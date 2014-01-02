@@ -31,7 +31,9 @@ public class PanelVisibleManager
 
     public boolean showPanel(Issue issue, User user)
     {
-        return !pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) &&
+        return (!pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) ||
+                // JIRA 6.1.x was installed with 0.x of the devsummary plugin, everything else after will want to hide this panel
+                pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID).getPluginInformation().getVersion().startsWith("0.")) &&
                 permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user) &&
                 (!featureManager.isEnabledForUser(ApplicationUsers.from(user), LABS_OPT_IN) || isGithubConnected());
     }
