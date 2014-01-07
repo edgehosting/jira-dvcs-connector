@@ -2,11 +2,13 @@ package com.atlassian.jira.plugins.dvcs.dao;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 
+import java.util.Date;
+
 public interface SyncAuditLogDao
 {
-    SyncAuditLogMapping newSyncAuditLog(int repoId, String syncType);
+    SyncAuditLogMapping newSyncAuditLog(int repoId, String syncType, Date startDate);
 
-    SyncAuditLogMapping finish(int syncId);
+    SyncAuditLogMapping finish(int syncId, Date finishDate);
 
     SyncAuditLogMapping setException(int syncId, Throwable t, boolean overwriteOld);
 

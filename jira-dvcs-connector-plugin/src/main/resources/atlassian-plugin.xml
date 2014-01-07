@@ -232,6 +232,11 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
 
+    <component key="bitbucketHttpClientProvider" name="bitbucketHttpClientProvider"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider">
+        <description>Bitbucket HttpClient Provider</description>
+    </component>
+
     <component key="githubClientProvider" name="githubClientProvider"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider">
         <description>Github Client Provider</description>

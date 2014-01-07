@@ -34,7 +34,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping newSyncAuditLog(final int repoId, final String syncType)
+    public SyncAuditLogMapping newSyncAuditLog(final int repoId, final String syncType, final Date startDate)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -46,7 +46,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put(SyncAuditLogMapping.REPO_ID, repoId);
                 data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
-                data.put(SyncAuditLogMapping.START_DATE, new Date());
+                data.put(SyncAuditLogMapping.START_DATE, startDate);
                 data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
                 data.put(SyncAuditLogMapping.TOTAL_ERRORS , 0);
                 return ao.create(SyncAuditLogMapping.class, data);
@@ -62,7 +62,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping finish(final int syncId)
+    public SyncAuditLogMapping finish(final int syncId, final Date finishDate)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -71,7 +71,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 SyncAuditLogMapping mapping = find(syncId);
                 if (mapping != null)
                 {
-                    mapping.setEndDate(new Date());
+                    mapping.setEndDate(finishDate);
 
                     if (StringUtils.isNotBlank(mapping.getExcTrace()))
                     {

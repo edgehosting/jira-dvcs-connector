@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -33,14 +34,18 @@ public class RepositoryLinkRemoteRestpointTest
     
     private static Set<Integer> addedRepositoryLinksIds = new LinkedHashSet<Integer>();
 
-
     @BeforeClass
     public static void initializeRepositoryLinksREST()
     {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+
+        httpClientProvider.setUserAgent("jirabitbucketconnector-test");
+
         BitbucketRemoteClient bitbucketRemoteClient =
                 new BitbucketRemoteClient(new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                     BITBUCKET_REPO_OWNER,
-                                                                    BITBUCKET_REPO_PASSWORD));
+                                                                    BITBUCKET_REPO_PASSWORD,
+                                                                    httpClientProvider));
         
         repositoryLinkREST = bitbucketRemoteClient.getRepositoryLinksRest();
     }

@@ -401,7 +401,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void setupPostcommitHook(Repository repository, String postCommitUrl)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build();
 
         try
         {
@@ -559,7 +559,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String author)
     {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).timeout(2000).build();
+        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
         BitbucketAccount bitbucketAccount = remoteClient.getAccountRest().getUser(author);
         String username = bitbucketAccount.getUsername();
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();

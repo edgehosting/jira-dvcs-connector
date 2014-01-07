@@ -79,7 +79,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
 
-        Date lastSync = payload.getLastSyncDate();
+        Date lastSync = repo.getActivityLastSync();
 
         BitbucketClientBuilder bitbucketClientBuilder = bitbucketClientBuilderFactory.forRepository(repo);
         if (payload.getPageNum() == 1)
@@ -90,11 +90,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
         activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
-                lastSync);
+                payload.getLastSyncDate());
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
-        boolean isLastPage = isLastPage(infos);
-
+        boolean isLastPage = isLastPage(activityPage);
 
         for (BitbucketPullRequestActivityInfo info : infos)
         {
@@ -105,7 +104,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 Log.info("Date for the activity could not be found.");
                 continue;
             }
-            if ((lastSync == null) || (activityDate.after(lastSync)))
+            if (lastSync == null || activityDate.after(lastSync))
             {
                 lastSync = activityDate;
                 repositoryDao.setLastActivitySyncDate(repo.getId(), activityDate);
@@ -149,9 +148,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY;
     }
 
-    private boolean isLastPage(List<BitbucketPullRequestActivityInfo> infos)
+    private boolean isLastPage(BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage)
     {
-        return infos.isEmpty() || infos.size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE;
+        return activityPage.getValues().isEmpty() || activityPage.getValues().size() < PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE || StringUtils.isEmpty(activityPage.getNext());
     }
 
     private int processActivity(BitbucketSynchronizeActivityMessage payload, BitbucketPullRequestActivityInfo info,
@@ -462,12 +461,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeActivityMessage payload, String[] tags)
     {
         return retryCount >= 3;
-    }
-
-    @Override
-    public void afterDiscard(int messageId, int retryCount, BitbucketSynchronizeActivityMessage payload, String[] tags)
-    {
-
     }
 
 }

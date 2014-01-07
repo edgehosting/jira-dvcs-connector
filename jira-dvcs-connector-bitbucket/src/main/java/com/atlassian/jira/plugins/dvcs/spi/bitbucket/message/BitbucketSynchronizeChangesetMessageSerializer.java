@@ -6,18 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.collections.CollectionUtils;
 
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -39,7 +34,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     @Override
     protected void serializeInternal(JSONObject json, BitbucketSynchronizeChangesetMessage payload) throws Exception
     {
-        json.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
+        json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
         json.put("exclude", collectionToString(payload.getExclude()));
         json.put("page", payload.getPage());
         json.put("include", collectionToString(payload.getInclude()));
@@ -47,7 +42,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     }
 
     @Override
-    protected BitbucketSynchronizeChangesetMessage deserializeInternal(JSONObject json) throws Exception
+    protected BitbucketSynchronizeChangesetMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
         Date refreshAfterSynchronizedAt;
         List<String> exclude;
@@ -55,7 +50,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         int page;
         Map<String, String> nodesToBranches;
 
-        refreshAfterSynchronizedAt = getDateFormat().parse(json.optString("refreshAfterSynchronizedAt"));
+        refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
         exclude = collectionFromString(json.optString("exclude"));
         page = json.optInt("page");
         include = collectionFromString(json.optString("include"));

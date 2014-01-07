@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Verb;
@@ -19,9 +20,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiPr
 public class TwoLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
 {
 
-	public TwoLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret)
+	public TwoLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, HttpClientProvider httpClientProvider)
 	{
-		super(apiProvider, key, secret);
+		super(apiProvider, key, secret, httpClientProvider);
 	}
 
 	@Override

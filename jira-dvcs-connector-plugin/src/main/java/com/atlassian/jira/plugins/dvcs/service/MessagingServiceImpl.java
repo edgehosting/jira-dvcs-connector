@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,6 +119,11 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private Synchronizer synchronizer;
+
+    @Resource
+    private HttpClientProvider httpClientProvider;
+
+    private final Object endProgressLock = new Object();
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -718,44 +725,50 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
-        if (consumer != null)
+        boolean finished = endProgress(repository, progress);
+        if (finished && auditId > 0)
         {
-            synchronized (consumer)
-            {
-                endProgress(repository, progress, auditId);
-            }
-        } else
-        {
-            endProgress(repository, progress, auditId);
+            Date finishDate = progress == null ? new Date() : new Date(progress.getFinishTime());
+            syncAudit.finish(auditId, finishDate);
         }
-
     }
 
-    private void endProgress(Repository repository, Progress progress, int auditId)
+    private boolean endProgress(Repository repository, Progress progress)
     {
-        if (getQueuedCount(getTagForSynchronization(repository)) == 0)
+        int queuedCount;
+        synchronized(endProgressLock)
         {
-            // TODO error could be in PR synchronization and thus we can process smartcommits
-            if (progress == null || progress.getError() == null)
+            queuedCount = getQueuedCount(getTagForSynchronization(repository));
+        }
+        if (queuedCount == 0)
+        {
+            try
             {
-                smartcCommitsProcessor.startProcess(progress, repository, changesetService);
-            }
-            if (progress != null && !progress.isFinished())
-            {
-                progress.finish();
-
-                EnumSet<SynchronizationFlag> flags = progress.getRunAgainFlags();
-                if (flags != null)
+                // TODO error could be in PR synchronization and thus we can process smartcommits
+                if (progress == null || progress.getError() == null)
                 {
-                    progress.setRunAgainFlags(null);
-                    synchronizer.doSync(repository, flags);
+                    smartcCommitsProcessor.startProcess(progress, repository, changesetService);
                 }
-            }
-            if (auditId > 0)
+                if (progress != null && !progress.isFinished())
+                {
+                    progress.finish();
+
+                    EnumSet<SynchronizationFlag> flags = progress.getRunAgainFlags();
+                    if (flags != null)
+                    {
+                        progress.setRunAgainFlags(null);
+                        synchronizer.doSync(repository, flags);
+                    }
+                }
+
+                return true;
+            } finally
             {
-                syncAudit.finish(auditId);
+                httpClientProvider.closeIdleConnections();
             }
         }
+
+        return false;
     }
 
     @Override

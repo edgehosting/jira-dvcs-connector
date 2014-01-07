@@ -173,11 +173,4 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         return retryCount >= 3;
     }
-
-    @Override
-    public void afterDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
-    {
-
-    }
-
 }

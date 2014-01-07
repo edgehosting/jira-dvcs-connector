@@ -127,7 +127,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             //
             // post the link to bitbucket
             //
-            RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).build().getRepositoryLinksRest();
+            RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
 
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
                     baseUrl + "/browse/\\1", constructProjectsRex(forProjects));
@@ -146,7 +146,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private void removeLinks(Repository repository, List<BitbucketRepositoryLink> linksToRemove)
     {
-        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).build().getRepositoryLinksRest();
+        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
 
         for (BitbucketRepositoryLink repositoryLink : linksToRemove)
         {

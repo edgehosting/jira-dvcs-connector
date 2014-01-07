@@ -27,11 +27,11 @@ public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloa
     {
         json.put("branch", payload.getBranch());
         json.put("node", payload.getNode());
-        json.put("refreshAfterSynchronizedAt", getDateFormat().format(payload.getRefreshAfterSynchronizedAt()));
+        json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
     }
 
     @Override
-    protected SynchronizeChangesetMessage deserializeInternal(JSONObject json) throws Exception
+    protected SynchronizeChangesetMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
         String branch;
         String node;
@@ -39,7 +39,7 @@ public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloa
 
         branch = json.getString("branch");
         node = json.getString("node");
-        refreshAfterSynchronizedAt = getDateFormat().parse(json.getString("refreshAfterSynchronizedAt"));
+        refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
 
         return new SynchronizeChangesetMessage(null, branch, node, refreshAfterSynchronizedAt, null, false, 0);
     }

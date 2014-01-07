@@ -42,7 +42,7 @@ public class GitHubPullRequestSynchronizeMessageSerializer extends AbstractMessa
     }
 
     @Override
-    protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json) throws Exception
+    protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
         return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"), ChangeType.valueOf(json
                 .getString("changeType")));

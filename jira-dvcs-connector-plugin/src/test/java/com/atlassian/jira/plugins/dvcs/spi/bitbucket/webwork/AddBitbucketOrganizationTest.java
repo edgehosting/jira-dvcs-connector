@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -98,6 +99,9 @@ public class AddBitbucketOrganizationTest
     @Mock
     private OAuthService oAuthService;
 
+    @Mock
+    private HttpClientProvider httpClientProvider;
+
     private AddBitbucketOrganization addBitbucketOrganization;
 
     @BeforeMethod (alwaysRun=true)
@@ -132,7 +136,7 @@ public class AddBitbucketOrganizationTest
         when(oAuthService.getRequestToken()).thenReturn(requestToken);
         when(oAuthService.getAuthorizationUrl(eq(requestToken))).thenReturn(SAMPLE_AUTH_URL);
 
-        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService)
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
         {
             @Override
             OAuthService createOAuthScribeService() {

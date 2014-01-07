@@ -119,4 +119,8 @@ public interface Progress
     EnumSet<SynchronizationFlag> getRunAgainFlags();
 
     void setRunAgainFlags(EnumSet<SynchronizationFlag> flags);
+
+    Long getStartTime();
+
+    Long getFinishTime();
 }
