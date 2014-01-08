@@ -76,8 +76,12 @@ function retrieveSyncStatus() {
         AJS.$.each(data.repositories, function (a, repo) {
             updateSyncStatus(repo);
         });
-        window.setTimeout(retrieveSyncStatus, 4000)
-    });
+        window.setTimeout(retrieveSyncStatus, 4000);
+    }).fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        dvcsLogConsole("Request Failed: " + err);
+        window.setTimeout(retrieveSyncStatus, 40000);
+       });
 }
 
 function updateSyncStatus(repo) {
@@ -977,6 +981,11 @@ AJS.$(document).ready(function () {
     }
 });
 
+function dvcsLogConsole(msg) {
+    if ( window.console && window.console.log ) {
+       console.log("DVCS: " + msg);
+    }
+}
 //---------------------------------------------------------
 
 AJS.$.fn.extend({
