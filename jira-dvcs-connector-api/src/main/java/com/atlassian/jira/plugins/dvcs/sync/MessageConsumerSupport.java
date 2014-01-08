@@ -50,7 +50,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     protected BranchService branchService;
 
     @Override
-    public void onReceive(final Message<P> message, P payload)
+    public final void onReceive(final Message<P> message, P payload)
     {
         String[] tags = message.getTags();
 
