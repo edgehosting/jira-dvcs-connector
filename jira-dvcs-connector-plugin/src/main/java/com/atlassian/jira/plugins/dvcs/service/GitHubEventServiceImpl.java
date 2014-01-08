@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
@@ -54,6 +56,12 @@ public class GitHubEventServiceImpl implements GitHubEventService
     @Resource(name = "githubClientProvider")
     private GithubClientProvider githubClientProvider;
 
+    @Resource
+    private Synchronizer synchronizer;
+
+    @Resource
+    MessagingService messagingService;
+
     /**
      * {@inheritDoc}
      */
@@ -77,7 +85,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventMapping lastGitHubEventSavePoint = gitHubEventDAO.getLastSavePoint(repository);
 
         String lastProceedEventGitHubId = null;
-
+        final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
         Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(forRepositoryId).iterator();
         while (eventsIterator.hasNext())
         {
@@ -109,7 +117,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
                         }
 
                         // called registered GitHub event processors
-                        gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags);
+                        gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags, context);
                         saveEventCounterpart(repository, event);
 
                         return Boolean.FALSE;

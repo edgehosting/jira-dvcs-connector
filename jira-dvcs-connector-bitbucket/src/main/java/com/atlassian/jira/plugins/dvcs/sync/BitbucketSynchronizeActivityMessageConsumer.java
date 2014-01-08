@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
@@ -8,12 +7,10 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -62,6 +59,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     @Resource
     private RepositoryPullRequestDao dao;
+    @Resource
+    private PullRequestService pullRequestService;
     @Resource
     private RepositoryDao repositoryDao;
 
@@ -214,7 +213,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         if (participantIndex != null)
         {
-            updatePulRequestParticipants(local.getID(), repo.getId(), participantIndex);
+            pullRequestService.updatePullRequestParticipants(local.getID(), repo.getId(), participantIndex);
         }
 
         return local;
@@ -230,45 +229,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             }
         }
         return RepositoryPullRequestMapping.Status.OPEN;
-    }
-
-    private void updatePulRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
-    {
-        PullRequestParticipantMapping[] oldParticipants = dao.getParticipants(pullRequestId);
-        for (PullRequestParticipantMapping participantMapping : oldParticipants)
-        {
-            Participant participant = participantIndex.remove(participantMapping.getUsername());
-            if (participant == null)
-            {
-                dao.removeParticipant(participantMapping);
-            } else
-            {
-                boolean markedForSave = false;
-                if (participant.isApproved() != participantMapping.isApproved())
-                {
-                    // update approval
-                    participantMapping.setApproved(participant.isApproved());
-                    markedForSave = true;
-                }
-
-                if (StringUtils.equals(participant.getRole(), participantMapping.getRole()))
-                {
-                    participantMapping.setRole(participant.getRole());
-                    markedForSave = true;
-                }
-
-                if (markedForSave)
-                {
-                    dao.saveParticipant(participantMapping);
-                }
-            }
-        }
-
-        for (String username : participantIndex.keySet())
-        {
-            Participant participant = participantIndex.get(username);
-            dao.createParticipant(pullRequestId, repositoryId, participant);
-        }
     }
 
     private Map<String, Participant> loadPulRequestParticipants(final PullRequestRemoteRestpoint pullRestpoint, final BitbucketPullRequest remote)

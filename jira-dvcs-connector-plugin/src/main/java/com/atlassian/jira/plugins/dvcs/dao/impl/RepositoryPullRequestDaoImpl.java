@@ -497,6 +497,4 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         params.put(PullRequestParticipantMapping.DOMAIN, repositoryId);
         activeObjects.create(PullRequestParticipantMapping.class, params);
     }
-
-
 }
