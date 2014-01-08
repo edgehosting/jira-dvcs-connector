@@ -43,6 +43,8 @@
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
+    <component key="panelVisibleManager" class="com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager" />
+
     <!-- ===============================================================================================================================
          smartcommits
           =============================================================================================================================== -->
@@ -455,7 +457,7 @@
         <label key="Commits" />
         <tooltip key="Commits" />
         <resource type="download" name="icon.png" location="images/gh_icon.png" />
-        <condition class="com.atlassian.jira.plugins.dvcs.webwork.ViewVersionControlCondition"/> 
+        <condition class="com.atlassian.jira.plugins.dvcs.webwork.DvcsPanelCondition"/>
     </web-panel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
