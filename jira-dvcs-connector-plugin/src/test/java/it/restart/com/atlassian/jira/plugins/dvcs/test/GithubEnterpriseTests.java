@@ -44,6 +44,7 @@ public class GithubEnterpriseTests implements BasicTests
         // setup up OAuth from github
         oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class, GITHUB_ENTERPRISE_URL)
                 .addConsumer(jira.getProductInstance().getBaseUrl());
+        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass

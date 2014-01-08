@@ -44,6 +44,7 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin();
         // setup up OAuth from github
         oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
+        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass

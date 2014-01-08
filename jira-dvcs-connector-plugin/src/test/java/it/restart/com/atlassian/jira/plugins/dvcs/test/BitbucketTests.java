@@ -52,6 +52,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         // setup up OAuth from bitbucket
         oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
         // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
+        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass
