@@ -714,7 +714,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                     log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
                 } else
                 {
-                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]", e.getMessage());
+                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage());
                 }
                 return getUnknownUser(repository, author, rawAuthor);
             }
