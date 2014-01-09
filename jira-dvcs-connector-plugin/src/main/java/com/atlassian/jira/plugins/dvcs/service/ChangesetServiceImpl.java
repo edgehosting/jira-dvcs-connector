@@ -100,7 +100,7 @@ public class ChangesetServiceImpl implements ChangesetService
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst)
     {
-        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, newestFirst);
+        List<Changeset> changesets = changesetDao.getByIssueKey(issueKeys, dvcsType, newestFirst);
         return checkChangesetVersion(changesets);
     }
 
