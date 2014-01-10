@@ -757,6 +757,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     if (flags != null)
                     {
                         progress.setRunAgainFlags(null);
+                        // to be sure that soft sync will be run
+                        flags.add(SynchronizationFlag.SOFT_SYNC);
                         synchronizer.doSync(repository, flags);
                     }
                 }
