@@ -407,8 +407,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 // to disable smart commits on it, make sense
                 // in case when someone has just migrated
                 // repo to DVCS avoiding duplicate smart commits
-                flags.remove(SynchronizationFlag.SOFT_SYNC);
-                doSync(repository, flags);
+                EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
+                newFlags.remove(SynchronizationFlag.SOFT_SYNC);
+                doSync(repository, newFlags);
             }
         }
     }
