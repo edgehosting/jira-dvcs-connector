@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>jira-dvcs-connector-github-enterprise</artifactId>
-  <version>1.4.4-SNAPSHOT </version>
+    <version>1.4.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Jira DVCS Connector GitHub Enterprise module</name>
 	<description>Jira DVCS Connector GitHub Enterprise module</description>
@@ -28,29 +28,26 @@
 		</dependency>
 		<dependency>
             <groupId>com.atlassian.jira</groupId>
-            <artifactId>jira-api</artifactId>
-            <version>${jira.compile.version}</version>
+	    	<artifactId>jira-api</artifactId>
+	    	<version>${jira.compile.version}</version>
             <scope>provided</scope>
-        </dependency>
+  		</dependency>
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>
 			<version>2.1.2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>com.atlassian.activeobjects</groupId>
-			<artifactId>activeobjects-plugin</artifactId>
-			<version>${ao.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+            <version>${ao.version}</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 </project>

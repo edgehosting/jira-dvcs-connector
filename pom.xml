@@ -39,12 +39,12 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2-rotp1</jira.compile.version>
-        <jira.version>6.2-rotp1</jira.version>
-        <jira.data.version>6.2-rotp1</jira.data.version>
+        <jira.compile.version>6.2-OD-03</jira.compile.version>
+        <jira.version>6.2-OD-03</jira.version>
+        <jira.data.version>6.2-OD-03</jira.data.version>
 
-        <ao.version>0.22.1</ao.version>
-        <streams.version>5.3.10</streams.version>
+        <ao.version>0.23.1-m1</ao.version>
+        <streams.version>5.3.11</streams.version>
         <greenhopper.version>6.2.5.1</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
