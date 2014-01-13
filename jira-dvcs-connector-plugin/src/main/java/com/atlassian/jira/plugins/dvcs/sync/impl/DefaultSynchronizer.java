@@ -53,6 +53,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -130,7 +131,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(softSync), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
-                if (!softSync)
+                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
                 {
                     //TODO This will deleted both changeset and PR messages, we should distinguish between them
                     // Stopping synchronization to delete failed messages for repository
