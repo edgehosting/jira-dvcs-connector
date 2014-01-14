@@ -30,6 +30,9 @@ public interface SyncAuditLogMapping extends Entity
     Date getStartDate();
     Date getEndDate();
     String getSyncStatus();
+    int getFlightTimeMs();
+    Date getFirstRequestDate();
+    int getNumRequests();
     String getSyncType();
     @StringLength(StringLength.UNLIMITED)
     String getExcTrace();
@@ -38,7 +41,10 @@ public interface SyncAuditLogMapping extends Entity
     void setRepoId(int id);
     void setStartDate(Date date);
     void setEndDate(Date date);
+    void setFirstRequestDate(Date firstRequestDate);
     void setSyncStatus(String status);
+    void setFlightTimeMs(int flightTime);
+    void setNumRequests(int numRequests);
     void setSyncType(String type);
     @StringLength(StringLength.UNLIMITED)
     void setExcTrace(String trace);

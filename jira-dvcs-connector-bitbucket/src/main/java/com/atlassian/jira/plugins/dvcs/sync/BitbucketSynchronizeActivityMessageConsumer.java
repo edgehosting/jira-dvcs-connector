@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
@@ -73,7 +74,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload)
     {
         Repository repo = payload.getRepository();
-        int jiraCount = payload.getProgress().getJiraCount();
+        final Progress progress = payload.getProgress();
+        int jiraCount = progress.getJiraCount();
 
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
         PullRequestRemoteRestpoint pullRestpoint = null;
@@ -88,8 +90,21 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketRemoteClient remoteClient = bitbucketClientBuilder.apiVersion(2).build();
 
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
-        activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
-                payload.getLastSyncDate());
+        if (progress.getFirstMessageTime() == null)
+        {
+            progress.setFirstMessageTime(new Date());
+        }
+        progress.incrementRequestCount();
+        long startFlightTime = System.currentTimeMillis();
+        try
+        {
+            activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
+                    payload.getLastSyncDate());
+        }
+        finally
+        {
+            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+        }
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(activityPage);
@@ -112,7 +127,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             int localPrId = processActivity(payload, info, pullRestpoint);
             markProcessed(payload, info, localPrId);
 
-            payload.getProgress().inPullRequestProgress(processedSize(payload),
+            progress.inPullRequestProgress(processedSize(payload),
                     jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
         }
         if (!isLastPage)
