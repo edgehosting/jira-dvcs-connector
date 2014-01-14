@@ -316,6 +316,10 @@ public class GithubCommunicator implements DvcsCommunicator
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);
+        repositoryHook.getEvents().add("push");
+        repositoryHook.getEvents().add("pull_request");
+        repositoryHook.getEvents().add("issue_comment");
+        repositoryHook.getEvents().add("pull_request_review_comment");
 
         Map<String, String> config = new HashMap<String, String>();
         config.put("url", postCommitUrl);
