@@ -4,21 +4,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 
 public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeActivityMessage>
 {
-
-    public BitbucketSynchronizeActivityMessageSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super(repositoryService, synchronizer);
-    }
 
     @Override
     protected void serializeInternal(JSONObject json, BitbucketSynchronizeActivityMessage payload) throws Exception

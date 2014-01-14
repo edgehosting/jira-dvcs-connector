@@ -8,10 +8,8 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -25,11 +23,6 @@ import com.google.common.collect.Lists;
  */
 public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeChangesetMessage>
 {
-
-    public BitbucketSynchronizeChangesetMessageSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super(repositoryService, synchronizer);
-    }
 
     @Override
     protected void serializeInternal(JSONObject json, BitbucketSynchronizeChangesetMessage payload) throws Exception
