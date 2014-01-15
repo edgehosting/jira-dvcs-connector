@@ -303,8 +303,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
     public BitbucketChangesetPage getChangesetsForPage(int page, Repository repository, List<String> includeNodes, List<String> excludeNodes)
     {
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-        return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
-                includeNodes, excludeNodes);
+        long startFlightTime = System.currentTimeMillis();
+        final Progress sync = repository.getSync();
+        if (sync != null)
+        {
+            sync.incrementRequestCount();
+        }
+        try
+        {
+            return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
+                    includeNodes, excludeNodes);
+        }
+        finally
+        {
+            if (sync != null)
+            {
+                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+            }
+        }
     }
 
     private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
@@ -379,6 +395,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
     {
+        final Progress sync = repository.getSync();
+        final long startFlightTime = System.currentTimeMillis();
+        if (sync != null)
+        {
+            sync.incrementRequestCount();
+        }
         try
         {
             BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
@@ -392,6 +414,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             log.debug("The response could not be parsed", e);
             throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
+        }
+        finally
+        {
+            if (sync != null)
+            {
+                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+            }
         }
     }
 

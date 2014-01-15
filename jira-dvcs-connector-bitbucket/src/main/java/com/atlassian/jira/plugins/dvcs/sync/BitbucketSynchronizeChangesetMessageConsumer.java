@@ -67,7 +67,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             progress.setFirstMessageTime(new Date());
         }
         progress.incrementRequestCount();
-        final long startTime = System.currentTimeMillis();
+        final long startFlightTime = System.currentTimeMillis();
         final BitbucketChangesetPage page;
         try
         {
@@ -75,7 +75,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
         finally
         {
-            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startTime));
+            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
         }
         process(message, payload, page);
         //

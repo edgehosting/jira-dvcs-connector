@@ -193,21 +193,52 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // have a detail within this synchronization ?
         if (!payload.getProcessedPullRequests().contains(remoteId))
         {
-            BitbucketLink pullRequestLink = info.getPullRequest().getLinks().getSelf();
-            if (pullRequestLink != null && !StringUtils.isBlank(pullRequestLink.getHref()))
+            final Progress sync = repo.getSync();
+            final long startFlightTime = System.currentTimeMillis();
+            if (sync != null)
             {
-                remote = pullRestpoint.getPullRequestDetail(pullRequestLink.getHref());
-            } else
-            {
-                // if there is no pull request link fall back to the generated pull request url
-                remote = pullRestpoint.getPullRequestDetail(repo.getOrgName(), repo.getSlug(), info
-                        .getPullRequest().getId() + "");
+                sync.incrementRequestCount();
             }
-            participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
+            try
+            {
+                BitbucketLink pullRequestLink = info.getPullRequest().getLinks().getSelf();
+                if (pullRequestLink != null && !StringUtils.isBlank(pullRequestLink.getHref()))
+                {
+                    remote = pullRestpoint.getPullRequestDetail(pullRequestLink.getHref());
+                } else
+                {
+                    // if there is no pull request link fall back to the generated pull request url
+                    remote = pullRestpoint.getPullRequestDetail(repo.getOrgName(), repo.getSlug(), info
+                            .getPullRequest().getId() + "");
+                }
+                participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
+            }
+            finally
+            {
+                if (sync != null)
+                {
+                    sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                }
+            }
 
             if (remote.getLinks().getComments() != null)
             {
-                commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
+                final long startFlightTime2 = System.currentTimeMillis();
+                if (sync != null)
+                {
+                    sync.incrementRequestCount();
+                }
+                try
+                {
+                    commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
+                }
+                finally
+                {
+                    if (sync != null)
+                    {
+                        sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime2));
+                    }
+                }
             }
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
@@ -307,6 +338,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     {
         if (activity.getSource() != null && activity.getSource().getRepository() != null)
         {
+            final Progress sync = repo.getSync();
+            long startFlightTime = System.currentTimeMillis();
+            if (sync != null)
+            {
+                sync.incrementRequestCount();
+            }
             try
             {
                 BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
@@ -334,6 +371,13 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             } catch(BitbucketRequestException e)
             {
                 LOGGER.warn("Could not get commits for pull request", e);
+            }
+            finally
+            {
+                if (sync != null)
+                {
+                    sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                }
             }
         } else
         {
