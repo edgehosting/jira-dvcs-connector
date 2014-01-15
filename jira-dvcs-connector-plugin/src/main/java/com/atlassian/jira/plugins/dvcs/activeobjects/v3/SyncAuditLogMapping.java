@@ -16,7 +16,10 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_STATUS_SUCCESS = "SUCCESS";
     String SYNC_STATUS_SLEEPING = "SLEEPING";
     String SYNC_TYPE_SOFT = "SOFT";
-    String SYNC_TYPE_FULL = "FULL";
+    String SYNC_TYPE_CHANGESETS = "CHANGESETS";
+    String SYNC_TYPE_PULLREQUESTS = "PULLREQUESTS";
+    String SYNC_TYPE_WEBHOOKS = "WEBHOOKS";
+
     //
     String REPO_ID = "REPO_ID";
     String START_DATE = "START_DATE";
