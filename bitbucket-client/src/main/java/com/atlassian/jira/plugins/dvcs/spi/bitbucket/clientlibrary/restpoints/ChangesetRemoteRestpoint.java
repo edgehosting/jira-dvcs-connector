@@ -124,7 +124,7 @@ public class ChangesetRemoteRestpoint
         {
             parameters.put("exclude", new ArrayList<String>(excludeNodes));
         }
-        return requestor.post(url, null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+        return requestor.post(url, parameters, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
     }
 
 }
