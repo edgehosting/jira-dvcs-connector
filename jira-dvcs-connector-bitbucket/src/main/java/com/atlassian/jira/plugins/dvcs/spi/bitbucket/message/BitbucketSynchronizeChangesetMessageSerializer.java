@@ -51,7 +51,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         Date refreshAfterSynchronizedAt;
         List<String> exclude;
         List<String> include;
-        BitbucketChangesetPage page;
+        BitbucketChangesetPage page = null;
 
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
         exclude = collectionFromString(json.optString("exclude"));
