@@ -83,7 +83,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
             return;
         }
 
-        currentPage = requestor.post(url, parameters, createResponseCallback());
+        currentPage = requestor.getWithMultipleVals(url, parameters, createResponseCallback());
     }
 
             @Override

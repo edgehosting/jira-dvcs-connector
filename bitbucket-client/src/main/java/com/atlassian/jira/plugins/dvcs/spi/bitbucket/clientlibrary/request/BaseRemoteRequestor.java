@@ -1,6 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -18,6 +22,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -28,6 +33,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,7 +60,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     protected final ApiProvider apiProvider;
 
     private final HttpClientProvider httpClientProvider;
-
     public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
@@ -62,7 +67,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback) {
+        return getWithRetry(uri, Maps.transformValues(parameters, STRING_TO_LIST_STRING), callback);
+    }
+
+    @Override
+    public <T> T getWithMultipleVals(String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
     {
         return getWithRetry(uri, parameters, callback);
     }
@@ -70,7 +80,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     @Override
     public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return deleteWithRetry(uri, parameters, callback);
+        return deleteWithRetry(uri, Maps.transformValues(parameters, STRING_TO_LIST_STRING), callback);
     }
 
     @Override
@@ -78,7 +88,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         return postWithRetry(uri, parameters, callback);
     }
-
 
     @Override
     public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
@@ -89,8 +98,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
     // Retryers...
     // --------------------------------------------------------------------------------------------------
-    
-    private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
+
+    private <T> T getWithRetry(final String uri, final Map<String, List<String>> parameters,
             final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
@@ -104,7 +113,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         });
     }
 
-    private <T> T deleteWithRetry(final String uri, final Map<String, String> parameters,
+    private <T> T deleteWithRetry(final String uri, final Map<String, List<String>> parameters,
             final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
@@ -170,6 +179,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
+    public static final Function<String,List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>() {
+        @Override
+        public List<String> apply(@Nullable String input) {
+            return Collections.singletonList(input);
+        }
+    };
+
     protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, ? extends Object> params)
     {
         final StringBuilder sb = new StringBuilder("{");
@@ -198,7 +214,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     {
         HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
-       
+
         try
         {
             createConnection(client, method, uri, params);
@@ -239,26 +255,26 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
     {
         HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
 
         RemoteResponse response = null;
-       
+
         try
         {
-            createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
-          
+            createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
+
             HttpResponse httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
-            
+
             return callback.onResponse(response);
 
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-            
+
         } catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
@@ -272,17 +288,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
     {
-        
+
         RemoteResponse response = new RemoteResponse();
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
             logRequestAndResponse(method, httpResponse, statusCode);
-            
+
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
-                    + statusCode);            
-             
+                    + statusCode);
+
             switch (statusCode)
             {
             case HttpStatus.SC_BAD_REQUEST:
@@ -298,7 +314,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
                 break;
             }
-            
+
 
             throw toBeThrown;
         }
@@ -353,6 +369,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
     {
+        return multiParamsToString(Maps.transformValues(parameters, STRING_TO_LIST_STRING), urlAlreadyHasParams);
+    }
+
+    protected String multiParamsToString(Map<String, List<String>> parameters, boolean urlAlreadyHasParams)
+    {
         StringBuilder queryStringBuilder = new StringBuilder();
 
         if (parameters != null && !parameters.isEmpty())
@@ -370,19 +391,19 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return queryStringBuilder.toString();
     }
 
-    private void paramsMapToString(Map<String, String> parameters, StringBuilder builder)
+    private void paramsMapToString(Map<String, List<String>> parameters, StringBuilder builder)
     {
-        for (Iterator<Map.Entry<String, String>> iterator = parameters.entrySet().iterator(); iterator.hasNext();)
-        {
-            Map.Entry<String, String> entry = iterator.next();
-            builder.append(encode(entry.getKey()));
-            builder.append("=");
-            builder.append(encode(entry.getValue()));
-            if (iterator.hasNext())
-            {
-                builder.append("&");
+        builder.append(Joiner.on("&").join(Iterables.concat(Iterables.transform(parameters.entrySet(), new Function<Entry<String, List<String>>, Iterable<String>>() {
+            @Override
+            public Iterable<String> apply(@Nullable final Entry<String, List<String>> entry) {
+                return Iterables.transform(entry.getValue(), new Function<String, String>() {
+                    @Override
+                    public String apply(@Nullable String entryValue) {
+                        return encode(entry.getKey()) + "=" + encode(entryValue);
+                    }
+                });
             }
-        }
+        }))));
     }
 
     private static String encode(String str)
