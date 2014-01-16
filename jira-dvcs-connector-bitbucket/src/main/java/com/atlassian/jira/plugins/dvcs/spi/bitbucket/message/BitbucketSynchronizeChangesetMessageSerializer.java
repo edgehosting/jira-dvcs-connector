@@ -38,7 +38,10 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
         json.put("exclude", collectionToString(payload.getExclude()));
         // We only need next page
-        json.put("nextPage", payload.getPage().getNext());
+        if (payload.getPage() != null)
+        {
+            json.put("nextPage", payload.getPage().getNext());
+        }
         json.put("include", collectionToString(payload.getInclude()));
     }
 
@@ -52,8 +55,12 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
 
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
         exclude = collectionFromString(json.optString("exclude"));
-        page = new BitbucketChangesetPage();
-        page.setNext(json.optString("nextPage"));
+        if (json.has("nextPage"))
+        {
+            page = new BitbucketChangesetPage();
+            page.setNext(json.optString("nextPage"));
+        }
+
         include = collectionFromString(json.optString("include"));
 
         return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, false, 0);
