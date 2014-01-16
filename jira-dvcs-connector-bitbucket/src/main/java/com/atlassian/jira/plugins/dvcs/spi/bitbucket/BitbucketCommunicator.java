@@ -307,7 +307,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         final Progress sync = repository.getSync();
         if (sync != null)
         {
-            sync.incrementRequestCount();
+            sync.incrementRequestCount(new Date());
         }
         try
         {
@@ -399,7 +399,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         final long startFlightTime = System.currentTimeMillis();
         if (sync != null)
         {
-            sync.incrementRequestCount();
+            sync.incrementRequestCount(new Date());
         }
         try
         {

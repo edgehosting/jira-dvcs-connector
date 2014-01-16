@@ -184,14 +184,12 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void setFirstMessageTime(final Date firstMessageTime)
+    public void incrementRequestCount(final Date messageTime)
     {
-        this.firstMessageTime = firstMessageTime;
-    }
-
-    @Override
-    public void incrementRequestCount()
-    {
+        if (this.firstMessageTime == null)
+        {
+            this.firstMessageTime = messageTime;
+        }
         this.numRequests++;
     }
 

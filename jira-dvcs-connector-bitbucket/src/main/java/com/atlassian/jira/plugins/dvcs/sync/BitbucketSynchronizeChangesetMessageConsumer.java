@@ -62,11 +62,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         Repository repo = payload.getRepository();
         int pageNum = payload.getPage();
         final Progress progress = payload.getProgress();
-        if (progress.getFirstMessageTime() == null)
-        {
-            progress.setFirstMessageTime(new Date());
-        }
-        progress.incrementRequestCount();
+
+        progress.incrementRequestCount(new Date());
         final long startFlightTime = System.currentTimeMillis();
         final BitbucketChangesetPage page;
         try

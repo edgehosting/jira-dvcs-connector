@@ -127,9 +127,7 @@ public interface Progress
 
     Date getFirstMessageTime();
 
-    void setFirstMessageTime(Date date);
-
-    void incrementRequestCount();
+    void incrementRequestCount(Date messageTime);
 
     void addFlightTimeMs(int timeMs);
 

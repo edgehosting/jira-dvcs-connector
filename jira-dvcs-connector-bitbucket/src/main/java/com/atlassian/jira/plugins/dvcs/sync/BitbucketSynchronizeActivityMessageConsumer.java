@@ -90,11 +90,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketRemoteClient remoteClient = bitbucketClientBuilder.apiVersion(2).build();
 
         pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
-        if (progress.getFirstMessageTime() == null)
-        {
-            progress.setFirstMessageTime(new Date());
-        }
-        progress.incrementRequestCount();
+        progress.incrementRequestCount(new Date());
         long startFlightTime = System.currentTimeMillis();
         try
         {
@@ -197,7 +193,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             final long startFlightTime = System.currentTimeMillis();
             if (sync != null)
             {
-                sync.incrementRequestCount();
+                sync.incrementRequestCount(new Date());
             }
             try
             {
@@ -226,7 +222,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 final long startFlightTime2 = System.currentTimeMillis();
                 if (sync != null)
                 {
-                    sync.incrementRequestCount();
+                    sync.incrementRequestCount(new Date());
                 }
                 try
                 {
@@ -342,7 +338,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             long startFlightTime = System.currentTimeMillis();
             if (sync != null)
             {
-                sync.incrementRequestCount();
+                sync.incrementRequestCount(new Date());
             }
             try
             {
