@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
@@ -60,8 +61,19 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
         Repository repo = payload.getRepository();
         int pageNum = payload.getPage();
+        final Progress progress = payload.getProgress();
 
-        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
+        progress.incrementRequestCount(new Date());
+        final long startFlightTime = System.currentTimeMillis();
+        final BitbucketChangesetPage page;
+        try
+        {
+            page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
+        }
+        finally
+        {
+            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+        }
         process(message, payload, page);
         //
     }

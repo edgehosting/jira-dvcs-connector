@@ -129,7 +129,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             try
             {
                 // audit
-                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(softSync), new Date(progress.getStartTime())).getID();
+                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
                 if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
@@ -195,9 +195,30 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return progress;
     }
 
-    protected String getSyncType(boolean softSync)
+    protected String getSyncType(final EnumSet<SynchronizationFlag> flags)
     {
-        return softSync ? SyncAuditLogMapping.SYNC_TYPE_SOFT : SyncAuditLogMapping.SYNC_TYPE_FULL;
+        final StringBuilder bld = new StringBuilder();
+        for (final SynchronizationFlag flag : flags)
+        {
+            switch (flag)
+            {
+                case SOFT_SYNC:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_SOFT).append(" ");
+                    break;
+                case SYNC_CHANGESETS:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_CHANGESETS).append(" ");
+                    break;
+                case SYNC_PULL_REQUESTS:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_PULLREQUESTS).append(" ");
+                    break;
+                case WEBHOOK_SYNC:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_WEBHOOKS).append(" ");
+                    break;
+                default: // Do nothing.
+                    break;
+            }
+        }
+        return bld.toString();
     }
 
     private boolean skipSync(Repository repository, EnumSet<SynchronizationFlag> flags)

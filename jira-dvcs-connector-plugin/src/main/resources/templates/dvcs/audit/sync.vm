@@ -41,6 +41,8 @@ pre {
       <tr>
         <th>ID: Repo (Sync)</th>
         <th>Start Date</th>
+        <th>First Message Date</th>
+        <th>Number of Requests Sent</th>
         <th>End Date</th>
         <th>Sync Type</th>
         <th>Sync Status</th>
@@ -52,6 +54,8 @@ pre {
       <tr class="ok #if($log.excTrace) alert #end">
         <td><b>$log.repoId</b> ($log.ID)</td>
         <td>$log.startDate</td>
+        <td>#if($log.firstRequestDate) $log.firstRequestDate #end</td>
+        <td>#if($log.endDate) $log.numRequests #set($flightTime = ($log.flightTimeMs) / 1000.0) (<b>~ $flightTime</b> secs in flight.) #end</td>
         <td>$!log.endDate #if($log.endDate) #set($took = ($log.endDate.time - $log.startDate.time) / 1000) (<b>~ $took</b> secs.)  #end </td>
         <td>$log.syncType</td>
         <td>$log.syncStatus</td>

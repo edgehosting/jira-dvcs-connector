@@ -62,7 +62,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping finish(final int syncId, final Date finishDate)
+    public SyncAuditLogMapping finish(final int syncId, final Date firstRequestDate, final int numRequests, final int flightTimeMs, final Date finishDate)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -71,7 +71,10 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 SyncAuditLogMapping mapping = find(syncId);
                 if (mapping != null)
                 {
+                    mapping.setFirstRequestDate(firstRequestDate);
                     mapping.setEndDate(finishDate);
+                    mapping.setNumRequests(numRequests);
+                    mapping.setFlightTimeMs(flightTimeMs);
 
                     if (StringUtils.isNotBlank(mapping.getExcTrace()))
                     {

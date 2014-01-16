@@ -728,8 +728,26 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         boolean finished = endProgress(repository, progress);
         if (finished && auditId > 0)
         {
-            Date finishDate = progress == null ? new Date() : new Date(progress.getFinishTime());
-            syncAudit.finish(auditId, finishDate);
+            final Date finishDate;
+            final Date firstRequestDate;
+            final int numRequests;
+            final int flightTimeMs;
+            if (progress == null)
+            {
+                finishDate = new Date();
+                firstRequestDate = null;
+                numRequests = 0;
+                flightTimeMs = 0;
+            }
+            else
+            {
+                finishDate = new Date(progress.getFinishTime());
+                firstRequestDate = progress.getFirstMessageTime();
+                numRequests = progress.getNumRequests();
+                flightTimeMs = progress.getFlightTimeMs();
+            }
+
+            syncAudit.finish(auditId, firstRequestDate, numRequests, flightTimeMs, finishDate);
         }
     }
 
