@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 import java.util.Date;
 
 import net.java.ao.Entity;
-import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 import net.java.ao.Preload;
 import net.java.ao.schema.StringLength;
@@ -39,8 +38,8 @@ public interface ChangesetMapping extends Entity
      */
     public static final int LATEST_VERSION = 3;
 
-    @ManyToMany(reverse = "getChangeset", through = "getRepository", value = RepositoryToChangesetMapping.class)
-    RepositoryMapping[] getRepositories();
+    @OneToMany(reverse = "getChangeset")
+    RepositoryToChangesetMapping[] getRepositoryIds();
 
     @OneToMany(reverse = "getChangeset")
     IssueToChangesetMapping[] getIssues();

@@ -1,5 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -15,83 +32,18 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.Table;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
 
     private final ActiveObjects activeObjects;
-    private final ChangesetTransformer transformer;
-    private QueryHelper queryHelper;
+    private final QueryHelper queryHelper;
 
-    public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
+    public ChangesetDaoImpl(final ActiveObjects activeObjects, final QueryHelper queryHelper)
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;
-        this.transformer = new ChangesetTransformer(activeObjects);
-    }
-
-    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
-    {
-        return transformer.transform(changesetMapping, defaultRepositoryId, null);
-    }
-
-    private Changeset transform(ChangesetMapping changesetMapping)
-    {
-        return transformer.transform(changesetMapping, 0, null);
-    }
-
-    private Changeset transform(ChangesetMapping changesetMapping, String dvcsType)
-    {
-        return transformer.transform(changesetMapping, 0, dvcsType);
-    }
-
-    private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
-    {
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        for (ChangesetMapping changesetMapping : changesetMappings)
-        {
-            Changeset changeset = transform(changesetMapping);
-            if (changeset != null)
-            {
-                changesets.add(changeset);
-            }
-        }
-
-        return changesets;
-    }
-
-    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
-    {
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        for (ChangesetMapping changesetMapping : changesetMappings)
-        {
-            Changeset changeset = transform(changesetMapping, dvcsType);
-            if (changeset != null)
-            {
-                changesets.add(changeset);
-            }
-        }
-
-        return changesets;
     }
 
     @Override
@@ -103,26 +55,29 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public Object doInTransaction()
             {
-                // todo: transaction: plugin use SalTransactionManager and there is empty implementation of TransactionSynchronisationManager.
-                // todo: Therefore there are only entityCache transactions. No DB transactions.
+                // todo: transaction: plugin use SalTransactionManager and there
+                // is empty implementation of TransactionSynchronisationManager.
+                // todo: Therefore there are only entityCache transactions. No
+                // DB transactions.
 
                 // delete association repo - changesets
                 Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
-                log.debug("deleting repo - changesets associations from RepoToChangeset with id = [ {} ]", new String[]{String.valueOf(repositoryId)});
+                log.debug("deleting repo - changesets associations from RepoToChangeset with id = [ {} ]",
+                        new String[] { String.valueOf(repositoryId) });
                 ActiveObjectsUtils.delete(activeObjects, RepositoryToChangesetMapping.class, query);
 
                 // delete association issues - changeset
                 query = Query.select().where(
-                        IssueToChangesetMapping.CHANGESET_ID + " not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                        IssueToChangesetMapping.CHANGESET_ID + " not in  " + "(select "
+                                + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from "
+                                + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
-
                 // delete orphaned changesets
                 query = Query.select().where(
-                        "ID not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                        "ID not in  " + "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from "
+                                + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 
@@ -134,7 +89,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
-        ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             @Override
             public ChangesetMapping doInTransaction()
@@ -170,12 +125,13 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
-                ChangesetMapping chm = getChangesetMapping(changeset);
+                final ChangesetMapping chm = getChangesetMapping(changeset);
                 if (chm != null)
                 {
                     fillProperties(changeset, chm);
                     chm.save();
-                } else
+                }
+                else
                 {
                     log.warn("Changest with node {} is not exists.", changeset.getNode());
                 }
@@ -186,22 +142,25 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
-    private ChangesetMapping getChangesetMapping(Changeset changeset)
+    private ChangesetMapping getChangesetMapping(final Changeset changeset)
     {
         // A Query is little bit more complicated, but:
 
-        // 1. previous implementation did not properly fill RAW_NODE, in some cases it is null, in some other cases it is empty string
-        String hasRawNode = "( " + ChangesetMapping.RAW_NODE + " is not null AND " + ChangesetMapping.RAW_NODE + " != '') ";
+        // 1. previous implementation did not properly fill RAW_NODE, in some
+        // cases it is null, in some other cases it is empty string
+        final String hasRawNode = "( " + ChangesetMapping.RAW_NODE + " is not null AND " + ChangesetMapping.RAW_NODE + " != '') ";
 
-        // 2. Latest implementation is using full RAW_NODE, but not all records contains it!
-        String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
+        // 2. Latest implementation is using full RAW_NODE, but not all records
+        // contains it!
+        final String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
 
-        // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version
-        String matchNode = ChangesetMapping.NODE + " like ? ";
+        // 3. Previous implementation has used NODE, but it is mix in some cases
+        // it is short version, in some cases it is full version
+        final String matchNode = ChangesetMapping.NODE + " like ? ";
 
-        String shortNode = changeset.getNode().substring(0, 12) + "%";
-        ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
-                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
+        final String shortNode = changeset.getNode().substring(0, 12) + "%";
+        final ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode
+                + " ) OR ( NOT " + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
 
         if (mappings.length > 1)
         {
@@ -211,9 +170,10 @@ public class ChangesetDaoImpl implements ChangesetDao
         return (ArrayUtils.isNotEmpty(mappings)) ? mappings[0] : null;
     }
 
-    public void fillProperties(Changeset changeset, ChangesetMapping chm)
+    public void fillProperties(final Changeset changeset, final ChangesetMapping chm)
     {
-        // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
+        // we need to remove null characters '\u0000' because PostgreSQL cannot
+        // store String values with such
         // characters
         // todo: remove NULL Chars before call setters
         chm.setNode(changeset.getNode());
@@ -226,8 +186,8 @@ public class ChangesetDaoImpl implements ChangesetDao
         chm.setAuthorEmail(ActiveObjectsUtils.stripToLimit(changeset.getAuthorEmail(), 255));
         chm.setSmartcommitAvailable(changeset.isSmartcommitAvaliable());
 
-        JSONArray parentsJson = new JSONArray();
-        for (String parent : changeset.getParents())
+        final JSONArray parentsJson = new JSONArray();
+        for (final String parent : changeset.getParents())
         {
             parentsJson.put(parent);
         }
@@ -239,17 +199,17 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
         chm.setParentsData(parentsData);
 
-        JSONObject filesDataJson = new JSONObject();
-        JSONArray filesJson = new JSONArray();
+        final JSONObject filesDataJson = new JSONObject();
+        final JSONArray filesJson = new JSONArray();
         try
         {
-            List<ChangesetFile> files = changeset.getFiles();
-            int count = changeset.getAllFileCount();
+            final List<ChangesetFile> files = changeset.getFiles();
+            final int count = changeset.getAllFileCount();
             filesDataJson.put("count", count);
             for (int i = 0; i < Math.min(count, Changeset.MAX_VISIBLE_FILES); i++)
             {
-                ChangesetFile changesetFile = files.get(i);
-                JSONObject fileJson = new JSONObject();
+                final ChangesetFile changesetFile = files.get(i);
+                final JSONObject fileJson = new JSONObject();
                 fileJson.put("filename", changesetFile.getFile());
                 fileJson.put("status", changesetFile.getFileAction().getAction());
                 fileJson.put("additions", changesetFile.getAdditions());
@@ -261,7 +221,8 @@ public class ChangesetDaoImpl implements ChangesetDao
             filesDataJson.put("files", filesJson);
             chm.setFilesData(filesDataJson.toString());
 
-        } catch (JSONException e)
+        }
+        catch (final JSONException e)
         {
             log.error("Creating files JSON failed!", e);
         }
@@ -270,14 +231,14 @@ public class ChangesetDaoImpl implements ChangesetDao
         chm.save();
     }
 
-    private void associateIssuesToChangeset(ChangesetMapping changesetMapping, Set<String> extractedIssues)
+    private void associateIssuesToChangeset(final ChangesetMapping changesetMapping, final Set<String> extractedIssues)
     {
         // remove all assoc issues-changeset
-        Query query = Query.select().where(IssueToChangesetMapping.CHANGESET_ID + " = ? ", changesetMapping);
+        final Query query = Query.select().where(IssueToChangesetMapping.CHANGESET_ID + " = ? ", changesetMapping);
         ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
         // insert all
-        for (String extractedIssue : extractedIssues)
+        for (final String extractedIssue : extractedIssues)
         {
             final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
             map.put(IssueToChangesetMapping.ISSUE_KEY, extractedIssue);
@@ -286,17 +247,14 @@ public class ChangesetDaoImpl implements ChangesetDao
             activeObjects.create(IssueToChangesetMapping.class, map);
         }
 
-
     }
 
-    private void associateRepositoryToChangeset(ChangesetMapping changesetMapping, int repositoryId)
+    private void associateRepositoryToChangeset(final ChangesetMapping changesetMapping, final int repositoryId)
     {
 
-        RepositoryToChangesetMapping[] mappings = activeObjects.find(RepositoryToChangesetMapping.class,
-                RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and " +
-                        RepositoryToChangesetMapping.CHANGESET_ID + " = ? ",
-                repositoryId,
-                changesetMapping);
+        final RepositoryToChangesetMapping[] mappings = activeObjects.find(RepositoryToChangesetMapping.class,
+                RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and " + RepositoryToChangesetMapping.CHANGESET_ID + " = ? ",
+                repositoryId, changesetMapping);
 
         if (ArrayUtils.isEmpty(mappings))
         {
@@ -309,7 +267,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
     }
 
-    public static String parseProjectKey(String issueKey)
+    public static String parseProjectKey(final String issueKey)
     {
         return issueKey.substring(0, issueKey.indexOf("-"));
     }
@@ -322,15 +280,16 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
-                Query query = Query.select("ID, *")
+                final Query query = Query
+                        .select("ID, *")
                         .from(ChangesetMapping.class)
                         .alias(ChangesetMapping.class, "chm")
                         .alias(RepositoryToChangesetMapping.class, "rtchm")
                         .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                        .where("chm." + ChangesetMapping.NODE + " = ? AND rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? ", changesetNode, repositoryId);
+                        .where("chm." + ChangesetMapping.NODE + " = ? AND rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? ",
+                                changesetNode, repositoryId);
 
-
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
+                final ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
                 return mappings.length != 0 ? mappings[0] : null;
             }
         });
@@ -343,40 +302,42 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
 
-        return transform(changesetMappings);
+        return transformAll(changesetMappings, null);
     }
 
     @Override
-    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, final boolean newestFirst)
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final String dvcsType, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
 
-        return transform(changesetMappings, dvcsType);
+        return transformAll(changesetMappings, dvcsType);
     }
 
-    private List<ChangesetMapping> getChangesetMappingsByIssueKey(Iterable<String> issueKeys, final boolean newestFirst)
+    private List<ChangesetMapping> getChangesetMappingsByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);
         final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
-        {
-            @Override
-            public List<ChangesetMapping> doInTransaction()
-            {
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select("ID, *")
-                                .alias(ChangesetMapping.class, "CHANGESET")
-                                .alias(IssueToChangesetMapping.class, "ISSUE")
-                                .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                                .where(baseWhereClause)
-                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC": " ASC")));
+        final List<ChangesetMapping> changesetMappings = activeObjects
+                .executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+                {
+                    @Override
+                    public List<ChangesetMapping> doInTransaction()
+                    {
+                        final ChangesetMapping[] mappings = activeObjects
+                                .find(ChangesetMapping.class,
+                                        Query.select("ID, *")
+                                                .alias(ChangesetMapping.class, "CHANGESET")
+                                                .alias(IssueToChangesetMapping.class, "ISSUE")
+                                                .join(IssueToChangesetMapping.class,
+                                                        "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                                                .where(baseWhereClause).order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC")));
 
-                return Arrays.asList(mappings);
-            }
-        });
+                        return Arrays.asList(mappings);
+                    }
+                });
 
         return changesetMappings;
     }
@@ -388,68 +349,66 @@ public class ChangesetDaoImpl implements ChangesetDao
         {
             return Collections.emptyList();
         }
-        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
-        {
-            @Override
-            public List<ChangesetMapping> doInTransaction()
-            {
-                String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                Query query = Query.select("ID, *")
-                        .alias(ChangesetMapping.class, "CHANGESET")
-                        .alias(IssueToChangesetMapping.class, "ISSUE")
-                        .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                        .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
-                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
-                return Arrays.asList(mappings);
-            }
-        });
+        final List<ChangesetMapping> changesetMappings = activeObjects
+                .executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+                {
+                    @Override
+                    public List<ChangesetMapping> doInTransaction()
+                    {
+                        final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+                        final Query query = Query.select("ID, *").alias(ChangesetMapping.class, "CHANGESET")
+                                .alias(IssueToChangesetMapping.class, "ISSUE")
+                                .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                                .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                        final ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
+                        return Arrays.asList(mappings);
+                    }
+                });
 
-        return transform(changesetMappings);
+        return transformAll(changesetMappings, null);
     }
 
     @Override
     public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final ForEachChangesetClosure closure)
     {
-        Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId);
+        final Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId);
         activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
         {
             @Override
-            public void onRowRead(ChangesetMapping mapping)
+            public void onRowRead(final ChangesetMapping mapping)
             {
                 closure.execute(mapping);
             }
         });
     }
 
-    private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
+    private Query createLatestChangesetsAvailableForSmartcommitQuery(final int repositoryId)
     {
-        return Query.select("*")
+        return Query
+                .select("*")
                 .from(ChangesetMapping.class)
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm."+ChangesetMapping.SMARTCOMMIT_AVAILABLE+" = ? " , repositoryId, Boolean.TRUE)
-                .order(ChangesetMapping.DATE + " DESC");
+                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm." + ChangesetMapping.SMARTCOMMIT_AVAILABLE
+                        + " = ? ", repositoryId, Boolean.TRUE).order(ChangesetMapping.DATE + " DESC");
     }
 
     @Override
-    public Set<String> findReferencedProjects(int repositoryId)
+    public Set<String> findReferencedProjects(final int repositoryId)
     {
-        Query query = Query.select(IssueToChangesetMapping.PROJECT_KEY).distinct()
-                .alias(ProjectKey.class, "pk")
-                .alias(ChangesetMapping.class, "chm")
-                .alias(RepositoryToChangesetMapping.class, "rtchm")
+        final Query query = Query.select(IssueToChangesetMapping.PROJECT_KEY).distinct().alias(ProjectKey.class, "pk")
+                .alias(ChangesetMapping.class, "chm").alias(RepositoryToChangesetMapping.class, "rtchm")
                 .join(ChangesetMapping.class, "chm.ID = pk." + IssueToChangesetMapping.CHANGESET_ID)
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
                 .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId)
                 .order(IssueToChangesetMapping.PROJECT_KEY);
 
-
         final Set<String> projectKeys = new HashSet<String>();
         activeObjects.stream(ProjectKey.class, query, new EntityStreamCallback<ProjectKey, String>()
         {
             @Override
-            public void onRowRead(ProjectKey mapping)
+            public void onRowRead(final ProjectKey mapping)
             {
                 projectKeys.add(mapping.getProjectKey());
             }
@@ -469,7 +428,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public void markSmartcommitAvailability(int id, boolean available)
+    public void markSmartcommitAvailability(final int id, final boolean available)
     {
         final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
         changesetMapping.setSmartcommitAvailable(available);
@@ -492,11 +451,26 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public Integer doInTransaction()
             {
-                Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
+                final Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
 
                 return activeObjects.count(RepositoryToChangesetMapping.class, query);
             }
         });
+    }
+
+    private Changeset transform(final ChangesetMapping changesetMapping, final int defaultRepositoryId)
+    {
+        return transformer().transform(changesetMapping, defaultRepositoryId, null);
+    }
+
+    private List<Changeset> transformAll(final List<ChangesetMapping> changesetMappings, final String dvcsType)
+    {
+        return transformer().transformAll(changesetMappings, 0, dvcsType);
+    }
+
+    private ChangesetTransformer transformer()
+    {
+        return new ChangesetTransformer(activeObjects);
     }
 
 }
