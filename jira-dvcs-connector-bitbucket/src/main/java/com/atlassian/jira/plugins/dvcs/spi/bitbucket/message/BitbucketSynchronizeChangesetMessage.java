@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 
 /**
  * Message which is fired when a changeset should be synchronized.
@@ -27,25 +28,16 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
     private List<String> include;
     private List<String> exclude;
 
-    private int page;
-
-    private Map<String, String> nodesToBranches;
+    private BitbucketChangesetPage page;
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, boolean softSync, int syncAuditId)
-    {
-        this(repository, refreshAfterSynchronizedAt, progress, null, null, 1, null, softSync, syncAuditId);
-    }
-
-    public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, List<String> include, List<String> exclude, int page, Map<String, String> nodesToBranches, boolean softSync, int syncAuditId)
+            Progress progress, List<String> include, List<String> exclude, BitbucketChangesetPage page, boolean softSync, int syncAuditId)
     {
         super(progress, syncAuditId, softSync, repository);
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.include = include;
         this.exclude = exclude;
         this.page = page;
-        this.nodesToBranches = nodesToBranches;
     }
 
     public Date getRefreshAfterSynchronizedAt()
@@ -58,7 +50,7 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
         return exclude;
     }
 
-    public int getPage()
+    public BitbucketChangesetPage getPage()
     {
         return page;
     }
@@ -67,10 +59,4 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
     {
         return include;
     }
-
-    public Map<String, String> getNodesToBranches()
-    {
-        return nodesToBranches;
-    }
-
 }

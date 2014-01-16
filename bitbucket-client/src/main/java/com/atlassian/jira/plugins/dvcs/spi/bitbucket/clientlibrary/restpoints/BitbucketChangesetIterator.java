@@ -17,7 +17,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
 
-public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangeset>, Iterable<BitbucketNewChangeset>
+public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangeset>
 {
     // configuration
     private final int pageLength;
@@ -26,20 +26,19 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     private final List<String> includeNodes;
     private final List<String> excludeNodes;
     private BitbucketChangesetPage currentPage = null;
-    private final Map<String,String> changesetBranch;
 
     // services
-    private final RemoteRequestor requestor;
+    private final ChangesetRemoteRestpoint changesetRemoteRestpoint;
 
-    public BitbucketChangesetIterator(RemoteRequestor requestor, String owner, String slug, List<String> includeNodes, List<String> excludeNodes, Map<String,String> changesetBranch, int pageLength)
+    public BitbucketChangesetIterator(ChangesetRemoteRestpoint changesetRemoteRestpoint, String owner, String slug, List<String> includeNodes, List<String> excludeNodes, int pageLength, BitbucketChangesetPage currentPage)
     {
-        this.requestor = requestor;
+        this.changesetRemoteRestpoint = changesetRemoteRestpoint;
         this.owner = owner;
         this.slug = slug;
         this.includeNodes = includeNodes;
         this.excludeNodes = excludeNodes;
         this.pageLength = pageLength;
-        this.changesetBranch = changesetBranch;
+        this.currentPage = currentPage;
     }
 
     @Override
@@ -56,34 +55,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
     private void readPage()
     {
-        Map<String, List<String>> parameters = null;
-        String url = null;
-
-        if (currentPage == null)
-        {
-            // this is the first request, first page
-            url = createUrl();
-
-            parameters = new HashMap<String, List<String>>();
-            if (includeNodes != null)
-            {
-                parameters.put("include", new ArrayList<String>(includeNodes));
-            }
-            if (excludeNodes != null)
-            {
-                parameters.put("exclude", new ArrayList<String>(excludeNodes));
-            }
-        } else
-        {
-            url = currentPage.getNext();
-        }
-
-        if (StringUtils.isBlank(url))
-        {
-            return;
-        }
-
-        currentPage = requestor.getWithMultipleVals(url, parameters, createResponseCallback());
+        currentPage = changesetRemoteRestpoint.getNextChangesetsPage(owner, slug, includeNodes, excludeNodes, pageLength, currentPage);
     }
 
             @Override
@@ -101,32 +73,13 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
         BitbucketNewChangeset currentChangeset = currentPage.getValues().remove(0);
 
-        assignBranch(currentChangeset);
-
         return currentChangeset;
-    }
-
-    private void assignBranch(BitbucketNewChangeset changeset)
-    {
-        String branch = changesetBranch.get(changeset.getHash());
-        changeset.setBranch(branch);
-        changesetBranch.remove(changeset.getHash());
-        for (BitbucketNewChangeset parent : changeset.getParents())
-        {
-            changesetBranch.put(parent.getHash(), branch);
-        }
     }
 
     @Override
     public void remove()
     {
         throw new UnsupportedOperationException("This is unsupported.");
-    }
-
-    @Override
-    public Iterator<BitbucketNewChangeset> iterator()
-    {
-        return this;
     }
 
     private String createUrl()

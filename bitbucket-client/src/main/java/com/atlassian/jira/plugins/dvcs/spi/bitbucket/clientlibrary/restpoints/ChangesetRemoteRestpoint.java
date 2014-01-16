@@ -12,10 +12,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * ChangesetRemoteRestpoint
@@ -97,34 +99,54 @@ public class ChangesetRemoteRestpoint
     }
 
     public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
-                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
+                                                         final List<String> excludeNodes, final int changesetsLimit, final BitbucketChangesetPage currentPage)
     {
+        final ChangesetRemoteRestpoint changesetRemoteRestpoint = this;
         return new Iterable<BitbucketNewChangeset>()
         {
             @Override
             public Iterator<BitbucketNewChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(requestor, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit);
+                return new BitbucketChangesetIterator(changesetRemoteRestpoint, owner, slug, includeNodes, excludeNodes, changesetsLimit, currentPage);
             }
         };
     }
 
-    public BitbucketChangesetPage getChangesetsForPage(final int page, final String owner, final String slug,
-            final int changesetsLimit, final List<String> includeNodes, final List<String> excludeNodes)
-    {
-        String url = String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s&page=%s", owner, slug, changesetsLimit, page);
-        Map<String, Object> parameters = new HashMap<String, Object>();
+    public BitbucketChangesetPage getNextChangesetsPage(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage) {
+        Map<String, List<String>> parameters = null;
+        String url = null;
 
-        if (includeNodes != null)
+        if (currentPage == null)
         {
-            parameters.put("include", new ArrayList<String>(includeNodes));
+            // this is the first request, first page
+            url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName, slug, String.valueOf(changesetLimit));
+
+            parameters = new HashMap<String, List<String>>();
+            if (includeNodes != null)
+            {
+                parameters.put("include", new ArrayList<String>(includeNodes));
+            }
+            if (excludeNodes != null)
+            {
+                parameters.put("exclude", new ArrayList<String>(excludeNodes));
+            }
+        } else
+        {
+            url = currentPage.getNext();
         }
 
-        if (excludeNodes != null)
+        if (StringUtils.isBlank(url))
         {
-            parameters.put("exclude", new ArrayList<String>(excludeNodes));
+            throw new BitbucketRequestException.NotFound_404();
         }
-        return requestor.post(url, null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+
+        return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
+        {
+            @Override
+            public BitbucketChangesetPage onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
+            }
+        });
     }
-
 }

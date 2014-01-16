@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
@@ -36,9 +37,9 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     {
         json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
         json.put("exclude", collectionToString(payload.getExclude()));
-        json.put("page", payload.getPage());
+        // We only need next page
+        json.put("nextPage", payload.getPage().getNext());
         json.put("include", collectionToString(payload.getInclude()));
-        json.put("nodesToBranches", payload.getNodesToBranches());
     }
 
     @Override
@@ -47,17 +48,15 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         Date refreshAfterSynchronizedAt;
         List<String> exclude;
         List<String> include;
-        int page;
-        Map<String, String> nodesToBranches;
+        BitbucketChangesetPage page;
 
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
         exclude = collectionFromString(json.optString("exclude"));
-        page = json.optInt("page");
+        page = new BitbucketChangesetPage();
+        page.setNext(json.optString("nextPage"));
         include = collectionFromString(json.optString("include"));
-        nodesToBranches = asMap(json.optJSONObject("nodesToBranches"));
 
-        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude,
-                page, nodesToBranches, false, 0);
+        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, false, 0);
     }
 
     protected Map<String, String> asMap(JSONObject object)

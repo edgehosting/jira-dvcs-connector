@@ -68,7 +68,18 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback) {
-        return getWithRetry(uri, Maps.transformValues(parameters, STRING_TO_LIST_STRING), callback);
+        return getWithRetry(uri, parametersToListParams(parameters), callback);
+    }
+
+    private Map<String, List<String>> parametersToListParams(Map<String, String> parameters) {
+        if (parameters == null)
+        {
+            return null;
+        }
+        else
+        {
+            return Maps.transformValues(parameters, STRING_TO_LIST_STRING);
+        }
     }
 
     @Override
@@ -80,7 +91,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     @Override
     public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return deleteWithRetry(uri, Maps.transformValues(parameters, STRING_TO_LIST_STRING), callback);
+        return deleteWithRetry(uri, parametersToListParams(parameters), callback);
     }
 
     @Override
@@ -369,7 +380,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
     {
-        return multiParamsToString(Maps.transformValues(parameters, STRING_TO_LIST_STRING), urlAlreadyHasParams);
+        return multiParamsToString(parametersToListParams(parameters), urlAlreadyHasParams);
     }
 
     protected String multiParamsToString(Map<String, List<String>> parameters, boolean urlAlreadyHasParams)
