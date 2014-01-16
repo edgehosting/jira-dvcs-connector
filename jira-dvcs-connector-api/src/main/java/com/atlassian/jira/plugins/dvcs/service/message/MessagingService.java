@@ -166,7 +166,7 @@ public interface MessagingService
      *            for processing - {@link Message#getTags()}
      * @return returned id
      */
-    <P extends HasProgress> int getAuditSynchronizationFromMessage(String[] tags);
+    <P extends HasProgress> int getAuditSynchronizationFromTags(String[] tags);
 
     /**
      * Ends progress if no messages left for repository

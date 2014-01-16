@@ -65,7 +65,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Logger for this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(MessagingServiceImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
@@ -188,9 +188,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         {
             try
             {
-                LOGGER.debug("Attempting to wait for AO.");
+                log.debug("Attempting to wait for AO.");
                 activeObjects.count(MessageMapping.class);
-                LOGGER.debug("Attempting to wait for AO - DONE.");
+                log.debug("Attempting to wait for AO - DONE.");
                 stop = true;
                 return true;
             } catch (PluginException e)
@@ -205,7 +205,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 }
             }
         } while (countOfRetry > 0 && !stop);
-        LOGGER.debug("Attempting to wait for AO - UNSUCCESSFUL.");
+        log.debug("Attempting to wait for AO - UNSUCCESSFUL.");
         return false;
     }
 
@@ -214,7 +214,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private void initRunningToFail()
     {
-        LOGGER.debug("Setting messages in running state to fail");
+        log.debug("Setting messages in running state to fail");
         messageQueueItemDao.getByState(MessageState.RUNNING, new StreamCallback<MessageQueueItemMapping>()
         {
 
@@ -237,7 +237,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private void restartConsumers()
     {
-        LOGGER.debug("Restarting message consumers");
+        log.debug("Restarting message consumers");
         Set<String> addresses = new HashSet<String>();
         for (MessageConsumer<?> consumer : consumers)
         {
@@ -330,7 +330,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
                 });
                 
-                int syncAuditId = getAuditSynchronizationFromMessage(transformTags(message.getTags()));
+                int syncAuditId = getAuditSynchronizationFromTags(transformTags(message.getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -372,7 +372,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 messageQueueItemDao.save(e);
                 addresses.add(e.getMessage().getAddress());
 
-                int syncAuditId = getAuditSynchronizationFromMessage(transformTags(e.getMessage().getTags()));
+                int syncAuditId = getAuditSynchronizationFromTags(transformTags(e.getMessage().getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -411,12 +411,22 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 {
 
                     @Override
-                    public void callback(MessageQueueItemMapping e)
-                    {                        
-                        updateSyncAuditId(auditId, e);
-                        addresses.add(e.getMessage().getAddress());
-                        e.setState(MessageState.PENDING.name());
-                        messageQueueItemDao.save(e);
+                    public void callback(final MessageQueueItemMapping e)
+                    {
+                        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                        {
+
+                            @Override
+                            public Void doInTransaction()
+                            {
+                                updateSyncAuditId(auditId, e);
+                                addresses.add(e.getMessage().getAddress());
+                                e.setState(MessageState.PENDING.name());
+                                messageQueueItemDao.save(e);
+                                return null;
+                            }
+                        });
+
                     }
 
                     private void updateSyncAuditId(final int auditId, MessageQueueItemMapping e)
@@ -522,7 +532,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
-        syncAudit.setException(getAuditSynchronizationFromMessage(message.getTags()), t, false);
+        syncAudit.setException(getAuditSynchronizationFromTags(message.getTags()), t, false);
     }
 
     @Override
@@ -625,7 +635,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> int getAuditSynchronizationFromMessage(String[] tags)
+    public <P extends HasProgress> int getAuditSynchronizationFromTags(String[] tags)
     {
         try
         {
@@ -639,7 +649,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             }
         } catch (NumberFormatException e)
         {
-            LOGGER.warn("Get audit ID info from message: " + e.getMessage());
+            log.warn("Get audit ID info from message: " + e.getMessage());
         }
         return 0;
     }
@@ -660,12 +670,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
                 } catch (NumberFormatException e)
                 {
-                    LOGGER.warn("Get repo ID from message: " + e.getMessage());
+                    log.warn("Get repo ID from message: " + e.getMessage());
                 }
             }
         }
 
-        LOGGER.warn("Can't get repository ID from tags for message with ID {}", message.getId());
+        log.warn("Can't get repository ID from tags for message with ID {}", message.getId());
         return null;
     }
 
