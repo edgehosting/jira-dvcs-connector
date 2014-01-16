@@ -330,7 +330,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
                 });
                 
-                int syncAuditId = getAuditSynchronizationFromTags(transformTags(message.getTags()));
+                int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -372,7 +372,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 messageQueueItemDao.save(e);
                 addresses.add(e.getMessage().getAddress());
 
-                int syncAuditId = getAuditSynchronizationFromTags(transformTags(e.getMessage().getTags()));
+                int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(e.getMessage().getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -532,7 +532,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
-        syncAudit.setException(getAuditSynchronizationFromTags(message.getTags()), t, false);
+        syncAudit.setException(getSynchronizationAuditIdFromTags(message.getTags()), t, false);
     }
 
     @Override
@@ -635,7 +635,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> int getAuditSynchronizationFromTags(String[] tags)
+    public <P extends HasProgress> int getSynchronizationAuditIdFromTags(String[] tags)
     {
         try
         {

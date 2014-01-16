@@ -65,7 +65,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             // progress stuff
             //
-            syncAudit = messagingService.getAuditSynchronizationFromTags(message.getTags());
+            syncAudit = messagingService.getSynchronizationAuditIdFromTags(message.getTags());
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
 
             progress = synchronizer.getProgress(deserialized.repository.getId());
