@@ -1,11 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.Changesets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
@@ -18,12 +24,14 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
-    
+    private static final Logger logger = LoggerFactory.getLogger(ChangesetServiceImpl.class);
     private final ConcurrencyService concurrencyService;
 
     private final ChangesetDao changesetDao;
@@ -84,10 +92,39 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
+    public List<Changeset> getChangesetsWithFileDetails(List<Changeset> changesets)
     {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getDetailChangeset(repository, changeset);
+        ImmutableList.Builder<Changeset> detailedChangesets = ImmutableList.builder();
+
+        // group by repo so we only have to load each repo one time inside the loop
+        ListMultimap<Integer, Changeset> changesetsByRepo = Multimaps.index(changesets, Changesets.TO_REPOSITORY_ID);
+        for (Map.Entry<Integer, Collection<Changeset>> repoChangesets : changesetsByRepo.asMap().entrySet())
+        {
+            final Repository repository = repositoryDao.get(repoChangesets.getKey());
+            final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+
+            for (Changeset changeset : changesets)
+            {
+                if (changeset.getFileDetails() == null)
+                {
+                    List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);
+                    logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
+
+                    // update the changeset count and file details with the first few file details
+                    changeset.setAllFileCount(Math.max(changeset.getAllFileCount(), fileDetails.size()));
+                    fileDetails = fileDetails.subList(0, Math.min(fileDetails.size(), Changeset.MAX_VISIBLE_FILES));
+
+                    // keep these two in sync
+                    changeset.setFiles(ImmutableList.<ChangesetFile>copyOf(fileDetails));
+                    changeset.setFileDetails(fileDetails);
+                    changeset = changesetDao.update(changeset);
+                }
+
+                detailedChangesets.add(changeset);
+            }
+        }
+
+        return detailedChangesets.build();
     }
 
     @Override
@@ -170,7 +207,6 @@ public class ChangesetServiceImpl implements ChangesetService
                 DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
                 Changeset updatedChangeset = communicator.getChangeset(repository, changeset.getNode());
-                updatedChangeset = communicator.getDetailChangeset(repository, updatedChangeset);
 
                 changeset.setRawAuthor(updatedChangeset.getRawAuthor());
                 changeset.setAuthor(updatedChangeset.getAuthor());
@@ -180,6 +216,7 @@ public class ChangesetServiceImpl implements ChangesetService
                 changeset.setFiles(updatedChangeset.getFiles());
                 changeset.setAllFileCount(updatedChangeset.getAllFileCount());
                 changeset.setAuthorEmail(updatedChangeset.getAuthorEmail());
+                changeset.setFileDetails(updatedChangeset.getFileDetails());
 
                 changeset = changesetDao.update(changeset);
             }

@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public class ChangesetTransformer
 {
@@ -41,7 +43,7 @@ public class ChangesetTransformer
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        final Changeset changeset = transform(mainRepositoryId, changesetMapping, fileData, parents);
+        final Changeset changeset = transform(mainRepositoryId, changesetMapping, fileData, changesetMapping.getFileDetailsJson(), parents);
         
         List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
@@ -99,10 +101,10 @@ public class ChangesetTransformer
         FileData fileData = parseFilesData(changesetMapping.getFilesData());
         List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
-        return transform(repositoryId, changesetMapping, fileData, parents);
+        return transform(repositoryId, changesetMapping, fileData, changesetMapping.getFileDetailsJson(), parents);
     }
 
-    private Changeset transform(final int repositoryId, final ChangesetMapping changesetMapping, final FileData fileData, final List<String> parents)
+    private Changeset transform(final int repositoryId, final ChangesetMapping changesetMapping, final FileData fileData, @Nullable String fileDetailsJson, final List<String> parents)
     {
         final Changeset changeset = new Changeset(repositoryId,
                 changesetMapping.getNode(),
@@ -120,6 +122,7 @@ public class ChangesetTransformer
         changeset.setId(changesetMapping.getID());
         changeset.setVersion(changesetMapping.getVersion());
         changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
+        changeset.setFileDetails(ChangesetFileDetails.fromJSON(fileDetailsJson));
 
         return changeset;
     }
@@ -171,11 +174,8 @@ public class ChangesetTransformer
                     JSONObject file = filesJson.getJSONObject(i);
                     String filename = file.getString("filename");
                     String status = file.getString("status");
-                    int additions = file.getInt("additions");
-                    int deletions = file.getInt("deletions");
 
-                    files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status),
-                            filename, additions, deletions));
+                    files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
                 }
 
             } catch (JSONException e)

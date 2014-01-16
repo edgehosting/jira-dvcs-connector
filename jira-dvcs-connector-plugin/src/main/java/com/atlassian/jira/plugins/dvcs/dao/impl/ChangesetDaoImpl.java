@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -38,7 +39,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer;
-    private QueryHelper queryHelper;
+    private final QueryHelper queryHelper;
 
     public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
     {
@@ -211,7 +212,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         return (ArrayUtils.isNotEmpty(mappings)) ? mappings[0] : null;
     }
 
-    public void fillProperties(Changeset changeset, ChangesetMapping chm)
+    private void fillProperties(Changeset changeset, ChangesetMapping chm)
     {
         // we need to remove null characters '\u0000' because PostgreSQL cannot store String values with such
         // characters
@@ -252,8 +253,6 @@ public class ChangesetDaoImpl implements ChangesetDao
                 JSONObject fileJson = new JSONObject();
                 fileJson.put("filename", changesetFile.getFile());
                 fileJson.put("status", changesetFile.getFileAction().getAction());
-                fileJson.put("additions", changesetFile.getAdditions());
-                fileJson.put("deletions", changesetFile.getDeletions());
 
                 filesJson.put(fileJson);
             }
@@ -266,6 +265,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             log.error("Creating files JSON failed!", e);
         }
 
+        chm.setFileDetailsJson(ChangesetFileDetails.toJSON(changeset.getFileDetails()));
         chm.setVersion(ChangesetMapping.LATEST_VERSION);
         chm.save();
     }
