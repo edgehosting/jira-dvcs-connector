@@ -18,15 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import javax.annotation.Resource;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -47,24 +40,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.google.common.collect.Iterators;
-
-import javax.annotation.Resource;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -75,13 +75,13 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     @Resource
-    private  MessagingService messagingService;
+    private MessagingService messagingService;
 
     @Resource
-    private  BranchService branchService;
+    private BranchService branchService;
 
     @Resource
-    private  ChangesetCache changesetCache;
+    private ChangesetCache changesetCache;
 
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
@@ -113,7 +113,7 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        
+
         UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
@@ -186,9 +186,9 @@ public class GithubCommunicator implements DvcsCommunicator
 
             log.debug("Found repositories: " + repositories.size());
             return new ArrayList<Repository>(repositories);
-        } catch ( RequestException e)
+        } catch (RequestException e)
         {
-            if ( e.getStatus() == 401 )
+            if (e.getStatus() == 401)
             {
                 throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
             }
@@ -199,7 +199,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
- 
+
     @Override
     public Changeset getChangeset(Repository repository, String node)
     {
@@ -209,48 +209,48 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
-            
-            //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
+
+            // TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
             checkRequestRateLimit(commitService.getClient());
-            
+
             return GithubChangesetFactory.transform(commit, repository.getId(), null);
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
         }
     }
-    
+
     private void checkRequestRateLimit(GitHubClient gitHubClient)
     {
         if (gitHubClient == null)
         {
             return;
         }
-        
+
         int requestLimit = gitHubClient.getRequestLimit();
         int remainingRequests = gitHubClient.getRemainingRequests();
-        
+
         if (requestLimit == -1 || remainingRequests == -1)
         {
             return;
         }
-        
+
         double threshold = Math.ceil(0.01f * requestLimit);
-        if (remainingRequests<threshold)
+        if (remainingRequests < threshold)
         {
-            long sleepTime = (long) (Math.pow( (remainingRequests / threshold) - 1, 2) * 60 * 60);
+            long sleepTime = (long) (Math.pow((remainingRequests / threshold) - 1, 2) * 60 * 60);
             log.info("Sleeping for " + sleepTime + " s to avoid request rate limit overrun");
             try
             {
-                //TODO when sleeping the synchronization cannot be cancelled
+                // TODO when sleeping the synchronization cannot be cancelled
                 Thread.sleep(sleepTime * 1000);
             } catch (InterruptedException e)
             {
-                //nop
+                // nop
             }
         }
     }
-    
+
     @Override
     public Changeset getDetailChangeset(Repository repository, Changeset changeset)
     {
@@ -301,62 +301,147 @@ public class GithubCommunicator implements DvcsCommunicator
         };
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    public void setupPostcommitHook(Repository repository, String hookUrl)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
-	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
-        if (hooksForRepo.containsKey(postCommitUrl))
-        {
-            return;
-        }
-
-        final RepositoryHook repositoryHook = new RepositoryHook();
-        repositoryHook.setName("web");
-        repositoryHook.setActive(true);
-        repositoryHook.getEvents().add("push");
-        repositoryHook.getEvents().add("pull_request");
-        repositoryHook.getEvents().add("issue_comment");
-        repositoryHook.getEvents().add("pull_request_review_comment");
-
-        Map<String, String> config = new HashMap<String, String>();
-        config.put("url", postCommitUrl);
-        repositoryHook.setConfig(config);
-
         try
         {
-            repositoryService.createHook(repositoryId, repositoryHook);
+            List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
+            // adds changesets hook, if it does not exist
+            if (!existsChangesetsHook(hooks, hookUrl))
+            {
+                createChangesetsHook(repository, hookUrl);
+            }
+            // adds pull requests hook, if it does not exist
+            if (!existsPullRequestsHook(hooks, hookUrl))
+            {
+                createPullRequestsHook(repository, hookUrl);
+            }
         } catch (IOException e)
         {
-            if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
+            if (exceedHookLimit(e))
             {
-                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook. Maximum number of postcommit hooks exceeded. ", e);
 
+            } else
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook. Do you have administrator permissions?", e);
             }
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, RepositoryHook> getHooksForRepo(RepositoryService repositoryService,
-            RepositoryId repositoryId)
+    /**
+     * @param hooks
+     *            current registered hooks
+     * @param hookUrl
+     *            for which hook URL
+     * @return True if changesets hook for provided information already exists
+     */
+    private boolean existsChangesetsHook(List<RepositoryHook> hooks, String hookUrl)
     {
-	    try
+        for (RepositoryHook hook : hooks)
         {
-	        List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
-	        Map<String, RepositoryHook> urlToHooks = new HashMap<String, RepositoryHook>();
-	        for (RepositoryHook repositoryHook : hooks)
-	        {
-	            urlToHooks.put(repositoryHook.getConfig().get("url"), repositoryHook);
-	        }
-	        return urlToHooks;
-        } catch (IOException e)
-        {
-        	log.info("Problem getting hooks from Github: " + e.getMessage(), e);
-        	return Collections.EMPTY_MAP;
+            // in old API (changesets) content type was undefined (default it was form)
+            // in new API (pull requests) we use recommended json
+            if (hookUrl.equals(hook.getConfig().get("url")) && !"json".equals(hook.getConfig().get("content_type")))
+            {
+                return true;
+            }
         }
+        return false;
+    }
+
+    /**
+     * @param hooks
+     *            current registered hooks
+     * @param hookUrl
+     *            for which hook URL
+     * @return True if pull requests hook for provided information already exists
+     */
+    private boolean existsPullRequestsHook(List<RepositoryHook> hooks, String hookUrl)
+    {
+        for (RepositoryHook hook : hooks)
+        {
+            // in old API (changesets) content type was undefined (default it was form)
+            // in new API (pull requests) we use recommended json
+            if (hookUrl.equals(hook.getConfig().get("url")) && "json".equals(hook.getConfig().get("content_type")))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates new hook for events related to changesets.
+     * 
+     * @param repository
+     *            on which repository
+     * @param hookUrl
+     *            on which URL
+     * @throws IOException
+     *             exception thrown if something bad happened during communication with GitHub
+     */
+    private void createChangesetsHook(Repository repository, String hookUrl) throws IOException
+    {
+        RepositoryHook hook = new RepositoryHook();
+        hook.setName("web");
+        hook.setActive(true);
+        hook.getEvents().add("push");
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("url", hookUrl);
+        hook.setConfig(config);
+
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
+        repositoryService.createHook(repositoryId, hook);
+    }
+
+    /**
+     * Creates new hook for events related to pull requests.
+     * 
+     * @param repository
+     *            on which repository
+     * @param hookUrl
+     *            on which URL
+     * @throws IOException
+     */
+    private void createPullRequestsHook(Repository repository, String hookUrl) throws IOException
+    {
+        RepositoryHook hook = new RepositoryHook();
+        hook.setName("web");
+        hook.setActive(true);
+        hook.getEvents().add("pull_request");
+        hook.getEvents().add("pull_request_review_comment");
+        hook.getEvents().add("issue_comment");
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("url", hookUrl);
+        config.put("content_type", "json");
+        hook.setConfig(config);
+
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
+        repositoryService.createHook(repositoryId, hook);
+    }
+
+    /**
+     * @param e
+     *            exception thrown by egit binding
+     * @return true if the provided exception is about exceeded limits of hooks' count
+     */
+    private boolean exceedHookLimit(IOException e)
+    {
+        return e instanceof RequestException && ((RequestException) e).getStatus() == 422;
     }
 
     @Override
@@ -372,16 +457,16 @@ public class GithubCommunicator implements DvcsCommunicator
             {
                 if (postCommitUrl.equals(hook.getConfig().get("url")))
                 {
-                    try 
+                    try
                     {
                         repositoryService.deleteHook(repositoryId, (int) hook.getId());
                     } catch (ProtocolException pe)
                     {
-                        //BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
+                        // BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
                         log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(), repository.getRepositoryUrl());
- 
+
                         deleteHookByHttpClient(repository, hook);
-                        
+
                         log.debug("Deletion was successfull.");
                     }
                 }
@@ -474,7 +559,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
         } catch (IOException e)
         {
-            log.info("Can not obtain branches list from repository [ "+repository.getSlug()+" ]", e);
+            log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
             // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
@@ -493,18 +578,18 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             baseUrl = baseUrl + "/api/v3";
         }
-        
+
         String url = baseUrl + "/repos/" + repositoryId.generateId() + "/hooks/" + hook.getId();
         HttpMethod method = new DeleteMethod(url);
 
         proxyConfig.configureProxy(httpClient, url);
-        
+
         Authentication auth = new OAuthAuthentication(repository.getCredential().getAccessToken());
         auth.addAuthentication(method, httpClient);
-        
+
         httpClient.executeMethod(method);
     }
-    
+
     @Override
     public boolean supportsInvitation(Organization organization)
     {
@@ -565,7 +650,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                             SynchronizeChangesetMessage.class, //
                             GithubSynchronizeChangesetMessageConsumer.ADDRESS //
-                    );
+                            );
                     messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                 }
             }
