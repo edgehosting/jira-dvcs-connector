@@ -44,15 +44,14 @@ import java.util.concurrent.Callable;
 
 /**
  * BaseRemoteRequestor
- * 
- * 
+ * <p/>
+ * <p/>
  * <br />
  * <br />
  * Created on 13.7.2012, 10:25:24 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
- * 
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
@@ -61,6 +60,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     protected final ApiProvider apiProvider;
 
     private final HttpClientProvider httpClientProvider;
+
     public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
@@ -68,16 +68,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback) {
+    public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    {
         return getWithRetry(uri, parametersToListParams(parameters), callback);
     }
 
-    private Map<String, List<String>> parametersToListParams(Map<String, String> parameters) {
+    private Map<String, List<String>> parametersToListParams(Map<String, String> parameters)
+    {
         if (parameters == null)
         {
             return null;
-        }
-        else
+        } else
         {
             return Maps.transformValues(parameters, STRING_TO_LIST_STRING);
         }
@@ -96,7 +97,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
-    public  <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
+    public <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
     }
@@ -112,7 +113,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
 
     private <T> T getWithRetry(final String uri, final Map<String, List<String>> parameters,
-            final ResponseCallback<T> callback)
+                               final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -126,7 +127,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T deleteWithRetry(final String uri, final Map<String, List<String>> parameters,
-            final ResponseCallback<T> callback)
+                                  final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -154,7 +155,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
-            final ResponseCallback<T> callback)
+                               final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -170,6 +171,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
     // extension hooks
     // --------------------------------------------------------------------------------------------------
+
     /**
      * E.g. append basic auth headers ...
      */
@@ -182,7 +184,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     /**
      * E.g. append oauth params ...
      */
-    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri,  Map<String, ? extends Object> params)
+    protected String afterFinalUriConstructed(HttpRequestBase method, String finalUri, Map<String, ? extends Object> params)
     {
         return finalUri;
     }
@@ -191,9 +193,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    public static final Function<String,List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>() {
+    public static final Function<String, List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>()
+    {
         @Override
-        public List<String> apply(@Nullable String input) {
+        public List<String> apply(@Nullable String input)
+        {
             return Collections.singletonList(input);
         }
     };
@@ -218,7 +222,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         if (log.isDebugEnabled())
         {
-            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[]{method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders())});
         }
     }
 
@@ -313,20 +317,20 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
             switch (statusCode)
             {
-            case HttpStatus.SC_BAD_REQUEST:
-                toBeThrown = new BitbucketRequestException.BadRequest_400();
-                break;
-            case HttpStatus.SC_UNAUTHORIZED:
-                toBeThrown = new BitbucketRequestException.Unauthorized_401();
-                break;
-            case HttpStatus.SC_FORBIDDEN:
-                toBeThrown = new BitbucketRequestException.Forbidden_403();
-                break;
-            case HttpStatus.SC_NOT_FOUND:
-                toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
-                break;
-            case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                toBeThrown = new BitbucketRequestException.InternalServerError_500(IOUtils.toString(httpResponse.getEntity().getContent()));
+                case HttpStatus.SC_BAD_REQUEST:
+                    toBeThrown = new BitbucketRequestException.BadRequest_400();
+                    break;
+                case HttpStatus.SC_UNAUTHORIZED:
+                    toBeThrown = new BitbucketRequestException.Unauthorized_401();
+                    break;
+                case HttpStatus.SC_FORBIDDEN:
+                    toBeThrown = new BitbucketRequestException.Forbidden_403();
+                    break;
+                case HttpStatus.SC_NOT_FOUND:
+                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
+                    break;
+                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+                    toBeThrown = new BitbucketRequestException.InternalServerError_500(IOUtils.toString(httpResponse.getEntity().getContent()));
             }
 
 
@@ -356,14 +360,14 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (log.isWarnEnabled())
         {
             log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
-                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
+                    new Object[]{method.getMethod(), method.getURI(), method.getParams(), statusCode});
         }
 
         if (log.isDebugEnabled())
         {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                            statusCode, responseAsString });
+                    new Object[]{method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                            statusCode, responseAsString});
         }
     }
 
@@ -407,19 +411,25 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private void paramsMapToString(Map<String, List<String>> parameters, StringBuilder builder)
     {
-        final Predicate<String> notNullOrEmpty = new Predicate<String>() {
+        final Predicate<String> notNullOrEmpty = new Predicate<String>()
+        {
             @Override
-            public boolean apply(@Nullable String input) {
+            public boolean apply(@Nullable String input)
+            {
                 return input != null && !input.isEmpty();
             }
         };
 
-        builder.append(Joiner.on("&").join(Iterables.concat(Iterables.transform(parameters.entrySet(), new Function<Entry<String, List<String>>, Iterable<String>>() {
+        builder.append(Joiner.on("&").join(Iterables.concat(Iterables.transform(parameters.entrySet(), new Function<Entry<String, List<String>>, Iterable<String>>()
+        {
             @Override
-            public Iterable<String> apply(@Nullable final Entry<String, List<String>> entry) {
-                return Iterables.transform(Iterables.filter(entry.getValue(), notNullOrEmpty), new Function<String, String>() {
+            public Iterable<String> apply(@Nullable final Entry<String, List<String>> entry)
+            {
+                return Iterables.transform(Iterables.filter(entry.getValue(), notNullOrEmpty), new Function<String, String>()
+                {
                     @Override
-                    public String apply(@Nullable String entryValue) {
+                    public String apply(@Nullable String entryValue)
+                    {
                         return encode(entry.getKey()) + "=" + encode(entryValue);
                     }
                 });
@@ -447,10 +457,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
             throws IOException, URISyntaxException
     {
         String remoteUrl;
-        if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
+        if (uri.startsWith("http:/") || uri.startsWith("https:/"))
+        {
             remoteUrl = uri;
 
-        } else {
+        } else
+        {
             String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
             remoteUrl = apiUrl + uri;
         }
