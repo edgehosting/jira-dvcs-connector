@@ -26,11 +26,12 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
     private final List<String> includeNodes;
     private final List<String> excludeNodes;
     private BitbucketChangesetPage currentPage = null;
+    private final Map<String,String> changesetBranch;
 
     // services
     private final ChangesetRemoteRestpoint changesetRemoteRestpoint;
 
-    public BitbucketChangesetIterator(ChangesetRemoteRestpoint changesetRemoteRestpoint, String owner, String slug, List<String> includeNodes, List<String> excludeNodes, int pageLength, BitbucketChangesetPage currentPage)
+    public BitbucketChangesetIterator(ChangesetRemoteRestpoint changesetRemoteRestpoint, String owner, String slug, List<String> includeNodes, List<String> excludeNodes, Map<String,String> changesetBranch, int pageLength, BitbucketChangesetPage currentPage)
     {
         this.changesetRemoteRestpoint = changesetRemoteRestpoint;
         this.owner = owner;
@@ -39,6 +40,7 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
         this.excludeNodes = excludeNodes;
         this.pageLength = pageLength;
         this.currentPage = currentPage;
+        this.changesetBranch = changesetBranch;
     }
 
     @Override
@@ -73,29 +75,26 @@ public class BitbucketChangesetIterator implements Iterator<BitbucketNewChangese
 
         BitbucketNewChangeset currentChangeset = currentPage.getValues().remove(0);
 
+        assignBranch(currentChangeset);
+
         return currentChangeset;
+    }
+
+    // TODO This code is duplicated between here and BitbucketSynchronizeChangesetMessageConsumer
+    private void assignBranch(BitbucketNewChangeset changeset)
+    {
+        String branch = changesetBranch.get(changeset.getHash());
+        changeset.setBranch(branch);
+        changesetBranch.remove(changeset.getHash());
+        for (BitbucketNewChangeset parent : changeset.getParents())
+        {
+            changesetBranch.put(parent.getHash(), branch);
+        }
     }
 
     @Override
     public void remove()
     {
         throw new UnsupportedOperationException("This is unsupported.");
-    }
-
-    private String createUrl()
-    {
-        return String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", owner, slug, pageLength);
-    }
-
-    private ResponseCallback<BitbucketChangesetPage> createResponseCallback()
-    {
-        return new ResponseCallback<BitbucketChangesetPage>()
-        {
-            @Override
-            public BitbucketChangesetPage onResponse(RemoteResponse response)
-            {
-                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
-            }
-        };
     }
 }

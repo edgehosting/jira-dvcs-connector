@@ -374,7 +374,7 @@ public class BitbucketCommunicatorTest
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyInt(), Mockito.<BitbucketChangesetPage>any())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
+            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt(), Mockito.<BitbucketChangesetPage>any())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
 
                 @Override
                 public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable {

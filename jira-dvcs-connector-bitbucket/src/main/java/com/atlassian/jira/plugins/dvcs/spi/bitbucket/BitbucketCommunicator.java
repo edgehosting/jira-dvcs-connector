@@ -259,7 +259,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 // Do we have new heads?
                 if (includeNodes == null || !includeNodes.isEmpty())
                 {
-                    Iterable<BitbucketNewChangeset> bitbucketChangesets = getChangesets(repository, includeNodes, excludeNodes, null);
+                    Map<String, String> changesetBranch = new HashMap<String, String>();
+                    for (Branch branch : newBranches)
+                    {
+                        for (BranchHead branchHead : branch.getHeads())
+                        {
+                            changesetBranch.put(branchHead.getHead(), branchHead.getName());
+                        }
+                    }
+
+                    Iterable<BitbucketNewChangeset> bitbucketChangesets = getChangesets(repository, includeNodes, excludeNodes, changesetBranch, null);
 
                     result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
                 } else
@@ -281,12 +290,14 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    public Iterable<BitbucketNewChangeset> getChangesets(Repository repository, List<String> includeNodes, List<String> excludeNodes, BitbucketChangesetPage currentPage) {
+    public Iterable<BitbucketNewChangeset> getChangesets(Repository repository, List<String> includeNodes, List<String> excludeNodes, final Map<String,String> changesetBranch, BitbucketChangesetPage currentPage)
+    {
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
         return remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
                                                        repository.getSlug(),
                                                        includeNodes,
                                                        excludeNodes,
+                                                       changesetBranch,
                                                        CHANGESET_LIMIT,
                                                        currentPage);
     }
@@ -769,7 +780,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Date synchronizationStartedAt = new Date();
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, null, softSync, auditId);
+                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, null, asNodeToBranches(filterNodes.newBranches), softSync, auditId);
 
             messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
         }

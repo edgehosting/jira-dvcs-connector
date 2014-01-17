@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -88,6 +89,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             {
                 continue;
             }
+            assignBranch(ncset, payload);
             Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
@@ -120,6 +122,20 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
     }
 
+    // TODO This code is duplicated between here and BitbucketChangesetIterator
+    private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
+    {
+        Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
+
+        String branch = changesetBranch.get(cset.getHash());
+        cset.setBranch(branch);
+        changesetBranch.remove(cset.getHash());
+        for (BitbucketNewChangeset parent : cset.getParents())
+        {
+            changesetBranch.put(parent.getHash(), branch);
+        }
+    }
+
     private void fireNextPage(BitbucketChangesetPage prevPage, BitbucketSynchronizeChangesetMessage originalMessage, boolean softSync, String[] tags)
     {
         messagingService.publish(
@@ -127,7 +143,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     private List<String> extractBranchHeads(List<BranchHead> branchHeads)

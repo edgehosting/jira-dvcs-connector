@@ -43,6 +43,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
             json.put("page", payload.getPage().getPage());
         }
         json.put("include", collectionToString(payload.getInclude()));
+        json.put("nodesToBranches", payload.getNodesToBranches());
     }
 
     @Override
@@ -52,6 +53,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         List<String> exclude;
         List<String> include;
         BitbucketChangesetPage page = null;
+        Map<String, String> nodesToBranches;
 
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
         exclude = collectionFromString(json.optString("exclude"));
@@ -61,8 +63,9 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         page.setPage(json.optInt("page"));
 
         include = collectionFromString(json.optString("include"));
+        nodesToBranches = asMap(json.optJSONObject("nodesToBranches"));
 
-        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, false, 0);
+        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, nodesToBranches, false, 0);
     }
 
     protected Map<String, String> asMap(JSONObject object)

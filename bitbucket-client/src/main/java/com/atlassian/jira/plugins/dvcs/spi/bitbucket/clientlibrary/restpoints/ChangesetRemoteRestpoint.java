@@ -99,7 +99,8 @@ public class ChangesetRemoteRestpoint
     }
 
     public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
-                                                         final List<String> excludeNodes, final int changesetsLimit, final BitbucketChangesetPage currentPage)
+                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch,
+                                                         final int changesetsLimit, final BitbucketChangesetPage currentPage)
     {
         final ChangesetRemoteRestpoint changesetRemoteRestpoint = this;
         return new Iterable<BitbucketNewChangeset>()
@@ -107,7 +108,7 @@ public class ChangesetRemoteRestpoint
             @Override
             public Iterator<BitbucketNewChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(changesetRemoteRestpoint, owner, slug, includeNodes, excludeNodes, changesetsLimit, currentPage);
+                return new BitbucketChangesetIterator(changesetRemoteRestpoint, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit, currentPage);
             }
         };
     }

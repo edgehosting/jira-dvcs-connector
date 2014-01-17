@@ -30,14 +30,18 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
 
     private BitbucketChangesetPage page;
 
+    private Map<String, String> nodesToBranches;
+
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
-            Progress progress, List<String> include, List<String> exclude, BitbucketChangesetPage page, boolean softSync, int syncAuditId)
+            Progress progress, List<String> include, List<String> exclude, BitbucketChangesetPage page,
+            Map<String, String> nodesToBranches, boolean softSync, int syncAuditId)
     {
         super(progress, syncAuditId, softSync, repository);
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.include = include;
         this.exclude = exclude;
         this.page = page;
+        this.nodesToBranches = nodesToBranches;
     }
 
     public Date getRefreshAfterSynchronizedAt()
@@ -59,4 +63,10 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
     {
         return include;
     }
+
+    public Map<String, String> getNodesToBranches()
+    {
+        return nodesToBranches;
+    }
+
 }
