@@ -122,7 +122,7 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public List<Changeset> getChangesets(Repository repository)
     {
         return changesetDao.getByRepository(repository.getId());
     }
