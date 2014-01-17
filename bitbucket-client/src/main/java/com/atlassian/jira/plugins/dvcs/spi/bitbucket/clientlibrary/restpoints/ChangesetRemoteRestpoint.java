@@ -122,16 +122,7 @@ public class ChangesetRemoteRestpoint
 
         try
         {
-            return requestor.getWithMultipleVals(currentPage.getNext(), null, new ResponseCallback<BitbucketChangesetPage>()
-            {
-                @Override
-                public BitbucketChangesetPage onResponse(RemoteResponse response)
-                {
-                    return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
-                    {
-                    }.getType());
-                }
-            });
+            return requestor.getWithMultipleVals(currentPage.getNext(), null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
         }
         catch (BitbucketRequestException.InternalServerError_500 e)
         {
@@ -159,16 +150,7 @@ public class ChangesetRemoteRestpoint
 
         Map<String, List<String>> parameters = getHttpParametersMap(includeNodes, excludeNodes);
 
-        return requestor.post(url, parameters, new ResponseCallback<BitbucketChangesetPage>()
-        {
-            @Override
-            public BitbucketChangesetPage onResponse(RemoteResponse response)
-            {
-                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
-                {
-                }.getType());
-            }
-        });
+        return requestor.post(url, parameters, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
     }
 
     private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes)
