@@ -185,10 +185,13 @@ public class ChangesetRemoteRestpoint
 
     private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage) {
         String url;
-        url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s&page=%s", orgName,
+        url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName,
                 slug,
-                String.valueOf(changesetLimit),
-                String.valueOf(currentPage == null ? 0 : currentPage.getPage()));
+                String.valueOf(changesetLimit));
+        if (currentPage.getPage() > 0)
+        {
+            url = url + URLPathFormatter.format("&page=%s", String.valueOf(currentPage.getPage()));
+        }
         return url;
     }
 }

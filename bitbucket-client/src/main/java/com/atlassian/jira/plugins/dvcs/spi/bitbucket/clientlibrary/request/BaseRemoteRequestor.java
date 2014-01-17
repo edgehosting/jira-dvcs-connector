@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
@@ -406,10 +407,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
     private void paramsMapToString(Map<String, List<String>> parameters, StringBuilder builder)
     {
+        final Predicate<String> notNullOrEmpty = new Predicate<String>() {
+            @Override
+            public boolean apply(@Nullable String input) {
+                return input != null && !input.isEmpty();
+            }
+        };
+
         builder.append(Joiner.on("&").join(Iterables.concat(Iterables.transform(parameters.entrySet(), new Function<Entry<String, List<String>>, Iterable<String>>() {
             @Override
             public Iterable<String> apply(@Nullable final Entry<String, List<String>> entry) {
-                return Iterables.transform(entry.getValue(), new Function<String, String>() {
+                return Iterables.transform(Iterables.filter(entry.getValue(), notNullOrEmpty), new Function<String, String>() {
                     @Override
                     public String apply(@Nullable String entryValue) {
                         return encode(entry.getKey()) + "=" + encode(entryValue);
