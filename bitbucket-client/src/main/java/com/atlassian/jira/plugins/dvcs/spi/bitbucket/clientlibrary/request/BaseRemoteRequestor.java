@@ -193,7 +193,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
-    public static final Function<String, List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>()
+    private static final Function<String, List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>()
     {
         @Override
         public List<String> apply(@Nullable String input)
