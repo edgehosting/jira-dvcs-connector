@@ -324,6 +324,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             case HttpStatus.SC_NOT_FOUND:
                 toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
                 break;
+            case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+                toBeThrown = new BitbucketRequestException.InternalServerError_500(IOUtils.toString(httpResponse.getEntity().getContent()));
             }
 
 

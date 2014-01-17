@@ -116,37 +116,79 @@ public class ChangesetRemoteRestpoint
         Map<String, List<String>> parameters = null;
         String url = null;
 
-        if (currentPage == null)
+        if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
         {
             // this is the first request, first page
-            url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName, slug, String.valueOf(changesetLimit));
+            url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
 
-            parameters = new HashMap<String, List<String>>();
-            if (includeNodes != null)
-            {
-                parameters.put("include", new ArrayList<String>(includeNodes));
-            }
-            if (excludeNodes != null)
-            {
-                parameters.put("exclude", new ArrayList<String>(excludeNodes));
-            }
-        } else
+            parameters = getHttpParametersMap(includeNodes, excludeNodes);
+        }
+        else
         {
             url = currentPage.getNext();
         }
 
-        if (StringUtils.isBlank(url))
+        try
         {
-            throw new BitbucketRequestException.NotFound_404();
-        }
-
-        return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
-        {
-            @Override
-            public BitbucketChangesetPage onResponse(RemoteResponse response)
+            return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
             {
-                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
+                @Override
+                public BitbucketChangesetPage onResponse(RemoteResponse response)
+                {
+                    return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
+                }
+            });
+        }
+        catch (BitbucketRequestException.InternalServerError_500 e)
+        {
+            // TODO Ideally, we should parse the response. It looks like this:
+            // {"error": {"message": "Traversal state lost. Unable to resume.", "detail": null}}
+            // Example URL: https://bitbucket.org/api/2.0/repositories/atlassian/jira-bitbucket-connector/commits/?pagelen=10&ctx=foo
+
+            if (e.getMessage().contains("Traversal state lost. Unable to resume."))
+            {
+                // Retry request at this point, using the page set in currentPage.
+                url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
+
+                parameters = getHttpParametersMap(includeNodes, excludeNodes);
+
+                return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
+                {
+                    @Override
+                    public BitbucketChangesetPage onResponse(RemoteResponse response)
+                    {
+                        return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
+                    }
+                });
             }
-        });
+            else
+            {
+                // Re-raise, as it's not one we can handle
+                throw e;
+            }
+        }
+    }
+
+    private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes) {
+        Map<String, List<String>> parameters;
+        parameters = new HashMap<String, List<String>>();
+        if (includeNodes != null)
+        {
+            parameters.put("include", new ArrayList<String>(includeNodes));
+        }
+        if (excludeNodes != null)
+        {
+            parameters.put("exclude", new ArrayList<String>(excludeNodes));
+        }
+        return parameters;
+    }
+
+    private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage) {
+        String url;
+        url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s&page=%s", orgName,
+                slug,
+                String.valueOf(changesetLimit),
+                String.valueOf(currentPage == null ? 0 : currentPage.getPage()));
+        return url;
     }
 }
