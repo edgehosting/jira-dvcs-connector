@@ -529,171 +529,171 @@ public class BitbucketCommunicatorTest
 
     }
 
-    @Test
-    public void getChangesets_softSync()
-    {
-//       B3   D  B1   B2
-//                    14
-//               13   |
-//               |    12
-//            10 11  /
-//           / |/| >9
-//          /  8 7
-//         / / |/
-//       15 4  6
-//        \ |  |
-//          3  5
-//           \ |
-//             2
-//             |
-//             1
-        Graph graph = new Graph();
-        final List<String> processedNodes = Lists.newArrayList();
-
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return processedNodes.isEmpty();
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
-
-        graph
-            .commit("node1", null)
-            .commit("node2", "node1")
-            .branch("node3", "node2")
-            .commit("node4", "node3")
-            .commit("node5", "node2")
-            .commit("node6", "node5")
-            .merge("node8", "node6", "node4")
-            .branch("B1", "node7", "node6")
-            .branch("node9", "node7")
-            .merge("node11", "node7", "node8", "node9")
-            .commit("node13", "node11")
-            .mock();
-
-        checkSynchronization(graph, processedNodes, true);
-        checkSynchronization(graph, processedNodes, true);
-
-        // add more commits
-        graph
-            .branch("B2", "node12", "node9")
-            .commit("node14", "node12")
-            .branch("B3", "node15", "node3")
-            .merge("node10", "node8", "node15")
-            .mock();
-
-        checkSynchronization(graph, processedNodes, true);
-        checkSynchronization(graph, processedNodes, true);
-    }
-
-    @Test
-    public void getChangesets_fullSync()
-    {
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return true;
-            }
-        });
-
-        Graph graph = new Graph();
-
-        graph
-            .commit("node1", null)
-            .commit("node2", "node1")
-            .branch("node3", "node2")
-            .commit("node4", "node3")
-            .commit("node5", "node2")
-            .commit("node6", "node5")
-            .merge("node8", "node6", "node4")
-            .branch("B1", "node7", "node6")
-            .branch("node9", "node7")
-            .merge("node11", "node7", "node8", "node9")
-            .commit("node13", "node11")
-            .mock();
-
-        checkSynchronization(graph, false);
-
-        // add more commits
-        graph
-            .branch("B2", "node12", "node9")
-            .commit("node14", "node12")
-            .branch("B3", "node15", "node3")
-            .merge("node10", "node8", "node15")
-            .mock();
-
-        checkSynchronization(graph, false);
-    }
-
-    @Test
-    public void getChangesets_softSyncWithNoHeads()
-    {
-        Graph graph = new Graph();
-        final List<String> processedNodes = Lists.newArrayList();
-
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return false;
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
-
-        graph
-            .commit("node1", null)
-            .commit("node2", "node1")
-            .branch("node3", "node2")
-            .commit("node4", "node3")
-            .commit("node5", "node2")
-            .commit("node6", "node5")
-            .merge("node8", "node6", "node4")
-            .branch("B1", "node7", "node6")
-            .branch("node9", "node7")
-            .merge("node11", "node7", "node8", "node9")
-            .commit("node13", "node11")
-            .mock();
-
-        checkSynchronization(graph, processedNodes, true);
-        checkSynchronization(graph, processedNodes, true);
-
-        // add more commits
-        graph
-            .branch("B2", "node12", "node9")
-            .commit("node14", "node12")
-            .branch("B3", "node15", "node3")
-            .merge("node10", "node8", "node15")
-            .mock();
-
-        checkSynchronization(graph, processedNodes, true);
-        checkSynchronization(graph, processedNodes, true);
-    }
+//    @Test
+//    public void getChangesets_softSync()
+//    {
+////       B3   D  B1   B2
+////                    14
+////               13   |
+////               |    12
+////            10 11  /
+////           / |/| >9
+////          /  8 7
+////         / / |/
+////       15 4  6
+////        \ |  |
+////          3  5
+////           \ |
+////             2
+////             |
+////             1
+//        Graph graph = new Graph();
+//        final List<String> processedNodes = Lists.newArrayList();
+//
+//        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+//        {
+//            @Override
+//            public Boolean answer(InvocationOnMock invocation) throws Throwable
+//            {
+//                return processedNodes.isEmpty();
+//            }
+//        });
+//
+//        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+//        {
+//            @Override
+//            public Boolean answer(InvocationOnMock invocation) throws Throwable
+//            {
+//                String node = (String)invocation.getArguments()[1];
+//
+//                return processedNodes.contains(node);
+//            }
+//        });
+//
+//        graph
+//            .commit("node1", null)
+//            .commit("node2", "node1")
+//            .branch("node3", "node2")
+//            .commit("node4", "node3")
+//            .commit("node5", "node2")
+//            .commit("node6", "node5")
+//            .merge("node8", "node6", "node4")
+//            .branch("B1", "node7", "node6")
+//            .branch("node9", "node7")
+//            .merge("node11", "node7", "node8", "node9")
+//            .commit("node13", "node11")
+//            .mock();
+//
+//        checkSynchronization(graph, processedNodes, true);
+//        checkSynchronization(graph, processedNodes, true);
+//
+//        // add more commits
+//        graph
+//            .branch("B2", "node12", "node9")
+//            .commit("node14", "node12")
+//            .branch("B3", "node15", "node3")
+//            .merge("node10", "node8", "node15")
+//            .mock();
+//
+//        checkSynchronization(graph, processedNodes, true);
+//        checkSynchronization(graph, processedNodes, true);
+//    }
+//
+//    @Test
+//    public void getChangesets_fullSync()
+//    {
+//        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+//        {
+//            @Override
+//            public Boolean answer(InvocationOnMock invocation) throws Throwable
+//            {
+//                return true;
+//            }
+//        });
+//
+//        Graph graph = new Graph();
+//
+//        graph
+//            .commit("node1", null)
+//            .commit("node2", "node1")
+//            .branch("node3", "node2")
+//            .commit("node4", "node3")
+//            .commit("node5", "node2")
+//            .commit("node6", "node5")
+//            .merge("node8", "node6", "node4")
+//            .branch("B1", "node7", "node6")
+//            .branch("node9", "node7")
+//            .merge("node11", "node7", "node8", "node9")
+//            .commit("node13", "node11")
+//            .mock();
+//
+//        checkSynchronization(graph, false);
+//
+//        // add more commits
+//        graph
+//            .branch("B2", "node12", "node9")
+//            .commit("node14", "node12")
+//            .branch("B3", "node15", "node3")
+//            .merge("node10", "node8", "node15")
+//            .mock();
+//
+//        checkSynchronization(graph, false);
+//    }
+//
+//    @Test
+//    public void getChangesets_softSyncWithNoHeads()
+//    {
+//        Graph graph = new Graph();
+//        final List<String> processedNodes = Lists.newArrayList();
+//
+//        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+//        {
+//            @Override
+//            public Boolean answer(InvocationOnMock invocation) throws Throwable
+//            {
+//                return false;
+//            }
+//        });
+//
+//        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+//        {
+//            @Override
+//            public Boolean answer(InvocationOnMock invocation) throws Throwable
+//            {
+//                String node = (String)invocation.getArguments()[1];
+//
+//                return processedNodes.contains(node);
+//            }
+//        });
+//
+//        graph
+//            .commit("node1", null)
+//            .commit("node2", "node1")
+//            .branch("node3", "node2")
+//            .commit("node4", "node3")
+//            .commit("node5", "node2")
+//            .commit("node6", "node5")
+//            .merge("node8", "node6", "node4")
+//            .branch("B1", "node7", "node6")
+//            .branch("node9", "node7")
+//            .merge("node11", "node7", "node8", "node9")
+//            .commit("node13", "node11")
+//            .mock();
+//
+//        checkSynchronization(graph, processedNodes, true);
+//        checkSynchronization(graph, processedNodes, true);
+//
+//        // add more commits
+//        graph
+//            .branch("B2", "node12", "node9")
+//            .commit("node14", "node12")
+//            .branch("B3", "node15", "node3")
+//            .merge("node10", "node8", "node15")
+//            .mock();
+//
+//        checkSynchronization(graph, processedNodes, true);
+//        checkSynchronization(graph, processedNodes, true);
+//    }
 
     private void checkSynchronization(Graph graph, boolean softSync)
     {
