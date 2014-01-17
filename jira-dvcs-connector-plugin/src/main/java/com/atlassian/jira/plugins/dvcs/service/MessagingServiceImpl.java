@@ -635,22 +635,25 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> int getSynchronizationAuditIdFromTags(String[] tags)
+    public int getSynchronizationAuditIdFromTags(String[] tags)
     {
-        try
+        for (String tag : tags)
         {
-            for (String tag : tags)
+            try
             {
                 if (StringUtils.startsWith(tag, SYNCHRONIZATION_AUDIT_TAG_PREFIX))
                 {
                     return Integer.parseInt(tag.substring(SYNCHRONIZATION_AUDIT_TAG_PREFIX.length()));
 
                 }
+            } catch (NumberFormatException e)
+            {
+                log.error("Synchronization audit id tag has invalid format, tag was: " + tag);
+                // we don't stop, maybe there is still a valid tag
             }
-        } catch (NumberFormatException e)
-        {
-            log.warn("Get audit ID info from message: " + e.getMessage());
         }
+
+        // no tag was resolved
         return 0;
     }
 
