@@ -188,7 +188,7 @@ public class ChangesetRemoteRestpoint
         url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName,
                 slug,
                 String.valueOf(changesetLimit));
-        if (currentPage.getPage() > 0)
+        if (currentPage != null && currentPage.getPage() > 0)
         {
             url = url + URLPathFormatter.format("&page=%s", String.valueOf(currentPage.getPage()));
         }
