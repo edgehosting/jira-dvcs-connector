@@ -374,17 +374,17 @@ public class BitbucketCommunicatorTest
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt(), Mockito.<BitbucketChangesetPage>any())).then(new Answer<Iterable<BitbucketNewChangeset>>() {
-
+            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt(), Mockito.<BitbucketChangesetPage>any())).then(new Answer<Iterable<BitbucketNewChangeset>>()
+            {
                 @Override
-                public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable {
+                public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable
+                {
                     @SuppressWarnings("unchecked")
                     List<String> includes = (List<String>) invocation.getArguments()[2];
                     @SuppressWarnings("unchecked")
                     List<String> excludes = (List<String>) invocation.getArguments()[3];
                     return getIterable(includes, excludes);
                 }
-
             });
 
             when(changesetRestpoint.getChangeset(anyString(), anyString(), anyString())).then(new Answer<BitbucketChangeset>()
