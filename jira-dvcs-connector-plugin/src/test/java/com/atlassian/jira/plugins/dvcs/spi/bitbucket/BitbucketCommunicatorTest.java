@@ -373,20 +373,20 @@ public class BitbucketCommunicatorTest
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
 
-            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>()
-            {
-
-                @Override
-                public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable
-                {
-                    @SuppressWarnings("unchecked")
-                    List<String> includes = (List<String>)invocation.getArguments()[2];
-                    @SuppressWarnings("unchecked")
-                    List<String> excludes = (List<String>)invocation.getArguments()[3];
-                    return getIterable(includes, excludes);
-                }
-
-            });
+//            when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt())).then(new Answer<Iterable<BitbucketNewChangeset>>()
+//            {
+//
+//                @Override
+//                public Iterable<BitbucketNewChangeset> answer(InvocationOnMock invocation) throws Throwable
+//                {
+//                    @SuppressWarnings("unchecked")
+//                    List<String> includes = (List<String>)invocation.getArguments()[2];
+//                    @SuppressWarnings("unchecked")
+//                    List<String> excludes = (List<String>)invocation.getArguments()[3];
+//                    return getIterable(includes, excludes);
+//                }
+//
+//            });
 
             when(changesetRestpoint.getChangeset(anyString(), anyString(), anyString())).then(new Answer<BitbucketChangeset>()
             {
@@ -707,11 +707,11 @@ public class BitbucketCommunicatorTest
             branchService.removeAllBranchHeadsInRepository(repositoryMock.getId());
         }
 
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
-        {
-            assertThat(processedNodes).doesNotContain(changeset.getNode());
-            processedNodes.add(changeset.getNode());
-        }
+//        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
+//        {
+//            assertThat(processedNodes).doesNotContain(changeset.getNode());
+//            processedNodes.add(changeset.getNode());
+//        }
 
         assertThat(processedNodes).as("Incorrect synchronization").containsAll(graph.getNodes()).doesNotHaveDuplicates().hasSameSizeAs(graph.getNodes());
         assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());

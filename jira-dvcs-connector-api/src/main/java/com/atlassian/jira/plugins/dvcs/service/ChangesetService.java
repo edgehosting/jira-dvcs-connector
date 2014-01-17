@@ -30,8 +30,6 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
-
     /**
      * returns all changesets for given issues
      * @param issueKeys set of issue keys
@@ -45,6 +43,8 @@ public interface ChangesetService
     String getCommitUrl(Repository repository, Changeset changeset);
 
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);
+
+    List<Changeset> getChangesets(Repository repository);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
 

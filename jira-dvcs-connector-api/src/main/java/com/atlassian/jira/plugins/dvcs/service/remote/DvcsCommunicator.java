@@ -33,8 +33,6 @@ public interface DvcsCommunicator
 
     Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
-	Iterable<Changeset> getChangesets(Repository repository);
-
 	void setupPostcommitHook(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);

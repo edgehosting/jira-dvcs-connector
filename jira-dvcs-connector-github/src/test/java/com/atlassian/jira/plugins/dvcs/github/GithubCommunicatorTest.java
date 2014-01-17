@@ -146,230 +146,230 @@ public class GithubCommunicatorTest
         assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
     }
 
-    @Test
-    public void getChangesets_noBranches()
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-        assertThat(changesetIterator.hasNext()).isFalse();
-        assertThat(changesetIterator.hasNext()).isFalse();
-
-        // this should throw an exception
-        try
-        {
-            changesetIterator.next();
-        } catch (NoSuchElementException e)
-        {
-            return;
-        }
-
-        fail("Exception should be thrown.");
-    }
-
-    @Test
-    public void getChangesets_onlyNexts() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createSampleBranches(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        int changesetCounter = 0;
-
-        while (true)
-        {
-            try {
-                Changeset detailChangeset = changesetIterator.next();
-
-                // we need to simulate saving of the processed changeset
-                changesetCache.add(detailChangeset.getNode());
-
-                changesetCounter++;
-            } catch (NoSuchElementException e)
-            {
-                break;
-            }
-        }
-
-        assertThat(changesetCounter).isEqualTo(5);
-    }
-
-    @Test
-    public void getChangesets_twoHasNextOnLast() throws IOException
-    {
-        // Testing hasNext at the end of the iteration
-
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createBranchWithTwoNodes(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        changesetIterator.next();
-
-        // we are on the last node
-        assertThat(changesetIterator.hasNext()).isTrue();
-        assertThat(changesetIterator.hasNext()).isTrue();
-    }
-
-    @Test
-    public void getChangesets_twoHasNextOnLast2() throws IOException
-    {
-        // Testing hasNext at the end of the iteration, the last node is in cache
-
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createBranchWithTwoNodes(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        changesetCache.add("NODE-1");
-
-        changesetIterator.next();
-        assertThat(changesetIterator.hasNext()).isFalse();
-        assertThat(changesetIterator.hasNext()).isFalse();
-    }
-
-    @Test
-    public void getChangesets_twoHasNextWhenStopped() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createBranchWithTwoNodes(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        changesetCache.add("MASTER-SHA");
-
-        assertThat(changesetIterator.hasNext()).isFalse();
-        assertThat(changesetIterator.hasNext()).isFalse();
-
-        // this should throw an exception
-        try
-        {
-            changesetIterator.next();
-        } catch (NoSuchElementException e)
-        {
-            return;
-        }
-
-        fail("Exception should be thrown.");
-    }
-
-    @Test
-    public void getChangesets_MasterBranchStopped() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createSampleBranches(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        // we stop master branch
-        changesetCache.add("MASTER-SHA");
-
-        // we stopped the master branch, it should iterate branch1
-        assertThat(changesetIterator.hasNext()).isTrue();
-        assertThat(changesetIterator.hasNext()).isTrue();
-
-        Changeset detailChangeset = changesetIterator.next();
-        assertThat(detailChangeset.getBranch()).isEqualTo("branch1");
-        assertThat(detailChangeset.getNode())  .isEqualTo("BRANCH-SHA");
-    }
-
-    @Test
-    public void getChangesets_hasNext() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createSampleBranches(repositoryId);
-
-        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
-
-        int changesetCounter = 0;
-
-        while (changesetIterator.hasNext())
-        {
-            changesetIterator.hasNext();
-            changesetIterator.hasNext();
-
-            Changeset detailChangeset = changesetIterator.next();
-            changesetCounter++;
-
-            // we need to simulate saving of the processed changeset
-            changesetCache.add(detailChangeset.getNode());
-
-            changesetIterator.hasNext();
-            changesetIterator.hasNext();
-        }
-
-        assertThat(changesetCounter).isEqualTo(5);
-    }
-
-    @Test
-    public void getChangsets_softsync() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createSampleBranches(repositoryId);
-
-        changesetCache.add("NODE-1");
-        changesetCache.add("NODE-2");
-
-        int changesetCounter = 0;
-
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
-        {
-            changesetCache.add(changeset.getNode());
-            changesetCounter++;
-        }
-        assertThat(changesetCounter).isEqualTo(3);
-    }
-
-    @Test
-    public void getChangsets_fullsync() throws IOException
-    {
-        // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-
-        createMoreComplexSample(repositoryId);
-
-        int changesetCounter = 0;
-
-        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
-        {
-            changesetCache.add(changeset.getNode());
-            changesetCounter++;
-        }
-        assertThat(changesetCounter).isEqualTo(15);
-    }
+//    @Test
+//    public void getChangesets_noBranches()
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//
+//        // this should throw an exception
+//        try
+//        {
+//            changesetIterator.next();
+//        } catch (NoSuchElementException e)
+//        {
+//            return;
+//        }
+//
+//        fail("Exception should be thrown.");
+//    }
+//
+//    @Test
+//    public void getChangesets_onlyNexts() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createSampleBranches(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        int changesetCounter = 0;
+//
+//        while (true)
+//        {
+//            try {
+//                Changeset detailChangeset = changesetIterator.next();
+//
+//                // we need to simulate saving of the processed changeset
+//                changesetCache.add(detailChangeset.getNode());
+//
+//                changesetCounter++;
+//            } catch (NoSuchElementException e)
+//            {
+//                break;
+//            }
+//        }
+//
+//        assertThat(changesetCounter).isEqualTo(5);
+//    }
+//
+//    @Test
+//    public void getChangesets_twoHasNextOnLast() throws IOException
+//    {
+//        // Testing hasNext at the end of the iteration
+//
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createBranchWithTwoNodes(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        changesetIterator.next();
+//
+//        // we are on the last node
+//        assertThat(changesetIterator.hasNext()).isTrue();
+//        assertThat(changesetIterator.hasNext()).isTrue();
+//    }
+//
+//    @Test
+//    public void getChangesets_twoHasNextOnLast2() throws IOException
+//    {
+//        // Testing hasNext at the end of the iteration, the last node is in cache
+//
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createBranchWithTwoNodes(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        changesetCache.add("NODE-1");
+//
+//        changesetIterator.next();
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//    }
+//
+//    @Test
+//    public void getChangesets_twoHasNextWhenStopped() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createBranchWithTwoNodes(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        changesetCache.add("MASTER-SHA");
+//
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//        assertThat(changesetIterator.hasNext()).isFalse();
+//
+//        // this should throw an exception
+//        try
+//        {
+//            changesetIterator.next();
+//        } catch (NoSuchElementException e)
+//        {
+//            return;
+//        }
+//
+//        fail("Exception should be thrown.");
+//    }
+//
+//    @Test
+//    public void getChangesets_MasterBranchStopped() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createSampleBranches(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        // we stop master branch
+//        changesetCache.add("MASTER-SHA");
+//
+//        // we stopped the master branch, it should iterate branch1
+//        assertThat(changesetIterator.hasNext()).isTrue();
+//        assertThat(changesetIterator.hasNext()).isTrue();
+//
+//        Changeset detailChangeset = changesetIterator.next();
+//        assertThat(detailChangeset.getBranch()).isEqualTo("branch1");
+//        assertThat(detailChangeset.getNode())  .isEqualTo("BRANCH-SHA");
+//    }
+//
+//    @Test
+//    public void getChangesets_hasNext() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createSampleBranches(repositoryId);
+//
+//        Iterator<Changeset> changesetIterator = communicator.getChangesets(repositoryMock).iterator();
+//
+//        int changesetCounter = 0;
+//
+//        while (changesetIterator.hasNext())
+//        {
+//            changesetIterator.hasNext();
+//            changesetIterator.hasNext();
+//
+//            Changeset detailChangeset = changesetIterator.next();
+//            changesetCounter++;
+//
+//            // we need to simulate saving of the processed changeset
+//            changesetCache.add(detailChangeset.getNode());
+//
+//            changesetIterator.hasNext();
+//            changesetIterator.hasNext();
+//        }
+//
+//        assertThat(changesetCounter).isEqualTo(5);
+//    }
+//
+//    @Test
+//    public void getChangsets_softsync() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createSampleBranches(repositoryId);
+//
+//        changesetCache.add("NODE-1");
+//        changesetCache.add("NODE-2");
+//
+//        int changesetCounter = 0;
+//
+//        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
+//        {
+//            changesetCache.add(changeset.getNode());
+//            changesetCounter++;
+//        }
+//        assertThat(changesetCounter).isEqualTo(3);
+//    }
+//
+//    @Test
+//    public void getChangsets_fullsync() throws IOException
+//    {
+//        // Repository
+//        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+//        when(repositoryMock.getOrgName()).thenReturn("ORG");
+//        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+//
+//        createMoreComplexSample(repositoryId);
+//
+//        int changesetCounter = 0;
+//
+//        for ( Changeset changeset : communicator.getChangesets(repositoryMock) )
+//        {
+//            changesetCache.add(changeset.getNode());
+//            changesetCounter++;
+//        }
+//        assertThat(changesetCounter).isEqualTo(15);
+//    }
 
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException
     {

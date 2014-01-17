@@ -77,13 +77,6 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Iterable<Changeset> getChangesetsFromDvcs(Repository repository)
-    {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getChangesets(repository);
-    }
-
-    @Override
     public Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset)
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
@@ -126,6 +119,12 @@ public class ChangesetServiceImpl implements ChangesetService
         }
 
         return fileCommitUrls;
+    }
+
+    @Override
+    public Iterable<Changeset> getChangesets(Repository repository)
+    {
+        return changesetDao.getByRepository(repository.getId());
     }
 
     @Override

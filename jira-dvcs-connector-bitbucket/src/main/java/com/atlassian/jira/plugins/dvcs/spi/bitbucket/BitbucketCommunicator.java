@@ -3,11 +3,9 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +15,6 @@ import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
@@ -42,7 +39,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.JsonParsingException;
@@ -53,7 +49,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
@@ -62,7 +57,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.NewChangesetIterableAdapter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
@@ -212,91 +206,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             log.debug(e.getMessage(), e);
             throw new SourceControlException.InvalidResponseException("Could not get changeset [" + changeset.getNode() + "] from " + repository.getRepositoryUrl(), e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Iterable<Changeset> getChangesets(final Repository repository)
-    {
-        try
-        {
-            //remote branch list
-            final List<Branch> newBranches = getBranches(repository);
-            log.debug("Current branch heads for repository [{}]: {}", repository.getId(), newBranches);
-            if (newBranches.isEmpty())
-            {
-                // this can happen only when empty repository
-                return Collections.emptyList();
-            }
-            //local branch head list
-            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repository);
-            log.debug("Previous branch heads for repository [{}]: {}", repository.getId(), oldBranchHeads);
-            Iterable<Changeset> result = null;
-
-            // if we don't have any previous heads, but we there are some changesets, we will use old synchronization
-            if (oldBranchHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
-            {
-                log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
-                result = new Iterable<Changeset>()
-                {
-                    @Override
-                    public Iterator<Changeset> iterator()
-                    {
-                        return new BranchedChangesetIterator(changesetCache, BitbucketCommunicator.this, repository, newBranches);
-                    }
-
-                };
-            } else
-            {
-
-                List<String> includeNodes = extractBranchHeadsFromBranches(newBranches);
-                List<String> excludeNodes = extractBranchHeads(oldBranchHeads);
-                if (includeNodes != null && excludeNodes != null)
-                {
-                    includeNodes.removeAll(excludeNodes);
-                }
-
-                // Do we have new heads?
-                if (includeNodes == null || !includeNodes.isEmpty())
-                {
-                    Map<String, String> changesetBranch = new HashMap<String, String>();
-                    for (Branch branch : newBranches)
-                    {
-                        for (BranchHead branchHead : branch.getHeads())
-                        {
-                            changesetBranch.put(branchHead.getHead(), branchHead.getName());
-                        }
-                    }
-
-                    BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-                    Iterable<BitbucketNewChangeset> bitbucketChangesets =
-                            remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
-                                                                           repository.getSlug(),
-                                                                           includeNodes,
-                                                                           excludeNodes,
-                                                                           changesetBranch,
-                                                                           CHANGESET_LIMIT);
-
-                    result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
-                } else
-                {
-                    log.debug("No new changesets detected for repository [{}].", repository.getId());
-                    result = Collections.emptyList();
-                }
-
-            }
-
-            branchService.updateBranchHeads(repository, newBranches, oldBranchHeads);
-
-            return result;
-        }
-        catch (BitbucketRequestException e)
-        {
-            log.debug(e.getMessage(), e);
-            throw new SourceControlException("Could not get result", e);
         }
     }
 
