@@ -2,20 +2,22 @@ package com.atlassian.jira.plugins.dvcs.github;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryBranch;
@@ -38,10 +40,10 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.net.ResponseException;
 
 /**
@@ -110,7 +112,33 @@ public class GithubCommunicatorTest
 
         communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
 
-        verify(repositoryService).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
+        // two times - one for changesets hook and one for pull requests hook
+        verify(repositoryService, times(2)).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
+    }
+
+    @Test
+    public void settingUpPostcommitHook_alreadyExisting() throws Exception
+    {
+        String postCommitUrl = "postCommitUrl";
+
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+        when(repositoryMock.getSlug()).thenReturn("SLUG");
+
+        RepositoryHook changesetsHook = mock(RepositoryHook.class);
+        when(changesetsHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl));
+
+        RepositoryHook prHook = mock(RepositoryHook.class);
+        when(prHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl, "content_type", "json"));
+
+        List<RepositoryHook> hooks = new LinkedList<RepositoryHook>();
+        hooks.add(changesetsHook);
+        hooks.add(prHook);
+
+        when(repositoryService.getHooks(any(RepositoryId.class))).thenReturn(hooks);
+
+        communicator.setupPostcommitHook(repositoryMock, postCommitUrl);
+
+        verify(repositoryService, never()).createHook(any(IRepositoryIdProvider.class), any(RepositoryHook.class));
     }
 
     @Test

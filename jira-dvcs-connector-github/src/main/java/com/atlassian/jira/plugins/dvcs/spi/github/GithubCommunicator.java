@@ -23,17 +23,19 @@ import javax.annotation.Resource;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
@@ -333,7 +335,7 @@ public class GithubCommunicator implements DvcsCommunicator
             } else
             {
                 throw new SourceControlException.PostCommitHookRegistrationException(
-                        "Could not add request hook. Do you have administrator permissions?", e);
+                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
             }
         }
     }
@@ -441,7 +443,7 @@ public class GithubCommunicator implements DvcsCommunicator
      */
     private boolean exceedHookLimit(IOException e)
     {
-        return e instanceof RequestException && ((RequestException) e).getStatus() == 422;
+        return e instanceof RequestException && ((RequestException) e).getStatus() == HttpStatus.SC_UNPROCESSABLE_ENTITY;
     }
 
     @Override
