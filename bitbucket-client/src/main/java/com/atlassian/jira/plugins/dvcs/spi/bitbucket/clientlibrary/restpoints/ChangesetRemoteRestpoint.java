@@ -112,30 +112,24 @@ public class ChangesetRemoteRestpoint
         };
     }
 
-    public BitbucketChangesetPage getNextChangesetsPage(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage) {
-        Map<String, List<String>> parameters = null;
-        String url = null;
-
+    public BitbucketChangesetPage getNextChangesetsPage(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage)
+    {
         if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
         {
             // this is the first request, first page
-            url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
-
-            parameters = getHttpParametersMap(includeNodes, excludeNodes);
-        }
-        else
-        {
-            url = currentPage.getNext();
+            return makeInitialRequest(orgName, slug, includeNodes, excludeNodes, changesetLimit, currentPage);
         }
 
         try
         {
-            return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
+            return requestor.getWithMultipleVals(currentPage.getNext(), null, new ResponseCallback<BitbucketChangesetPage>()
             {
                 @Override
                 public BitbucketChangesetPage onResponse(RemoteResponse response)
                 {
-                    return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
+                    return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
+                    {
+                    }.getType());
                 }
             });
         }
@@ -147,19 +141,8 @@ public class ChangesetRemoteRestpoint
 
             if (e.getMessage().contains("Traversal state lost. Unable to resume."))
             {
-                // Retry request at this point, using the page set in currentPage.
-                url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
+                return makeInitialRequest(orgName, slug, includeNodes, excludeNodes, changesetLimit, currentPage);
 
-                parameters = getHttpParametersMap(includeNodes, excludeNodes);
-
-                return requestor.getWithMultipleVals(url, parameters, new ResponseCallback<BitbucketChangesetPage >()
-                {
-                    @Override
-                    public BitbucketChangesetPage onResponse(RemoteResponse response)
-                    {
-                        return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>(){}.getType());
-                    }
-                });
             }
             else
             {
@@ -169,7 +152,27 @@ public class ChangesetRemoteRestpoint
         }
     }
 
-    private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes) {
+    private BitbucketChangesetPage makeInitialRequest(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage)
+    {
+        // Use the page set in currentPage if available, otherwise start at the beginning
+        String url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
+
+        Map<String, List<String>> parameters = getHttpParametersMap(includeNodes, excludeNodes);
+
+        return requestor.post(url, parameters, new ResponseCallback<BitbucketChangesetPage>()
+        {
+            @Override
+            public BitbucketChangesetPage onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
+                {
+                }.getType());
+            }
+        });
+    }
+
+    private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes)
+    {
         Map<String, List<String>> parameters;
         parameters = new HashMap<String, List<String>>();
         if (includeNodes != null)
@@ -183,7 +186,8 @@ public class ChangesetRemoteRestpoint
         return parameters;
     }
 
-    private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage) {
+    private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage)
+    {
         String url;
         url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName,
                 slug,
