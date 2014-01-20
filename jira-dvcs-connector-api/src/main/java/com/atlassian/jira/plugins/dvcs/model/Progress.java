@@ -134,4 +134,8 @@ public interface Progress
     int getNumRequests();
 
     int getFlightTimeMs();
+
+    boolean isSoftsync();
+
+    void setSoftsync(boolean softsync);
 }
