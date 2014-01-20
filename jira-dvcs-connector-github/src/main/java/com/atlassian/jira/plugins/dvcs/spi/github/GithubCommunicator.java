@@ -258,8 +258,21 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
     {
-        // GitHub changesets always have file details
-        return changeset.getFileDetails();
+        CommitService commitService = githubClientProvider.getCommitService(repository);
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+
+        // Workaround for BBC-455
+        checkRequestRateLimit(commitService.getClient());
+        try
+        {
+            RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
+
+            return GithubChangesetFactory.transformToFileDetails(commit.getFiles());
+        }
+        catch (IOException e)
+        {
+            throw new SourceControlException("could not get result", e);
+        }
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
