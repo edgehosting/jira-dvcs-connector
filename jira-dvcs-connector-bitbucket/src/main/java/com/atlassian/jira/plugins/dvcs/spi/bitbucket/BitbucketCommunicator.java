@@ -1,47 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -58,17 +30,44 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BitbucketChangesetIterator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.URLPathFormatter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.DetailedChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransformer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.NewChangesetIterableAdapter;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.Resource;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -251,7 +250,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 };
             } else
             {
-
                 List<String> includeNodes = extractBranchHeadsFromBranches(newBranches);
                 List<String> excludeNodes = extractBranchHeads(oldBranchHeads);
                 if (includeNodes != null && excludeNodes != null)
@@ -271,14 +269,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                         }
                     }
 
-                    BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-                    Iterable<BitbucketNewChangeset> bitbucketChangesets =
-                            remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
-                                                                           repository.getSlug(),
-                                                                           includeNodes,
-                                                                           excludeNodes,
-                                                                           changesetBranch,
-                                                                           CHANGESET_LIMIT);
+                    Iterable<BitbucketNewChangeset> bitbucketChangesets = getChangesets(repository, includeNodes, excludeNodes, changesetBranch, null);
 
                     result = new NewChangesetIterableAdapter(repository, bitbucketChangesets);
                 } else
@@ -300,9 +291,28 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    public BitbucketChangesetPage getChangesetsForPage(int page, Repository repository, List<String> includeNodes, List<String> excludeNodes)
+    public Iterable<BitbucketNewChangeset> getChangesets(Repository repository, List<String> includeNodes, List<String> excludeNodes, final Map<String,String> changesetBranch, BitbucketChangesetPage currentPage)
     {
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+        return remoteClient.getChangesetsRest().getChangesets(repository.getOrgName(),
+                                                       repository.getSlug(),
+                                                       includeNodes,
+                                                       excludeNodes,
+                                                       changesetBranch,
+                                                       CHANGESET_LIMIT,
+                                                       currentPage);
+    }
+
+    /**
+     * getNextPage. If currentPage is null, returns the first page for the given repository and include / exclude parameters.
+     *
+     * @param repository
+     * @param includeNodes
+     * @param excludeNodes
+     * @param currentPage
+     * @return
+     */
+    public BitbucketChangesetPage getNextPage(Repository repository, List<String> includeNodes, List<String> excludeNodes, BitbucketChangesetPage currentPage) {
         long startFlightTime = System.currentTimeMillis();
         final Progress sync = repository.getSync();
         if (sync != null)
@@ -311,8 +321,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         try
         {
-            return remoteClient.getChangesetsRest().getChangesetsForPage(page, repository.getOrgName(), repository.getSlug(), CHANGESET_LIMIT,
-                    includeNodes, excludeNodes);
+            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+            return remoteClient.getChangesetsRest().getNextChangesetsPage(repository.getOrgName(),
+                    repository.getSlug(),
+                    includeNodes,
+                    excludeNodes,
+                    CHANGESET_LIMIT,
+                    currentPage);
         }
         finally
         {
@@ -322,6 +337,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             }
         }
     }
+
 
     private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
     {
@@ -342,7 +358,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
         List<String> result = new ArrayList<String>();
         for (BranchHead branchHead : branchHeads)
         {
-            result.add(branchHead.getHead());
+            if (!StringUtils.isBlank(branchHead.getHead()))
+            {
+                result.add(branchHead.getHead());
+            }
         }
 
         return result;
@@ -765,7 +784,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             Date synchronizationStartedAt = new Date();
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
-                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, 1, asNodeToBranches(filterNodes.newBranches), softSync, auditId);
+                    (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, null, asNodeToBranches(filterNodes.newBranches), softSync, auditId);
 
             messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
         }

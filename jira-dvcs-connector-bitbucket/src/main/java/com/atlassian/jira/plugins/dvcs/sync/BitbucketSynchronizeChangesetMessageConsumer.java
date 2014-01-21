@@ -60,7 +60,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
         Repository repo = payload.getRepository();
-        int pageNum = payload.getPage();
         final Progress progress = payload.getProgress();
 
         progress.incrementRequestCount(new Date());
@@ -68,14 +67,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         final BitbucketChangesetPage page;
         try
         {
-            page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
+            page = communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
         }
         finally
         {
             progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
         }
         process(message, payload, page);
-        //
     }
 
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
@@ -124,6 +122,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
     }
 
+    // TODO This code is duplicated between here and BitbucketChangesetIterator
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
@@ -144,8 +143,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
-                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     @Override
