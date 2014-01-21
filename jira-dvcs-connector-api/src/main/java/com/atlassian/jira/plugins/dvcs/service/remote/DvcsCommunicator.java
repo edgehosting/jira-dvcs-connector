@@ -30,6 +30,14 @@ public interface DvcsCommunicator
 
     Changeset getChangeset(Repository repository, String node);
 
+    /**
+     * Gets the file details for a given changeset.
+     *
+     * @param repository the Repository
+     * @param changeset the Changeset
+     * @return a list of ChangesetFileDetail
+     * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
+     */
     List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
 
 	Iterable<Changeset> getChangesets(Repository repository);

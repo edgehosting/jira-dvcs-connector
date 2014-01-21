@@ -5,29 +5,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.model.Changesets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
+import javax.annotation.Resource;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.Changesets;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Resource;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -107,17 +106,24 @@ public class ChangesetServiceImpl implements ChangesetService
             {
                 if (changeset.getFileDetails() == null)
                 {
-                    List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);
-                    logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
+                    try
+                    {
+                        List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);
+                        logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
 
-                    // update the changeset count and file details with the first few file details
-                    changeset.setAllFileCount(Math.max(changeset.getAllFileCount(), fileDetails.size()));
-                    fileDetails = fileDetails.subList(0, Math.min(fileDetails.size(), Changeset.MAX_VISIBLE_FILES));
+                        // update the changeset count and file details with the first few file details
+                        changeset.setAllFileCount(Math.max(changeset.getAllFileCount(), fileDetails.size()));
+                        fileDetails = fileDetails.subList(0, Math.min(fileDetails.size(), Changeset.MAX_VISIBLE_FILES));
 
-                    // keep these two in sync
-                    changeset.setFiles(ImmutableList.<ChangesetFile>copyOf(fileDetails));
-                    changeset.setFileDetails(fileDetails);
-                    changeset = changesetDao.update(changeset);
+                        // keep these two in sync
+                        changeset.setFiles(ImmutableList.<ChangesetFile>copyOf(fileDetails));
+                        changeset.setFileDetails(fileDetails);
+                        changeset = changesetDao.update(changeset);
+                    }
+                    catch (SourceControlException e)
+                    {
+                        logger.debug("Error getting file details for: " + changeset, e);
+                    }
                 }
 
                 detailedChangesets.add(changeset);
