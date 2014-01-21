@@ -1,36 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
-import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
-import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
-import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
-import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.MessageState;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.plugin.PluginException;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
@@ -44,8 +13,42 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+
+import net.java.ao.DBParam;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
+import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
+import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
+import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.MessageState;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.plugin.PluginException;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * A {@link MessagingService} implementation.
@@ -57,11 +60,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
 
     private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
+    private static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
     /**
      * Logger for this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(MessagingServiceImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
@@ -184,9 +188,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         {
             try
             {
-                LOGGER.debug("Attempting to wait for AO.");
+                log.debug("Attempting to wait for AO.");
                 activeObjects.count(MessageMapping.class);
-                LOGGER.debug("Attempting to wait for AO - DONE.");
+                log.debug("Attempting to wait for AO - DONE.");
                 stop = true;
                 return true;
             } catch (PluginException e)
@@ -201,7 +205,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 }
             }
         } while (countOfRetry > 0 && !stop);
-        LOGGER.debug("Attempting to wait for AO - UNSUCCESSFUL.");
+        log.debug("Attempting to wait for AO - UNSUCCESSFUL.");
         return false;
     }
 
@@ -210,7 +214,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private void initRunningToFail()
     {
-        LOGGER.debug("Setting messages in running state to fail");
+        log.debug("Setting messages in running state to fail");
         messageQueueItemDao.getByState(MessageState.RUNNING, new StreamCallback<MessageQueueItemMapping>()
         {
 
@@ -233,7 +237,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private void restartConsumers()
     {
-        LOGGER.debug("Restarting message consumers");
+        log.debug("Restarting message consumers");
         Set<String> addresses = new HashSet<String>();
         for (MessageConsumer<?> consumer : consumers)
         {
@@ -312,7 +316,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     @Override
                     public Void doInTransaction()
                     {
-                        for (MessageQueueItemMapping messageQueueItem : messageQueueItemDao.getByMessageId(message.getID()))
+                        for (MessageQueueItemMapping messageQueueItem : message.getQueuesItems())
                         {
                             // messages, which are running can not be paused!
                             if (!MessageState.RUNNING.name().equals(messageQueueItem.getState()))
@@ -325,8 +329,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     }
 
                 });
-
-                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(message.getTags()));
+                
+                int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -368,7 +372,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 messageQueueItemDao.save(e);
                 addresses.add(e.getMessage().getAddress());
 
-                int syncAuditId = AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(transformTags(e.getMessage().getTags()));
+                int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(e.getMessage().getTags()));
                 if (syncAuditId != 0)
                 {
                     syncAudits.add(syncAuditId);
@@ -394,7 +398,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public void retry(final String tag)
+    public void retry(final String tag, final int auditId)
     {
         final Set<String> addresses = new HashSet<String>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
@@ -407,11 +411,43 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 {
 
                     @Override
-                    public void callback(MessageQueueItemMapping e)
+                    public void callback(final MessageQueueItemMapping e)
                     {
-                        addresses.add(e.getMessage().getAddress());
-                        e.setState(MessageState.PENDING.name());
-                        messageQueueItemDao.save(e);
+                        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                        {
+
+                            @Override
+                            public Void doInTransaction()
+                            {
+                                updateSyncAuditId(auditId, e);
+                                addresses.add(e.getMessage().getAddress());
+                                e.setState(MessageState.PENDING.name());
+                                messageQueueItemDao.save(e);
+                                return null;
+                            }
+                        });
+
+                    }
+
+                    private void updateSyncAuditId(final int auditId, MessageQueueItemMapping e)
+                    {
+                        String newSyncAuditIdLog = getTagForAuditSynchronization(auditId);
+
+                        // removes obsolete tag for synchronization audit
+                        for (MessageTagMapping tag : e.getMessage().getTags())
+                        {
+                            if (tag.getTag().startsWith(SYNCHRONIZATION_AUDIT_TAG_PREFIX))
+                            {
+                                activeObjects.delete(tag);
+                                break;
+                            }
+                        }
+
+                        // adds new synchronization audit id tag
+                        activeObjects.create(MessageTagMapping.class, //
+                                new DBParam(MessageTagMapping.MESSAGE, e.getMessage().getID()), //
+                                new DBParam(MessageTagMapping.TAG, newSyncAuditIdLog) //
+                                );
                     }
 
                 });
@@ -496,7 +532,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         queueItem.setRetriesCount(queueItem.getRetriesCount() + 1);
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
-        syncAudit.setException(getSyncAuditIdFromTags(message.getTags()), t, false);
+        syncAudit.setException(getSynchronizationAuditIdFromTags(message.getTags()), t, false);
     }
 
     @Override
@@ -592,8 +628,35 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public String getTagForAuditSynchronization(int id)
     {
-        return AbstractMessagePayloadSerializer.SYNCHRONIZATION_AUDIT_TAG_PREFIX + id;
+        return SYNCHRONIZATION_AUDIT_TAG_PREFIX + id;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getSynchronizationAuditIdFromTags(String[] tags)
+    {
+        for (String tag : tags)
+        {
+            try
+            {
+                if (StringUtils.startsWith(tag, SYNCHRONIZATION_AUDIT_TAG_PREFIX))
+                {
+                    return Integer.parseInt(tag.substring(SYNCHRONIZATION_AUDIT_TAG_PREFIX.length()));
+
+                }
+            } catch (NumberFormatException e)
+            {
+                log.error("Synchronization audit id tag has invalid format, tag was: " + tag);
+                // we don't stop, maybe there is still a valid tag
+            }
+        }
+
+        // no tag was resolved
+        return 0;
+    }
+
 
     @Override
     public <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message)
@@ -610,26 +673,13 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
                 } catch (NumberFormatException e)
                 {
-                    LOGGER.warn("Get repo ID from message: " + e.getMessage());
+                    log.warn("Get repo ID from message: " + e.getMessage());
                 }
             }
         }
 
-        LOGGER.warn("Can't get repository ID from tags for message with ID {}", message.getId());
+        log.warn("Can't get repository ID from tags for message with ID {}", message.getId());
         return null;
-    }
-
-    @Override
-    public <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
-    {
-        try
-        {
-            return AbstractMessagePayloadSerializer.getSyncAuditIdFromTags(tags);
-        } catch (NumberFormatException e)
-        {
-            LOGGER.warn("Get audit ID info from message: " + e.getMessage());
-        }
-        return 0;
     }
 
     /**

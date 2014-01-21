@@ -4,12 +4,10 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import sun.jvm.hotspot.utilities.Assert;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +48,7 @@ public class BitbucketSynchronizeChangesetMessageSerializerTest
     @BeforeTest
     public void given()
     {
-        serializer = new BitbucketSynchronizeChangesetMessageSerializer(repositoryService, synchronizer);
+        serializer = new BitbucketSynchronizeChangesetMessageSerializer();
     }
 
 
