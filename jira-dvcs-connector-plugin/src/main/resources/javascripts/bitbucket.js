@@ -158,7 +158,7 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
-function showAddRepoDetails(show) {
+function showAddRepoDetails(show, hostToSelect) {
     if (!dvcs.connector.plugin.addOrganizationDialog) {
         createAddOrganizationDialog();
     }
@@ -167,9 +167,19 @@ function showAddRepoDetails(show) {
     AJS.$('#repoEntry').attr("action", "");
     // - hide username/password
     AJS.$("#github-form-section").hide();
+
     // - show url, organization field
-    AJS.$('#urlSelect').show();
-    AJS.$('#urlSelect').val(0); // select BB by default
+    var urlSelect = AJS.$('#urlSelect');
+    urlSelect.show();
+    /**
+     * Attempt to get the index of the option element that matches the specified host.
+     * It will either return an index relative to its siblings or -1 if not found.
+     * Default to 0 if not found.
+     */
+    var hostIndexToSelect = urlSelect.find("option[value=" + hostToSelect + "]").index();
+    hostIndexToSelect = Math.max(0, hostIndexToSelect);
+
+    urlSelect.val(urlSelect.children().eq(hostIndexToSelect).attr("value"));
     AJS.$('#urlReadOnly').hide();
 
     AJS.$('#organization').show();
@@ -180,8 +190,8 @@ function showAddRepoDetails(show) {
     // clear all form errors
     DvcsValidator.clearAllErrors();
 
-    // enable bitbucket form
-    switchDvcsDetailsInternal(0);
+    // Enable form for the selected host
+    switchDvcsDetailsInternal(hostIndexToSelect);
 
     AJS.$("#organization").focus().select();
     dialog.gotoPage(0);
@@ -974,9 +984,19 @@ AJS.$(document).ready(function () {
 
         // defined in macro
         init_repositories();
-        //
+
+        /**
+         * DVCS connector uses the hash '#expand' in the URL to determine whether to automatically open the
+         * 'Add New Account' dialog.
+         */
         if (window.location.hash == '#expand') {
-            showAddRepoDetails(true);
+            var hostToSelect = undefined;
+            if (parseUri) {
+                //queryKey should always be available in the object returned by parseUri(), but it's good to be defensive anyway
+                var urlQueries = parseUri(window.location.href).queryKey || {};
+                hostToSelect = urlQueries.selectHost;
+            }
+            showAddRepoDetails(true, hostToSelect);
         }
     }
 });
