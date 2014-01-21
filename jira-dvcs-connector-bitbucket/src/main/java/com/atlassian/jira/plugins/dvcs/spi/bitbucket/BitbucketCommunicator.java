@@ -50,6 +50,7 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -357,7 +358,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
         List<String> result = new ArrayList<String>();
         for (BranchHead branchHead : branchHeads)
         {
-            result.add(branchHead.getHead());
+            if (!StringUtils.isBlank(branchHead.getHead()))
+            {
+                result.add(branchHead.getHead());
+            }
         }
 
         return result;

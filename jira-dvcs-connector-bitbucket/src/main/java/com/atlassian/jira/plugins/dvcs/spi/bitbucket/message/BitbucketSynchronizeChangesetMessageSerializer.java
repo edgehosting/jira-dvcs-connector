@@ -17,6 +17,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * An implementation of {@link MessagePayloadSerializer} over {@link BitbucketSynchronizeChangesetMessage}.
@@ -36,13 +37,19 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     protected void serializeInternal(JSONObject json, BitbucketSynchronizeChangesetMessage payload) throws Exception
     {
         json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
-        json.put("exclude", collectionToString(payload.getExclude()));
+        if (payload.getExclude() != null && !payload.getExclude().isEmpty())
+        {
+            json.put("exclude", collectionToString(payload.getExclude()));
+        }
+        if (payload.getInclude() != null && !payload.getInclude().isEmpty())
+        {
+            json.put("include", collectionToString(payload.getInclude()));
+        }
         if (payload.getPage() != null)
         {
             json.put("nextPage", payload.getPage().getNext());
             json.put("page", payload.getPage().getPage());
         }
-        json.put("include", collectionToString(payload.getInclude()));
         json.put("nodesToBranches", payload.getNodesToBranches());
     }
 
@@ -92,7 +99,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
 
     private ArrayList<String> collectionFromString(String string)
     {
-        return string == null ? Lists.<String> newArrayList() : Lists.newArrayList(Splitter.on(",").split(string));
+        return StringUtils.isBlank(string) ? Lists.<String> newArrayList() : Lists.newArrayList(Splitter.on(",").split(string));
     }
 
 }

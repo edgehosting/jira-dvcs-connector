@@ -119,7 +119,8 @@ public class ChangesetRemoteRestpoint
         catch (BitbucketRequestException.InternalServerError_500 e)
         {
 
-            // "next page" is no longer valid. Set it to null so that it works next time.
+            // "next page" is no longer valid.
+            // Set it to null so that we generate the url for this page as above next time.
             currentPage.setNext(null);
             throw e;
         }
@@ -139,11 +140,11 @@ public class ChangesetRemoteRestpoint
     {
         Map<String, List<String>> parameters;
         parameters = new HashMap<String, List<String>>();
-        if (includeNodes != null)
+        if (includeNodes != null && !includeNodes.isEmpty())
         {
             parameters.put("include", new ArrayList<String>(includeNodes));
         }
-        if (excludeNodes != null)
+        if (excludeNodes != null && !excludeNodes.isEmpty())
         {
             parameters.put("exclude", new ArrayList<String>(excludeNodes));
         }
@@ -152,16 +153,17 @@ public class ChangesetRemoteRestpoint
 
     private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage)
     {
-        String url;
         UrlBuilder urlBuilder = new UrlBuilder("/api/2.0/repositories","UTF-8",false);
         urlBuilder.addPath(orgName);
         urlBuilder.addPath(slug);
         urlBuilder.addPathUnsafe("/commits/");
         urlBuilder.addParameter("pagelen",Integer.toString(changesetLimit));
+        int pageNumber = 1;
         if (currentPage != null && currentPage.getPage() > 0)
         {
-            urlBuilder.addParameter("page",Integer.toString(currentPage.getPage()));
+            pageNumber = currentPage.getPage();
         }
+        urlBuilder.addParameter("page",Integer.toString(pageNumber));
         return urlBuilder.asUrlString();
     }
 }

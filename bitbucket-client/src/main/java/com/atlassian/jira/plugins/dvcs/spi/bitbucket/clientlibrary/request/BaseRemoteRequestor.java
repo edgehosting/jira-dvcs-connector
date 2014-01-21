@@ -310,7 +310,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
-            logRequestAndResponse(method, httpResponse, statusCode);
+            String content = logRequestAndResponse(method, httpResponse, statusCode);
 
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
                     + statusCode);
@@ -327,10 +327,10 @@ public class BaseRemoteRequestor implements RemoteRequestor
                     toBeThrown = new BitbucketRequestException.Forbidden_403();
                     break;
                 case HttpStatus.SC_NOT_FOUND:
-                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI());
+                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI()+" content "+content);
                     break;
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    toBeThrown = new BitbucketRequestException.InternalServerError_500(IOUtils.toString(httpResponse.getEntity().getContent()));
+                    toBeThrown = new BitbucketRequestException.InternalServerError_500(content);
             }
 
 
@@ -346,7 +346,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return response;
     }
 
-    private void logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
+    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
     {
         String responseAsString = null;
         if (httpResponse.getEntity() != null)
@@ -369,6 +369,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
                     new Object[]{method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
                             statusCode, responseAsString});
         }
+
+        return responseAsString;
     }
 
     private Header[] sanitizeHeadersForLogging(Header[] headers)
