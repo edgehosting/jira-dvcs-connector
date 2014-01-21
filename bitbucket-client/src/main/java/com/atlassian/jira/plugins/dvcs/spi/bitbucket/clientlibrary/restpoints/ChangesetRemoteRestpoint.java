@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.atlassian.jira.util.UrlBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
 
@@ -26,23 +27,13 @@ import org.apache.commons.lang.StringUtils;
  */
 public class ChangesetRemoteRestpoint
 {
-    private static final ResponseCallback<BitbucketChangesetPage> BITBUCKET_CHANGESETS_PAGE_RESPONSE = new ResponseCallback<BitbucketChangesetPage>()
-    {
-
-        @Override
-        public BitbucketChangesetPage onResponse(RemoteResponse response)
-        {
-            return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
-            {
-            }.getType());
-        }
-
-    };
     private final RemoteRequestor requestor;
+    private final ResponseCallback<BitbucketChangesetPage> bitbucketChangesetPageResponseCallback;
 
-    public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor)
+    public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor, ResponseCallback<BitbucketChangesetPage> bitbucketChangesetPageResponseCallback)
     {
         this.requestor = remoteRequestor;
+        this.bitbucketChangesetPageResponseCallback = bitbucketChangesetPageResponseCallback;
     }
 
     public BitbucketChangeset getChangeset(String owner, String slug, String node)
@@ -123,24 +114,14 @@ public class ChangesetRemoteRestpoint
 
         try
         {
-            return requestor.getWithMultipleVals(currentPage.getNext(), null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+            return requestor.getWithMultipleVals(currentPage.getNext(), null, bitbucketChangesetPageResponseCallback);
         }
         catch (BitbucketRequestException.InternalServerError_500 e)
         {
-            // TODO Ideally, we should parse the response. It looks like this:
-            // {"error": {"message": "Traversal state lost. Unable to resume.", "detail": null}}
-            // Example URL: https://bitbucket.org/api/2.0/repositories/atlassian/jira-bitbucket-connector/commits/?pagelen=10&ctx=foo
 
-            if (e.getMessage().contains("Traversal state lost. Unable to resume."))
-            {
-                return makeInitialRequest(orgName, slug, includeNodes, excludeNodes, changesetLimit, currentPage);
-
-            }
-            else
-            {
-                // Re-raise, as it's not one we can handle
-                throw e;
-            }
+            // "next page" is no longer valid. Set it to null so that it works next time.
+            currentPage.setNext(null);
+            throw e;
         }
     }
 
@@ -151,7 +132,7 @@ public class ChangesetRemoteRestpoint
 
         Map<String, List<String>> parameters = getHttpParametersMap(includeNodes, excludeNodes);
 
-        return requestor.post(url, parameters, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+        return requestor.post(url, parameters, bitbucketChangesetPageResponseCallback);
     }
 
     private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes)
@@ -172,13 +153,15 @@ public class ChangesetRemoteRestpoint
     private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage)
     {
         String url;
-        url = URLPathFormatter.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s", orgName,
-                slug,
-                String.valueOf(changesetLimit));
+        UrlBuilder urlBuilder = new UrlBuilder("/api/2.0/repositories","UTF-8",false);
+        urlBuilder.addPath(orgName);
+        urlBuilder.addPath(slug);
+        urlBuilder.addPathUnsafe("/commits/");
+        urlBuilder.addParameter("pagelen",Integer.toString(changesetLimit));
         if (currentPage != null && currentPage.getPage() > 0)
         {
-            url = url + URLPathFormatter.format("&page=%s", String.valueOf(currentPage.getPage()));
+            urlBuilder.addParameter("page",Integer.toString(currentPage.getPage()));
         }
-        return url;
+        return urlBuilder.asUrlString();
     }
 }
