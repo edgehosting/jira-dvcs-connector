@@ -175,10 +175,11 @@ function showAddRepoDetails(show, hostToSelect) {
      * Building an internal map of all of the available hosts to avoid the use of AJS.$ or .find
      * in the case of potential XSS hole when mixing input from url with query string
      */
-    var availableHosts = _.indexBy(urlSelect.find("option"), function(option, index) {
+    var availableHosts = {};
+    urlSelect.find("option").each(function(index, option) {
         var $option = AJS.$(option);
         $option.data("index", index);
-        return $option.attr("value");
+        availableHosts[$option.attr("value")] = $option;
     });
 
     var selectedHost;
