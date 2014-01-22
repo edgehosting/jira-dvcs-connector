@@ -126,12 +126,11 @@ public final class TestSmartcommitsOnBitbucketMessageConsumer
     {
         when(cachingCommunicatorMock.getDelegate()).thenReturn(communicatorMock);
         when(payloadMock.getRepository()).thenReturn(repositoryMock);
-        when(communicatorMock.getChangesetsForPage(anyInt(), eq(repositoryMock), anyListOf(String.class), anyListOf(String.class)))
+        when(communicatorMock.getNextPage(eq(repositoryMock), anyListOf(String.class), anyListOf(String.class), any(BitbucketChangesetPage.class)))
                 .thenReturn(samplePage(msg));
         when(payloadMock.isSoftSync()).thenReturn(true);
         changesetWithJIRAIssueMock = changesetWithMessage(msg);
         when(payloadMock.getProgress()).thenReturn(progressMock);
-
     }
 
     private BitbucketChangesetPage samplePage(final String msg)

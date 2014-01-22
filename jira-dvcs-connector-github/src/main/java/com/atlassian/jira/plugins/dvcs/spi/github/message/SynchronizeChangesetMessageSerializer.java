@@ -2,10 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 
 import java.util.Date;
 
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONObject;
 
 /**
@@ -16,11 +14,6 @@ import com.atlassian.jira.util.json.JSONObject;
  */
 public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<SynchronizeChangesetMessage>
 {
-
-    public SynchronizeChangesetMessageSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super(repositoryService, synchronizer);
-    }
 
     @Override
     protected void serializeInternal(JSONObject json, SynchronizeChangesetMessage payload) throws Exception
