@@ -4,6 +4,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizatio
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.core.UriBuilder;
+
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
@@ -113,16 +115,16 @@ public class TestAddNewAccountDialogFromURL extends BaseOrganizationTest
         @Override
         public String getUrl()
         {
-            String url = "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
+            UriBuilder uriBuilder = UriBuilder.fromUri("/secure/admin/ConfigureDvcsOrganizations!default.jspa");
             if (selectHost != null)
             {
-                url += "?selectHost=" + selectHost;
+                uriBuilder.queryParam("selectHost", selectHost);
             }
             if (expand)
             {
-                url += "#expand";
+                uriBuilder.fragment("expand");
             }
-            return url;
+            return uriBuilder.build().toString();
         }
     }
 }

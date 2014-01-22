@@ -172,14 +172,24 @@ function showAddRepoDetails(show, hostToSelect) {
     var urlSelect = AJS.$('#urlSelect');
     urlSelect.show();
     /**
-     * Attempt to get the index of the option element that matches the specified host.
-     * It will either return an index relative to its siblings or -1 if not found.
-     * Default to 0 if not found.
+     * Building an internal map of all of the available hosts to avoid the use of AJS.$ or .find
+     * in the case of potential XSS hole when mixing input from url with query string
      */
-    var hostIndexToSelect = urlSelect.find("option[value=" + hostToSelect + "]").index();
-    hostIndexToSelect = Math.max(0, hostIndexToSelect);
+    var availableHosts = _.indexBy(urlSelect.find("option"), function(option, index) {
+        var $option = AJS.$(option);
+        $option.data("index", index);
+        return $option.attr("value");
+    });
 
-    urlSelect.val(urlSelect.children().eq(hostIndexToSelect).attr("value"));
+    var selectedHost;
+    if (hostToSelect && availableHosts[hostToSelect]) {
+        selectedHost = AJS.$(availableHosts[hostToSelect]);
+    } else {
+        //Defaults to bitbucket
+        selectedHost = AJS.$(availableHosts["bitbucket"]);
+    }
+
+    urlSelect.val(selectedHost.attr("value"));
     AJS.$('#urlReadOnly').hide();
 
     AJS.$('#organization').show();
@@ -191,7 +201,7 @@ function showAddRepoDetails(show, hostToSelect) {
     DvcsValidator.clearAllErrors();
 
     // Enable form for the selected host
-    switchDvcsDetailsInternal(hostIndexToSelect);
+    switchDvcsDetailsInternal(selectedHost.data("index"));
 
     AJS.$("#organization").focus().select();
     dialog.gotoPage(0);
