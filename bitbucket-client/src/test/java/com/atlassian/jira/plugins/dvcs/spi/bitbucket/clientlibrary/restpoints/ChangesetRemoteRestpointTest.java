@@ -56,7 +56,8 @@ public class ChangesetRemoteRestpointTest
         BitbucketChangesetPage expected_result = new BitbucketChangesetPage();
 
         //when
-        when(remoteRequestor.post(eq("/api/2.0/repositories/" + orgName + "/" + slug + "/commits/?pagelen="+Integer.toString(changesetLimit)),
+        when(remoteRequestor.post(eq("/api/2.0/repositories/" + orgName + "/" + slug + "/commits/?pagelen="+Integer.toString(changesetLimit)+"&page=1"),
+
             any(Map.class),eq(bitbucketChangesetPageResponseCallback))).thenReturn(expected_result);
 
 
