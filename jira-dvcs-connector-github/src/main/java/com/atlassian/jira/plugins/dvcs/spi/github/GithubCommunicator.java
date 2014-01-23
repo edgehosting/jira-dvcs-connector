@@ -70,8 +70,6 @@ public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
-    private final String ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.pullrequest.github";
-
     public static final String GITHUB = "github";
 
     @Resource
@@ -569,7 +567,7 @@ public class GithubCommunicator implements DvcsCommunicator
             branchService.updateBranchHeads(repo, branches, oldBranchHeads);
             branchService.updateBranches(repo, branches);
         }
-        if (pullRequestSync && featureManager.isEnabled(ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE))
+        if (pullRequestSync)
         {
             gitHubEventService.synchronize(repo, softSync, synchronizationTags);
         }
