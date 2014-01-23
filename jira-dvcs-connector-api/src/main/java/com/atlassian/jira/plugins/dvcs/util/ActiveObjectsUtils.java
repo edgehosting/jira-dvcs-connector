@@ -39,10 +39,9 @@ public class ActiveObjectsUtils
         });
 
         int deleted = 0;
-        Iterator<List<Integer>> windows = Iterables.partition(ids, DELETE_WINDOW_SIZE).iterator();
-        while (windows.hasNext())
+        Iterable<List<Integer>> windows = Iterables.partition(ids, DELETE_WINDOW_SIZE);
+        for (List<Integer> window : windows)
         {
-            List<Integer> window = windows.next();
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, ids.size() - deleted);
             if (DELETE_WITH_SQL)
             {
