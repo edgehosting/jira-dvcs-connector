@@ -161,6 +161,8 @@ public class GithubTests implements BasicTests, MissingCommitsTests
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
         commitMessages = new JiraViewIssuePageController(jira, "QA-4").getCommits(1); // throws AssertionError with other than 1 message

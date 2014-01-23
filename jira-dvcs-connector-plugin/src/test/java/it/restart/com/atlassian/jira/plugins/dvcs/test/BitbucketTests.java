@@ -157,6 +157,8 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         commitMessage = commitMessages.get(1);
         statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+3");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
     }
 
     @Test

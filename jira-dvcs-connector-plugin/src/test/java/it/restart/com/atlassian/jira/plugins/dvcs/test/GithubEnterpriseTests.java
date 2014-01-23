@@ -149,6 +149,8 @@ public class GithubEnterpriseTests implements BasicTests
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
         List<PageElement> statistics = commitMessage.getStatistics();
         assertThat(statistics).hasSize(1);
+        assertThat(commitMessage.getAdditions(statistics.get(0))).isEqualTo("+1");
+        assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
         commitMessages = getCommitsForIssue("QA-4",1);
