@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>1.4.12-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
 
     <organization>
         <name>Atlassian</name>
@@ -109,6 +109,12 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.compile.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

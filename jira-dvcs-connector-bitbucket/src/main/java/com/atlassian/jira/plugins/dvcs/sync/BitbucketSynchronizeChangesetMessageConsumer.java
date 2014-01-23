@@ -1,6 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -17,15 +26,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -60,7 +60,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
         Repository repo = payload.getRepository();
-        int pageNum = payload.getPage();
         final Progress progress = payload.getProgress();
 
         progress.incrementRequestCount(new Date());
@@ -68,14 +67,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         final BitbucketChangesetPage page;
         try
         {
-            page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
+            page = communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
         }
         finally
         {
             progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
         }
         process(message, payload, page);
-        //
     }
 
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
@@ -144,22 +142,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
-                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
-    }
-
-    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
-    {
-        if (branchHeads == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (BranchHead branchHead : branchHeads)
-        {
-            result.add(branchHead.getHead());
-        }
-        return result;
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     @Override

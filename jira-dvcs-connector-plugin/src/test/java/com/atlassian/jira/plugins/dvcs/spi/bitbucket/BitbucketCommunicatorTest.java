@@ -300,7 +300,7 @@ public class BitbucketCommunicatorTest
 
         private Iterator<BitbucketChangesetPage> pages;
         private int pageNum = 0;
-
+        private  BitbucketChangesetPage page;
         public Graph()
         {
             initGraph();
@@ -415,23 +415,22 @@ public class BitbucketCommunicatorTest
                     }));
             when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
 
-            when(changesetRestpoint.getChangesetsForPage(anyInt(), anyString(), anyString(), anyInt(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class))).then(new Answer<BitbucketChangesetPage>()
+            when(changesetRestpoint.getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class))).then(new Answer<BitbucketChangesetPage>()
             {
                 @Override
                 public BitbucketChangesetPage answer(InvocationOnMock invocation) throws Throwable
                 {
                     @SuppressWarnings("unchecked")
-                    int page = (Integer) invocation.getArguments()[0];
+                    BitbucketChangesetPage page = (BitbucketChangesetPage) invocation.getArguments()[5];
                     @SuppressWarnings("unchecked")
-                    int pageLen = (Integer) invocation.getArguments()[3];
+                    int pageLen = (Integer) invocation.getArguments()[4];
                     @SuppressWarnings("unchecked")
-                    List<String> includes = (List<String>) invocation.getArguments()[4];
+                    List<String> includes = (List<String>) invocation.getArguments()[2];
                     @SuppressWarnings("unchecked")
-                    List<String> excludes = (List<String>) invocation.getArguments()[5];
+                    List<String> excludes = (List<String>) invocation.getArguments()[3];
 
-                    return getPage(page, includes, excludes, pageLen);
+                    return pages.next();
                 }
-
             });
 
             when(changesetRestpoint.getChangeset(anyString(), anyString(), anyString())).then(new Answer<BitbucketChangeset>()
@@ -456,22 +455,11 @@ public class BitbucketCommunicatorTest
             });
         }
 
-        private BitbucketChangesetPage getPage(final int page, final List<String> includes, final List<String> excludes, final int pageLen)
-        {
-            if (page == pageNum)
-            {
-                return pages.next();
-            } else
-            {
-                System.out.println("Requested page " + page + ", but " + pageNum + " expected");
-                return null;
-            }
-        }
-
         public Iterable<BitbucketSynchronizeChangesetMessage> generateMessages(final List<String> includes, final List<String> excludes, final boolean softSync)
         {
             pages =  getPages(includes, excludes, BitbucketCommunicator.CHANGESET_LIMIT);
             pageNum = 0;
+            page = null;
             return new Iterable<BitbucketSynchronizeChangesetMessage>()
             {
                 @Override
@@ -488,7 +476,7 @@ public class BitbucketCommunicatorTest
                             if (pages.hasNext())
                             {
                                 BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repositoryMock,
-                                        null, progressMock, includes, excludes, pageNum, nodesToBranches, softSync, 0);
+                                        null, progressMock, includes, excludes, page, nodesToBranches, softSync, 0);
                                 return message;
                             } else
                             {

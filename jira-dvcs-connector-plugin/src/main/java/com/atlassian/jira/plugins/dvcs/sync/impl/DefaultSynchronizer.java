@@ -1,28 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Resource;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -31,18 +25,10 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.base.Throwables;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -159,7 +145,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 // first retry all failed messages
                 try
                 {
-                    messagingService.retry(messagingService.getTagForSynchronization(repo));
+                    messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
                 } catch (Exception e)
                 {
                     log.warn("Could not resume failed messages.", e);
@@ -244,47 +230,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             }
         }
         return true;
-    }
-
-    private void updateBranches(Repository repo, List<Branch> newBranches)
-    {
-        branchService.updateBranches(repo, newBranches);
-    }
-
-    private void updateBranchHeads(Repository repo, List<Branch> newBranches, List<BranchHead> oldHeads)
-    {
-        branchService.updateBranchHeads(repo, newBranches, oldHeads);
-    }
-
-    private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
-    {
-        if (branches == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (Branch branch : branches)
-        {
-            for (BranchHead branchHead : branch.getHeads())
-            {
-                result.add(branchHead.getHead());
-            }
-        }
-        return result;
-    }
-
-    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
-    {
-        if (branchHeads == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (BranchHead branchHead : branchHeads)
-        {
-            result.add(branchHead.getHead());
-        }
-        return result;
     }
 
     @Override
