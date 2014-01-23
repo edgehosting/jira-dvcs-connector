@@ -238,7 +238,7 @@ public class BitbucketCommunicatorTest
     }
 
     @BeforeMethod
-    public void initializeMocksAndGithubCommunicator()
+    public void initializeMocksAndBitbucketCommunicator()
     {
         MockitoAnnotations.initMocks(this);
 
@@ -513,7 +513,6 @@ public class BitbucketCommunicatorTest
                     while (changesetNum <= pagelen && changesetIterator.hasNext())
                     {
                         BitbucketNewChangeset changeset = changesetIterator.next();
-                        System.out.println("Changeset " + changeset.getHash());
                         values.add(changeset);
                         changesetNum++;
                     }
@@ -853,12 +852,8 @@ public class BitbucketCommunicatorTest
             assertThat(includes).as("Includes are incorrect").containsAll(includeExpected).doesNotHaveDuplicates().hasSameSizeAs(includeExpected);
             assertThat(excludes).as("Excludes are incorrect").containsAll(oldHeads).doesNotHaveDuplicates().hasSameSizeAs(oldHeads);
 
-            System.out.println("includes=" + includes);
-            System.out.println("excludes=" + excludes);
-
             for (BitbucketSynchronizeChangesetMessage message : graph.generateMessages(includes, excludes, softSync))
             {
-               System.out.println(message.getPage());
                consumer.onReceive(new Message<BitbucketSynchronizeChangesetMessage>(), message);
 
             }
