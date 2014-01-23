@@ -96,11 +96,11 @@ public class ChangesetTransformerTest
     {
         final ChangesetMapping csetSampleMock = Mockito.mock(ChangesetMapping.class);
         final RepositoryToChangesetMapping[] linkMappingsSampleMock = linkMappings(1, 2, 3);
-        when(csetSampleMock.getRepositoryIds()).thenReturn(linkMappingsSampleMock);
+        when(csetSampleMock.getRepositoryIdMappings()).thenReturn(linkMappingsSampleMock);
 
         final ChangesetMapping cset2SampleMock = Mockito.mock(ChangesetMapping.class);
         final RepositoryToChangesetMapping[] link2MappingsSampleMock = linkMappings(3, 4, 5, 6);
-        when(cset2SampleMock.getRepositoryIds()).thenReturn(link2MappingsSampleMock);
+        when(cset2SampleMock.getRepositoryIdMappings()).thenReturn(link2MappingsSampleMock);
         return Lists.newArrayList(csetSampleMock, cset2SampleMock);
     }
 

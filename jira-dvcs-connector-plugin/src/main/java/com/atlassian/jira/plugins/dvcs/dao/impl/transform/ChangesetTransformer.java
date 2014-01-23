@@ -36,8 +36,6 @@ public class ChangesetTransformer
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
     private final ActiveObjects activeObjects;
 
-    private final Map<Integer, RepositoryMapping> REPO_CACHE = Maps.newConcurrentMap();
-
     public ChangesetTransformer(final ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
@@ -61,7 +59,7 @@ public class ChangesetTransformer
             final String dvcsType)
     {
         //
-        preloadRepositories(changesetMappings);
+        RepoCache repoCache = new RepoCache().populate(changesetMappings);
         //
         final List<Changeset> transformed = Lists.newArrayList();
 
@@ -71,7 +69,7 @@ public class ChangesetTransformer
             {
                 continue;
             }
-            final Changeset transformedChangeset = processChangeset(changesetMapping, mainRepositoryId, dvcsType);
+            final Changeset transformedChangeset = processChangeset(repoCache, changesetMapping, mainRepositoryId, dvcsType);
             if (transformedChangeset != null)
             {
                 transformed.add(transformedChangeset);
@@ -81,49 +79,66 @@ public class ChangesetTransformer
         return transformed;
     }
 
-    private void preloadRepositories(final Collection<ChangesetMapping> changesetMappings)
+    class RepoCache 
     {
-        final Set<Integer> repoIdsSet = getRepositoriesIds(changesetMappings);
-        REPO_CACHE.clear();
-        if (!repoIdsSet.isEmpty())
+       
+        final Map<Integer, RepositoryMapping> repos = Maps.newHashMap();
+
+        public RepoCache populate(final Collection<ChangesetMapping> changesetMappings)
         {
-            if (repoIdsSet.size() == 1)
+            final Set<Integer> repoIdsSet = getRepositoriesIds(changesetMappings);
+            if (!repoIdsSet.isEmpty())
             {
-                final int repoId = repoIdsSet.iterator().next();
-                REPO_CACHE.put(repoId, activeObjects.get(RepositoryMapping.class, repoId));
-            }
-            else
-            {
-                final String where = ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", repoIdsSet).toString();
-                final Query query = Query.select().from(RepositoryMapping.class).where(where);
-                final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, query);
-                log.debug("Preloaded {} repositories repositories for {} changesets. ", repos.length, changesetMappings.size());
-                for (final RepositoryMapping repo : repos)
+                if (repoIdsSet.size() == 1)
                 {
-                    REPO_CACHE.put(repo.getID(), repo);
+                    final int repoId = repoIdsSet.iterator().next();
+                    repos.put(repoId, activeObjects.get(RepositoryMapping.class, repoId));
+                }
+                else
+                {
+                    final String where = ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", repoIdsSet).toString();
+                    final Query query = Query.select().from(RepositoryMapping.class).where(where);
+                    final RepositoryMapping[] reposFromDb = activeObjects.find(RepositoryMapping.class, query);
+                    log.debug("Preloaded {} repositories repositories for {} changesets. ", reposFromDb.length, changesetMappings.size());
+                    for (final RepositoryMapping repo : reposFromDb)
+                    {
+                        repos.put(repo.getID(), repo);
+                    }
                 }
             }
+            return this;
         }
-    }
-
-    private Set<Integer> getRepositoriesIds(final Collection<ChangesetMapping> changesetMappings)
-    {
-        final Set<Integer> ids = Sets.newHashSet();
-        for (final ChangesetMapping changeset : changesetMappings)
+        
+        private Set<Integer> getRepositoriesIds(final Collection<ChangesetMapping> changesetMappings)
         {
-            ids.addAll(Collections2.transform(Sets.newHashSet(changeset.getRepositoryIds()),
-                    new Function<RepositoryToChangesetMapping, Integer>()
-                    {
-                        public Integer apply(final RepositoryToChangesetMapping mapping)
+            final Set<Integer> ids = Sets.newHashSet();
+            for (final ChangesetMapping changeset : changesetMappings)
+            {
+                ids.addAll(Collections2.transform(Sets.newHashSet(changeset.getRepositoryIdMappings()),
+                        new Function<RepositoryToChangesetMapping, Integer>()
                         {
-                            return mapping.getRepositoryId();
-                        }
-                    }));
+                            public Integer apply(final RepositoryToChangesetMapping mapping)
+                            {
+                                return mapping.getRepositoryId();
+                            }
+                        }));
+            }
+            return ids;
         }
-        return ids;
+
+        public Collection<RepositoryMapping> get(final ChangesetMapping changesetMapping)
+        {
+            final RepositoryToChangesetMapping[] repositoryIds = changesetMapping.getRepositoryIdMappings();
+            final Collection<RepositoryMapping> reposCached = Lists.newArrayList();
+            for (final RepositoryToChangesetMapping repositoryToChangesetMapping : repositoryIds)
+            {
+                reposCached.add(repos.get(repositoryToChangesetMapping.getRepositoryId()));
+            }
+            return reposCached;
+        }
     }
 
-    private Changeset processChangeset(final ChangesetMapping changesetMapping, final int mainRepositoryId, final String dvcsType)
+    private Changeset processChangeset(RepoCache repoCache, final ChangesetMapping changesetMapping, final int mainRepositoryId, final String dvcsType)
     {
         if (changesetMapping == null)
         {
@@ -138,7 +153,7 @@ public class ChangesetTransformer
         List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
 
-        for (final RepositoryMapping repositoryMapping : getRepositoriesFromCache(changesetMapping))
+        for (final RepositoryMapping repositoryMapping : repoCache.get(changesetMapping))
         {
             if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
             {
@@ -181,17 +196,6 @@ public class ChangesetTransformer
             changeset.setRepositoryId(firstRepository);
         }
         return CollectionUtils.isEmpty(changeset.getRepositoryIds()) ? null : changeset;
-    }
-
-    protected Collection<RepositoryMapping> getRepositoriesFromCache(final ChangesetMapping changesetMapping)
-    {
-        final RepositoryToChangesetMapping[] repositoryIds = changesetMapping.getRepositoryIds();
-        final Collection<RepositoryMapping> repos = Lists.newArrayList();
-        for (final RepositoryToChangesetMapping repositoryToChangesetMapping : repositoryIds)
-        {
-            repos.add(REPO_CACHE.get(repositoryToChangesetMapping.getRepositoryId()));
-        }
-        return repos;
     }
 
     private Changeset transformEntity(final int repositoryId, final ChangesetMapping changesetMapping, final FileData fileData,

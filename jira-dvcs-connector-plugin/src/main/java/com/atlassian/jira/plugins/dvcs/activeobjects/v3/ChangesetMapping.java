@@ -39,7 +39,7 @@ public interface ChangesetMapping extends Entity
     public static final int LATEST_VERSION = 3;
 
     @OneToMany(reverse = "getChangeset")
-    RepositoryToChangesetMapping[] getRepositoryIds();
+    RepositoryToChangesetMapping[] getRepositoryIdMappings();
 
     @OneToMany(reverse = "getChangeset")
     IssueToChangesetMapping[] getIssues();
