@@ -189,7 +189,7 @@ public class AddGithubRepository extends JiraWebActionSupport
             throw new SourceControlException("Error obtaining access token: " + error);
         }
 
-        result = result.replaceAll("access_token=(.*)&token_type.*", "$1");
+        result = result.replaceAll("access_token=([^&]*).*", "$1");
 
         return result;
     }

@@ -31,9 +31,15 @@ import com.atlassian.jira.plugins.bitbucket.api.SourceControlException;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlRepository;
 import com.atlassian.jira.plugins.bitbucket.api.SourceControlUser;
 import com.atlassian.jira.plugins.bitbucket.api.impl.GithubOAuthAuthentication;
-import com.atlassian.jira.plugins.bitbucket.spi.*;
+import com.atlassian.jira.plugins.bitbucket.spi.Communicator;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryManager;
+import com.atlassian.jira.plugins.bitbucket.spi.RepositoryUri;
+import com.atlassian.jira.plugins.bitbucket.spi.RequestHelper;
+import com.atlassian.jira.plugins.bitbucket.spi.UrlInfo;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubChangesetFactory;
 import com.atlassian.jira.plugins.bitbucket.spi.github.GithubUserFactory;
+import com.atlassian.jira.plugins.bitbucket.util.DvcsConstants;
+import com.atlassian.plugin.PluginAccessor;
 
 public class GithubCommunicator implements Communicator
 {
@@ -44,10 +50,13 @@ public class GithubCommunicator implements Communicator
     private final AuthenticationFactory authenticationFactory;
     private final RequestHelper requestHelper;
 
-    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper)
+    private PluginAccessor pluginAccessor;
+
+    public GithubCommunicator(AuthenticationFactory authenticationFactory, RequestHelper requestHelper, PluginAccessor pluginAccessor)
     {
         this.authenticationFactory = authenticationFactory;
         this.requestHelper = requestHelper;
+        this.pluginAccessor = pluginAccessor;
     }
 
     @Override
@@ -153,6 +162,7 @@ public class GithubCommunicator implements Communicator
 
         final GitHubClient client = GitHubClient.createClient(host);
         client.setOAuth2Token(auth.getAccessToken());
+        client.setUserAgent(DvcsConstants.getUserAgent(pluginAccessor));
         return client;
     }
 
@@ -301,6 +311,7 @@ public class GithubCommunicator implements Communicator
 
         final GitHubClient client = GitHubClient.createClient(host);
         client.setOAuth2Token(accessToken);
+        client.setUserAgent(DvcsConstants.getUserAgent(pluginAccessor));
 
         RepositoryService repositoryService = new RepositoryService(client);
 
