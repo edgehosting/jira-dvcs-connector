@@ -350,7 +350,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	log.info("Problem getting hooks from Github: " + e.getMessage(), e);
+        	log.info("Problem getting hooks from Github for repository '" + repositoryId + "': ", e);
         	return Collections.EMPTY_MAP;
         }
     }
