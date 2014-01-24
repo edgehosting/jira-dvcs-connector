@@ -1,3 +1,4 @@
+#* @vtlvariable name="changeset" type="com.atlassian.jira.plugins.dvcs.model.Changeset" *#
 <div class="CommitContainer issue-data-block" id="$changeset.getNode()">
     <!-- Gravatar -->
     <div class="CommitContainerMargin">
@@ -65,7 +66,7 @@
                             </div>
                             <!-- data for while -->
                             #set ( $file_counter = 0 ) <!-- used to create link to the diff on github-->
-                            #foreach ( $file in $changeset.getFiles() )
+                            #foreach ( $file in $changeset.fileDetails )
                                 #set ( $file_name = $file.getFile() )
                                 #set ( $color = $file.getFileAction().getColor() )
                                 #set ( $file_action_name = $file.getFileAction().toString() )
@@ -74,11 +75,11 @@
                                 #if ( $action == 'modified' )
                                     <div class="CommitRows">
                                         <div class="CommitCount">
-                                            <div class="CommitCountPlus">
+                                            <div class="green left-half lozenge CommitCountPlus">
                                                 #set ( $additions = $file.getAdditions() )
                                                 #if ( $additions == 0 )-#else +$additions #end
                                             </div>
-                                            <div class="CommitCountMinus">
+                                            <div class="red right-half lozenge CommitCountMinus">
                                                 #set ( $deletions = $file.getDeletions() )
                                                 #if ( $deletions == 0 )-#else -$deletions #end
                                             </div>
@@ -90,7 +91,7 @@
                                 #elseif ( $action == 'added' )
                                     <div class="CommitRows">
                                         <div class="CommitCount">
-                                            <div class="CommitCountAdded">Added</div>
+                                            <div class="green lozenge CommitCountAdded">Added</div>
                                         </div>
                                         <a class="dvcs-link" data-link-type="file" href="${file_commit_url}" target="_blank">
                                             <div class="CommitHrefDATA">${file_name}</div>
@@ -99,7 +100,7 @@
                                 #elseif ( $action == 'removed' )
                                     <div class="CommitRows">
                                         <div class="CommitCount">
-                                            <div class="CommitCountRemoved">Deleted</div>
+                                            <div class="red lozenge CommitCountRemoved">Deleted</div>
                                         </div>
                                         <a class="dvcs-link" data-link-type="file" href="${file_commit_url}" target="_blank">
                                             <div class="CommitHrefDATA">${file_name}</div>

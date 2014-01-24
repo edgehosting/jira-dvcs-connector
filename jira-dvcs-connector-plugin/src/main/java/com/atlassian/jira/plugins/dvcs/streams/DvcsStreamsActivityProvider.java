@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
@@ -282,11 +283,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 Iterable<StreamsEntry> streamEntries = new ArrayList<StreamsEntry>();
                 if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
                 {
-                    Iterable<Changeset> changesetEntries = changesetService.getLatestChangesets(activityRequest.getMaxResults(), gf);
+                    Iterable<Changeset> latestChangesets = changesetService.getLatestChangesets(activityRequest.getMaxResults(), gf);
                     if (cancelled.get())
                         throw new CancelledException();
-                    log.debug("Found changeset entries: " + changesetEntries);
-                    streamEntries = transformEntries(activityRequest, changesetEntries, cancelled);
+                    log.debug("Found changeset entries: {}", latestChangesets);
+
+                    final List<Changeset> changesetDetails = changesetService.getChangesetsWithFileDetails(Lists.newArrayList(latestChangesets));
+                    log.debug("Loaded details for changeset entries: {}", changesetDetails);
+
+                    streamEntries = transformEntries(activityRequest, changesetDetails, cancelled);
                 }
                 return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
             }

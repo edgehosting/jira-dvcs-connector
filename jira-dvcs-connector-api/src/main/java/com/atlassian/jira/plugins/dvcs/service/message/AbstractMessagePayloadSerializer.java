@@ -68,17 +68,20 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
             syncAudit = messagingService.getSynchronizationAuditIdFromTags(message.getTags());
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
 
+            deserialized.softSync = jsoned.optBoolean("softSync");
+
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
             {
                 progress = new DefaultProgress();
                 // inject existing sync audit id
                 progress.setAuditLogId(result.getSyncAuditId());
+                progress.setSoftsync(deserialized.softSync);
                 synchronizer.putProgress(deserialized.repository, progress);
             }
             deserialized.progress = progress;
 
-            deserialized.softSync = jsoned.optBoolean("softSync");
+
             deserialized.syncAuditId = syncAudit;
 
             return result;

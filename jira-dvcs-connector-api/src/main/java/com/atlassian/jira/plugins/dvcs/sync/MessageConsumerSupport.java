@@ -68,11 +68,6 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             changeset.setBranch(branch);
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
-            if (CollectionUtils.isNotEmpty(issues))
-            {
-                changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getDetailChangeset(repo, changeset);
-                
-            }
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(changeset, issues);

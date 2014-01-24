@@ -104,7 +104,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     return;
                 }
 
-                progress = startProgress(repo);
+                progress = startProgress(repo, flags);
             }
 
             boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
@@ -173,9 +173,10 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         }
     }
 
-    private Progress startProgress(Repository repository)
+    private Progress startProgress(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
         DefaultProgress progress = new DefaultProgress();
+        progress.setSoftsync(flags.contains(SynchronizationFlag.SOFT_SYNC));
         progress.start();
         putProgress(repository, progress);
         return progress;
