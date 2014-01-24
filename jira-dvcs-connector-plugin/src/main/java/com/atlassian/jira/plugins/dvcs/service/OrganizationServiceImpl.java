@@ -127,6 +127,10 @@ public class OrganizationServiceImpl implements OrganizationService
     public void remove(int organizationId)
     {
         List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
+        for (Repository repository : repositoriesToDelete)
+        {
+            repositoryService.prepareForRemove(repository);
+        }
         organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
         repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);
