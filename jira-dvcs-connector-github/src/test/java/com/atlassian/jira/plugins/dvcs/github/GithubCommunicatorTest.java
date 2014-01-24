@@ -6,6 +6,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +15,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.google.common.collect.ImmutableList;
 import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -38,7 +41,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
@@ -369,6 +371,34 @@ public class GithubCommunicatorTest
             changesetCounter++;
         }
         assertThat(changesetCounter).isEqualTo(15);
+    }
+
+    @Test
+    public void getFileDetailsShouldFetchCommitsFromGitHub() throws Exception
+    {
+        // Repository
+        when(repositoryMock.getSlug())   .thenReturn("SLUG");
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+        RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
+
+        final Changeset cs = mock(Changeset.class);
+        when(cs.getNode()).thenReturn("some-hash");
+
+        final CommitFile file = new CommitFile()
+                .setStatus("modified")
+                .setFilename("my_file")
+                .setAdditions(1)
+                .setDeletions(2);
+
+        final RepositoryCommit ghCommit = mock(RepositoryCommit.class);
+        when(ghCommit.getFiles()).thenReturn(ImmutableList.of(file));
+
+        when(commitService.getCommit(repositoryId, cs.getNode())).thenReturn(ghCommit);
+
+        List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repositoryMock, cs);
+        assertEquals(fileDetails, ImmutableList.of(
+                new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(file.getStatus()), file.getFilename(), file.getAdditions(), file.getDeletions())
+        ));
     }
 
     private void createBranchWithTwoNodes(RepositoryId repositoryId) throws IOException

@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -85,7 +84,6 @@ public final class TestSmartcommitsOnGithubMessageConsumer
     {
         prepare("message MES-123 text");
         when(repositoryMock.isSmartcommitsEnabled()).thenReturn(true);
-        when(communicatorMock.getDetailChangeset(repositoryMock, changesetWithJIRAIssueMock)).thenReturn(changesetWithJIRAIssueMock);
 
         consumer.onReceive(messageMock, payloadMock);
 
@@ -124,7 +122,6 @@ public final class TestSmartcommitsOnGithubMessageConsumer
         when(payloadMock.getRepository()).thenReturn(repositoryMock);
         changesetWithJIRAIssueMock = changesetWithMessage(msg);
         when(communicatorMock.getChangeset(eq(repositoryMock), anyString())).thenReturn(changesetWithJIRAIssueMock);
-        when(communicatorMock.getDetailChangeset(eq(repositoryMock), any(Changeset.class))).thenReturn(changesetWithJIRAIssueMock);
         when(payloadMock.isSoftSync()).thenReturn(true);
         when(payloadMock.getProgress()).thenReturn(progressMock);
 
