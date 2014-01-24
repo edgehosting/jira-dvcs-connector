@@ -55,6 +55,9 @@ public class DefaultProgress implements Progress
     @XmlElement
     private List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
 
+    @XmlAttribute
+    private boolean softsync;
+
     @XmlTransient
     private boolean hasAdminPermission = true;
 
@@ -286,5 +289,17 @@ public class DefaultProgress implements Progress
     public void setAuditLogId(int auditLogId)
     {
         this.auditLogId = auditLogId;
+    }
+
+    @Override
+    public boolean isSoftsync()
+    {
+        return softsync;
+    }
+
+    @Override
+    public void setSoftsync(final boolean softsync)
+    {
+        this.softsync = softsync;
     }
 }
