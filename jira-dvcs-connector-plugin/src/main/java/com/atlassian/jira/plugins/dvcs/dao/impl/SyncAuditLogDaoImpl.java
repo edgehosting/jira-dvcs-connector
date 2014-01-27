@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncEndAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -26,11 +28,13 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     private final ActiveObjects ao;
 
     private static final Logger log = LoggerFactory.getLogger(SyncAuditLogDaoImpl.class);
+    private EventPublisher eventPublisher;
 
-    public SyncAuditLogDaoImpl(ActiveObjects ao)
+    public SyncAuditLogDaoImpl(ActiveObjects ao, EventPublisher publisher)
     {
         super();
         this.ao = ao;
+        this.eventPublisher = publisher;
     }
 
     @Override
@@ -85,10 +89,26 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                     }
 
                     mapping.save();
+                    
+                    fireAnalyticsEvent(mapping);
                 }
                 return mapping;
             }
+
         });
+    }
+    
+    private void fireAnalyticsEvent(SyncAuditLogMapping sync)
+    {
+        String syncTypeString = sync.getSyncType() == null ? "" : sync.getSyncType();
+
+        boolean soft = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_SOFT);
+        boolean commits = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_CHANGESETS);
+        boolean pullRequests = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_PULLREQUESTS);
+        boolean webhook = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_WEBHOOKS);
+
+        eventPublisher.publish(new DvcsSyncEndAnalyticsEvent(soft, commits, pullRequests, webhook, sync.getEndDate(), sync.getStartDate()
+                .getTime() - sync.getEndDate().getTime()));
     }
 
     @Override
