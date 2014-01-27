@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>
-           Manage DVCS Accounts
+           DVCS Accounts
     </title>
 
     $webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
@@ -50,7 +50,7 @@
 
   <body>
 
-         <h3>Manage DVCS Accounts</h3>
+         <h3>DVCS Accounts</h3>
 
         #if ($action.isOnDemandLicense())
             <p>Connect your <a href="http://confluence.atlassian.com/display/AOD/Linking+a+bitbucket+or+GitHub+repository+with+JIRA+OnDemand" target="_blank">Bitbucket and GitHub accounts to JIRA OnDemand</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
