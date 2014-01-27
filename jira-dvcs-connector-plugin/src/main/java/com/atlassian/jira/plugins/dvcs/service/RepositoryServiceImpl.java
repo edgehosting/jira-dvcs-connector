@@ -583,6 +583,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         {
     	    synchronizer.pauseSynchronization(repository, true);
             repository.setDeleted(true);
+            repositoryDao.save(repository);
         }
     }
 
