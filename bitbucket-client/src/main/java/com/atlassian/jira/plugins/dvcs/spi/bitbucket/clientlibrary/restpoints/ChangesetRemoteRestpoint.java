@@ -12,10 +12,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.atlassian.jira.util.UrlBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * ChangesetRemoteRestpoint
@@ -24,23 +27,13 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ChangesetRemoteRestpoint
 {
-    private static final ResponseCallback<BitbucketChangesetPage> BITBUCKET_CHANGESETS_PAGE_RESPONSE = new ResponseCallback<BitbucketChangesetPage>()
-    {
-
-        @Override
-        public BitbucketChangesetPage onResponse(RemoteResponse response)
-        {
-            return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
-            {
-            }.getType());
-        }
-
-    };
     private final RemoteRequestor requestor;
+    private final ResponseCallback<BitbucketChangesetPage> bitbucketChangesetPageResponseCallback;
 
-    public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor)
+    public ChangesetRemoteRestpoint(RemoteRequestor remoteRequestor, ResponseCallback<BitbucketChangesetPage> bitbucketChangesetPageResponseCallback)
     {
         this.requestor = remoteRequestor;
+        this.bitbucketChangesetPageResponseCallback = bitbucketChangesetPageResponseCallback;
     }
 
     public BitbucketChangeset getChangeset(String owner, String slug, String node)
@@ -97,34 +90,80 @@ public class ChangesetRemoteRestpoint
     }
 
     public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
-                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch, final int changesetsLimit)
+                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch,
+                                                         final int changesetsLimit, final BitbucketChangesetPage currentPage)
     {
+        final ChangesetRemoteRestpoint changesetRemoteRestpoint = this;
         return new Iterable<BitbucketNewChangeset>()
         {
             @Override
             public Iterator<BitbucketNewChangeset> iterator()
             {
-                return new BitbucketChangesetIterator(requestor, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit);
+                return new BitbucketChangesetIterator(changesetRemoteRestpoint, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit, currentPage);
             }
         };
     }
 
-    public BitbucketChangesetPage getChangesetsForPage(final int page, final String owner, final String slug,
-            final int changesetsLimit, final List<String> includeNodes, final List<String> excludeNodes)
+    public BitbucketChangesetPage getNextChangesetsPage(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage)
     {
-        String url = String.format("/api/2.0/repositories/%s/%s/commits/?pagelen=%s&page=%s", owner, slug, changesetsLimit, page);
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
+        {
+            // this is the first request, first page
+            return makeInitialRequest(orgName, slug, includeNodes, excludeNodes, changesetLimit, currentPage);
+        }
 
-        if (includeNodes != null)
+        try
+        {
+            return requestor.getWithMultipleVals(currentPage.getNext(), null, bitbucketChangesetPageResponseCallback);
+        }
+        catch (BitbucketRequestException.InternalServerError_500 e)
+        {
+
+            // "next page" is no longer valid.
+            // Set it to null so that we generate the url for this page as above next time.
+            currentPage.setNext(null);
+            throw e;
+        }
+    }
+
+    private BitbucketChangesetPage makeInitialRequest(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage)
+    {
+        // Use the page set in currentPage if available, otherwise start at the beginning
+        String url = getUrlForInitialRequest(orgName, slug, changesetLimit, currentPage);
+
+        Map<String, List<String>> parameters = getHttpParametersMap(includeNodes, excludeNodes);
+
+        return requestor.post(url, parameters, bitbucketChangesetPageResponseCallback);
+    }
+
+    private Map<String, List<String>> getHttpParametersMap(List<String> includeNodes, List<String> excludeNodes)
+    {
+        Map<String, List<String>> parameters;
+        parameters = new HashMap<String, List<String>>();
+        if (includeNodes != null && !includeNodes.isEmpty())
         {
             parameters.put("include", new ArrayList<String>(includeNodes));
         }
-
-        if (excludeNodes != null)
+        if (excludeNodes != null && !excludeNodes.isEmpty())
         {
             parameters.put("exclude", new ArrayList<String>(excludeNodes));
         }
-        return requestor.post(url, null, BITBUCKET_CHANGESETS_PAGE_RESPONSE);
+        return parameters;
     }
 
+    private String getUrlForInitialRequest(String orgName, String slug, int changesetLimit, BitbucketChangesetPage currentPage)
+    {
+        UrlBuilder urlBuilder = new UrlBuilder("/api/2.0/repositories","UTF-8",false);
+        urlBuilder.addPath(orgName);
+        urlBuilder.addPath(slug);
+        urlBuilder.addPathUnsafe("/commits/");
+        urlBuilder.addParameter("pagelen",Integer.toString(changesetLimit));
+        int pageNumber = 1;
+        if (currentPage != null && currentPage.getPage() > 0)
+        {
+            pageNumber = currentPage.getPage();
+        }
+        urlBuilder.addParameter("page",Integer.toString(pageNumber));
+        return urlBuilder.asUrlString();
+    }
 }

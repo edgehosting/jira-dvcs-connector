@@ -1,24 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
-import static org.fest.assertions.api.Assertions.assertThat;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-
-import java.util.List;
-
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
@@ -28,6 +9,24 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubTests implements BasicTests, MissingCommitsTests
 {

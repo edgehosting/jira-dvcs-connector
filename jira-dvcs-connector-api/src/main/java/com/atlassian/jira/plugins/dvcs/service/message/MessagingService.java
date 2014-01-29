@@ -60,11 +60,13 @@ public interface MessagingService
 
     /**
      * Retries all messages, which are marked by provided tag, and are in {@link MessageState#WAITING_FOR_RETRY}.
-     *
+     * 
      * @param tag
      *            {@link Message#getTags()}
+     * @param auditId
+     *            ID for audit log {@link #getTagForAuditSynchronization(int)}
      */
-    void retry(String tag);
+    void retry(String tag, int auditId);
 
     /**
      * Cancels all messages, which are marked by provided tag.
@@ -156,7 +158,15 @@ public interface MessagingService
      * @return repository
      */
     <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message);
-    <P extends HasProgress> int getSyncAuditIdFromTags(String[] tags);
+
+    /**
+     * Extracts id for synchronization audit from provided message.
+     * 
+     * @param tags
+     *            for processing - {@link Message#getTags()}
+     * @return synchronization audit id or 0 if does not exists
+     */
+    int getSynchronizationAuditIdFromTags(String[] tags);
 
     /**
      * Ends progress if no messages left for repository

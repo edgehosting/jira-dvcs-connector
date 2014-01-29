@@ -2,7 +2,11 @@ package com.atlassian.jira.plugins.dvcs.spi.github.parsers;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
@@ -26,9 +30,9 @@ public class GithubChangesetFactory
     {
     }
 
-    public static Changeset transform(RepositoryCommit repositoryCommit, int repositoryId, String branch)
+    public static Changeset transformToChangeset(RepositoryCommit repositoryCommit, int repositoryId, String branch)
     {
-        final List<ChangesetFile> changesetFiles = transformFiles(repositoryCommit.getFiles());
+        final List<ChangesetFileDetail> changesetFiles = transformToFileDetails(repositoryCommit.getFiles());
 
         String name = "";
         String authorEmail = null;
@@ -66,7 +70,7 @@ public class GithubChangesetFactory
                 branch,
                 repositoryCommit.getCommit().getMessage(),
                 transformParents(repositoryCommit.getParents()),
-                changesetFiles,
+                ImmutableList.<ChangesetFile>copyOf(changesetFiles),
                 changesetFiles.size(),
                 authorEmail
         );
@@ -83,30 +87,26 @@ public class GithubChangesetFactory
         return "";
     }
 
-    @SuppressWarnings("unchecked")
-    private static List<ChangesetFile> transformFiles(List<CommitFile> files)
+    public static List<ChangesetFileDetail> transformToFileDetails(List<CommitFile> files)
     {
         if (files == null)
         {
-            return Collections.<ChangesetFile>emptyList();
+            return Collections.emptyList();
         }
 
-        return (List<ChangesetFile>) CollectionUtils.collect(files, new Transformer() {
-
+        return ImmutableList.copyOf(Lists.transform(files, new Function<CommitFile, ChangesetFileDetail>()
+        {
             @Override
-            public Object transform(Object input)
+            public ChangesetFileDetail apply(CommitFile commitFile)
             {
-                CommitFile commitFile = (CommitFile) input;
-
                 String filename = commitFile.getFilename();
                 String status = commitFile.getStatus();
                 int additions = commitFile.getAdditions();
                 int deletions = commitFile.getDeletions();
 
-                return new ChangesetFile(CustomStringUtils.getChangesetFileAction(status),
-                        filename, additions, deletions);
+                return new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(status), filename, additions, deletions);
             }
-        });
+        }));
     }
 
     @SuppressWarnings("unchecked")

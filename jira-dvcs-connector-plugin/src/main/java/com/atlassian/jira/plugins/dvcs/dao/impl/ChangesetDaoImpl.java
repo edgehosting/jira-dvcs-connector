@@ -25,12 +25,11 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
+import com.atlassian.jira.plugins.dvcs.model.FileData;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 public class ChangesetDaoImpl implements ChangesetDao
@@ -199,34 +198,8 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
         chm.setParentsData(parentsData);
 
-        final JSONObject filesDataJson = new JSONObject();
-        final JSONArray filesJson = new JSONArray();
-        try
-        {
-            final List<ChangesetFile> files = changeset.getFiles();
-            final int count = changeset.getAllFileCount();
-            filesDataJson.put("count", count);
-            for (int i = 0; i < Math.min(count, Changeset.MAX_VISIBLE_FILES); i++)
-            {
-                final ChangesetFile changesetFile = files.get(i);
-                final JSONObject fileJson = new JSONObject();
-                fileJson.put("filename", changesetFile.getFile());
-                fileJson.put("status", changesetFile.getFileAction().getAction());
-                fileJson.put("additions", changesetFile.getAdditions());
-                fileJson.put("deletions", changesetFile.getDeletions());
-
-                filesJson.put(fileJson);
-            }
-
-            filesDataJson.put("files", filesJson);
-            chm.setFilesData(filesDataJson.toString());
-
-        }
-        catch (final JSONException e)
-        {
-            log.error("Creating files JSON failed!", e);
-        }
-
+        chm.setFilesData(FileData.toJSON(changeset));
+        chm.setFileDetailsJson(ChangesetFileDetails.toJSON(changeset.getFileDetails()));
         chm.setVersion(ChangesetMapping.LATEST_VERSION);
         chm.save();
     }

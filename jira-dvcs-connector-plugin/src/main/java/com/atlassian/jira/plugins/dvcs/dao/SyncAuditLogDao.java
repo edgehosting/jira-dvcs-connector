@@ -8,7 +8,7 @@ public interface SyncAuditLogDao
 {
     SyncAuditLogMapping newSyncAuditLog(int repoId, String syncType, Date startDate);
 
-    SyncAuditLogMapping finish(int syncId, Date finishDate);
+    SyncAuditLogMapping finish(final int syncId, final Date firstRequestDate, final int numRequests, final int flightTimeMs, final Date finishDate);
 
     SyncAuditLogMapping setException(int syncId, Throwable t, boolean overwriteOld);
 

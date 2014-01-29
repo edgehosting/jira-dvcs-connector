@@ -1,41 +1,33 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class ChangesetFile
 {
-    private final ChangesetFileAction type;
+    private final ChangesetFileAction fileAction;
     private final String file;
-    private final int additions;
-    private final int deletions;
 
-    public ChangesetFile(ChangesetFileAction type, String file, int additions, int deletions)
+    public ChangesetFile(ChangesetFileAction fileAction, String file)
     {
-        this.type = type;
+        this.fileAction = fileAction;
         this.file = file;
-        this.additions = additions;
-        this.deletions = deletions;
     }
 
+    @JsonProperty
     public ChangesetFileAction getFileAction()
     {
-        return type;
+        return fileAction;
     }
 
+    @JsonProperty
     public String getFile()
     {
         return file;
-    }
-
-    public int getAdditions()
-    {
-        return additions;
-    }
-
-    public int getDeletions()
-    {
-        return deletions;
     }
 
     @Override
@@ -47,10 +39,8 @@ public class ChangesetFile
         ChangesetFile that = (ChangesetFile) o;
 
         return new EqualsBuilder()
-                .append(type, that.type)
+                .append(fileAction, that.fileAction)
                 .append(file, that.file)
-                .append(additions, that.additions)
-                .append(deletions, that.deletions)
                 .isEquals();
     }
 
@@ -58,11 +48,15 @@ public class ChangesetFile
     public int hashCode()
     {
         return new HashCodeBuilder()
-                .append(type)
+                .append(fileAction)
                 .append(file)
-                .append(additions)
-                .append(deletions)
                 .hashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
     }
 }
 

@@ -96,6 +96,10 @@ public interface ChangesetMapping extends Entity
 
     void setSmartcommitAvailable(Boolean available);
 
+    @StringLength(StringLength.UNLIMITED)
+    String getFileDetailsJson();
+    void setFileDetailsJson(String fileDetailsJson);
+
     // Deprecated stuff
 
     /**

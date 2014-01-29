@@ -21,10 +21,12 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
+import com.atlassian.jira.plugins.dvcs.model.FileData;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+import com.google.common.collect.ImmutableList;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -145,7 +147,7 @@ public class ChangesetTransformer
             return null;
         }
 
-        final FileData fileData = parseFilesData(changesetMapping.getFilesData());
+        final FileData fileData = FileData.from(changesetMapping);
         final List<String> parents = parseParentsData(changesetMapping.getParentsData());
 
         final Changeset changeset = transformEntity(mainRepositoryId, changesetMapping, fileData, parents);
@@ -209,6 +211,11 @@ public class ChangesetTransformer
         changeset.setVersion(changesetMapping.getVersion());
         changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
 
+        // prefer the file details info
+        List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(changesetMapping.getFileDetailsJson());
+        changeset.setFiles(fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : changeset.getFiles());
+        changeset.setFileDetails(fileDetails);
+
         return changeset;
     }
 
@@ -240,62 +247,5 @@ public class ChangesetTransformer
         }
 
         return parents;
-    }
-
-    private FileData parseFilesData(final String filesData)
-    {
-        final List<ChangesetFile> files = new ArrayList<ChangesetFile>();
-        int fileCount = 0;
-
-        if (StringUtils.isNotBlank(filesData))
-        {
-            try
-            {
-                final JSONObject filesDataJson = new JSONObject(filesData);
-                fileCount = filesDataJson.getInt("count");
-                final JSONArray filesJson = filesDataJson.getJSONArray("files");
-
-                for (int i = 0; i < filesJson.length(); i++)
-                {
-                    final JSONObject file = filesJson.getJSONObject(i);
-                    final String filename = file.getString("filename");
-                    final String status = file.getString("status");
-                    final int additions = file.getInt("additions");
-                    final int deletions = file.getInt("deletions");
-
-                    files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename, additions, deletions));
-                }
-
-            }
-            catch (final JSONException e)
-            {
-                log.error("Failed parsing files from FileJson data.");
-            }
-        }
-
-        return new FileData(files, fileCount);
-    }
-
-    private static class FileData
-    {
-        private final List<ChangesetFile> files;
-        private final int fileCount;
-
-        FileData(final List<ChangesetFile> files, final int fileCount)
-        {
-            this.files = files;
-            this.fileCount = fileCount;
-        }
-
-        public List<ChangesetFile> getFiles()
-        {
-            return files;
-        }
-
-        public int getFileCount()
-        {
-            return fileCount;
-        }
-
     }
 }

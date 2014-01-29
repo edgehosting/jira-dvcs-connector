@@ -5,6 +5,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
@@ -16,17 +18,15 @@ import com.atlassian.jira.util.json.JSONObject;
 
 public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> implements MessagePayloadSerializer<P>
 {
-    public static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
+    @Resource
+    private MessagingService messagingService;
+
+    @Resource
     private RepositoryService repositoryService;
-    private Synchronizer synchronizer;
 
-    protected AbstractMessagePayloadSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super();
-        this.repositoryService = repositoryService;
-        this.synchronizer = synchronizer;
-    }
+    @Resource
+    private Synchronizer synchronizer;
 
     @Override
     public final String serialize(P payload)
@@ -65,7 +65,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             // progress stuff
             //
-            syncAudit = getSyncAuditIdFromTags(message.getTags());
+            syncAudit = messagingService.getSynchronizationAuditIdFromTags(message.getTags());
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
 
             progress = synchronizer.getProgress(deserialized.repository.getId());
@@ -87,19 +87,6 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         {
             throw new MessageDeserializationException(e, progress);
         }
-    }
-
-    public static <PR extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
-    {
-        for (String tag : tags)
-        {
-            if (StringUtils.startsWith(tag, SYNCHRONIZATION_AUDIT_TAG_PREFIX))
-            {
-                return Integer.parseInt(tag.substring(SYNCHRONIZATION_AUDIT_TAG_PREFIX.length()));
-
-            }
-        }
-        return 0;
     }
 
     protected abstract void serializeInternal(JSONObject json, P payload) throws Exception;

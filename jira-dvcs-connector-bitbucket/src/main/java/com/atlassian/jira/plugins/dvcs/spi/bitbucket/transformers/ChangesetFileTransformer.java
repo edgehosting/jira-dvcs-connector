@@ -2,6 +2,10 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
@@ -20,18 +24,16 @@ public class ChangesetFileTransformer {
 
 
     @SuppressWarnings("unchecked")
-    public static List<ChangesetFile> fromBitbucketChangesetsWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
+    public static List<ChangesetFileDetail> fromBitbucketChangesetsWithDiffstat(List<BitbucketChangesetWithDiffstat> diffstats)
     {
-        return (List<ChangesetFile>) CollectionUtils.collect(diffstats, new Transformer() {
-
+        return ImmutableList.copyOf(Lists.transform(diffstats, new Function<BitbucketChangesetWithDiffstat, ChangesetFileDetail>()
+        {
             @Override
-            public Object transform(Object input)
+            public ChangesetFileDetail apply(BitbucketChangesetWithDiffstat diffstat)
             {
-                BitbucketChangesetWithDiffstat diffstat = (BitbucketChangesetWithDiffstat) input;
-
                 ChangesetFileAction fileAction = ChangesetFileAction.valueOf(diffstat.getType().toUpperCase());
-                
-                int added = 0; 
+
+                int added = 0;
                 int removed = 0;
                 if (diffstat.getDiffstat() != null)
                 {
@@ -44,9 +46,9 @@ public class ChangesetFileTransformer {
                         removed = diffstat.getDiffstat().getRemoved();
                     }
                 }
-                return new ChangesetFile(fileAction, diffstat.getFile(), added, removed);
+                return new ChangesetFileDetail(fileAction, diffstat.getFile(), added, removed);
             }
-        });
+        }));
     }
     
 
@@ -62,10 +64,7 @@ public class ChangesetFileTransformer {
 
                 ChangesetFileAction fileAction = ChangesetFileAction.valueOf(changesetFile.getType().toUpperCase());
 
-                return new ChangesetFile(fileAction,
-                                         changesetFile.getFile(),
-                                         0,  // zero additions
-                                         0); // zero deletions
+                return new ChangesetFile(fileAction, changesetFile.getFile());
             }
         });
     }

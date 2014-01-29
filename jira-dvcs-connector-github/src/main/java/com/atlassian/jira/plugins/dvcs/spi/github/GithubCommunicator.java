@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
@@ -212,8 +213,11 @@ public class GithubCommunicator implements DvcsCommunicator
             
             //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
             checkRequestRateLimit(commitService.getClient());
-            
-            return GithubChangesetFactory.transform(commit, repository.getId(), null);
+
+            Changeset changeset = GithubChangesetFactory.transformToChangeset(commit, repository.getId(), null);
+            changeset.setFileDetails(GithubChangesetFactory.transformToFileDetails(commit.getFiles()));
+
+            return changeset;
         } catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
@@ -252,9 +256,23 @@ public class GithubCommunicator implements DvcsCommunicator
     }
     
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
     {
-        return changeset;
+        CommitService commitService = githubClientProvider.getCommitService(repository);
+        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
+
+        // Workaround for BBC-455
+        checkRequestRateLimit(commitService.getClient());
+        try
+        {
+            RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
+
+            return GithubChangesetFactory.transformToFileDetails(commit.getFiles());
+        }
+        catch (IOException e)
+        {
+            throw new SourceControlException("could not get result", e);
+        }
     }
 
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
@@ -350,7 +368,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	        return urlToHooks;
         } catch (IOException e)
         {
-        	log.info("Problem getting hooks from Github: " + e.getMessage(), e);
+        	log.info("Problem getting hooks from Github for repository '" + repositoryId + "': ", e);
         	return Collections.EMPTY_MAP;
         }
     }
