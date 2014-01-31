@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -255,7 +256,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            method.releaseConnection();
+            SystemUtils.releaseConnection(method);
             if (apiProvider.isCloseIdleConnections())
             {
                 httpClientProvider.closeIdleConnections();
@@ -298,7 +299,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            method.releaseConnection();
+            SystemUtils.releaseConnection(method);
         }
     }
 
