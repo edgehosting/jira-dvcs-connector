@@ -4,20 +4,21 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
+import com.atlassian.jira.plugins.dvcs.service.MessageExecutor;
+import com.atlassian.jira.plugins.dvcs.service.MessagingServiceImplMock;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
@@ -25,12 +26,17 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -42,7 +48,9 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import junit.framework.Assert;
+import org.apache.commons.lang.StringUtils;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -67,8 +75,10 @@ import java.util.Set;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -93,8 +103,8 @@ public class BitbucketCommunicatorTest
 
     private BranchService branchService;
 
-    @Mock
-    private MessagingService messagingService;
+    @InjectMocks
+    private MessagingService messagingService = new MessagingServiceImplMock();
 
     private BranchDao branchDao;
     @Mock
@@ -117,7 +127,17 @@ public class BitbucketCommunicatorTest
     @Mock
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
+    @InjectMocks
     private BitbucketSynchronizeChangesetMessageConsumer consumer;
+
+    @InjectMocks
+    private OldBitbucketSynchronizeCsetMsgConsumer oldConsumer;
+
+    @InjectMocks
+    private BitbucketSynchronizeChangesetMessageSerializer serializer;
+
+    @InjectMocks
+    private OldBitbucketSynchronizeCsetMsgSerializer oldSerializer;
 
     @Mock
     private ChangesetService changesetService;
@@ -127,6 +147,17 @@ public class BitbucketCommunicatorTest
 
     @Mock
     private LinkedIssueService linkedIssueService;
+
+    @Mock
+    private Synchronizer synchronizer;
+
+    private MessageExecutor messageExecutor;
+
+    @Mock
+    private HttpClientProvider httpClientProvider;
+
+    @Mock
+    private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -246,6 +277,9 @@ public class BitbucketCommunicatorTest
         when(plugin.getPluginInformation()).thenReturn(pluginInformation);
         when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
 
+        when(repositoryMock.getId()).thenReturn(1);
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+
         branchDao = new BranchDaoMock();
         branchService = new BranchServiceImpl();
         ReflectionTestUtils.setField(branchService, "branchDao", branchDao);
@@ -262,17 +296,31 @@ public class BitbucketCommunicatorTest
 
         communicator.setDelegate(bitbucketCommunicator);
 
+        when(dvcsCommunicatorProvider.getCommunicator(eq(BitbucketCommunicator.BITBUCKET))).thenReturn(communicator);
+
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
         when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
 
-        consumer = new BitbucketSynchronizeChangesetMessageConsumer();
+        when(repositoryService.get(anyInt())).thenReturn(repositoryMock);
+
         ReflectionTestUtils.setField(consumer, "cachingCommunicator", communicator);
         ReflectionTestUtils.setField(consumer, "messagingService", messagingService);
-        ReflectionTestUtils.setField(consumer, "changesetService", changesetService);
-        ReflectionTestUtils.setField(consumer, "linkedIssueService", linkedIssueService);
-        ReflectionTestUtils.setField(consumer, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(oldConsumer, "messagingService", messagingService);
 
+        ReflectionTestUtils.setField(serializer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(oldSerializer, "messagingService", messagingService);
+
+        messageExecutor = new MessageExecutor();
+        ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
+        ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer });
+        ReflectionTestUtils.invokeMethod(messageExecutor, "init");
+
+        ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer });
+        ReflectionTestUtils.setField(messagingService, "payloadSerializers", new MessagePayloadSerializer<?>[] { serializer, oldSerializer });
+        ReflectionTestUtils.setField(messagingService, "messageExecutor", messageExecutor);
+
+        ReflectionTestUtils.invokeMethod(messagingService, "init");
     }
 
     private class Graph
@@ -300,7 +348,6 @@ public class BitbucketCommunicatorTest
 
         private Iterator<BitbucketChangesetPage> pages;
         private int pageNum = 0;
-        private  BitbucketChangesetPage page;
         public Graph()
         {
             initGraph();
@@ -402,7 +449,7 @@ public class BitbucketCommunicatorTest
 
         public void mock()
         {
-            Mockito.reset(bitbucketBranchesAndTags, branchesAndTagsRemoteRestpoint, changesetRestpoint, changesetService, messagingService);
+            Mockito.reset(bitbucketBranchesAndTags, branchesAndTagsRemoteRestpoint, changesetRestpoint, changesetService);
 
             when(bitbucketBranchesAndTags.getBranches()).thenReturn(
                     Lists.transform(Lists.newArrayList(heads.keySet()), new Function<String, BitbucketBranch>()
@@ -421,14 +468,19 @@ public class BitbucketCommunicatorTest
                 public BitbucketChangesetPage answer(InvocationOnMock invocation) throws Throwable
                 {
                     @SuppressWarnings("unchecked")
-                    BitbucketChangesetPage page = (BitbucketChangesetPage) invocation.getArguments()[5];
-                    @SuppressWarnings("unchecked")
-                    int pageLen = (Integer) invocation.getArguments()[4];
+                    BitbucketChangesetPage currentPage = (BitbucketChangesetPage) invocation.getArguments()[5];
                     @SuppressWarnings("unchecked")
                     List<String> includes = (List<String>) invocation.getArguments()[2];
                     @SuppressWarnings("unchecked")
                     List<String> excludes = (List<String>) invocation.getArguments()[3];
-
+                    if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
+                    {
+                        pages =  getPages(includes, excludes, BitbucketCommunicator.CHANGESET_LIMIT);
+                        for (int i = 1; i < currentPage.getPage(); i++)
+                        {
+                            pages.next();
+                        }
+                    }
                     return pages.next();
                 }
             });
@@ -453,40 +505,6 @@ public class BitbucketCommunicatorTest
                 }
 
             });
-        }
-
-        public Iterable<BitbucketSynchronizeChangesetMessage> generateMessages(final List<String> includes, final List<String> excludes, final boolean softSync)
-        {
-            pages =  getPages(includes, excludes, BitbucketCommunicator.CHANGESET_LIMIT);
-            pageNum = 0;
-            page = null;
-            return new Iterable<BitbucketSynchronizeChangesetMessage>()
-            {
-                @Override
-                public Iterator<BitbucketSynchronizeChangesetMessage> iterator()
-                {
-                    return new AbstractIterator<BitbucketSynchronizeChangesetMessage>()
-                    {
-                        private Progress progressMock = Mockito.mock(DefaultProgress.class);
-                        private HashMap<String, String> nodesToBranches = new HashMap<String, String>();
-
-                        @Override
-                        protected BitbucketSynchronizeChangesetMessage computeNext()
-                        {
-                            if (pages.hasNext())
-                            {
-                                BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repositoryMock,
-                                        null, progressMock, includes, excludes, page, nodesToBranches, softSync, 0);
-                                return message;
-                            } else
-                            {
-                                endOfData();
-                                return null;
-                            }
-                        }
-                    };
-                }
-            };
         }
 
         public Iterator<BitbucketChangesetPage> getPages(final List<String> includes, final List<String> excludes, final int pagelen)
@@ -542,7 +560,15 @@ public class BitbucketCommunicatorTest
                         {
                             BitbucketNewChangeset changeset = new BitbucketNewChangeset();
                             changeset.setHash(input);
-                            changeset.setParents(Collections.<BitbucketNewChangeset>emptyList());
+
+                            List<BitbucketNewChangeset> parentsList = new ArrayList<BitbucketNewChangeset>();
+                            for (String parent : parents.get(input))
+                            {
+                                BitbucketNewChangeset parentChangeset = new BitbucketNewChangeset();
+                                parentChangeset.setHash(parent);
+                                parentsList.add(parentChangeset);
+                            }
+                            changeset.setParents(parentsList);
 
                             Data changesetData = data.get(input);
                             changeset.setBranch(changesetData.branch);
@@ -759,12 +785,69 @@ public class BitbucketCommunicatorTest
         checkSynchronization(graph, false);
     }
 
+    @Test
+    public void getChangesets_softSyncWithNoHeads()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return false;
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .branch("node3", "node2")
+                .commit("node4", "node3")
+                .commit("node5", "node2")
+                .commit("node6", "node5")
+                .merge("node8", "node6", "node4")
+                .branch("B1", "node7", "node6")
+                .branch("node9", "node7")
+                .merge("node11", "node7", "node8", "node9")
+                .commit("node13", "node11")
+                .mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
+
+        // add more commits
+        graph
+                .branch("B2", "node12", "node9")
+                .commit("node14", "node12")
+                .branch("B3", "node15", "node3")
+                .merge("node10", "node8", "node15")
+                .commit("node16", "node10")
+                .mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
+    }
+
+
     private void checkSynchronization(Graph graph, boolean softSync)
     {
         checkSynchronization(graph, new ArrayList<String>(), softSync);
     }
 
-    private void checkSynchronization(Graph graph, List<String> processedNodes, boolean softSync)
+    private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)
     {
         EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
         if (!softSync)
@@ -776,41 +859,58 @@ public class BitbucketCommunicatorTest
             flags.add(SynchronizationFlag.SOFT_SYNC);
         }
 
-        List<String> oldHeads = new ArrayList(((BranchDaoMock) branchDao).getHeads(repositoryMock.getId()));
+        Mockito.reset(changesetService);
+        when(changesetService.getByNode(eq(repositoryMock.getId()), anyString())).then(new Answer<Changeset>()
+        {
+            @Override
+            public Changeset answer(final InvocationOnMock invocation) throws Throwable
+            {
+                @SuppressWarnings ("unchecked")
+                String node = (String) invocation.getArguments()[1];
+                if (processedNodes.contains(node))
+                {
+                    Changeset changeset = new Changeset(repositoryMock.getId(), node, null, graph.data.get(node).date);
+                    return changeset;
+                }
+
+                return null;
+            }
+        });
+
+        when(changesetService.create(any(Changeset.class), anySet())).then(new Answer<Changeset>()
+        {
+            @Override
+            public Changeset answer(final InvocationOnMock invocation) throws Throwable
+            {
+                @SuppressWarnings ("unchecked")
+                Changeset changeset = (Changeset) invocation.getArguments()[0];
+
+                assertThat(processedNodes).doesNotContain(changeset.getNode());
+                processedNodes.add(changeset.getNode());
+                return changeset;
+            }
+        });
+
         communicator.startSynchronisation(repositoryMock, flags, 0);
-        List<String> newHeads = new ArrayList(((BranchDaoMock) branchDao).getHeads(repositoryMock.getId()));
 
         assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
 
         ArgumentCaptor<BitbucketSynchronizeChangesetMessage> messageCaptor = ArgumentCaptor.forClass(BitbucketSynchronizeChangesetMessage.class);
-        verify(messagingService).publish(any(MessageAddress.class), messageCaptor.capture(), anyInt(), Mockito.<String>anyVararg());
 
-        if (!oldHeads.containsAll(newHeads) || !newHeads.containsAll(oldHeads))
+        int retry = 0;
+        while (messagingService.getQueuedCount(null) > 0 && retry < 5)
         {
-            BitbucketSynchronizeChangesetMessage firstMessage = messageCaptor.getValue();
-
-            List<String> includes = firstMessage.getInclude();
-            List<String> excludes = firstMessage.getExclude();
-            List<String> includeExpected = new ArrayList<String>(newHeads);
-            includeExpected.removeAll(oldHeads);
-            assertThat(includes).as("Includes are incorrect").containsAll(includeExpected).doesNotHaveDuplicates().hasSameSizeAs(includeExpected);
-            assertThat(excludes).as("Excludes are incorrect").containsAll(oldHeads).doesNotHaveDuplicates().hasSameSizeAs(oldHeads);
-
-            for (BitbucketSynchronizeChangesetMessage message : graph.generateMessages(includes, excludes, softSync))
+            retry++;
+            try
             {
-               consumer.onReceive(new Message<BitbucketSynchronizeChangesetMessage>(), message);
-
+                Thread.sleep(1000);
             }
-
-            ArgumentCaptor<Changeset> savedChangesetCaptor = ArgumentCaptor.forClass(Changeset.class);
-            verify(changesetService, atMost(graph.getNodes().size())).create(savedChangesetCaptor.capture(), anySetOf(String.class));
-
-            for ( Changeset  changeset : savedChangesetCaptor.getAllValues())
+            catch (InterruptedException e)
             {
-                assertThat(processedNodes).doesNotContain(changeset.getNode());
-                processedNodes.add(changeset.getNode());
+                throw new RuntimeException(e);
             }
         }
+
         assertThat(processedNodes).as("Incorrect synchronization").containsAll(graph.getNodes()).doesNotHaveDuplicates().hasSameSizeAs(graph.getNodes());
     }
 }

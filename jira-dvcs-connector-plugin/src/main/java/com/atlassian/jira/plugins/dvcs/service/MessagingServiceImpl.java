@@ -284,6 +284,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         message.setPayloadType(address.getPayloadType());
         message.setTags(tags);
         message.setPriority(priority);
+
+        createMessage(message, state, tags);
+
+        messageExecutor.notify(address.getId());
+    }
+
+    protected <P extends HasProgress> void createMessage(Message<P> message, MessageState state, String... tags)
+    {
         MessageMapping messageMapping = messageDao.create(toMessageMap(message), tags);
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -292,8 +300,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         {
             messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state));
         }
-
-        messageExecutor.notify(address.getId());
     }
 
     /**
