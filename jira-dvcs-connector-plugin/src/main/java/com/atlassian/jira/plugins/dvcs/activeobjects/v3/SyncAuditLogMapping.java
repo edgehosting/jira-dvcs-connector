@@ -16,7 +16,10 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_STATUS_SUCCESS = "SUCCESS";
     String SYNC_STATUS_SLEEPING = "SLEEPING";
     String SYNC_TYPE_SOFT = "SOFT";
-    String SYNC_TYPE_FULL = "FULL";
+    String SYNC_TYPE_CHANGESETS = "CHANGESETS";
+    String SYNC_TYPE_PULLREQUESTS = "PULLREQUESTS";
+    String SYNC_TYPE_WEBHOOKS = "WEBHOOKS";
+
     //
     String REPO_ID = "REPO_ID";
     String START_DATE = "START_DATE";
@@ -30,6 +33,9 @@ public interface SyncAuditLogMapping extends Entity
     Date getStartDate();
     Date getEndDate();
     String getSyncStatus();
+    int getFlightTimeMs();
+    Date getFirstRequestDate();
+    int getNumRequests();
     String getSyncType();
     @StringLength(StringLength.UNLIMITED)
     String getExcTrace();
@@ -38,7 +44,10 @@ public interface SyncAuditLogMapping extends Entity
     void setRepoId(int id);
     void setStartDate(Date date);
     void setEndDate(Date date);
+    void setFirstRequestDate(Date firstRequestDate);
     void setSyncStatus(String status);
+    void setFlightTimeMs(int flightTime);
+    void setNumRequests(int numRequests);
     void setSyncType(String type);
     @StringLength(StringLength.UNLIMITED)
     void setExcTrace(String trace);

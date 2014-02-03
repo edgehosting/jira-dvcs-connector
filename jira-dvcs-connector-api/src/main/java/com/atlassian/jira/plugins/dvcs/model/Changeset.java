@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.model;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -32,6 +34,8 @@ public class Changeset
 
     private List<ChangesetFile> files;
     private int allFileCount;
+
+    private ImmutableList<ChangesetFileDetail> fileDetails = null;
 
     private Integer version;
 
@@ -276,4 +280,25 @@ public class Changeset
 	{
 		this.id = id;
 	}
+
+    /**
+     * Returns a list of file details or null if the details have not been loaded yet.
+     *
+     * @return a list of ChangesetFileDetail
+     */
+    @Nullable
+    public List<ChangesetFileDetail> getFileDetails()
+    {
+        return fileDetails;
+    }
+
+    /**
+     * Sets the file details.
+     *
+     * @param fileDetails a list of ChangesetFileDetail
+     */
+    public void setFileDetails(List<ChangesetFileDetail> fileDetails)
+    {
+        this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
+    }
 }

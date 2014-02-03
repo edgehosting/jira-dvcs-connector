@@ -54,5 +54,14 @@ public interface ChangesetService
     
     Changeset getByNode(int repositoryId, String changesetNode);
 
-	Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
+    /**
+     * Ensures that the passed in Changeset instances have file details, fetching them from the remote system if
+     * necessary. Note that this is a potentially expensive operation which should not be performed systematically but
+     * should instead be triggered by a user action.
+     *
+     * @param changesets the Changesets
+     * @return a read-only list of Changesets with file details
+     * @since 2.0.0
+     */
+    List<Changeset> getChangesetsWithFileDetails(List<Changeset> changesets);
 }

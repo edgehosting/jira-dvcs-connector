@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.atlassian.pageobjects.elements.query.TimedQuery;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
@@ -95,7 +96,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected void waitFormBecomeVisible()
     {
-        jiraTestedProduct.getTester().getDriver().waitUntilElementIsVisible(By.id("repoEntry"));
+        Poller.waitUntilTrue(isFormOpen());
     }
 
     /**
@@ -163,4 +164,25 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
         return null;
     }
+
+    public TimedQuery<Boolean> isFormOpen()
+    {
+        return getForm().timed().isVisible();
+    }
+
+    public TimedQuery<String> getDvcsTypeSelectValue()
+    {
+        return dvcsTypeSelect.timed().getValue();
+    }
+
+    public TimedQuery<String> getFormAction()
+    {
+        return getForm().timed().getAttribute("action");
+    }
+
+    private PageElement getForm()
+    {
+        return elementFinder.find(By.id("repoEntry"));
+    }
+
 }

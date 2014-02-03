@@ -7,12 +7,11 @@ import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
@@ -31,7 +30,15 @@ public interface DvcsCommunicator
 
     Changeset getChangeset(Repository repository, String node);
 
-    Changeset getDetailChangeset(Repository repository, Changeset changeset);
+    /**
+     * Gets the file details for a given changeset.
+     *
+     * @param repository the Repository
+     * @param changeset the Changeset
+     * @return a list of ChangesetFileDetail
+     * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
+     */
+    List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
 
 	Iterable<Changeset> getChangesets(Repository repository);
 

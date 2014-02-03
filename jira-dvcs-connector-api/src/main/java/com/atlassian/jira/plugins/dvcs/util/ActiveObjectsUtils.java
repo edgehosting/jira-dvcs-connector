@@ -1,99 +1,60 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.Set;
 
 import net.java.ao.Entity;
+import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
-import net.java.ao.RawEntity;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 
 public class ActiveObjectsUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
     private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500);
+    // Because of an issue in ActiveObjects (AO-453, AO-455) we can't use deleteWithSQL in PostgresSQL
+    private static final boolean DELETE_WITH_SQL = false; //SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
 
     public static <T extends Entity> int delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
-        //TODO: use activeObjects.deleteWithSQL() when AO update https://ecosystem.atlassian.net/browse/AO-348 is available.
         log.debug("Deleting type {}", entityType);
+
+        final Set<Integer> ids = new HashSet<Integer>();
+        activeObjects.stream(entityType, query, new EntityStreamCallback<T, Integer>()
+        {
+
+            @Override
+            public void onRowRead(T t)
+            {
+                ids.add(t.getID());
+            }
+
+        });
+
         int deleted = 0;
-        int remainingEntities = activeObjects.count(entityType, copyQuery(query, true));
-        while (remainingEntities > 0)
+        Iterable<List<Integer>> windows = Iterables.partition(ids, DELETE_WINDOW_SIZE);
+        for (List<Integer> window : windows)
         {
-
-            log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, remainingEntities);
-            // BBC-453 we need to copy Query as ActiveObjects.find will mangle query for all types annotated by @Preload
-            T[] entities = activeObjects.find(entityType, copyQuery(query, false).limit(DELETE_WINDOW_SIZE));
-            activeObjects.delete(entities);
-            deleted++;
-            remainingEntities = activeObjects.count(entityType, copyQuery(query, true));
+            log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, ids.size() - deleted);
+            if (DELETE_WITH_SQL)
+            {
+                activeObjects.deleteWithSQL(entityType, renderListNumbersOperator("ID", "IN", "OR", window).toString());
+            } else
+            {
+                activeObjects.delete(activeObjects.find(entityType, renderListNumbersOperator("ID", "IN", "OR", window).toString()));
+            }
+            deleted += window.size();
         }
+
         return deleted;
-    }
-
-    private static Query copyQuery(Query query, boolean forCount)
-    {
-        Query newQuery;
-        Iterable<String> fields = query.getFields();
-        if (fields.iterator().hasNext())
-        {
-            newQuery = Query.select(Joiner.on(",").join(query.getFields()));
-        } else
-        {
-            newQuery = Query.select();
-        }
-        newQuery.where(query.getWhereClause(), query.getWhereParams())
-                .group(query.getGroupClause())
-                .limit(query.getLimit())
-                .offset(query.getOffset());
-
-        if (!forCount)
-        {
-            newQuery
-                .order(query.getOrderClause());
-        }
-        if (query.getTable() != null)
-        {
-            newQuery.from(query.getTable());
-        }
-
-        Class<? extends RawEntity<?>> tableType = query.getTableType();
-        if (tableType != null)
-        {
-            newQuery.from(query.getTableType());
-            addAlias(newQuery, tableType, query.getAlias(tableType));
-        }
-
-        if (query.isDistinct())
-        {
-            newQuery.distinct();
-        }
-
-        Map<Class<? extends RawEntity<?>>, String> joins = query.getJoins();
-        for (Entry<Class<? extends RawEntity<?>>, String> joinEntry : joins.entrySet())
-        {
-            newQuery.join(joinEntry.getKey(), joinEntry.getValue());
-            addAlias(newQuery, joinEntry.getKey(), query.getAlias(joinEntry.getKey()));
-        }
-
-        return newQuery;
-    }
-
-    private static Query addAlias(Query query, Class<? extends RawEntity<?>> table, String alias)
-    {
-        if (alias != null)
-        {
-            query.alias(table, alias);
-        }
-        return query;
     }
 
     public static String stripToLimit(String s, int limit)

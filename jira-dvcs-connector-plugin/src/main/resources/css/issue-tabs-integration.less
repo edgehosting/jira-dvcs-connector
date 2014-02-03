@@ -168,37 +168,53 @@
     margin-top: 6px;
     padding-bottom: 1px;
 }
+
 .CommitCount {
     float: left;
     position: absolute;
     width: 80px;
     margin-top: 1px;
     line-height: 1.2;
+
+    .lozenge {
+        border-radius: 3px 3px 3px 3px;
+        float: left;
+        font-size: 12px;
+        height: 14px;
+        text-align: center;
+        width: 76px;
+
+        &.left-half {
+            border-radius: 3px 0 0 3px;
+            border-right: 0px;
+            width: 38px;
+        }
+
+        &.right-half {
+            border-radius: 0 3px 3px 0;
+            width: 38px;
+        }
+    }
+
+    .red {
+        background-color: #FFDDDD;
+        border: 1px solid #E16161;
+        color: #CC3333;
+    }
+
+    .green {
+        background-color: #CCFFCC;
+        border: 1px solid #228822;
+        color: #228822;
+    }
+
+    .blue {
+        background-color: #ADD6FF;
+        border: 1px solid #246BB2;
+        color: #4A6785;
+    }
 }
-.CommitCountPlus {
-    background-color: #CCFFCC;
-    border-bottom: 1px solid #228822;
-    border-left: 1px solid #228822;
-    border-radius: 3px 0 0 3px;
-    border-top: 1px solid #228822;
-    color: #228822;
-    float: left;
-    font-size: 12px;
-    height: 14px;
-    text-align: center;
-    width: 38px;
-}
-.CommitCountMinus {
-    background-color: #FFDDDD;
-    border: 1px solid #E16161;
-    border-radius: 0 3px 3px 0;
-    color: #CC3333;
-    float: left;
-    font-size: 12px;
-    height: 14px;
-    text-align: center;
-    width: 38px;
-}
+
 .CommitHrefDATA {
     color: #326CA6;
     float: left;

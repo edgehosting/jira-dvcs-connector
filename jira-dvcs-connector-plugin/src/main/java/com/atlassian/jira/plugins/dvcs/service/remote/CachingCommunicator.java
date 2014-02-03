@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -220,9 +221,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
     {
-        return delegate.getDetailChangeset(repository, changeset);
+        return delegate.getFileDetails(repository, changeset);
     }
 
     @Override

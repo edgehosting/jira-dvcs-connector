@@ -150,7 +150,7 @@ public class RestCommitsTest
             {
                 parents.add("ANOTHER_PARENT_OF_"+id);
             }
-            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id, "BRANCH", issueKey + " commit " + id, parents, Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id, 1, 0)), 1, "AUTHOR_EMAIL");
+            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id, "BRANCH", issueKey + " commit " + id, parents, Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id)), 1, "AUTHOR_EMAIL");
             changeset.setRepositoryIds(Lists.asList(repositoryId, otherRepositoryIds));
 
             changesetToIssues.put(issueKey, changeset);
