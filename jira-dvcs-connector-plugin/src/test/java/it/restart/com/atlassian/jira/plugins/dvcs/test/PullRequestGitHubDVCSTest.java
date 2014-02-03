@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
@@ -9,20 +10,28 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivity;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivityComment;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.issue.IssuePagePullRequestTabActivityUpdate;
 
-import java.util.List;
-
-import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.base.BaseDVCSTest;
+import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
+import com.atlassian.jira.plugins.dvcs.base.resource.GitTestResource;
+import com.atlassian.jira.plugins.dvcs.base.resource.JiraTestResource;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PullRequestLocalRestpoint;
+import com.atlassian.pageobjects.TestedProductFactory;
 
 /**
  * Pull request GitHub related tests.
@@ -30,8 +39,10 @@ import org.testng.annotations.Test;
  * @author Stanislav Dvorscak
  * 
  */
-public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
+public class PullRequestGitHubDVCSTest extends BaseDVCSTest
 {
+
+    private static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
 
     /**
      * Key of testing project.
@@ -53,91 +64,98 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
      */
     private static final String COMMIT_AUTHOR_EMAIL = "sdvorscak@atlassian.com";
 
+    private static final String PR_AUTHOR_NAME = "Janko Hrasko";
+    private static final String PR_AUTHOR_USERNAME = "jirabitbucketconnector";
+    private static final String PR_AUTHOR_EMAIL = "miroslav.stencel@hotovo.org";
+
+    /**
+     * @see GitHubTestResource
+     */
+    private GitHubTestResource gitHubResource = new GitHubTestResource(this);
+
+    /**
+     * @see GitTestResource
+     */
+    private GitTestResource gitResource = new GitTestResource(this);
+
+    /**
+     * @see JiraTestResource
+     */
+    private JiraTestResource jiraTestResource = new JiraTestResource(this);
+
+    /**
+     * @see JiraTestedProduct
+     */
+    private JiraTestedProduct jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
+
+    /**
+     * @see PullRequestLocalRestpoint
+     */
+    private PullRequestLocalRestpoint pullRequestLocalRestpoint = new PullRequestLocalRestpoint();
+
     /**
      * Name of repository used by tests of this class.
      */
-    private String repositoryUri;
+    private String repositoryName;
 
     /**
      * Issue key used for testing.
      */
     private String issueKey;
 
-    // implementation of abstract methods
+    private OAuth oAuth;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void signInGitHub()
+    @BeforeClass
+    public void onTestsSetup()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogin();
+        GitHubClient gitHubClient = GitHubClient.createClient(GitHubTestResource.URL);
+        gitHubClient.setCredentials(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
+        gitHubResource.addOwner(GitHubTestResource.USER, gitHubClient);
+        gitHubResource.addOwner(GitHubTestResource.ORGANIZATION, gitHubClient);
+
+        new JiraLoginPageController(jiraTestedProduct).login();
+
+        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogin();
+
+        GithubOAuthPage GitHubOAuthPage = new MagicVisitor(jiraTestedProduct).visit(GithubOAuthPage.class);
+        oAuth = GitHubOAuthPage.addConsumer(jiraTestedProduct.getProductInstance().getBaseUrl());
+        OAuthCredentials oAuthCredentials = new OAuthCredentials(oAuth.key, oAuth.secret);
+
+        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
+        repositoriesPageController.getPage().deleteAllOrganizations();
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, GitHubTestResource.USER,
+                oAuthCredentials, false);
+        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, GitHubTestResource.ORGANIZATION,
+                oAuthCredentials, false);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void onTestsCleanup()
+    {
+        if (oAuth != null)
+        {
+            RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
+            repositoriesPageController.getPage().deleteAllOrganizations();
+
+            GithubOAuthPage gitHubOAuthPage = new MagicVisitor(jiraTestedProduct).visit(oAuth.applicationId, GithubOAuthPage.class);
+            gitHubOAuthPage.removeConsumer();
+        }
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void signOutGitHub()
-    {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogout();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected OAuth createOAuthSettings()
-    {
-        GithubOAuthPage GitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthPage.class);
-        OAuth result = GitHubOAuthPage.addConsumer(getJiraTestedProduct().getProductInstance().getBaseUrl());
-        // getJiraTestedProduct().visit(JiraGithubOAuthPage.class).setCredentials(result.key, result.secret);
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void destroyOAuthSettings(OAuth oAuth)
-    {
-        GithubOAuthPage gitHubOAuthPage = new MagicVisitor(getJiraTestedProduct()).visit(oAuth.applicationId, GithubOAuthPage.class);
-        gitHubOAuthPage.removeConsumer();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected GitHubClient createGitHubClient()
-    {
-        GitHubClient result = GitHubClient.createClient("https://github.com/");
-        result.setCredentials(getUsername(), getPassword());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void addDVCSOrganizations()
-    {
-        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
-        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, getUsername(), getOAuthCredentials(), false);
-        repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, getOrganization(), getOAuthCredentials(), false);
-    }
-
-    // end of: implementation of abstract methods
-
-    /**
-     * {@inheritDoc}
+     * Prepares test environment.
      */
     @BeforeMethod
     public void onTestSetup()
     {
-        repositoryUri = getUsername() + "/" + PullRequestGitHubDVCSTest.class.getCanonicalName();
-        issueKey = addTestIssue(TEST_PROJECT_KEY, TEST_ISSUE_SUMMARY);
-        addTestRepository(repositoryUri);
+
+        repositoryName = gitHubResource.addRepository(GitHubTestResource.USER, PullRequestGitHubDVCSTest.class.getCanonicalName(),
+                GitHubTestResource.Lifetime.DURING_TEST_METHOD, EXPIRATION_DURATION_5_MIN);
+        gitResource.addRepository(repositoryName);
+
+        issueKey = jiraTestResource.addIssue(TEST_PROJECT_KEY, TEST_ISSUE_SUMMARY, JiraTestResource.Lifetime.DURING_TEST_METHOD,
+                EXPIRATION_DURATION_5_MIN);
+
     }
 
     /**
@@ -150,47 +168,47 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        init(repositoryUri);
-        addFile(repositoryUri, "README.txt", "Hello World!".getBytes());
-        commit(repositoryUri, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(repositoryUri, getUsername(), getPassword());
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
 
-        createBranch(repositoryUri, fixBranchName);
-        checkout(repositoryUri, fixBranchName);
+        gitResource.createBranch(repositoryName, fixBranchName);
+        gitResource.checkout(repositoryName, fixBranchName);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(repositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(repositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(repositoryUri, getUsername(), getPassword(), fixBranchName);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
-        PullRequest pullRequest = openPullRequest(repositoryUri, pullRequestName, "Open PR description", fixBranchName, "master");
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", fixBranchName, "master");
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, GitHubTestResource.USER);
         account.refresh();
 
-        RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
-        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
 
-        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
-        issuePage.openPRTab();
-        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
 
-        Assert.assertEquals(activities.size(), 1);
-        IssuePagePullRequestTabActivityUpdate openedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(0);
+        assertPullRequestInfo(actualPullRequest, "OPEN", pullRequestName, pullRequest.getHtmlUrl());
 
-        // Assert PR information
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestState(), "OPENED");
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[0]);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[1]);
+        assertRestRef(actualPullRequest.getSource(), GitHubTestResource.USER, repositoryName, fixBranchName);
+        assertRestRef(actualPullRequest.getDestination(), GitHubTestResource.USER, repositoryName, "master");
+
+        Assert.assertEquals(actualPullRequest.getCommentCount(), 0);
+
+        Assert.assertEquals(actualPullRequest.getParticipants().size(), 1);
+        assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), PR_AUTHOR_USERNAME, PR_AUTHOR_NAME, PR_AUTHOR_EMAIL);
     }
 
     /**
@@ -203,23 +221,24 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        init(repositoryUri);
-        addFile(repositoryUri, "README.txt", "Hello World!".getBytes());
-        commit(repositoryUri, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(repositoryUri, getUsername(), getPassword());
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
 
-        createBranch(repositoryUri, fixBranchName);
-        checkout(repositoryUri, fixBranchName);
+        gitResource.createBranch(repositoryName, fixBranchName);
+        gitResource.checkout(repositoryName, fixBranchName);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(repositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(repositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(repositoryUri, getUsername(), getPassword(), fixBranchName);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
-        PullRequest pullRequest = openPullRequest(repositoryUri, pullRequestName, "Open PR description", fixBranchName, "master");
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", fixBranchName, "master");
 
         // wait until pull request will be established
         try
@@ -230,104 +249,24 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
             // nothing to do
         }
 
-        Comment comment = commentPullRequest(repositoryUri, pullRequest, "General Pull Request Comment");
+        gitHubResource
+                .commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment");
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, GitHubTestResource.USER);
         account.refresh();
 
-        RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
-        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
 
-        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
-        issuePage.openPRTab();
-        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
 
-        Assert.assertEquals(activities.size(), 2);
-        IssuePagePullRequestTabActivityComment commentedPullRequestActivity = (IssuePagePullRequestTabActivityComment) activities.get(1);
-
-        // Assert PR information
-        Assert.assertEquals(commentedPullRequestActivity.getPullRequestState(), "COMMENTED");
-        Assert.assertEquals(commentedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertEquals(commentedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
-        Assert.assertEquals(commentedPullRequestActivity.getComment(), comment.getBody());
-    }
-
-    /**
-     * Test that "Update Pull Request" is working.
-     */
-    @Test
-    public void testUpdateBranch()
-    {
-        String expectedPullRequestName = issueKey + ": Open PR";
-        String[] expectedCommitNodeUpdate = new String[2];
-        String[] expectedCommitNodeOpen = new String[2];
-
-        init(repositoryUri);
-        addFile(repositoryUri, "README.txt", "Hello World!".getBytes());
-        commit(repositoryUri, "Initial commit!", "Stanislav Dvorscak", "sdvorscak@atlassian.com");
-        push(repositoryUri, getUsername(), getPassword());
-
-        String fixBranchName = issueKey + "_fix";
-        createBranch(repositoryUri, fixBranchName);
-        checkout(repositoryUri, fixBranchName);
-
-        // Assert PR Opened information
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        expectedCommitNodeOpen[0] = commit(repositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        expectedCommitNodeOpen[1] = commit(repositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        push(repositoryUri, getUsername(), getPassword(), fixBranchName);
-
-        PullRequest expectedPullRequest = openPullRequest(repositoryUri, expectedPullRequestName, "Open PR description", fixBranchName,
-                "master");
-
-        // Assert PR Updated information
-        addFile(repositoryUri, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
-        expectedCommitNodeUpdate[0] = commit(repositoryUri, "Fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        addFile(repositoryUri, issueKey + "_fix_update.txt", "Virtual fix - update \n {\n}".getBytes());
-        expectedCommitNodeUpdate[1] = commit(repositoryUri, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        push(repositoryUri, getUsername(), getPassword(), fixBranchName);
-
-        // test of synchronization
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
-        account.refresh();
-
-        RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
-        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
-        repository.enable();
-        repository.synchronize();
-
-        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
-        issuePage.openPRTab();
-        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
-
-        Assert.assertEquals(activities.size(), 2);
-
-        // Opened PR
-        IssuePagePullRequestTabActivityUpdate openedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(0);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestState(), "OPENED");
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestName(), expectedPullRequestName);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestUrl(), expectedPullRequest.getHtmlUrl());
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), expectedCommitNodeOpen[0]);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), expectedCommitNodeOpen[1]);
-
-        // Updated PR
-        IssuePagePullRequestTabActivityUpdate updatedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(1);
-        Assert.assertEquals(updatedPullRequestActivity.getPullRequestState(), "UPDATED");
-        Assert.assertEquals(updatedPullRequestActivity.getPullRequestName(), expectedPullRequestName);
-        Assert.assertEquals(updatedPullRequestActivity.getPullRequestUrl(), expectedPullRequest.getHtmlUrl());
-        Assert.assertEquals(updatedPullRequestActivity.getPullRequestCommits().size(), 2);
-        assertCommitNode(updatedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), expectedCommitNodeUpdate[0]);
-        assertCommitNode(updatedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), expectedCommitNodeUpdate[1]);
+        assertPullRequestInfo(actualPullRequest, "OPEN", pullRequest.getTitle(), pullRequest.getHtmlUrl());
+        Assert.assertEquals(actualPullRequest.getCommentCount(), 1);
     }
 
     /**
@@ -340,23 +279,24 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        init(repositoryUri);
-        addFile(repositoryUri, "README.txt", "Hello World!".getBytes());
-        commit(repositoryUri, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(repositoryUri, getUsername(), getPassword());
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
 
-        createBranch(repositoryUri, fixBranchName);
-        checkout(repositoryUri, fixBranchName);
+        gitResource.createBranch(repositoryName, fixBranchName);
+        gitResource.checkout(repositoryName, fixBranchName);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(repositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(repositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(repositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(repositoryUri, getUsername(), getPassword(), fixBranchName);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
-        PullRequest pullRequest = openPullRequest(repositoryUri, pullRequestName, "Open PR description", fixBranchName, "master");
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", fixBranchName, "master");
 
         // gives such time for pull request creation
         try
@@ -367,38 +307,22 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
             // nothing to do
         }
 
-        closePullRequest(repositoryUri, pullRequest);
+        gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, GitHubTestResource.USER);
         account.refresh();
 
-        RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
-        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
 
-        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
-        issuePage.openPRTab();
-        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
 
-        Assert.assertEquals(activities.size(), 2);
-
-        // Assert PR opened activity information
-        IssuePagePullRequestTabActivityUpdate openedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(0);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestState(), "OPENED");
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[0]);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[1]);
-
-        // Assert PR declined activity information
-        IssuePagePullRequestTabActivityUpdate declinedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(1);
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestState(), "DECLINED");
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
-        Assert.assertEquals(declinedPullRequestActivity.getPullRequestCommits().size(), 0);
+        assertPullRequestInfo(actualPullRequest, "DECLINED", pullRequest.getTitle(), pullRequest.getHtmlUrl());
     }
 
     /**
@@ -407,24 +331,30 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
     @Test
     public void testFork()
     {
+        String forkRepositoryName = repositoryName + "_fork";
+
         String pullRequestName = issueKey + ": Open PR";
         String[] commitNodeOpen = new String[2];
 
-        init(repositoryUri);
-        addFile(repositoryUri, "README.txt", "Hello World!".getBytes());
-        commit(repositoryUri, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(repositoryUri, getUsername(), getPassword());
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
 
-        String forkedRepositoryUri = fork(repositoryUri);
-        clone(forkedRepositoryUri, getUsername(), getPassword());
+        gitHubResource.fork(GitHubTestResource.ORGANIZATION, GitHubTestResource.USER, repositoryName,
+                GitHubTestResource.Lifetime.DURING_TEST_METHOD, EXPIRATION_DURATION_5_MIN);
 
-        addFile(forkedRepositoryUri, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(forkedRepositoryUri, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addRepository(forkRepositoryName);
+        gitResource.clone(forkRepositoryName, gitHubResource.getRepository(GitHubTestResource.ORGANIZATION, repositoryName).getCloneUrl(),
+                GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
 
-        addFile(forkedRepositoryUri, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(forkedRepositoryUri, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.addFile(forkRepositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(forkRepositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(forkedRepositoryUri, getUsername(), getPassword(), "master");
+        gitResource.addFile(forkRepositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(forkRepositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.push(forkRepositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, "master");
 
         // seems that information for pull request are calculated asynchronously,
         // / it is not possible to create PR immediately after push
@@ -436,46 +366,42 @@ public class PullRequestGitHubDVCSTest extends AbstractGitHubDVCSTest
             // nothing to do
         }
 
-        PullRequest pullRequest = openPullRequest(repositoryUri, pullRequestName, "Open PR description", getOrganization() + ":master",
-                "master");
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", GitHubTestResource.ORGANIZATION + ":master", "master");
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, GitHubTestResource.USER);
         account.refresh();
 
-        RepositoryId repositoryId = RepositoryId.createFromId(repositoryUri);
-        AccountsPageAccountRepository repository = account.getRepository(repositoryId.getName());
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
 
-        IssuePage issuePage = getJiraTestedProduct().visit(IssuePage.class, issueKey);
-        issuePage.openPRTab();
-        List<IssuePagePullRequestTabActivity> activities = issuePage.getIssuePagePullRequestTab().getActivities();
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
 
-        Assert.assertEquals(activities.size(), 1);
-        IssuePagePullRequestTabActivityUpdate openedPullRequestActivity = (IssuePagePullRequestTabActivityUpdate) activities.get(0);
-
-        // Assert PR information
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestState(), "OPENED");
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestName(), pullRequestName);
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestUrl(), pullRequest.getHtmlUrl());
-        Assert.assertEquals(openedPullRequestActivity.getPullRequestCommits().size(), 2);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(0).getCommitNode(), commitNodeOpen[0]);
-        assertCommitNode(openedPullRequestActivity.getPullRequestCommits().get(1).getCommitNode(), commitNodeOpen[1]);
+        assertPullRequestInfo(actualPullRequest, "OPEN", pullRequest.getTitle(), pullRequest.getHtmlUrl());
     }
 
-    /**
-     * Assert commit node - expected node must start with actual node.
-     * 
-     * @param actual
-     *            node of commit
-     * @param expected
-     *            node of commit
-     */
-    private void assertCommitNode(String actual, String expected)
+    private void assertPullRequestInfo(RestPullRequest pullRequest, String state, String name, String htmlUrl)
     {
-        Assert.assertTrue(expected.startsWith(actual), "Expected that '" + expected + "' node, starts with '" + actual + "'");
+        Assert.assertEquals(pullRequest.getStatus(), state);
+        Assert.assertEquals(pullRequest.getTitle(), name);
+        Assert.assertEquals(pullRequest.getUrl(), htmlUrl);
+    }
+
+    private void assertRestRef(RestRef ref, String owner, String repositoryName, String branch)
+    {
+        Assert.assertEquals(ref.getRepository(), owner + "/" + repositoryName);
+        Assert.assertEquals(ref.getBranch(), branch);
+    }
+
+    private void assertRestUser(RestUser author, String userName, String name, String email)
+    {
+        Assert.assertEquals(author.getUsername(), PR_AUTHOR_USERNAME);
+        Assert.assertEquals(author.getName(), PR_AUTHOR_NAME);
     }
 
 }
-

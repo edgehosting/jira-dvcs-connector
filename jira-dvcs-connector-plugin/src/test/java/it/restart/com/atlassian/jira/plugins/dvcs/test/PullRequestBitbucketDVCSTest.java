@@ -136,7 +136,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -210,7 +210,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -279,7 +279,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -348,7 +348,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -420,7 +420,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -478,7 +478,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
 
@@ -549,7 +549,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             repository.fullSynchronize();
         }
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse();
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
@@ -567,12 +567,4 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
     }
 
-    private RestDevResponse<RestPrRepository> getPullRequestResponse()
-    {
-        AuthProvider basicAuthProvider = new BasicAuthAuthProvider(null,
-                JiraLoginPage.USER_ADMIN,
-                JiraLoginPage.PASSWORD_ADMIN);
-        PullRequestLocalRestpoint pullRequestLocalRest = new PullRequestLocalRestpoint(basicAuthProvider.provideRequestor());
-        return pullRequestLocalRest.getPullRequest(getJiraTestedProduct().getProductInstance().getBaseUrl(), issueKey);
-    }
 }

@@ -1,5 +1,21 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.openqa.selenium.WebDriver;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -13,19 +29,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.google.common.base.Function;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 /**
  * Abstract, common implementation for all Bitbucket tests
@@ -312,7 +315,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         return dvcs.getDefaultBranchName();
     }
-    
+
     /**
      * @param repositoryUri
      *            e.g.: owner/name

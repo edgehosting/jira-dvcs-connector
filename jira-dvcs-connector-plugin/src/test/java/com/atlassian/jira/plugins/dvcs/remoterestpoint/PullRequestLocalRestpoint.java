@@ -1,36 +1,43 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
+import javax.ws.rs.core.MediaType;
+
+import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
-import com.google.gson.reflect.TypeToken;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
 
 /**
  * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public class PullRequestLocalRestpoint
 {
-    private final RemoteRequestor requestor;
 
-    public PullRequestLocalRestpoint(RemoteRequestor requestor)
+    /**
+     * Hack for generic de-serialization.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    public static class RestDevResponseForPrRepository extends RestDevResponse<RestPrRepository>
     {
-        this.requestor = requestor;
     }
 
-    public RestDevResponse<RestPrRepository> getPullRequest(String baseUrl, String issueKey)
+    /**
+     * REST point for "/rest/bitbucket/1.0/jira-dev/pr-detail?issue=" + issueKey
+     * 
+     * @param issueKey
+     * @return RestDevResponse<RestPrRepository>
+     */
+    public RestDevResponse<RestPrRepository> getPullRequest(String issueKey)
     {
-        return requestor.get(baseUrl + "/rest/bitbucket/1.0/jira-dev/pr-detail?issue="+issueKey, null, new ResponseCallback<RestDevResponse<RestPrRepository>>()
-        {
-            @Override
-            public RestDevResponse<RestPrRepository> onResponse(final RemoteResponse response)
-            {
-                return ClientUtils.fromJson(response.getResponse(), new TypeToken<RestDevResponse<RestPrRepository>>()
-                {
-                }.getType());
-            }
-        });
+        RestUrlBuilder url = new RestUrlBuilder("/rest/bitbucket/1.0/jira-dev/pr-detail?issue=" + issueKey);
+        ClientConfig clientConfig = new DefaultClientConfig();
+        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        Client client = Client.create(clientConfig);
+        return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(RestDevResponseForPrRepository.class);
     }
 }
