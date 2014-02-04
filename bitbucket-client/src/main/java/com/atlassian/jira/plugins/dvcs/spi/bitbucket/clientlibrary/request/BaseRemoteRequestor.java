@@ -232,12 +232,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
 
+        HttpResponse httpResponse = null;
         try
         {
             createConnection(client, method, uri, params);
             setPayloadParams(method, params);
 
-            HttpResponse httpResponse = client.execute(method);
+            httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
@@ -256,7 +257,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            SystemUtils.releaseConnection(method);
+            SystemUtils.releaseConnection(method, httpResponse);
             if (apiProvider.isCloseIdleConnections())
             {
                 httpClientProvider.closeIdleConnections();
@@ -278,11 +279,12 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         RemoteResponse response = null;
 
+        HttpResponse httpResponse = null;
         try
         {
             createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
 
-            HttpResponse httpResponse = client.execute(method);
+            httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
@@ -299,7 +301,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
-            SystemUtils.releaseConnection(method);
+            SystemUtils.releaseConnection(method, httpResponse);
         }
     }
 

@@ -3,17 +3,15 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpParams;
 import org.apache.http.pool.ConnPoolControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -21,6 +19,8 @@ import org.apache.http.pool.ConnPoolControl;
 public class SystemUtils
 {
     private static final boolean IS_HTTP_CLIENT_GE_4_2;
+    
+    private static final Logger log = LoggerFactory.getLogger(SystemUtils.class);
     
     private static final int DEFAULT_MAX_TOTAL = Integer.getInteger("bitbucket.client.conmanager.maxtotal", 20);
     private static final int DEFAULT_MAX_PER_ROUTE = Integer.getInteger("bitbucket.client.conmanager.maxperroute", 15);
@@ -59,12 +59,6 @@ public class SystemUtils
     
     public static AbstractHttpClient createHttpClient()
     {
-        ClientConnectionManager connectionManager = getConnectionManager();
-        return new DefaultHttpClient(connectionManager, (HttpParams) null);
-    }
-    
-    private static ClientConnectionManager getConnectionManager()
-    {
         try
         {
             if (IS_HTTP_CLIENT_GE_4_2)
@@ -73,33 +67,22 @@ public class SystemUtils
                         "org.apache.http.impl.conn.PoolingClientConnectionManager").newInstance();
                 ((ConnPoolControl<?>) poolingManager).setMaxTotal(DEFAULT_MAX_TOTAL);
                 ((ConnPoolControl<?>) poolingManager).setDefaultMaxPerRoute(DEFAULT_MAX_PER_ROUTE);
-                return poolingManager;
+                return new DefaultHttpClient(poolingManager, (HttpParams) null);
             } else {
-                return (ClientConnectionManager) Class.forName("org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager").newInstance();
+                return new ThreadSafeHttpClient();
             }
         }
         catch (Exception e)
         {
-            return new ThreadSafeClientConnManager((HttpParams) null, createDefaultSchemeRegistry());
+            throw new IllegalStateException("Can not create http client.", e);
         }
     }
     
-    public static SchemeRegistry createDefaultSchemeRegistry() {
-        SchemeRegistry registry = new SchemeRegistry();
-        registry.register(
-                new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        registry.register(
-                new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        return registry;
-    }
-    
-    public static void releaseConnection(HttpRequestBase request)
+    public static void releaseConnection(HttpRequestBase request, HttpResponse response)
     {
         if (IS_HTTP_CLIENT_GE_4_2)
         {
             request.releaseConnection();
-        } else {
-            request.abort();
         }
     }
 }

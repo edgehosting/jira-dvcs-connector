@@ -12,7 +12,6 @@ import org.apache.http.entity.StringEntity;
 import org.scribe.exceptions.OAuthConnectionException;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 
 public class HttpClientOauthRequest extends OAuthRequest
 {
@@ -52,15 +51,9 @@ public class HttpClientOauthRequest extends OAuthRequest
         
         HttpResponse response = null;
 
-        try
-        {
-            response = client.execute(requestMethod);
-        } finally
-        {
-            SystemUtils.releaseConnection(requestMethod);
-        }
+        response = client.execute(requestMethod);
 
-        return new HttpClientOauthResponse(response);
+        return new HttpClientOauthResponse(response, requestMethod);
     }
     
     private void setHeaders(HttpRequestBase requestMethod)
