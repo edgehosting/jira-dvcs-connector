@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -101,4 +103,19 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     {
         return messageQueue.size() + running.size();
     }
+
+    @Override
+    public void cancel(final String tag)
+    {
+        messageQueue.clear();
+        running.clear();
+        messageTags.clear();
+    }
+
+    @Override
+    public void retry(final String tag, final int auditId)
+    {
+        // nop
+    }
+
 }
