@@ -200,9 +200,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public List<Repository> getRepositories(Organization organization)
+    public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories)
     {
-        return delegate.getRepositories(organization);
+        return delegate.getRepositories(organization, storedRepositories);
     }
     
     /**

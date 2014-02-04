@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
@@ -107,6 +108,9 @@ import static org.mockito.Mockito.when;
 
 public class DefaultSynchronizerTest
 {
+    @Mock
+    private EventPublisher eventPublisher;
+
     @Mock
     private Repository repositoryMock;
     @Mock

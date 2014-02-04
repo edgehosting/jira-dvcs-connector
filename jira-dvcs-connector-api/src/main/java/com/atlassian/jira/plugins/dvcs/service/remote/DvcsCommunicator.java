@@ -24,7 +24,7 @@ public interface DvcsCommunicator
 
 	AccountInfo getAccountInfo(String hostUrl, String accountName);
 
-	List<Repository> getRepositories(Organization organization);
+	List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories);
     
     List<Branch> getBranches(Repository repository);
 
