@@ -56,9 +56,10 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
+
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
@@ -341,20 +342,6 @@ public class GithubCommunicator implements DvcsCommunicator
             log.warn("Error encoding branch name: " + branch + e.getMessage());
         }
         return isoDecoded;
-    }
-
-    @Override
-    public Iterable<Changeset> getChangesets(final Repository repository)
-    {
-        return new Iterable<Changeset>()
-        {
-            @Override
-            public Iterator<Changeset> iterator()
-            {
-                List<Branch> branches = getBranches(repository);
-                return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
-            }
-        };
     }
 
     @Override

@@ -22,7 +22,7 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     @Override
     public List<Changeset> getChangesets(Repository repository)
     {
-        return ImmutableList.copyOf(changesetService.getChangesetsFromDvcs(repository));
+        return ImmutableList.copyOf(changesetService.getChangesets(repository));
     }
 
     @Override

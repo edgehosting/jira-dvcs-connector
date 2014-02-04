@@ -64,6 +64,8 @@ public interface ChangesetDao
      */
     List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
 
+    List<Changeset> getByRepository(int repositoryId);
+
     /**
      * Returns latest changesets. Used by activity stream.
      *

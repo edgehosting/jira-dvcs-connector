@@ -48,42 +48,31 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
     {
-        return transformer.transform(changesetMapping, defaultRepositoryId, null);
+        return transform(changesetMapping, defaultRepositoryId, null);
     }
 
-    private Changeset transform(ChangesetMapping changesetMapping)
+    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId, String dvcsType)
     {
-        return transformer.transform(changesetMapping, 0, null);
-    }
-
-    private Changeset transform(ChangesetMapping changesetMapping, String dvcsType)
-    {
-        return transformer.transform(changesetMapping, 0, dvcsType);
+        return transformer.transform(changesetMapping, defaultRepositoryId, dvcsType);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
-        List<Changeset> changesets = new ArrayList<Changeset>();
-
-        for (ChangesetMapping changesetMapping : changesetMappings)
-        {
-            Changeset changeset = transform(changesetMapping);
-            if (changeset != null)
-            {
-                changesets.add(changeset);
-            }
-        }
-
-        return changesets;
+        return transform(changesetMappings, 0, null);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
+    {
+        return transform(changesetMappings, 0, dvcsType);
+    }
+
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, int defaultRepositoryId, String dvcsType)
     {
         List<Changeset> changesets = new ArrayList<Changeset>();
 
         for (ChangesetMapping changesetMapping : changesetMappings)
         {
-            Changeset changeset = transform(changesetMapping, dvcsType);
+            Changeset changeset = transform(changesetMapping, defaultRepositoryId, dvcsType);
             if (changeset != null)
             {
                 changesets.add(changeset);
@@ -328,6 +317,28 @@ public class ChangesetDaoImpl implements ChangesetDao
         List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
 
         return transform(changesetMappings, dvcsType);
+    }
+
+    @Override
+    public List<Changeset> getByRepository(final int repositoryId)
+    {
+        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
+                        Query.select("ID, *")
+                                .alias(ChangesetMapping.class, "CHANGESET")
+                                .alias(RepositoryToChangesetMapping.class, "REPO")
+                                .join(RepositoryToChangesetMapping.class, "CHANGESET.ID = REPO." + RepositoryToChangesetMapping.CHANGESET_ID)
+                                .where("REPO.ID = ?", repositoryId));
+
+                return Arrays.asList(mappings);
+            }
+        });
+
+        return transform(changesetMappings);
     }
 
     private List<ChangesetMapping> getChangesetMappingsByIssueKey(Iterable<String> issueKeys, final boolean newestFirst)

@@ -117,7 +117,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
     }
 
-    // TODO This code is duplicated between here and BitbucketChangesetIterator
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();

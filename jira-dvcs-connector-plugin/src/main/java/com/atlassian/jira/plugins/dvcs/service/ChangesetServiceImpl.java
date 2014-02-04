@@ -85,10 +85,9 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     @Override
-    public Iterable<Changeset> getChangesetsFromDvcs(Repository repository)
+    public List<Changeset> getChangesets(Repository repository)
     {
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-        return communicator.getChangesets(repository);
+        return changesetDao.getByRepository(repository.getId());
     }
 
     @Override

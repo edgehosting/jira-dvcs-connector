@@ -89,21 +89,6 @@ public class ChangesetRemoteRestpoint
                 });
     }
 
-    public Iterable<BitbucketNewChangeset> getChangesets(final String owner, final String slug, final List<String> includeNodes,
-                                                         final List<String> excludeNodes, final Map<String,String> changesetBranch,
-                                                         final int changesetsLimit, final BitbucketChangesetPage currentPage)
-    {
-        final ChangesetRemoteRestpoint changesetRemoteRestpoint = this;
-        return new Iterable<BitbucketNewChangeset>()
-        {
-            @Override
-            public Iterator<BitbucketNewChangeset> iterator()
-            {
-                return new BitbucketChangesetIterator(changesetRemoteRestpoint, owner, slug, includeNodes, excludeNodes, changesetBranch, changesetsLimit, currentPage);
-            }
-        };
-    }
-
     public BitbucketChangesetPage getNextChangesetsPage(String orgName, String slug, List<String> includeNodes, List<String> excludeNodes, int changesetLimit, BitbucketChangesetPage currentPage)
     {
         if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
