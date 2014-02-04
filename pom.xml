@@ -39,9 +39,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2-m07</jira.compile.version>
-        <jira.version>6.2-m07</jira.version>
-        <jira.data.version>6.2-m07</jira.data.version>
+        <jira.compile.version>6.2-OD-08-034</jira.compile.version>
+        <jira.version>6.2-OD-08-034</jira.version>
+        <jira.data.version>6.2-OD-08-034</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
         <streams.version>5.3.14</streams.version>
@@ -190,8 +190,8 @@
         <profile>
             <id>jira62</id>
             <properties>
-                <jira.version>6.2-OD-6</jira.version>
-                <jira.data.version>6.2-OD-6</jira.data.version>
+                <jira.version>6.2-beta1</jira.version>
+                <jira.data.version>6.2-beta1</jira.data.version>
                 <testkit.version>6.0.41</testkit.version>
             </properties>
         </profile>
