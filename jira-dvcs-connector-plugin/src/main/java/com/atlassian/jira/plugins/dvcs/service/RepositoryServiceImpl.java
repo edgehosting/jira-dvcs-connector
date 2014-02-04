@@ -742,17 +742,4 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         return new UnknownUser(username, rawUser != null ? rawUser : username, repository.getOrgHostUrl());
     }
-    
-    public static void main(String[] args)
-    {
-        String url = "http://localhost:8080/jira/rest/bitbucket/1.0/repository/17/sync";
-        
-        Pattern pattern = Pattern.compile("(http\\://localhost\\:8080)/jira/rest/bitbucket/1.0/repository/([0-9]+)/sync");
-        
-        Matcher matcher = pattern.matcher(url);
-        matcher.matches();
-        System.err.println(matcher.group(1));
-        System.err.println(matcher.group(2));
-        
-    }
 }
