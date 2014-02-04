@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 
@@ -383,6 +385,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         } else
         {
             log.warn("Sync requested but repository with id {} does not exist anymore.", repositoryId);
+//            tryUninstallHook
         }
     }
 
@@ -553,7 +556,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**
@@ -738,5 +741,18 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private UnknownUser getUnknownUser(Repository repository, String username, String rawUser)
     {
         return new UnknownUser(username, rawUser != null ? rawUser : username, repository.getOrgHostUrl());
+    }
+    
+    public static void main(String[] args)
+    {
+        String url = "http://localhost:8080/jira/rest/bitbucket/1.0/repository/17/sync";
+        
+        Pattern pattern = Pattern.compile("(http\\://localhost\\:8080)/jira/rest/bitbucket/1.0/repository/([0-9]+)/sync");
+        
+        Matcher matcher = pattern.matcher(url);
+        matcher.matches();
+        System.err.println(matcher.group(1));
+        System.err.println(matcher.group(2));
+        
     }
 }
