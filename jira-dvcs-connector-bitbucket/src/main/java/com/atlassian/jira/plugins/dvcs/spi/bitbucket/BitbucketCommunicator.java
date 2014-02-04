@@ -133,7 +133,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public List<Repository> getRepositories(Organization organization)
+    public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories)
     {
         try
         {

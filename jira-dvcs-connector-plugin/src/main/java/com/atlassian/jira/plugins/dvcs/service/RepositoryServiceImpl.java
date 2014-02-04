@@ -161,11 +161,14 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // get repositories from the dvcs hosting server
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 
+        // get local repositories
+        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
+
         List<Repository> remoteRepositories;
 
         try
         {
-            remoteRepositories = communicator.getRepositories(organization);
+            remoteRepositories = communicator.getRepositories(organization, storedRepositories);
         } catch (SourceControlException.UnauthorisedException e)
         {
             // we could not load repositories, we can't continue
@@ -174,8 +177,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             throw e;
         }
 
-        // get local repositories
-        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
         // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
         removeDuplicateRepositories(organization, storedRepositories);
