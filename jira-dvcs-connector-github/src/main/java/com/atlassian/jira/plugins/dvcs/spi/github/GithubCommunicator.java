@@ -18,16 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import javax.annotation.Resource;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -48,24 +40,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.collect.Iterators;
-
-import javax.annotation.Resource;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -84,14 +85,14 @@ public class GithubCommunicator implements DvcsCommunicator
     @Resource
     private  ChangesetCache changesetCache;
 
-    /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
-     */
     @Resource
     private GitHubEventService gitHubEventService;
 
     @Resource
     private FeatureManager featureManager;
+
+    @Resource
+    private ApplicationProperties applicationProperties;
 
     protected final GithubClientProvider githubClientProvider;
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
@@ -326,11 +327,42 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
 	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
-        if (hooksForRepo.containsKey(postCommitUrl))
+        
+	    //Cleanup orphan this instance related hooks.
+	    boolean found = false;
+	    for (String url : hooksForRepo.keySet())
         {
-            return;
+	        if (!found && hooksForRepo.equals(url))
+	        {
+	            found = true;
+	            continue;
+	        }
+	        RepositoryHook hook = hooksForRepo.get(url);
+	        String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
+	        
+	        if ("web".equals(hook.getName()))
+	        {
+	            String hookUrl = hook.getConfig().get("url");
+	            if (hookUrl.startsWith(thisHostAndRest))
+	            {
+	                try
+                    {
+                        repositoryService.deleteHook(repositoryId, (int) hook.getId());
+                    }
+                    catch (IOException e)
+                    {
+                        throw new SourceControlException.PostCommitHookRegistrationException(
+                                "Could not operate postcommit hooks. Do you have administrator permissions?", e);
+                    }
+	            }
+	        }
         }
+	    if (found) 
+	    {
+	        return;
+	    }
 
+	    // create hook if needed
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);

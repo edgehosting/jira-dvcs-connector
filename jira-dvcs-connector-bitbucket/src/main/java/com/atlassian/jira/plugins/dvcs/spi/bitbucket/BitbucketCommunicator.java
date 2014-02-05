@@ -501,6 +501,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
     
+    /**
+     * Cleanup orphan this instance related hooks.
+     */
     private boolean cleanupAndGetExists(Repository repository, String postCommitUrl, BitbucketRemoteClient remoteClient, String type)
     {
         ServiceRemoteRestpoint servicesRest = remoteClient.getServicesRest();
