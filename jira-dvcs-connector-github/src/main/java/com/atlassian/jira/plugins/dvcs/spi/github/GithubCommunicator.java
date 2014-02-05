@@ -18,16 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import javax.annotation.Resource;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -48,24 +40,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.BranchedChangesetIterator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.google.common.collect.Iterators;
 
-import javax.annotation.Resource;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -131,7 +136,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public List<Repository> getRepositories(Organization organization)
+    public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories)
     {
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(organization);
         repositoryService.getClient().setOAuth2Token(organization.getCredential().getAccessToken());
@@ -157,29 +162,46 @@ public class GithubCommunicator implements DvcsCommunicator
             List<org.eclipse.egit.github.core.Repository> allRepositoriesFromAuthorizedUser = repositoryService
                     .getRepositories();
 
-            Iterator<org.eclipse.egit.github.core.Repository> iterator = Iterators.concat(
+            Iterator<org.eclipse.egit.github.core.Repository> iteratorAll = Iterators.concat(
                     repositoriesFromOrganization.iterator(), publicRepositoriesFromOrganization.iterator(),
                     allRepositoriesFromAuthorizedUser.iterator());
 
             Set<Repository> repositories = new HashSet<Repository>();
-            while (iterator.hasNext())
+            ImmutableMap<String, Repository> storedReposMap = Maps.uniqueIndex(storedRepositories, new Function<Repository, String>()
             {
-                org.eclipse.egit.github.core.Repository ghRepository = iterator.next();
+                @Override
+                public String apply(Repository r)
+                {
+                    return r.getSlug();
+                }
+            });
+
+            Set<String> processed = Sets.newHashSet();
+
+            while (iteratorAll.hasNext())
+            {
+                org.eclipse.egit.github.core.Repository ghRepository = iteratorAll.next();
                 if (StringUtils.equalsIgnoreCase(ghRepository.getOwner().getLogin(), organization.getName()))
                 {
-                    Repository repository = new Repository();
-                    repository.setSlug(ghRepository.getName());
-                    repository.setName(ghRepository.getName());
-                    repository.setFork(ghRepository.isFork());
-                    if (ghRepository.getParent() != null)
+                    String repoName = ghRepository.getName();
+                    if (processed.contains(repoName))
                     {
-                        org.eclipse.egit.github.core.Repository parentRepository = ghRepository.getParent();
-                        Repository forkOf = new Repository();
-                        forkOf.setSlug(parentRepository.getName());
-                        forkOf.setName(parentRepository.getName());
-                        forkOf.setRepositoryUrl(parentRepository.getHtmlUrl());
-                        forkOf.setOwner(parentRepository.getOwner().getLogin());
-                        repository.setForkOf(forkOf);
+                        continue;
+                    }
+                    
+                    processed.add(repoName);
+
+                    Repository repository = new Repository();
+                    repository.setSlug(repoName);
+                    repository.setName(repoName);
+                    repository.setFork(ghRepository.isFork());
+                    if (ghRepository.isFork() && ghRepository.getParent() != null)
+                    {
+                        setForkOfInfo(ghRepository.getParent(), repository);
+                    } 
+                    else if (ghRepository.isFork() && /*is new repo*/ !storedReposMap.containsKey(repoName))
+                    {
+                        tryFindAndSetForkOf(repositoryService, ghRepository, repository);
                     }
                     repositories.add(repository);
                 }
@@ -200,7 +222,24 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("Error retrieving list of repositories", e);
         }
     }
- 
+
+    private void tryFindAndSetForkOf(RepositoryService repositoryService, org.eclipse.egit.github.core.Repository ghRepository,
+            Repository repository) throws IOException
+    {
+        org.eclipse.egit.github.core.Repository repoDetail = repositoryService.getRepository(ghRepository.getOwner().getLogin(), ghRepository.getName());
+        setForkOfInfo(repoDetail.getParent(), repository);
+    }
+
+    private void setForkOfInfo(org.eclipse.egit.github.core.Repository parentRepository, Repository repositoryTo)
+    {
+        Repository forkOf = new Repository();
+        forkOf.setSlug(parentRepository.getName());
+        forkOf.setName(parentRepository.getName());
+        forkOf.setRepositoryUrl(parentRepository.getHtmlUrl());
+        forkOf.setOwner(parentRepository.getOwner().getLogin());
+        repositoryTo.setForkOf(forkOf);
+    }
+
     @Override
     public Changeset getChangeset(Repository repository, String node)
     {
@@ -303,20 +342,6 @@ public class GithubCommunicator implements DvcsCommunicator
             log.warn("Error encoding branch name: " + branch + e.getMessage());
         }
         return isoDecoded;
-    }
-
-    @Override
-    public Iterable<Changeset> getChangesets(final Repository repository)
-    {
-        return new Iterable<Changeset>()
-        {
-            @Override
-            public Iterator<Changeset> iterator()
-            {
-                List<Branch> branches = getBranches(repository);
-                return new BranchedChangesetIterator(changesetCache, GithubCommunicator.this, repository, branches);
-            }
-        };
     }
 
     @Override
