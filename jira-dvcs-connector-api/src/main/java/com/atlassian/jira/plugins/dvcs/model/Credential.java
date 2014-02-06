@@ -6,8 +6,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.atlassian.gzipfilter.org.apache.commons.lang.builder.EqualsBuilder;
 
+import java.io.Serializable;
+
 @XmlRootElement
-public class Credential
+public class Credential implements Serializable
 {
     @Deprecated
     private String adminUsername;

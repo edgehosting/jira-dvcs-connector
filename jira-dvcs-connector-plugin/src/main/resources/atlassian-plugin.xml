@@ -38,6 +38,7 @@
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
     <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
+    <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager" />
 
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>

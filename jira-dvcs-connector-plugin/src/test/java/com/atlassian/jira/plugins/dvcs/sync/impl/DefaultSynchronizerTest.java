@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import com.atlassian.cache.CacheManager;
+import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
@@ -220,6 +222,8 @@ public class DefaultSynchronizerTest
     @InjectMocks
     private DefaultSynchronizer defaultSynchronizer;
 
+    private final CacheManager cacheManager = new MemoryCacheManager();
+
     private static class BuilderAnswer implements Answer<Object>
     {
         @Override
@@ -357,8 +361,8 @@ public class DefaultSynchronizerTest
 
         when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
 
-        bitbucketCachingCommunicator = new CachingCommunicator();
-        githubCachingCommunicator = new CachingCommunicator();
+        bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
+        githubCachingCommunicator = new CachingCommunicator(cacheManager);
 
         bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, changesetCache);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
