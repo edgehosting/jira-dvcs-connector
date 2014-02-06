@@ -83,25 +83,23 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+    private final ApplicationProperties applicationProperties;
+    private final ChangesetCache changesetCache;
 
     @Resource
     private BranchService branchService;
-
-    @Resource
-    private ApplicationProperties applicationProperties;
-
     @Resource
     private MessagingService messagingService;
 
-    private final ChangesetCache changesetCache;
 
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
-            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ChangesetCache changesetCache)
+            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ChangesetCache changesetCache, ApplicationProperties ap)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
         this.changesetCache = changesetCache;
+        this.applicationProperties = ap;
     }
 
     /**

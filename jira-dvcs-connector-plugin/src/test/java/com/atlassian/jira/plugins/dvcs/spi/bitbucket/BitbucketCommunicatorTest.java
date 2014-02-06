@@ -4,6 +4,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -15,10 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import junit.framework.Assert;
 
 import org.mockito.Matchers;
@@ -33,25 +32,34 @@ import org.testng.annotations.Test;
 import org.testng.collections.Sets;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceField;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
@@ -65,41 +73,101 @@ public class BitbucketCommunicatorTest
     @Mock
     private Repository repositoryMock;
     @Mock
-    private BitbucketLinker bitbucketLinker;
+    private BitbucketLinker bitbucketLinkerMock;
     @Mock
-    private PluginAccessor pluginAccessor;
-
-    private BitbucketClientBuilder bitbucketClientBuilder;
-
+    private PluginAccessor pluginAccessorMock;
     @Mock
-    private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
-
+    private BitbucketClientBuilderFactory bitbucketClientBuilderFactoryMock;
     @Mock
     private ChangesetCache changesetCache;
-
-    private BranchService branchService;
-
     @Mock
-    private MessagingService messagingService;
-
-    private BranchDao branchDao;
+    private MessagingService messagingServiceMock;
     @Mock
-    private BitbucketRemoteClient bitbucketRemoteClient;
+    private BitbucketRemoteClient bitbucketRemoteClientMock;
     @Mock
-    private BranchesAndTagsRemoteRestpoint branchesAndTagsRemoteRestpoint;
+    private BranchesAndTagsRemoteRestpoint branchesAndTagsRemoteRestMock;
     @Mock
-    private BitbucketBranchesAndTags bitbucketBranchesAndTags;
+    private BitbucketBranchesAndTags bitbucketBranchesAndTagsMock;
     @Mock
     private ChangesetRemoteRestpoint changesetRestpoint;
     @Mock
-    private Plugin plugin;
+    private Plugin pluginMock;
     @Mock
-    private PluginInformation pluginInformation;
-
-    private DvcsCommunicator communicator;
-
+    private PluginInformation pluginInformationMock;
+    @Mock
+    private ServiceRemoteRestpoint servicesRestMock;
+    @Mock
+    private ApplicationProperties applicationPropertiesMock;
     @Mock
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    private DvcsCommunicator communicator;
+    private BranchDao branchDao;
+    private BranchService branchService;
+    private BitbucketClientBuilder bitbucketClientBuilderMock;
+
+    
+    @Test
+    public void testSetupPostHookShouldDeleteOrphan ()
+    {
+        when(repositoryMock.getOrgName()).thenReturn("owner");
+        when(repositoryMock.getSlug()).thenReturn("slug");
+        when(servicesRestMock.getAllServices("owner", "slug")).thenReturn(sampleServices());
+        when(bitbucketRemoteClientMock.getServicesRest()).thenReturn(servicesRestMock);
+        
+        when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
+        
+        String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
+        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        
+        verify(servicesRestMock, times(1)).addPOSTService("owner", "slug", hookUrl);
+        verify(servicesRestMock, times(1)).deleteService("owner", "slug", 111);
+        verify(servicesRestMock, times(1)).deleteService("owner", "slug", 101);
+    }
+    
+    @Test
+    public void testSetupPostHookAlreadySetUpShouldDeleteOrphan ()
+    {
+        when(repositoryMock.getOrgName()).thenReturn("owner");
+        when(repositoryMock.getSlug()).thenReturn("slug");
+        List<BitbucketServiceEnvelope> sampleServices = sampleServices();
+        sampleServices.add(sampleService("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1));
+        when(servicesRestMock.getAllServices("owner", "slug")).thenReturn(sampleServices);
+        when(bitbucketRemoteClientMock.getServicesRest()).thenReturn(servicesRestMock);
+        
+        when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
+        
+        String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
+        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        
+        verify(servicesRestMock, never()).addPOSTService("owner", "slug", hookUrl);
+        verify(servicesRestMock, times(1)).deleteService("owner", "slug", 111);
+        verify(servicesRestMock, times(1)).deleteService("owner", "slug", 101);
+    }
+
+    private List<BitbucketServiceEnvelope> sampleServices()
+    {
+        List<BitbucketServiceEnvelope> services = Lists.newArrayList();
+        services.add(sampleService("http://jira.example.com/rest/bitbucket/1.0/repository/55/sync", 111));
+        services.add(sampleService("http://jira.example.com/rest/bitbucket/1.0/repository/54/sync", 101));
+        return services;
+    }
+
+    private BitbucketServiceEnvelope sampleService(String url, int id)
+    {
+        BitbucketServiceEnvelope e1 = new BitbucketServiceEnvelope();
+        BitbucketService s1 = new BitbucketService();
+        s1.setType(ServiceRemoteRestpoint.SERVICE_TYPE_POST);
+        List<BitbucketServiceField> fields1 = Lists.newArrayList();
+        BitbucketServiceField field11 = new BitbucketServiceField();
+        field11.setName("URL");
+        field11.setValue(url);
+        fields1.add(field11);
+        s1.setFields(fields1);
+        e1.setService(s1);
+        e1.setId(id);
+        return e1;
+    }
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -214,26 +282,26 @@ public class BitbucketCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
-        when(pluginInformation.getVersion()).thenReturn("0");
-        when(plugin.getPluginInformation()).thenReturn(pluginInformation);
-        when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
+        when(pluginInformationMock.getVersion()).thenReturn("0");
+        when(pluginMock.getPluginInformation()).thenReturn(pluginInformationMock);
+        when(pluginAccessorMock.getPlugin(anyString())).thenReturn(pluginMock);
 
         branchDao = new BranchDaoMock();
         branchService = new BranchServiceImpl();
         ReflectionTestUtils.setField(branchService, "branchDao", branchDao);
         ReflectionTestUtils.setField(branchService, "dvcsCommunicatorProvider", dvcsCommunicatorProvider);
 
-        bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
+        bitbucketClientBuilderMock = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
-        when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
+        when(bitbucketClientBuilderFactoryMock.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilderMock);
 
-        communicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, changesetCache);
+        communicator = new BitbucketCommunicator(bitbucketLinkerMock, pluginAccessorMock, bitbucketClientBuilderFactoryMock, changesetCache, applicationPropertiesMock);
         ReflectionTestUtils.setField(communicator, "branchService", branchService);
-        ReflectionTestUtils.setField(communicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(communicator, "messagingService", messagingServiceMock);
 
-        when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
-        when(bitbucketRemoteClient.getChangesetsRest()).thenReturn(changesetRestpoint);
-        when(bitbucketRemoteClient.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestpoint);
+        when(bitbucketClientBuilderMock.build()).thenReturn(bitbucketRemoteClientMock);
+        when(bitbucketRemoteClientMock.getChangesetsRest()).thenReturn(changesetRestpoint);
+        when(bitbucketRemoteClientMock.getBranchesAndTagsRemoteRestpoint()).thenReturn(branchesAndTagsRemoteRestMock);
     }
 
     private class Graph
@@ -360,9 +428,9 @@ public class BitbucketCommunicatorTest
 
         public void mock()
         {
-            Mockito.reset(bitbucketBranchesAndTags, branchesAndTagsRemoteRestpoint, changesetRestpoint);
+            Mockito.reset(bitbucketBranchesAndTagsMock, branchesAndTagsRemoteRestMock, changesetRestpoint);
 
-            when(bitbucketBranchesAndTags.getBranches()).thenReturn(
+            when(bitbucketBranchesAndTagsMock.getBranches()).thenReturn(
                     Lists.transform(Lists.newArrayList(heads.keySet()), new Function<String, BitbucketBranch>()
                     {
                         @Override
@@ -371,7 +439,7 @@ public class BitbucketCommunicatorTest
                             return bitbucketBranch(input);
                         }
                     }));
-            when(branchesAndTagsRemoteRestpoint.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTags);
+            when(branchesAndTagsRemoteRestMock.getBranchesAndTags(anyString(), anyString())).thenReturn(bitbucketBranchesAndTagsMock);
 
 
             when(changesetRestpoint.getChangesets(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), Mockito.anyMapOf(String.class, String.class), Mockito.anyInt(), Mockito.<BitbucketChangesetPage>any())).then(new Answer<Iterable<BitbucketNewChangeset>>()

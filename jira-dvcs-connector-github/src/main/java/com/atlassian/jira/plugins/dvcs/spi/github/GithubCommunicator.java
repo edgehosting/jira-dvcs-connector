@@ -332,7 +332,7 @@ public class GithubCommunicator implements DvcsCommunicator
 	    boolean found = false;
 	    for (String url : hooksForRepo.keySet())
         {
-	        if (!found && hooksForRepo.equals(url))
+	        if (!found && url.equals(postCommitUrl))
 	        {
 	            found = true;
 	            continue;
