@@ -1,27 +1,33 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.ProtocolException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang.StringUtils;
@@ -40,37 +46,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.ProtocolException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Resource;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -84,26 +77,19 @@ public class GithubCommunicator implements DvcsCommunicator
     @Resource
     private  BranchService branchService;
 
-    @Resource
-    private  ChangesetCache changesetCache;
-
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
      */
     @Resource
     private GitHubEventService gitHubEventService;
 
-    @Resource
-    private FeatureManager featureManager;
-
     protected final GithubClientProvider githubClientProvider;
     private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     protected final OAuthStore oAuthStore;
 
-    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
+    public GithubCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
-        this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
     }
@@ -312,6 +298,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @SuppressWarnings("unused")
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
@@ -322,11 +309,11 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it
-     * and encode UTF-8 instead
+     * The git library encodes parameters using ISO-8859-1. Let's trick it and
+     * encode using UTF-8 instead.
      * 
-     * @param branch
-     * @return
+     * @param branch the branch name to encode as UTF-8
+     * @return the UTF-8 encoded branch name
      */
     private String doTheUtfEncoding(String branch)
     {
@@ -518,7 +505,7 @@ public class GithubCommunicator implements DvcsCommunicator
         return branches;
     }
 
-    private void deleteHookByHttpClient(Repository repository, RepositoryHook hook) throws HttpException, IOException
+    private void deleteHookByHttpClient(Repository repository, RepositoryHook hook) throws IOException
     {
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
         HttpClient httpClient = new HttpClient();
@@ -618,16 +605,11 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private String getRef(String slug, String branch)
     {
-        String ref = null;
         if (slug != null)
         {
-            ref = slug + ":" + branch;
-        } else
-        {
-            ref = branch;
+            return slug + ":" + branch;
         }
-
-        return ref;
+        return branch;
     }
 
     @Override
@@ -641,5 +623,4 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
-
 }

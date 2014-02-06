@@ -18,10 +18,10 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubEnterpriseCommunicator.class);
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    private GithubEnterpriseCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
+    private GithubEnterpriseCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
     {
-        super(changesetCache, oAuthStore, githubClientProvider);
+        super(oAuthStore, githubClientProvider);
     }
         
     @Override

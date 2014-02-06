@@ -61,37 +61,12 @@ public class GithubCommunicatorTest
     // tested object
     private DvcsCommunicator communicator;
 
-    private ChangesetCacheImpl changesetCache;
-
-    private class ChangesetCacheImpl implements ChangesetCache
-    {
-
-        private final List<String> cache = new ArrayList<String>();
-
-        @Override
-        public boolean isCached(int repositoryId, String changesetNode)
-        {
-            return cache.contains(changesetNode);
-        }
-
-        public void add(String node)
-        {
-            cache.add(node);
-        }
-
-        @Override
-        public boolean isEmpty(int repositoryId)
-        {
-            return cache.isEmpty();
-        }
-    }
-
 	@BeforeMethod
 	public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
 
-        communicator = new GithubCommunicator(changesetCache = new ChangesetCacheImpl(), mock(OAuthStore.class), githubClientProvider);
+        communicator = new GithubCommunicator(mock(OAuthStore.class), githubClientProvider);
         when(githubClientProvider.getRepositoryService(repositoryMock)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repositoryMock)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repositoryMock)).thenReturn(commitService);
