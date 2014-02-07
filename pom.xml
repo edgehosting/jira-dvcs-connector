@@ -48,6 +48,7 @@
         <greenhopper.version>6.2.5.1</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
+        <com.sun.jersey.client.version>1.18</com.sun.jersey.client.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -107,6 +108,22 @@
 			</plugin>
         </plugins>
     </build>
+    
+    <dependencyManagement>
+    	<dependencies>
+    		<dependency>
+    			<groupId>com.atlassian.jira</groupId>
+    			<artifactId>jira-api</artifactId>
+    			<version>${jira.version}</version>
+    			<exclusions>
+    				<exclusion>
+    					<groupId>org.codehaus.jackson</groupId>
+    					<artifactId>jackson-mapper-asl</artifactId>
+    				</exclusion>
+    			</exclusions>
+    		</dependency>
+    	</dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
