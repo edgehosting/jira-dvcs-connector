@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
@@ -17,6 +18,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheLoader;
+import com.atlassian.cache.CacheManager;
+import com.atlassian.util.concurrent.NotNull;
 import net.java.ao.DBParam;
 
 import org.apache.commons.lang.StringUtils;
@@ -54,11 +59,9 @@ import com.google.common.collect.Iterables;
  * A {@link MessagingService} implementation.
  *
  * @author Stanislav Dvorscak
- *
  */
 public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
-
     private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
     private static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
@@ -132,7 +135,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
      */
-    private final Map<String, MessageAddress<?>> idToMessageAddress = new ConcurrentHashMap<String, MessageAddress<?>>();
+    private final Cache<IdKey<?>, MessageAddress<?>> idToMessageAddress;
 
     /**
      * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
@@ -153,6 +156,13 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Contains all tags which are currently paused.
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
+
+    @SuppressWarnings("unchecked")
+    public MessagingServiceImpl(final CacheManager cacheManager)
+    {
+        idToMessageAddress = cacheManager.getCache(
+                getClass().getName() + ".idToMessageAddress", new MessageAddressLoader());
+    }
 
     /**
      * Initializes been.
@@ -593,33 +603,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public <P extends HasProgress> MessageAddress<P> get(final Class<P> payloadType, final String id)
     {
-        MessageAddress<P> result;
-
-        synchronized (idToMessageAddress)
-        {
-            result = (MessageAddress<P>) idToMessageAddress.get(id);
-            if (result == null)
-            {
-                idToMessageAddress.put(id, result = new MessageAddress<P>()
-                {
-
-                    @Override
-                    public String getId()
-                    {
-                        return id;
-                    }
-
-                    @Override
-                    public Class<P> getPayloadType()
-                    {
-                        return payloadType;
-                    }
-
-                });
-            }
-        }
-
-        return (MessageAddress<P>) result;
+        final IdKey<P> key = new IdKey<P>(id, payloadType);
+        return (MessageAddress<P>) idToMessageAddress.get(key);
     }
 
     /**
@@ -872,5 +857,43 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public void destroy() throws Exception
     {
         stop = true;
+    }
+
+    private static class IdKey<P extends HasProgress> implements Serializable
+    {
+        private final String id;
+        private final Class<P> payloadType;
+
+        private IdKey(final String id, final Class<P> payloadType) {
+            this.id = id;
+            this.payloadType = payloadType;
+        }
+    }
+
+    /**
+     * Loads the <code>idToMessageAddress</code> cache upon a miss.
+     *
+     * @param <P> the type of payload
+     */
+    private static class MessageAddressLoader<P extends HasProgress> implements CacheLoader<IdKey<P>, MessageAddress<P>>
+    {
+        @Override
+        public MessageAddress<P> load(@NotNull final IdKey<P> key)
+        {
+            return new MessageAddress<P>()
+            {
+                @Override
+                public String getId()
+                {
+                    return key.id;
+                }
+
+                @Override
+                public Class<P> getPayloadType()
+                {
+                    return key.payloadType;
+                }
+            };
+        }
     }
 }

@@ -1,13 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
@@ -15,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Resource;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.message.MessagingService} mock implementation.
@@ -29,6 +25,11 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     private final List<Message> running = new ArrayList<Message>();
     private final Multimap<Integer, String> messageTags = LinkedListMultimap.create();
     private int messageIdSequence = 1;
+
+    public MessagingServiceImplMock()
+    {
+        super(new MemoryCacheManager());
+    }
 
     @Override
     protected <P extends HasProgress> void createMessage(final Message<P> message, final MessageState state, final String... tags)
@@ -84,20 +85,13 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
         ok(null, message);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
+    @SuppressWarnings("unchecked")
     public <P extends HasProgress> Message<P> getNextMessageForConsuming(MessageConsumer<P> consumer, String address)
     {
-        Message<P> message = messageQueue.peek();
-
-        return message;
+        return messageQueue.peek();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getQueuedCount(String tag)
     {
@@ -117,5 +111,4 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     {
         // nop
     }
-
 }
