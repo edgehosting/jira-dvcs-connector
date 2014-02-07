@@ -35,12 +35,13 @@ public class ConcurrencyServiceImplTest
     }
 
     /**
-     * Test of {@link ConcurrencyService#synchronizedBlock(SynchronizedBlock, Object...)}. Whole test is based on pairs of workers, where
-     * the result of all workers is count of loops multiply by delta. One of them add something other from pair adds value which creates
-     * defined delta, both of them over shared instance.
+     * Test of {@link ConcurrencyService#synchronizedBlock(SynchronizedBlock, Object...)}.
+     * Whole test is based on pairs of workers, where the result of all workers is count
+     * of loops multiplied by delta. One of them add something other from pair adds value
+     * which creates defined delta, both of them over shared instance.
      */
     @Test
-    public void testSycnhronizedBlock()
+    public void testSynchronizedBlock()
     {
         class Worker implements Runnable
         {
