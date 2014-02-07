@@ -218,11 +218,6 @@ public class GithubCommunicatorTest
         assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
     }
 
-    
-
-    
-   
-
     @Test
     public void getFileDetailsShouldFetchCommitsFromGitHub() throws Exception
     {

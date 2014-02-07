@@ -51,24 +51,10 @@
 			<scope>provided</scope>
 		</dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>atlassian-jira-pageobjects</artifactId>
-            <version>${jira.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>2.5.6.SEC01</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>junit</artifactId>
-                    <groupId>junit</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.collections</groupId>
-                    <artifactId>google-collections</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 	</dependencies>
 </project>
