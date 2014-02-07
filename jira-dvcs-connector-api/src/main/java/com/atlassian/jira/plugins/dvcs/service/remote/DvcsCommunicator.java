@@ -26,7 +26,7 @@ public interface DvcsCommunicator
 
 	AccountInfo getAccountInfo(String hostUrl, String accountName);
 
-	List<Repository> getRepositories(Organization organization);
+	List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories);
     
     List<Branch> getBranches(Repository repository);
 
@@ -41,8 +41,6 @@ public interface DvcsCommunicator
      * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
      */
     List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
-
-	Iterable<Changeset> getChangesets(Repository repository);
 
 	void setupPostcommitHook(Repository repository, String postCommitUrl);
 

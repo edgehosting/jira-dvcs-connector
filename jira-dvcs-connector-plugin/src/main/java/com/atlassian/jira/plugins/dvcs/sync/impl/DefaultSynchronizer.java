@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
@@ -69,6 +71,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private FeatureManager featureManager;
 
+    @Resource
+    private EventPublisher eventPublisher;
+
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
      */
@@ -110,6 +115,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+            
+            fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
             int auditId = 0;
             try
@@ -171,6 +178,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
+    }
+
+    private void fireAnalyticsStart(boolean softSync, boolean changesetsSync, boolean pullRequestSync, boolean webhook)
+    {
+        eventPublisher.publish(new DvcsSyncStartAnalyticsEvent(softSync, changesetsSync, pullRequestSync, webhook));
     }
 
     private Progress startProgress(Repository repository, EnumSet<SynchronizationFlag> flags)

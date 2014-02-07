@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessageSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
