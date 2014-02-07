@@ -85,8 +85,12 @@ public class WorkLogHandler implements CommandHandler<Worklog>
         {
             worklogComment = comment.trim();
         }
+        else
+        {
+            worklogComment = "";
+        }
 
-        return Pair.nicePairOf(worklogDuration.trim(), worklogComment.trim());
+        return Pair.of(worklogDuration.trim(), worklogComment.trim());
     }
 
 }
