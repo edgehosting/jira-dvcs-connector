@@ -1,16 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
@@ -31,18 +22,23 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.base.Throwables;
-import com.google.common.collect.MapMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.EnumSet;
+import javax.annotation.Resource;
 
 /**
  * Synchronization service
  */
-public class DefaultSynchronizer implements Synchronizer, DisposableBean, InitializingBean
+public class DefaultSynchronizer implements Synchronizer
 {
-    private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
-    private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
+    private static final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+    private static final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
+    private static final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -74,19 +70,15 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private EventPublisher eventPublisher;
 
-    /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
-     */
     @Resource
     private GitHubEventService gitHubEventService;
 
+    // Cache of all synchronisation progresses, both running and finished
+    private final Cache<Integer, Progress> progressMap;
 
-    // map of ALL Synchronisation Progresses - running and finished ones
-    private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
-
-    public DefaultSynchronizer()
+    public DefaultSynchronizer(final CacheManager cacheManager)
     {
-        super();
+        this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
     }
 
     @Override
@@ -94,13 +86,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     {
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
-            log.info("The synchronization is disabled.");
+            LOG.info("The synchronization is disabled.");
             return;
         }
 
         if (repo.isLinked())
         {
-            Progress progress = null;
+            Progress progress;
 
             synchronized (this)
             {
@@ -155,7 +147,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
                 } catch (Exception e)
                 {
-                    log.warn("Could not resume failed messages.", e);
+                    LOG.warn("Could not resume failed messages.", e);
                 }
 
                 if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
@@ -169,7 +161,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)
             {
-                log.error(t.getMessage(), t);
+                LOG.error(t.getMessage(), t);
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
@@ -231,7 +223,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
         if (flags.contains(SynchronizationFlag.WEBHOOK_SYNC))
         {
-            log.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
+            LOG.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
 
             EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
             if (currentFlags == null)
@@ -259,7 +251,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         } else {
             messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
-
     }
 
     @Override
@@ -269,6 +260,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
+    @SuppressWarnings("deprecation")    // put is un-deprecated in a later version of atlassian-cache
     public void putProgress(Repository repository, Progress progress)
     {
         progressMap.put(repository.getId(), progress);
@@ -278,15 +270,5 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     public void removeProgress(Repository repository)
     {
         progressMap.remove(repository.getId());
-    }
-
-    @Override
-    public void destroy() throws Exception
-    {
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
     }
 }
