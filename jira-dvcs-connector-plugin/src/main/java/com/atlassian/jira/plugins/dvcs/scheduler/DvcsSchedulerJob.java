@@ -1,43 +1,50 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.sal.api.scheduling.PluginJob;
+import com.atlassian.scheduler.JobRunner;
+import com.atlassian.scheduler.JobRunnerRequest;
+import com.atlassian.scheduler.JobRunnerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class DvcsSchedulerJob implements PluginJob
+import java.util.LinkedList;
+import java.util.List;
+import javax.annotation.Nullable;
+
+import static com.atlassian.scheduler.JobRunnerResponse.success;
+
+@Component
+public class DvcsSchedulerJob implements JobRunner
 {
-    private static final Logger log = LoggerFactory.getLogger(DvcsSchedulerJob.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DvcsSchedulerJob.class);
 
-    @Override
-    public void execute(Map<String, Object> jobDataMap)
+    private final OrganizationService organizationService;
+    private final RepositoryService repositoryService;
+
+    public DvcsSchedulerJob(final OrganizationService organizationService, final RepositoryService repositoryService)
     {
-        log.debug("Running DvcsSchedulerJob ");
-
-        OrganizationService organizationService = (OrganizationService) jobDataMap.get("organizationService");
-        RepositoryService repositoryService = (RepositoryService) jobDataMap.get("repositoryService");
-        syncOrganizations(organizationService, repositoryService);
-        cleanOrphanRepositories(organizationService, repositoryService);
+        this.organizationService = organizationService;
+        this.repositoryService = repositoryService;
     }
 
-    /**
-     * Synchronizes all organizations.
-     * 
-     * @param organizationService
-     * @param repositoryService
-     */
-    private void syncOrganizations(OrganizationService organizationService, RepositoryService repositoryService)
+
+    @Nullable
+    @Override
+    public JobRunnerResponse runJob(final JobRunnerRequest jobRunnerRequest)
     {
-        List<Organization> organizations = organizationService.getAll(false);
-        for (Organization organization : organizations)
+        LOG.debug("Running DvcsSchedulerJob");
+        syncOrganizations();
+        cleanOrphanRepositories();
+        return success();
+    }
+
+    private void syncOrganizations()
+    {
+        for (final Organization organization : organizationService.getAll(false))
         {
             repositoryService.syncRepositoryList(organization);
         }
@@ -45,14 +52,11 @@ public class DvcsSchedulerJob implements PluginJob
 
     /**
      * Cleans orphan repositories - repositories mark as deleted with not existing organization.
-     * 
-     * @param organizationService
-     * @param repositoryService
      */
-    private void cleanOrphanRepositories(OrganizationService organizationService, RepositoryService repositoryService)
+    private void cleanOrphanRepositories()
     {
-        List<Repository> orphanRepositories = new LinkedList<Repository>();
-        for (Repository repository : repositoryService.getAllRepositories(true))
+        final List<Repository> orphanRepositories = new LinkedList<Repository>();
+        for (final Repository repository : repositoryService.getAllRepositories(true))
         {
             if (organizationService.get(repository.getOrganizationId(), false) == null)
             {
@@ -61,5 +65,4 @@ public class DvcsSchedulerJob implements PluginJob
         }
         repositoryService.removeOrphanRepositories(orphanRepositories);
     }
-
 }

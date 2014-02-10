@@ -1,72 +1,91 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Random;
-
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.scheduler.SchedulerRuntimeException;
+import com.atlassian.scheduler.SchedulerService;
+import com.atlassian.scheduler.SchedulerServiceException;
+import com.atlassian.scheduler.config.JobConfig;
+import com.atlassian.scheduler.config.JobId;
+import com.atlassian.scheduler.config.JobRunnerKey;
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.sal.api.lifecycle.LifecycleAware;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
-import com.google.common.collect.Maps;
+import java.util.Date;
+import java.util.Random;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
-public class DvcsScheduler implements LifecycleAware, DisposableBean
+import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
+import static com.atlassian.scheduler.config.Schedule.forInterval;
+
+public class DvcsScheduler
 {
+    @VisibleForTesting
+    static final String PROPERTY_KEY = "dvcs.connector.scheduler.interval";
+
+    @VisibleForTesting
+    static final JobRunnerKey JOB_RUNNER_KEY = JobRunnerKey.of(DvcsScheduler.class.getName());
+
+    @VisibleForTesting
+    static final JobId JOB_ID = JobId.of(DvcsScheduler.class.getName() + ":job");
+
     private static final Logger log = LoggerFactory.getLogger(DvcsScheduler.class);
-    private static final String JOB_NAME = DvcsScheduler.class.getName() + ":job";
+    private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job interval (1 hour)
 
-    private final PluginScheduler pluginScheduler; // provided by SAL
-
-    private static final String PROPERTY_KEY = "dvcs.connector.scheduler.interval";
-	private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job interval (1 hour)
-    private long interval = DEFAULT_INTERVAL;
-    private final OrganizationService organizationService;
-    private final RepositoryService repositoryService;
+    private final DvcsSchedulerJob dvcsSchedulerJobRunner;
     private final MessagingService messagingService;
+    private final SchedulerService schedulerService;
 
-    public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService, MessagingService messagingService)
+    public DvcsScheduler(final MessagingService messagingService, final SchedulerService schedulerService,
+            final DvcsSchedulerJob dvcsSchedulerJobRunner)
     {
-        this.pluginScheduler = pluginScheduler;
-        this.organizationService = organizationService;
-        this.repositoryService = repositoryService;
+        this.dvcsSchedulerJobRunner = dvcsSchedulerJobRunner;
         this.messagingService = messagingService;
+        this.schedulerService = schedulerService;
     }
 
-    @Override
+    @PostConstruct
     public void onStart()
     {
         log.debug("onStart");
-        this.interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
-        reschedule();
         messagingService.onStart();
+        schedulerService.registerJobRunner(JOB_RUNNER_KEY, dvcsSchedulerJobRunner);
+        reschedule();
     }
 
-    public void reschedule()
-    {
-        Map<String, Object> data = Maps.newHashMap();
-        data.put("organizationService", organizationService);
-        data.put("repositoryService", repositoryService);
-
-        long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
-        Date startTime = new Date(randomStartTimeWithinInterval);
-
-        log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
-        pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
-                DvcsSchedulerJob.class, // class of the job
-                data, // data that needs to be passed to the job
-                startTime, // the time the job is to start
-                interval); // interval between repeats, in milliseconds
-    }
-
-    @Override
+    @PreDestroy
     public void destroy() throws Exception
     {
-        pluginScheduler.unscheduleJob(JOB_NAME);
+        schedulerService.unregisterJobRunner(JOB_RUNNER_KEY);
         log.info("DvcsScheduler job unscheduled");
+    }
+
+    private void reschedule()
+    {
+        if (schedulerService.getJobDetails(JOB_ID) != null)
+        {
+            // Already scheduled
+            return;
+        }
+        final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
+        final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
+        final Date startTime = new Date(randomStartTimeWithinInterval);
+        try
+        {
+            schedulerService.scheduleJob(JOB_ID, getJobConfig(startTime, interval));
+            log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
+        }
+        catch (SchedulerServiceException e)
+        {
+            throw new SchedulerRuntimeException("Failed to schedule job", e);
+        }
+    }
+
+    private JobConfig getJobConfig(final Date firstRunTime, final long intervalInMillis)
+    {
+        return JobConfig.forJobRunnerKey(JOB_RUNNER_KEY)
+                .withRunMode(RUN_ONCE_PER_CLUSTER)
+                .withSchedule(forInterval(intervalInMillis, firstRunTime));
     }
 }
