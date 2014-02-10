@@ -1,12 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
@@ -14,10 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.util.concurrent.ThreadFactories;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
 {
@@ -107,14 +107,8 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
 	
     private boolean isLinkersEnabled()
     {
-        String setting = (String) pluginSettingsFactory.createGlobalSettings().get(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
-        if (StringUtils.isNotBlank(setting))
-        {
-            return BooleanUtils.toBoolean(setting);
-        } else
-        {
-            return true;
-        }
+        final String setting = (String) pluginSettingsFactory.createGlobalSettings().get(LINKERS_ENABLED_SETTINGS_PARAM);
+        return isBlank(setting) || BooleanUtils.toBoolean(setting);
     }
 
 	private abstract class BitbucketLinkingTask implements Runnable
