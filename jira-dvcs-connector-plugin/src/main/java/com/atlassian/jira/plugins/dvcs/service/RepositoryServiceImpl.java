@@ -1,25 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
@@ -33,37 +13,48 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.util.concurrent.ThreadFactories;
+import com.atlassian.scheduler.SchedulerRuntimeException;
+import com.atlassian.scheduler.SchedulerService;
+import com.atlassian.scheduler.SchedulerServiceException;
+import com.atlassian.scheduler.config.JobConfig;
+import com.atlassian.scheduler.config.Schedule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+
+import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.KEY;
+import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.REPOSITORIES_PARAMETER_KEY;
+import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
+import static com.atlassian.scheduler.config.Schedule.forInterval;
+import static java.util.Collections.singletonMap;
 
 /**
  * The Class RepositoryServiceImpl.
  */
-public class RepositoryServiceImpl implements RepositoryService, DisposableBean
+public class RepositoryServiceImpl implements RepositoryService
 {
-
-    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
-
-    /**
-     * Only single {@link #removeOrphanRepositories()} can running at same time.
-     */
-    private final Object removeOrphanRepositoriesLock = new Object();
-
-    /**
-     * @see #removeOrphanRepositoriesAsync(List)
-     */
-    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
-            0, 1, // no remaining threads and at most single thread
-            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
-            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
-
+    private static final Schedule RUN_NOW = forInterval(0, null);
 
     @Resource
     private DvcsCommunicatorProvider communicatorProvider;
@@ -90,25 +81,27 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Resource
-    private ChangesetCache changesetCache;
-
-    @Resource
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
     private GitHubEventService gitHubEventService;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
+    @Resource
+    private SchedulerService schedulerService;
+
+    @Resource
+    private RepositoryRemovalJobRunner repositoryRemovalJobRunner;
+
+    @PostConstruct
+    public void registerRepositoryRemovalJobRunner()
+    {
+        schedulerService.registerJobRunner(RepositoryRemovalJobRunner.KEY, repositoryRemovalJobRunner);
+    }
+
+    @PreDestroy
     public void destroy() throws Exception
     {
-        removeOrphanRepositoriesExecutor.shutdown();
-        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES))
-        {
-            log.error("Unable properly shutdown queued tasks.");
-        }
+        schedulerService.unregisterJobRunner(RepositoryRemovalJobRunner.KEY);
     }
 
     /**
@@ -204,17 +197,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Removes duplicated repositories.
+     * Removes any repositories with duplicate slugs.
      *
-     * @param organization
-     * @param storedRepositories
+     * @param organization the owning organisation
+     * @param storedRepositories the repositories from which to remove the duplicates
      */
-    private void removeDuplicateRepositories(Organization organization, List<Repository> storedRepositories)
+    private void removeDuplicateRepositories(final Organization organization, final List<Repository> storedRepositories)
     {
-        Set<String> existingRepositories = new HashSet<String>();
-        for (Repository repository : storedRepositories)
+        final Set<String> existingRepositories = new HashSet<String>();
+        for (final Repository repository : storedRepositories)
         {
-            String slug = repository.getSlug();
+            final String slug = repository.getSlug();
             if (existingRepositories.contains(slug))
             {
                 log.warn("Repository " + organization.getName() + "/" + slug + " is duplicated. Will be deleted.");
@@ -390,10 +383,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /**
      * synchronization of changesets in all repositories which are in given organization
      *
-     * @param organizationId
-     *            organizationId
-     * @param flags
-     * @param newRepoSlugs
+     * @param organizationId organizationId
+     * @param flags flags
+     * @param newRepoSlugs newRepoSlugs
      */
     private void syncAllInOrganization(int organizationId, EnumSet<SynchronizationFlag> flags, Set<String> newRepoSlugs)
     {
@@ -420,10 +412,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /**
      * Do sync.
      *
-     * @param repository
-     *            the repository
-     * @param softSync
-     *            the soft sync
+     * @param repository the repository
+     * @param flags the flags
      */
     private void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
@@ -628,38 +618,26 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         } catch (Exception e)
         {
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
-                            + repository.getRepositoryUrl(), e);
+                    + repository.getRepositoryUrl(), e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
+    public void removeOrphanRepositories(final List<Repository> orphanRepositories)
     {
-        removeOrphanRepositoriesExecutor.execute(new Runnable()
+        final Serializable repositories = new ArrayList<Repository>(orphanRepositories);
+        final JobConfig jobConfig = JobConfig.forJobRunnerKey(KEY)
+                .withParameters(singletonMap(REPOSITORIES_PARAMETER_KEY, repositories))
+                .withRunMode(RUN_ONCE_PER_CLUSTER)
+                .withSchedule(RUN_NOW);
+        try
         {
-            @Override
-            public void run()
-            {
-                removeOrphanRepositories(orphanRepositories);
-            }
-        });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void removeOrphanRepositories(List<Repository> orphanRepositories)
-    {
-        synchronized (removeOrphanRepositoriesLock)
+            // Using a generated ID to ensure that different jobs do not clobber each other
+            schedulerService.scheduleJobWithGeneratedId(jobConfig);
+        }
+        catch (SchedulerServiceException e)
         {
-            for (Repository repository : orphanRepositories)
-            {
-                remove(repository);
-            }
+            throw new SchedulerRuntimeException("Could not schedule removal of orphan repositories", e);
         }
     }
 
