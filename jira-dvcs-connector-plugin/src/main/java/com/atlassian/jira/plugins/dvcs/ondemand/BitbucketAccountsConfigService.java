@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -24,9 +22,7 @@ import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.atlassian.util.concurrent.ThreadFactories;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -54,17 +50,17 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
-    private final PluginScheduler pluginScheduler;
+    private final BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob;
     private final PluginController pluginController;
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
-            PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
+            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob, PluginController pluginController, PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
-        this.pluginScheduler = pluginScheduler;
+        this.bitbucketAccountsReloadJob = bitbucketAccountsReloadJob;
         this.pluginController = pluginController;
         this.pluginAccessor = pluginAccessor;
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
@@ -94,12 +90,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             return;
         }
 
-        Map<String, Object> data = Maps.newHashMap();
-        data.put("bitbucketAccountsConfigService", this);
-        data.put("pluginScheduler", pluginScheduler);
-
-        pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
-                TimeUnit.HOURS.toMillis(1));
+        bitbucketAccountsReloadJob.schedule();
     }
     
     /**
