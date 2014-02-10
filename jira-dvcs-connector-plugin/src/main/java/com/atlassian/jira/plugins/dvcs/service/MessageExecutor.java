@@ -64,6 +64,7 @@ public class MessageExecutor
      * Injected {@link MessageConsumer} dependencies.
      */
     @Resource
+    @SuppressWarnings ("MismatchedReadAndWriteOfArray")
     private MessageConsumer<?>[] consumers;
 
     /**
@@ -115,11 +116,11 @@ public class MessageExecutor
     }
 
     /**
-     * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
-     * be slept because of empty queues.
+     * Notifies that a message with the given address was added to the queues.
+     * It is necessary because of consumers' weak-up, which can be slept
+     * because of empty queues.
      *
-     * @param messageAddress
-     *            destination address of new message
+     * @param address destination address of new message
      */
     public void notify(String address)
     {
@@ -226,8 +227,8 @@ public class MessageExecutor
         /**
          * Constructor.
          *
-         * @param message
-         * @param consumer
+         * @param message the message
+         * @param consumer the consumer of the message
          */
         public MessageRunnable(Message<P> message, MessageConsumer<P> consumer)
         {
@@ -252,7 +253,7 @@ public class MessageExecutor
             Progress progress = null;
             try
             {
-                P payload = null;
+                P payload;
                 try
                 {
                     payload = messagingService.deserializePayload(message);
