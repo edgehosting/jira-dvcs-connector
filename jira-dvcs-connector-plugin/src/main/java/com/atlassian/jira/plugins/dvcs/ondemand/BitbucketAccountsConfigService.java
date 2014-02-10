@@ -172,13 +172,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         enableAppSwitcherLink(info.accountName);
 
         Organization userAddedAccount = getUserAddedAccount(info);
-        Organization newOrganization = null;
 
         if (userAddedAccount == null)
         {
             // create brand new
             log.info("Creating new integrated account.");
-            newOrganization = createNewOrganization(info);
+            final Organization newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
         } else
         {
@@ -286,7 +285,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     }
 
     /**
-     * @param configuration
+     * @param configuration the configuration to check
      * @return True if there is an integrated account
      */
     private boolean hasIntegratedAccount(AccountsConfig configuration)
@@ -345,7 +344,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         //
         // try to find configuration, otherwise assuming it is deletion of the integrated account
         //
-        Links links = null;
+        Links links;
         try
         {
             links = configuration.getSysadminApplicationLinks().get(0);
