@@ -146,12 +146,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
                     doNewAccount(configuration);
                 } else
                 {
-                    log.debug("No integrated account found in provided configration.");
+                    log.debug("No integrated account found in provided configuration.");
                 }
             } else
             {
                 // probably not ondemand instance
-                log.debug("No integrated account found and no configration is provided.");
+                log.debug("No integrated account found and no configuration is provided.");
             }
         } else
         { // integrated account found
