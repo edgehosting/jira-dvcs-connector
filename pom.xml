@@ -39,8 +39,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2-OD-08-034</jira.compile.version>
-        <jira.version>6.2-OD-08-034</jira.version>
+        <jira.compile.version>6.3-ClusteringEAP02</jira.compile.version>
+        <jira.version>6.3-ClusteringEAP02</jira.version>
         <jira.data.version>6.2-OD-08-034</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
