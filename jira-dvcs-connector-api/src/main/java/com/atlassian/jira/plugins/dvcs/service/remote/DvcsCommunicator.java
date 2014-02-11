@@ -20,7 +20,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
  */
 public interface DvcsCommunicator
 {
-    String POST_HOOK_SUFFIX = "/rest/bitbucket/1.0/repository/";
+    String POST_HOOK_SUFFIX = String.valueOf("/rest/bitbucket/1.0/repository/");
 
     String getDvcsType();
 
