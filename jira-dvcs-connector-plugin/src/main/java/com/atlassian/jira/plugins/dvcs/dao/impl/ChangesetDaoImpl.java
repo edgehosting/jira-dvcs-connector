@@ -92,17 +92,22 @@ public class ChangesetDaoImpl implements ChangesetDao
                 ActiveObjectsUtils.delete(activeObjects, RepositoryToChangesetMapping.class, query);
 
                 // delete association issues - changeset
-                query = Query.select().where(
-                        IssueToChangesetMapping.CHANGESET_ID + " not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                query = Query.select()
+                        .alias(IssueToChangesetMapping.class, "i2c")
+                        .alias(RepositoryToChangesetMapping.class, "r2c")
+                        .join(RepositoryToChangesetMapping.class,
+                                "i2c." + IssueToChangesetMapping.CHANGESET_ID + " = r2c." + RepositoryToChangesetMapping.CHANGESET_ID)
+                        .where("r2c.ID is null ");
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
 
                 // delete orphaned changesets
-                query = Query.select().where(
-                        "ID not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                query = Query.select()
+                        .alias(ChangesetMapping.class, "c")
+                        .alias(RepositoryToChangesetMapping.class, "r2c")
+                        .join(RepositoryToChangesetMapping.class, "c.ID = r2c." + RepositoryToChangesetMapping.CHANGESET_ID)
+                        .where("r2c.ID is null ");
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 
