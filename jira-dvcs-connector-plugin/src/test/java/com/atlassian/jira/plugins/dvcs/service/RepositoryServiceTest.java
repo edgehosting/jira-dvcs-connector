@@ -3,8 +3,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
@@ -199,7 +198,7 @@ public class RepositoryServiceTest
 		sampleOrganization.setAutolinkNewRepos(true);
 
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		Mockito.when(bitbucketCommunicator.getRepositories(sampleOrganization)).thenReturn(remoteRepos);
+		Mockito.when(bitbucketCommunicator.getRepositories(sampleOrganization, storedRepos)).thenReturn(remoteRepos);
 		Mockito.when(repositoryDao.getAllByOrganization(5, true)).thenReturn(storedRepos);
 		Mockito.when(repositoryDao.save(sampleRepository3)).thenReturn(sampleRepository3);
 		Mockito.when(repositoryDao.save(sampleRepository4)).thenReturn(sampleRepository4);

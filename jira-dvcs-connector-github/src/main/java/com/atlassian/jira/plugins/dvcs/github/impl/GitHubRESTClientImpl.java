@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.dvcs.github.impl;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.httpclient.HttpStatus;
+
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -32,7 +35,16 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
             return webResource.type(MediaType.APPLICATION_JSON_TYPE).post(GitHubRepositoryHook.class, hook);
         } catch (UniformInterfaceException e)
         {
-            throw new IllegalArgumentException("Could not add provided hook: " + e.getResponse().getEntity(String.class), e);
+            if (e.getResponse().getStatus() == HttpStatus.SC_UNPROCESSABLE_ENTITY)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException("Could not add request hook: "
+                        + e.getResponse().getEntity(String.class), e);
+            } else
+            {
+                // TODO: BBC-610 No i18n support in DVCS Connector
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
+            }
         }
     }
 
@@ -43,7 +55,13 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     public void deleteHook(Repository repository, GitHubRepositoryHook hook)
     {
         WebResource webResource = newWebResource(repository, "/hooks/" + hook.getId());
-        webResource.delete();
+        try
+        {
+            webResource.delete();
+        } catch (UniformInterfaceException e)
+        {
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
+        }
     }
 
     /**
@@ -53,8 +71,6 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     public GitHubRepositoryHook[] getHooks(Repository repository)
     {
         WebResource hooksWebResource = cachedWebResource(repository, "/hooks");
-        return hooksWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<GitHubRepositoryHook[]>()
-        {
-        });
+        return hooksWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubRepositoryHook[].class);
     }
 }

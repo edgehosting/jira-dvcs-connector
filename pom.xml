@@ -39,16 +39,18 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2-m07</jira.compile.version>
-        <jira.version>6.2-m07</jira.version>
-        <jira.data.version>6.2-m07</jira.data.version>
+        <jira.compile.version>6.2-OD-08-034</jira.compile.version>
+        <jira.version>6.2-OD-08-034</jira.version>
+        <jira.data.version>6.2-OD-08-034</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.2.5.1</greenhopper.version>
+        <greenhopper.version>6.3.7</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
-        <com.sun.jersey.client.version>1.18</com.sun.jersey.client.version>
+        <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
+        <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
+        <com.sun.xml.version>2.1.13</com.sun.xml.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -112,19 +114,25 @@
     <dependencyManagement>
     	<dependencies>
     		<dependency>
-    			<groupId>com.atlassian.jira</groupId>
-    			<artifactId>jira-api</artifactId>
-    			<version>${jira.version}</version>
-    			<exclusions>
-    				<exclusion>
-    					<groupId>org.codehaus.jackson</groupId>
-    					<artifactId>jackson-mapper-asl</artifactId>
-    				</exclusion>
-    			</exclusions>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-core-asl</artifactId>
+				<version>1.9.1</version>
+				<scope>provided</scope>
     		</dependency>
-    	</dependencies>
+    		<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-mapper-asl</artifactId>
+				<version>1.9.1</version>
+				<scope>provided</scope>
+    		</dependency>
+    	    <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>10.0.1</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -207,8 +215,8 @@
         <profile>
             <id>jira62</id>
             <properties>
-                <jira.version>6.2-OD-6</jira.version>
-                <jira.data.version>6.2-OD-6</jira.data.version>
+                <jira.version>6.2-beta1</jira.version>
+                <jira.data.version>6.2-beta1</jira.data.version>
                 <testkit.version>6.0.41</testkit.version>
             </properties>
         </profile>

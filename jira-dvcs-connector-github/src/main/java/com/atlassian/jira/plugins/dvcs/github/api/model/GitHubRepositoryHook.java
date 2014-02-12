@@ -17,7 +17,7 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
  * 
  */
 @XmlRootElement
-@XmlType(propOrder = { "id", "name", "events", "config" })
+@XmlType(propOrder = { "id", "name", "active", "events", "config" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GitHubRepositoryHook
 {
@@ -47,9 +47,14 @@ public class GitHubRepositoryHook
     private String name;
 
     /**
+     * 
+     */
+    private boolean active;
+
+    /**
      * @see #getEvents()
      */
-    private final List<String> events = new LinkedList<String>();
+    private List<String> events = new LinkedList<String>();
 
     /**
      * @see #getConfig()
@@ -78,6 +83,23 @@ public class GitHubRepositoryHook
     public void setId(Long id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return True if this hook is active (false if disabled/inactive).
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
+    /**
+     * @param active
+     *            {@link #isActive()}
+     */
+    public void setActive(boolean active)
+    {
+        this.active = active;
     }
 
     /**
@@ -111,11 +133,29 @@ public class GitHubRepositoryHook
     }
 
     /**
+     * @param events
+     *            {@link #getEvents()}
+     */
+    public void setEvents(List<String> events)
+    {
+        this.events = events;
+    }
+
+    /**
      * @return Config of hook.
      */
     public Map<String, String> getConfig()
     {
         return config;
+    }
+
+    /**
+     * @param config
+     *            {@link #getConfig()}
+     */
+    public void setConfig(Map<String, String> config)
+    {
+        this.config = config;
     }
 
 }

@@ -136,7 +136,7 @@ public class AbstractGitHubRESTClientImpl
             result.append(urlObject.getProtocol()).append("://").append(urlObject.getHost());
         }
 
-        result.append("/repos/").append(repository.getOwner()).append('/').append(repository.getSlug());
+        result.append("/repos/").append(repository.getOrgName()).append('/').append(repository.getSlug());
 
         return result.toString();
     }
@@ -169,11 +169,10 @@ public class AbstractGitHubRESTClientImpl
                 if (result == null)
                 {
                     webResourceByUri.put(uri, result = client.resource(uri));
+                    result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
                 }
             }
         }
-
-        result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
 
         return result;
     }

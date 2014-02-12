@@ -59,7 +59,7 @@ public class GitHubRESTClientImplTest
         this.repository = Mockito.mock(Repository.class);
         Mockito.when(repository.getId()).thenReturn(1);
         Mockito.when(repository.getOrgHostUrl()).thenReturn("https://github.com");
-        Mockito.when(repository.getOwner()).thenReturn("jirabitbucketconnector");
+        Mockito.when(repository.getOwner()).thenReturn("dvcsconnectortest");
         Mockito.when(repository.getSlug()).thenReturn("hooks");
 
         Credential credential = Mockito.mock(Credential.class);
