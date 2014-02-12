@@ -79,9 +79,9 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     }
 
     @Override
-    public <P extends HasProgress> void discard(final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message)
     {
-        ok(null, message);
+        ok(consumer, message);
     }
 
     /**

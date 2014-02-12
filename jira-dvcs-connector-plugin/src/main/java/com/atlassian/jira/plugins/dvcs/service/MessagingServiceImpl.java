@@ -542,22 +542,11 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     @Override
-    public <P extends HasProgress> void discard(final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message)
     {
-        MessageMapping messageMapping = messageDao.getById(message.getId());
-
-        if (messageMapping != null)
-        {
-            if (messageMapping.getQueuesItems() != null)
-            {
-                for (MessageQueueItemMapping queueItem : messageMapping.getQueuesItems())
-                {
-                    messageQueueItemDao.delete(queueItem);
-                }
-            }
-
-            messageDao.delete(messageMapping);
-        }
+        MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
+        queueItem.setState(MessageState.DISCARDED.name());
+        messageQueueItemDao.save(queueItem);
     }
 
     /**

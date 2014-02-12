@@ -109,10 +109,12 @@ public interface MessagingService
     /**
      * Discards message.
      *
+     * @param consumer
+     *            of message
      * @param message
      *            for discard
      */
-    <P extends HasProgress> void discard(Message<P> message);
+    <P extends HasProgress> void discard(final MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * @param address
