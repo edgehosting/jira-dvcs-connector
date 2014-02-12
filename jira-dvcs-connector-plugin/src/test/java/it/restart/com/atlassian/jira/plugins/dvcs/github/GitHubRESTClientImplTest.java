@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.github;
+package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -17,6 +17,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  * @author Stanislav Dvorscak
  * 
  */
+// TODO: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
+@Test(enabled = false)
 public class GitHubRESTClientImplTest
 {
 
@@ -81,7 +83,7 @@ public class GitHubRESTClientImplTest
     /**
      * Unit test of {@link GitHubRESTClient#addHook(Repository, GitHubRepositoryHook)}.
      */
-    @Test
+    @Test(enabled = false)
     public void testAddHook()
     {
         GitHubRepositoryHook hook = new GitHubRepositoryHook();
@@ -99,14 +101,14 @@ public class GitHubRESTClientImplTest
     /**
      * Unit test of {@link GitHubRESTClient#getHooks(Repository)}.
      */
-    @Test(dependsOnMethods = "testAddHook")
+    @Test(dependsOnMethods = "testAddHook", enabled = false)
     public void testGetHooks()
     {
         GitHubRepositoryHook[] hooks = testedObject.getHooks(repository);
         Assert.assertEquals(hooks.length, 1);
     }
 
-    @Test(dependsOnMethods = { "testAddHook", "testGetHooks" })
+    @Test(dependsOnMethods = { "testAddHook", "testGetHooks" }, enabled = false)
     public void testDeleteHook()
     {
         testedObject.deleteHook(repository, createdHook);
