@@ -22,6 +22,7 @@
         </bundle-instructions>
     </plugin-info>
 
+	<component-import key="cacheFactory" interface="com.atlassian.cache.CacheManager" />
     <component-import key="templateRenderer" interface="com.atlassian.templaterenderer.TemplateRenderer" />
     <component-import key="ao" name="Active Objects" interface="com.atlassian.activeobjects.external.ActiveObjects" />
     <component-import key="dataSourceProvider" name="Data Source Provider" interface="com.atlassian.activeobjects.spi.DataSourceProvider" />

@@ -10,11 +10,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -362,17 +360,6 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    private Map<String, GitHubRepositoryHook> getHooksForRepo(Repository repository)
-    {
-        GitHubRepositoryHook[] hooks = gitHubRESTClient.getHooks(repository);
-        Map<String, GitHubRepositoryHook> urlToHooks = new HashMap<String, GitHubRepositoryHook>();
-        for (GitHubRepositoryHook repositoryHook : hooks)
-        {
-            urlToHooks.put(repositoryHook.getConfig().get("url"), repositoryHook);
-        }
-        return urlToHooks;
-    }
-    
     /**
      * @param hooks
      *            current registered hooks
@@ -386,7 +373,8 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             // in old API (changesets) content type was undefined (default it was form)
             // in new API (pull requests) we use recommended json
-            if (hookUrl.equals(hook.getConfig().get("url")) && !"json".equals(hook.getConfig().get("content_type")))
+            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
+                    && !GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
             {
                 return true;
             }
@@ -407,7 +395,8 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             // in old API (changesets) content type was undefined (default it was form)
             // in new API (pull requests) we use recommended json
-            if (hookUrl.equals(hook.getConfig().get("url")) && "json".equals(hook.getConfig().get("content_type")))
+            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
+                    && GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
             {
                 return true;
             }
@@ -426,10 +415,10 @@ public class GithubCommunicator implements DvcsCommunicator
     private void createChangesetsHook(Repository repository, String hookUrl)
     {
         GitHubRepositoryHook hook = new GitHubRepositoryHook();
-        hook.setName("web");
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
         hook.setActive(true);
-        hook.getEvents().add("push");
-        hook.getConfig().put("url", hookUrl);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PUSH);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_URL, hookUrl);
         gitHubRESTClient.addHook(repository, hook);
     }
     
@@ -444,13 +433,14 @@ public class GithubCommunicator implements DvcsCommunicator
     private void createPullRequestsHook(Repository repository, String hookUrl)
     {
         GitHubRepositoryHook hook = new GitHubRepositoryHook();
-        hook.setName("web");
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
         hook.setActive(true);
-        hook.getEvents().add("pull_request");
-        hook.getEvents().add("pull_request_review_comment");
-        hook.getEvents().add("issue_comment");
-        hook.getConfig().put("url", hookUrl);
-        hook.getConfig().put("content_type", "json");
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PUSH);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PULL_REQUEST);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PULL_REQUEST_REVIEW_COMMENT);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_ISSUE_COMMENT);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_URL, hookUrl);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_CONTENT_TYPE, GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON);
         gitHubRESTClient.addHook(repository, hook);
     }
 
@@ -460,7 +450,7 @@ public class GithubCommunicator implements DvcsCommunicator
         final GitHubRepositoryHook[] hooks = gitHubRESTClient.getHooks(repository);
         for (GitHubRepositoryHook hook : hooks)
         {
-            if (postCommitUrl.equals(hook.getConfig().get("url")))
+            if (postCommitUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL)))
             {
                 gitHubRESTClient.deleteHook(repository, hook);
             }

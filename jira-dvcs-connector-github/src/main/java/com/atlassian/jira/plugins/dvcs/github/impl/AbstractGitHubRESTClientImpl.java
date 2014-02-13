@@ -1,17 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
-
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.eclipse.egit.github.core.client.IGitHubConstants;
+
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheFactory;
+import com.atlassian.cache.CacheLoader;
+import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
@@ -37,11 +46,91 @@ public class AbstractGitHubRESTClientImpl
     private final Client client;
 
     /**
-     * {@link WebResource}-s cache of created instances.
-     * 
-     * @see #cachedWebResource(Repository, String)
+     * Cache of created {@link WebResource}-s.
      */
-    private final ConcurrentMap<Integer, ConcurrentMap<String, WebResource>> webResourceByRepositoryAndUri = new ConcurrentHashMap<Integer, ConcurrentMap<String, WebResource>>();
+    private Cache<WebResourceCacheKey, WebResource> webResourceCache;
+
+    /**
+     * @see #setCacheFactory(CacheFactory)
+     */
+    @Resource
+    private CacheFactory cacheFactory;
+
+    /**
+     * @see #setRepositoryService(RepositoryService)
+     */
+    @Resource
+    private RepositoryService repositoryService;
+
+    /**
+     * Key of {@link AbstractGitHubRESTClientImpl#webResourceCache}.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    public static final class WebResourceCacheKey implements Serializable
+    {
+
+        /**
+         * Serial version id.
+         */
+        private static final long serialVersionUID = 1L;
+
+        private final int repositoryId;
+        private final String uri;
+
+        private final int hashCode;
+
+        public WebResourceCacheKey(Repository repository, String uri)
+        {
+            this.repositoryId = repository.getId();
+            this.uri = uri;
+
+            hashCode = new HashCodeBuilder().append(repositoryId).append(uri).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj instanceof WebResourceCacheKey)
+            {
+                WebResourceCacheKey key = (WebResourceCacheKey) obj;
+                EqualsBuilder equalsBuilder = new EqualsBuilder();
+                equalsBuilder.append(repositoryId, key.repositoryId);
+                equalsBuilder.append(uri, key.uri);
+                return equalsBuilder.isEquals();
+            } else
+            {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+    }
+
+    /**
+     * Cache value loader for {@link AbstractGitHubRESTClientImpl#webResourceCache}.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    private final class WebResourceCacheLoader implements CacheLoader<WebResourceCacheKey, WebResource>
+    {
+
+        @Override
+        public WebResource load(WebResourceCacheKey key)
+        {
+            Repository repository = repositoryService.get(key.repositoryId);
+            WebResource result = client.resource(key.uri);
+            result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
+            return result;
+        }
+    }
 
     /**
      * Adds access token to each request.
@@ -75,22 +164,9 @@ public class AbstractGitHubRESTClientImpl
         public ClientResponse handle(ClientRequest cr) throws ClientHandlerException
         {
             URI uri = cr.getURI();
-            StringBuilder query = new StringBuilder(uri.getQuery() != null ? uri.getQuery() : "");
-            if (!StringUtils.isBlank(uri.getQuery()))
-            {
-                query.append('&');
-            }
-            query.append("access_token=").append(accessToken);
-
-            try
-            {
-                cr.setURI(new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), query.toString(), uri
-                        .getFragment()));
-            } catch (URISyntaxException e)
-            {
-                throw new ClientHandlerException(e);
-            }
-
+            UriBuilder uriBuilder = UriBuilder.fromUri(uri);
+            uriBuilder.queryParam("access_token", "{arg1}");
+            cr.setURI(uriBuilder.build(accessToken));
             return getNext().handle(cr);
         }
     }
@@ -103,6 +179,35 @@ public class AbstractGitHubRESTClientImpl
         ClientConfig clientConfig = new DefaultClientConfig();
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         client = Client.create(clientConfig);
+
+    }
+
+    /**
+     * Initializes this bean.
+     */
+    @PostConstruct
+    public void init()
+    {
+        webResourceCache = cacheFactory.getCache(AbstractGitHubRESTClientImpl.class.getSimpleName() + ".webResourceCache",
+                new WebResourceCacheLoader(), new CacheSettingsBuilder().local().expireAfterAccess(2, TimeUnit.HOURS).build());
+    }
+
+    /**
+     * @param cacheFactory
+     *            injected {@link CacheFactory} dependency.
+     */
+    public void setCacheFactory(CacheFactory cacheFactory)
+    {
+        this.cacheFactory = cacheFactory;
+    }
+
+    /**
+     * @param repositoryService
+     *            injected {@link RepositoryService} dependency
+     */
+    public void setRepositoryService(RepositoryService repositoryService)
+    {
+        this.repositoryService = repositoryService;
     }
 
     /**
@@ -114,31 +219,39 @@ public class AbstractGitHubRESTClientImpl
      */
     private String getRepositoryAPIUrl(Repository repository)
     {
-        URL urlObject;
+        URL url;
+
         try
         {
-            urlObject = new URL(repository.getOrgHostUrl());
+            url = new URL(repository.getOrgHostUrl());
         } catch (MalformedURLException e)
         {
             throw new RuntimeException(e);
         }
 
-        String host = urlObject.getHost();
-
-        StringBuilder result = new StringBuilder();
-
-        // corrects default GitHub URL and GIST url to default github host
-        if ("github.com".equals(host) || HOST_GISTS.equals("gist.github.com"))
+        UriBuilder result;
+        try
         {
-            result.append("https://api.github.com");
-        } else
+            result = UriBuilder.fromUri(url.toURI());
+        } catch (IllegalArgumentException e)
         {
-            result.append(urlObject.getProtocol()).append("://").append(urlObject.getHost());
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e)
+        {
+            throw new RuntimeException(e);
         }
 
-        result.append("/repos/").append(repository.getOrgName()).append('/').append(repository.getSlug());
+        String host = url.getHost();
 
-        return result.toString();
+        // corrects default GitHub URL and GIST url to default github host
+        if (IGitHubConstants.HOST_DEFAULT.equals(host) || IGitHubConstants.HOST_GISTS.equals(host))
+        {
+            result.host(IGitHubConstants.HOST_API);
+        }
+
+        result.path("repos").path(repository.getOrgName()).path(repository.getSlug());
+
+        return result.build().toString();
     }
 
     /**
@@ -150,31 +263,8 @@ public class AbstractGitHubRESTClientImpl
      */
     protected WebResource cachedWebResource(Repository repository, String uri)
     {
-        // adds repository url to uri
         uri = getRepositoryAPIUrl(repository) + uri;
-
-        ConcurrentMap<String, WebResource> webResourceByUri = webResourceByRepositoryAndUri.get(repository.getId());
-        if (webResourceByUri == null)
-        {
-            webResourceByRepositoryAndUri.putIfAbsent(repository.getId(), new ConcurrentHashMap<String, WebResource>());
-            webResourceByUri = webResourceByRepositoryAndUri.get(repository.getId());
-        }
-
-        WebResource result = webResourceByUri.get(uri);
-        if (result == null)
-        {
-            synchronized (webResourceByUri)
-            {
-                result = webResourceByUri.get(uri);
-                if (result == null)
-                {
-                    webResourceByUri.put(uri, result = client.resource(uri));
-                    result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
-                }
-            }
-        }
-
-        return result;
+        return webResourceCache.get(new WebResourceCacheKey(repository, uri));
     }
 
     /**

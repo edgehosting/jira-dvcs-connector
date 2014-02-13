@@ -21,20 +21,47 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GitHubRepositoryHook
 {
+    
+    /**
+     * @see #getConfig()
+     */
+    public static final String CONFIG_URL = "url";
+    
+    /**
+     * @see #getConfig()
+     */
+    public static final String CONFIG_CONTENT_TYPE = "content_type";
+
+    /**
+     * @see #getConfig()
+     */
+    public static final String CONFIG_CONTENT_TYPE_JSON = "json";
+    
+    /**
+     * @see #getEvents()
+     */
+    public static final String EVENT_PUSH = "push";
+    
+    /**
+     * @see #getEvents()
+     */
+    public static final String EVENT_PULL_REQUEST = "pull_request";
+
+    /**
+     * @see #getEvents()
+     */
+    public static final String EVENT_PULL_REQUEST_REVIEW_COMMENT = "pull_request_review_comment";
+    /**
+     * @see #getEvents()
+     */
+    public static final String EVENT_ISSUE_COMMENT = "issue_comment";
 
     /**
      * Name of "web" type hook.
      * 
      * @see #getName()
      */
-    public static final String HOOK_NAME_WEB = "web";
-
-    /**
-     * Name of "push" event.
-     * 
-     * @see #getEvents()
-     */
-    public static final String EVENT_PUSH = "push";
+    public static final String NAME_WEB = "web";
 
     /**
      * @see #getId()
