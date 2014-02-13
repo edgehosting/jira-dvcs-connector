@@ -574,7 +574,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
     @Override
     public void prepareForRemove(Repository repository)
