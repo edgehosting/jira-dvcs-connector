@@ -396,7 +396,7 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public Boolean doInTransaction()
             {
-                Query query = Query.select().where(ActiveObjectsUtils.renderListStringsOperator(OrganizationMapping.DVCS_TYPE,"IN", "OR", Arrays.asList(types)).toString());
+                Query query = Query.select().where(ActiveObjectsUtils.renderListOperator(OrganizationMapping.DVCS_TYPE,"IN", "OR", Arrays.asList(types)).toString(), (Object []) types);
 
                 return activeObjects.count(OrganizationMapping.class, query) > 0;
             }

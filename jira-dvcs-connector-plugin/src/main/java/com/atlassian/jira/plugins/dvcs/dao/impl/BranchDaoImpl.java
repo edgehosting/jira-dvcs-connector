@@ -1,5 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
@@ -12,15 +22,9 @@ import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ObjectArrays;
 
 public class BranchDaoImpl implements BranchDao
 {
@@ -203,7 +207,8 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
     {
-        final String baseWhereClause = ActiveObjectsUtils.renderListStringsOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
@@ -217,7 +222,7 @@ public class BranchDaoImpl implements BranchDao
                                 .alias(RepositoryMapping.class, "repo")
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
-                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, Boolean.FALSE, Boolean.TRUE));
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params));
 
                 return Arrays.asList(mappings);
             }
@@ -236,7 +241,8 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys, final String dvcsType)
     {
-        final String baseWhereClause = ActiveObjectsUtils.renderListStringsOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final Object [] params = ObjectArrays.concat(new Object[]{dvcsType, Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
@@ -252,7 +258,8 @@ public class BranchDaoImpl implements BranchDao
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
                                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
-                                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, dvcsType, Boolean.FALSE, Boolean.TRUE));
+                                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause,
+                                        params));
 
                 return Arrays.asList(mappings);
             }

@@ -20,6 +20,7 @@ public class ActiveObjectsUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
     private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500);
+    private static final int SQL_IN_CLAUSE_MAX = Integer.getInteger("dvcs.connector.sql.in.max", 1000);
     // Because of an issue in ActiveObjects (AO-453, AO-455) we can't use deleteWithSQL in PostgresSQL
     private static final boolean DELETE_WITH_SQL = false; //SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
 
@@ -46,10 +47,10 @@ public class ActiveObjectsUtils
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, ids.size() - deleted);
             if (DELETE_WITH_SQL)
             {
-                activeObjects.deleteWithSQL(entityType, renderListNumbersOperator("ID", "IN", "OR", window).toString());
+                activeObjects.deleteWithSQL(entityType, renderListOperator("ID", "IN", "OR", window).toString(), window.toArray());
             } else
             {
-                activeObjects.delete(activeObjects.find(entityType, renderListNumbersOperator("ID", "IN", "OR", window).toString()));
+                activeObjects.delete(activeObjects.find(entityType, renderListOperator("ID", "IN", "OR", window).toString(), window.toArray()));
             }
             deleted += window.size();
         }
@@ -67,22 +68,12 @@ public class ActiveObjectsUtils
         return s;
     }
 
-    public static StringBuilder renderListStringsOperator(final String column, final String operator, final String joinWithOperator, final Iterable<String> values)
-    {
-        return renderListOperator(column, operator, joinWithOperator, values);
-    }
-
-    public static StringBuilder renderListNumbersOperator(final String column, final String operator, final String joinWithOperator, final Iterable<? extends Number> values)
-    {
-        return renderListOperator(column, operator, joinWithOperator, values);
-    }
-
-    @SuppressWarnings("all")
-    private static StringBuilder renderListOperator(final String column, final String operator, final String joinWithOperator, final Iterable values)
+    public static <T> StringBuilder renderListOperator(final String column, final String operator, final String joinWithOperator,
+            final Iterable<T> values)
     {
         final StringBuilder builder = new StringBuilder(column);
         builder.append(" ").append(operator).append(" (");
-        final Iterator<Object> valuesIterator = values.iterator();
+        final Iterator<?> valuesIterator = values.iterator();
         int valuesInQuery = 0;
         boolean overThousandValues = false;
         while(valuesIterator.hasNext())
@@ -94,9 +85,13 @@ public class ActiveObjectsUtils
                 {
                     builder.append(", ");
                 }
-                addValue(builder, value);
+
+                //addValue(builder, value);
+                
+                builder.append("?");
+                
                 ++valuesInQuery;
-                if (valuesInQuery >= 1000)
+                if (valuesInQuery >= SQL_IN_CLAUSE_MAX)
                 {
                     overThousandValues = true;
                     valuesInQuery = 0;
@@ -107,8 +102,9 @@ public class ActiveObjectsUtils
         builder.append(")");
         return overThousandValues ? builder.insert(0, "(").append(")") : builder;
     }
+    
 
-    protected static StringBuilder addValue(final StringBuilder builder, final Object value)
+/*    protected static StringBuilder addValue(final StringBuilder builder, final Object value)
     {
         if (value instanceof String)
         {
@@ -117,5 +113,5 @@ public class ActiveObjectsUtils
         {
             return builder.append(value);
         }
-    }
+    }*/
 }

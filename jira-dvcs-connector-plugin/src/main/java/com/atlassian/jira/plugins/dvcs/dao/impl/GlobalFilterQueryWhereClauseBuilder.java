@@ -1,13 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-
-import java.util.Iterator;
 
 /**
  *
@@ -99,11 +95,11 @@ public class GlobalFilterQueryWhereClauseBuilder
 
     private StringBuilder renderSqlNotIn(final String column, final Iterable<String> values)
     {
-        return ActiveObjectsUtils.renderListStringsOperator(column, "NOT IN", "AND", values);
+        return ActiveObjectsUtils.renderListOperator(column, "NOT IN", "AND", values);
     }
 
     private StringBuilder renderSqlIn(final String column, final Iterable<String> values)
     {
-        return ActiveObjectsUtils.renderListStringsOperator(column, "IN", "OR", values);
+        return ActiveObjectsUtils.renderListOperator(column, "IN", "OR", values);
     }
 }
