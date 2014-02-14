@@ -108,7 +108,6 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping</entity>
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping</entity>
-        <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping</entity>
