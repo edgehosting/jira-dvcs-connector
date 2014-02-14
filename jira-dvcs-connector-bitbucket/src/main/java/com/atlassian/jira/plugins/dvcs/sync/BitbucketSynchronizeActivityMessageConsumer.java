@@ -364,9 +364,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                         break;
                     }
                 }
-            } catch(BitbucketRequestException e)
+            } catch(BitbucketRequestException.NotFound_404 e)
             {
-                LOGGER.warn("Could not get commits for pull request", e);
+                LOGGER.warn("There are no commits for pull request", e);
             }
             finally
             {
