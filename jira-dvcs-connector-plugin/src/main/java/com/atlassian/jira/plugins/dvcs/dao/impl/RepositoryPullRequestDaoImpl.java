@@ -4,9 +4,9 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
@@ -22,7 +22,6 @@ import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -289,7 +288,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class,
                 RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
