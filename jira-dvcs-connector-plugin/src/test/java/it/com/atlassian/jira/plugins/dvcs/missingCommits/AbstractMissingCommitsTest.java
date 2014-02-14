@@ -33,8 +33,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
     static final String DVCS_REPO_OWNER = "dvcsconnectortest";
     static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
-    private static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
-    private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 5 * 60 * 1000;
+    protected static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
+    private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
     protected OAuth oAuth;
@@ -44,6 +44,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     @BeforeMethod
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
+        removeOldDvcsRepository();
         jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
         removeJiraProject();
 
@@ -64,6 +65,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         removeRemoteDvcsRepository();
     }
 
+    abstract void removeOldDvcsRepository();
     abstract void removeRemoteDvcsRepository();
     abstract void createRemoteDvcsRepository();
 

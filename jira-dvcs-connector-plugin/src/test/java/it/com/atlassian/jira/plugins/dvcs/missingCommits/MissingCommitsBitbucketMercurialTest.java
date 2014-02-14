@@ -42,6 +42,16 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     }
 
     @Override
+    void removeOldDvcsRepository()
+    {
+        try
+        {
+            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        }
+        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+    }
+
+    @Override
     void removeRemoteDvcsRepository()
     {
         removeRepository(getMissingCommitsRepositoryName());

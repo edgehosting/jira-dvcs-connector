@@ -44,6 +44,12 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     }
 
     @Override
+    void removeOldDvcsRepository()
+    {
+        githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+    }
+
+    @Override
     void removeRemoteDvcsRepository()
     {
         githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
