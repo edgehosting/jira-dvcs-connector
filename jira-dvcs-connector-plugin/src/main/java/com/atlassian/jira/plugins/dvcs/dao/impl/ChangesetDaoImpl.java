@@ -8,12 +8,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
@@ -22,14 +33,6 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.Table;
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -345,7 +348,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);
-        final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+        final SqlAndParams baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
         final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
         {
             @Override
@@ -356,7 +359,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                                .where(baseWhereClause)
+                                .where(baseWhereClause.getSql(), baseWhereClause.getParams())
                                 .order(ChangesetMapping.DATE + (newestFirst ? " DESC": " ASC")));
 
                 return Arrays.asList(mappings);
@@ -378,12 +381,12 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public List<ChangesetMapping> doInTransaction()
             {
-                String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+                SqlAndParams baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
                 Query query = Query.select("ID, *")
                         .alias(ChangesetMapping.class, "CHANGESET")
                         .alias(IssueToChangesetMapping.class, "ISSUE")
                         .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                        .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                        .where(baseWhereClause.getSql(), baseWhereClause.getParams()).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
                 return Arrays.asList(mappings);
             }

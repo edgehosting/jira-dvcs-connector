@@ -102,16 +102,4 @@ public class ActiveObjectsUtils
         builder.append(")");
         return overThousandValues ? builder.insert(0, "(").append(")") : builder;
     }
-    
-
-/*    protected static StringBuilder addValue(final StringBuilder builder, final Object value)
-    {
-        if (value instanceof String)
-        {
-            return builder.append("'").append(value).append("'");
-        } else
-        {
-            return builder.append(value);
-        }
-    }*/
 }
