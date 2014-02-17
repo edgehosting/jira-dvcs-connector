@@ -17,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import net.java.ao.DBParam;
 
 import org.apache.commons.lang.StringUtils;
@@ -298,7 +299,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         List<MessageConsumer<P>> byAddress = (List) addressToMessageConsumer.get(message.getAddress().getId());
         for (MessageConsumer<P> consumer : byAddress)
         {
-            messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state));
+            messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state, null));
         }
     }
 
@@ -542,10 +543,11 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     @Override
-    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message, final DiscardReason discardReason)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setState(MessageState.DISCARDED.name());
+        queueItem.setStateInfo(discardReason.name());
         messageQueueItemDao.save(queueItem);
     }
 
@@ -754,13 +756,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * @param state
      * @return mapped entity
      */
-    private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state)
+    private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state, String stateInfo)
     {
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageQueueItemMapping.MESSAGE, messageId);
         result.put(MessageQueueItemMapping.QUEUE, queue);
         result.put(MessageQueueItemMapping.STATE, state.name());
+        result.put(MessageQueueItemMapping.STATE_INFO, stateInfo);
         result.put(MessageQueueItemMapping.RETRIES_COUNT, 0);
 
         return result;

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -260,7 +261,7 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
-                    messagingService.discard(consumer, message);
+                    messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
                     throw e;
                 }
 
@@ -274,7 +275,7 @@ public class MessageExecutor
 
                 if (message.getRetriesCount() >= 3)
                 {
-                    messagingService.discard(consumer, message);
+                    messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
 
                 if (progress != null)

@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -112,9 +113,9 @@ public interface MessagingService
      * @param consumer
      *            of message
      * @param message
-     *            for discard
+     * @param discardReason
      */
-    <P extends HasProgress> void discard(final MessageConsumer<P> consumer, Message<P> message);
+    <P extends HasProgress> void discard(final MessageConsumer<P> consumer, Message<P> message, final DiscardReason discardReason);
 
     /**
      * @param address
