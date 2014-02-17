@@ -25,6 +25,7 @@ import com.atlassian.scheduler.SchedulerService;
 import com.atlassian.scheduler.SchedulerServiceException;
 import com.atlassian.scheduler.config.JobConfig;
 import com.atlassian.scheduler.config.Schedule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
@@ -57,9 +58,11 @@ import static java.util.Collections.singletonMap;
  */
 public class RepositoryServiceImpl implements RepositoryService
 {
+    @VisibleForTesting
+    static final String SYNC_REPOSITORY_LIST_LOCK = RepositoryService.class.getName() + ".syncRepositoryList";
+
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
     private static final Schedule RUN_NOW = forInterval(0, null);
-    private static final String SYNC_REPOSITORY_LIST_LOCK = RepositoryService.class.getName() + ".syncRepositoryList";
 
     @Resource
     private DvcsCommunicatorProvider communicatorProvider;

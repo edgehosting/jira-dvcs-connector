@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.event.api.EventPublisher;
@@ -105,6 +107,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Integration test of the DefaultSynchronizer.
+ */
 public class DefaultSynchronizerTest
 {
     @Mock
@@ -203,10 +208,16 @@ public class DefaultSynchronizerTest
     @Mock
     private org.eclipse.egit.github.core.service.RepositoryService egitRepositoryService;
 
-    @InjectMocks
-    private DefaultSynchronizer defaultSynchronizer;
+    @Mock
+    private ClusterLockService clusterLockService;
 
     private final CacheManager cacheManager = new MemoryCacheManager();
+
+    @InjectMocks
+    private DefaultSynchronizer defaultSynchronizer = new DefaultSynchronizer(cacheManager);
+
+    @Mock
+    private ClusterLock clusterLock;
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -321,6 +332,8 @@ public class DefaultSynchronizerTest
     public void initializeMocksAndBitbucketCommunicator()
     {
         MockitoAnnotations.initMocks(this);
+
+        when(clusterLockService.getLockForName(DefaultSynchronizer.SYNC_LOCK)).thenReturn(clusterLock);
 
         when(pluginInformation.getVersion()).thenReturn("0");
         when(plugin.getPluginInformation()).thenReturn(pluginInformation);

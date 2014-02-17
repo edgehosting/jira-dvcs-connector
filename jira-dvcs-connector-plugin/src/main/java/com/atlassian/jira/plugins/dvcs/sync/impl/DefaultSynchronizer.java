@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
@@ -21,12 +22,14 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
 /**
@@ -34,6 +37,9 @@ import javax.annotation.Resource;
  */
 public class DefaultSynchronizer implements Synchronizer
 {
+    @VisibleForTesting
+    static final String SYNC_LOCK = DefaultSynchronizer.class.getName() + ".doSync";
+
     private static final Logger LOG = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private static final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
@@ -73,6 +79,9 @@ public class DefaultSynchronizer implements Synchronizer
     @Resource
     private GitHubEventService gitHubEventService;
 
+    @Resource
+    private ClusterLockService clusterLockService;
+
     // Cache of all synchronisation progresses, both running and finished
     private final Cache<Integer, Progress> progressMap;
 
@@ -94,14 +103,19 @@ public class DefaultSynchronizer implements Synchronizer
         {
             Progress progress;
 
-            synchronized (this)
+            final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
+            lock.lock();
+            try
             {
                 if (skipSync(repo, flags))
                 {
                     return;
                 }
-
                 progress = startProgress(repo, flags);
+            }
+            finally
+            {
+                lock.unlock();
             }
 
             boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
