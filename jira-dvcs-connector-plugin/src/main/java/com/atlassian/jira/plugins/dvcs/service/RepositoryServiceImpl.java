@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
@@ -38,12 +39,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.KEY;
 import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.REPOSITORIES_PARAMETER_KEY;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_PULL_REQUESTS;
 import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
 import static com.atlassian.scheduler.config.Schedule.forInterval;
 import static java.util.Collections.singletonMap;
@@ -55,6 +59,7 @@ public class RepositoryServiceImpl implements RepositoryService
 {
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
     private static final Schedule RUN_NOW = forInterval(0, null);
+    private static final String SYNC_REPOSITORY_LIST_LOCK = RepositoryService.class.getName() + ".syncRepositoryList";
 
     @Resource
     private DvcsCommunicatorProvider communicatorProvider;
@@ -91,6 +96,9 @@ public class RepositoryServiceImpl implements RepositoryService
 
     @Resource
     private RepositoryRemovalJobRunner repositoryRemovalJobRunner;
+
+    @Resource
+    private ClusterLockService clusterLockService;
 
     @PostConstruct
     public void registerRepositoryRemovalJobRunner()
@@ -144,49 +152,58 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public synchronized void syncRepositoryList(Organization organization, boolean soft)
+    public void syncRepositoryList(final Organization organization, final boolean soft)
     {
-        log.debug("Synchronising list of repositories");
-
-        InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-        invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
-
-        // get repositories from the dvcs hosting server
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-
-        // get local repositories
-        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
-
-        List<Repository> remoteRepositories;
-
+        final Lock lock = clusterLockService.getLockForName(SYNC_REPOSITORY_LIST_LOCK);
+        lock.lock();
         try
         {
-            remoteRepositories = communicator.getRepositories(organization, storedRepositories);
-        } catch (SourceControlException.UnauthorisedException e)
-        {
-            // we could not load repositories, we can't continue
-            // mark the organization as invalid
-            invalidOrganizationsManager.setOrganizationValid(organization.getId(), false);
-            throw e;
+            log.debug("Synchronising list of repositories");
+
+            InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
+            invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
+
+            // get repositories from the dvcs hosting server
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+
+            // get local repositories
+            List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
+
+            List<Repository> remoteRepositories;
+
+            try
+            {
+                remoteRepositories = communicator.getRepositories(organization, storedRepositories);
+            } catch (SourceControlException.UnauthorisedException e)
+            {
+                // we could not load repositories, we can't continue
+                // mark the organization as invalid
+                invalidOrganizationsManager.setOrganizationValid(organization.getId(), false);
+                throw e;
+            }
+
+            // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
+            removeDuplicateRepositories(organization, storedRepositories);
+            // update names of existing repositories in case their names changed
+            updateExistingRepositories(storedRepositories, remoteRepositories);
+            // repositories that are no longer on hosting server will be marked as deleted
+            removeDeletedRepositories(storedRepositories, remoteRepositories);
+            // new repositories will be added to the database
+            Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
+
+            // start asynchronous changesets synchronization for all linked repositories in organization
+            EnumSet<SynchronizationFlag> synchronizationFlags = EnumSet.of(SYNC_CHANGESETS, SYNC_PULL_REQUESTS);
+            if (soft)
+            {
+                synchronizationFlags.add(SynchronizationFlag.SOFT_SYNC);
+            }
+            syncAllInOrganization(organization.getId(), synchronizationFlags, newRepoSlugs);
+
         }
-
-
-        // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
-        removeDuplicateRepositories(organization, storedRepositories);
-        // update names of existing repositories in case their names changed
-        updateExistingRepositories(storedRepositories, remoteRepositories);
-        // repositories that are no longer on hosting server will be marked as deleted
-        removeDeletedRepositories(storedRepositories, remoteRepositories);
-        // new repositories will be added to the database
-        Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
-
-        // start asynchronous changesets synchronization for all linked repositories in organization
-        EnumSet<SynchronizationFlag> synchronizationFlags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS);
-        if (soft)
+        finally
         {
-            synchronizationFlags.add(SynchronizationFlag.SOFT_SYNC);
+            lock.unlock();
         }
-        syncAllInOrganization(organization.getId(), synchronizationFlags, newRepoSlugs);
     }
 
     @Override
