@@ -111,6 +111,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.atlassian.beehive</groupId>
+                <artifactId>beehive-api</artifactId>
+                <version>0.0.2</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>10.0.1</version>
