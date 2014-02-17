@@ -347,26 +347,26 @@ public class GithubCommunicator implements DvcsCommunicator
         RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
-	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
+        Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
         
 	    //Cleanup orphan this instance related hooks.
-	    boolean found = false;
-	    for (String url : hooksForRepo.keySet())
-        {
-	        if (!found && url.equals(postCommitUrl))
-	        {
-	            found = true;
-	            continue;
-	        }
-	        RepositoryHook hook = hooksForRepo.get(url);
-	        String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
-	        
-	        if ("web".equals(hook.getName()))
-	        {
-	            String hookUrl = hook.getConfig().get("url");
-	            if (hookUrl.startsWith(thisHostAndRest))
-	            {
-	                try
+        boolean found = false;
+        for (String url : hooksForRepo.keySet())
+	    {
+            if (!found && url.equals(postCommitUrl))
+            {
+                found = true;
+                continue;
+            }
+            RepositoryHook hook = hooksForRepo.get(url);
+            String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
+
+            if ("web".equals(hook.getName()))
+            {
+                String hookUrl = hook.getConfig().get("url");
+                if (hookUrl.startsWith(thisHostAndRest))
+                {
+                    try
                     {
                         repositoryService.deleteHook(repositoryId, (int) hook.getId());
                     }
@@ -375,15 +375,15 @@ public class GithubCommunicator implements DvcsCommunicator
                         throw new SourceControlException.PostCommitHookRegistrationException(
                                 "Could not operate postcommit hooks. Do you have administrator permissions?", e);
                     }
-	            }
-	        }
+                }
+            }
         }
-	    if (found) 
-	    {
-	        return;
-	    }
+        if (found)
+        {
+            return;
+        }
 
-	    // create hook if needed
+        // create hook if needed
         final RepositoryHook repositoryHook = new RepositoryHook();
         repositoryHook.setName("web");
         repositoryHook.setActive(true);
@@ -395,14 +395,17 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             repositoryService.createHook(repositoryId, repositoryHook);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
             {
-                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
 
             }
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
+            throw new SourceControlException.PostCommitHookRegistrationException(
+                    "Could not add postcommit hook. Do you have administrator permissions?", e);
         }
     }
 

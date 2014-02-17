@@ -404,7 +404,10 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
     
     /**
-     * Cleanup orphan this instance related hooks.
+     * Cleanup orphan hooks related to this instance.
+     * 
+     * @return <code>true</code> if required hook already installed (so you don't need to install new one),
+     * <code>false</code> otherwise 
      */
     private boolean cleanupAndGetExists(Repository repository, String postCommitUrl, BitbucketRemoteClient remoteClient, String type)
     {
@@ -436,7 +439,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     {
                         found = true;
                     }
-                    else
+                    else if (isRequiredPostCommitUrl)
                     {
                         servicesRest.deleteService(repository.getOrgName(), repository.getSlug(), bitbucketServiceEnvelope.getId());
                     }
