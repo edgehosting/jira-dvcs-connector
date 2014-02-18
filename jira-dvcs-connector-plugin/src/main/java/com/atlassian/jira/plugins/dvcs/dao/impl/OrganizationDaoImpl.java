@@ -1,5 +1,21 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.java.ao.Query;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -13,22 +29,10 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import net.java.ao.Query;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -213,22 +217,28 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization getByHostAndName(final String hostUrl, final String name)
     {
-        OrganizationMapping organizationMapping = activeObjects
-                .executeInTransaction(new TransactionCallback<OrganizationMapping>()
+        OrganizationMapping [] orgs = activeObjects
+                .executeInTransaction(new TransactionCallback<OrganizationMapping[]>()
                 {
                     @Override
-                    public OrganizationMapping doInTransaction()
+                    public OrganizationMapping [] doInTransaction()
                     {
                         Query query = Query.select().where(
-                                OrganizationMapping.HOST_URL + " = ? AND " + OrganizationMapping.NAME + " = ? ",
-                                hostUrl, name).order(OrganizationMapping.NAME);
+                                OrganizationMapping.HOST_URL + " = ?",
+                                hostUrl).order(OrganizationMapping.NAME);
 
-                        final OrganizationMapping[] organizationMappings = activeObjects.find(
+                        return activeObjects.find(
                                 OrganizationMapping.class, query);
-                        return organizationMappings.length != 0 ? organizationMappings[0] : null;
                     }
                 });
-
+        OrganizationMapping organizationMapping = Iterables.find(Lists.newArrayList(orgs), new Predicate<OrganizationMapping>()
+        {
+            @Override
+            public boolean apply(OrganizationMapping org)
+            {
+                return name != null && name.equalsIgnoreCase(org.getName());
+            }
+        }, null);
         return transform(organizationMapping);
 
     }
