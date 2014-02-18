@@ -342,12 +342,6 @@
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
-
-    <component key="changesetCache" name="changesetCache"
-               class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
-        <description>changesetCache</description>
-        <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
-    </component>
     
     <component key="branchService" name="branchService"
                class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
