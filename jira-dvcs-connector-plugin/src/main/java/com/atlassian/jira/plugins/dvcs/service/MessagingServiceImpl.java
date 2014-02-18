@@ -776,28 +776,34 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
         boolean finished = endProgress(repository, progress);
-        if (finished && auditId > 0)
+        if (finished)
         {
-            final Date finishDate;
-            final Date firstRequestDate;
-            final int numRequests;
-            final int flightTimeMs;
-            if (progress == null)
-            {
-                finishDate = new Date();
-                firstRequestDate = null;
-                numRequests = 0;
-                flightTimeMs = 0;
-            }
-            else
-            {
-                finishDate = new Date(progress.getFinishTime());
-                firstRequestDate = progress.getFirstMessageTime();
-                numRequests = progress.getNumRequests();
-                flightTimeMs = progress.getFlightTimeMs();
-            }
+            pausedTags.remove(getTagForSynchronization(repository));
 
-            syncAudit.finish(auditId, firstRequestDate, numRequests, flightTimeMs, finishDate);
+            if (auditId > 0)
+            {
+                final Date finishDate;
+                final Date firstRequestDate;
+                final int numRequests;
+                final int flightTimeMs;
+
+                if (progress == null)
+                {
+                    finishDate = new Date();
+                    firstRequestDate = null;
+                    numRequests = 0;
+                    flightTimeMs = 0;
+                }
+                else
+                {
+                    finishDate = new Date(progress.getFinishTime());
+                    firstRequestDate = progress.getFirstMessageTime();
+                    numRequests = progress.getNumRequests();
+                    flightTimeMs = progress.getFlightTimeMs();
+                }
+
+                syncAudit.finish(auditId, firstRequestDate, numRequests, flightTimeMs, finishDate);
+            }
         }
     }
 
