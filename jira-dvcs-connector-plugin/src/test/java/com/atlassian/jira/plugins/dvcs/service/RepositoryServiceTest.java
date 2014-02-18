@@ -136,7 +136,7 @@ public class RepositoryServiceTest
 		RepositoryRegistration registration = repositoryService.enableRepository(0, true);
 
 		Mockito.verify(repositoryDao).save(sampleRepository);
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(Mockito.eq(sampleRepository),
+		Mockito.verify(bitbucketCommunicator).ensureChangesetsHookPresent(Mockito.eq(sampleRepository),
 				Mockito.eq(createPostcommitUrl(sampleRepository)));
 		Assert.assertTrue(registration.isCallBackUrlInstalled());
 		Assert.assertNotNull(registration.getCallBackUrl());
@@ -150,13 +150,13 @@ public class RepositoryServiceTest
         Repository sampleRepository = createSampleRepository();
         Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
         Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).setupPostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
+        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).ensureChangesetsHookPresent(Mockito.any(Repository.class), Mockito.anyString());
         Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
         RepositoryRegistration registration = repositoryService.enableRepository(0, true);
 
         Mockito.verify(repositoryDao).save(sampleRepository);
-        Mockito.verify(bitbucketCommunicator).setupPostcommitHook(Mockito.eq(sampleRepository),
+        Mockito.verify(bitbucketCommunicator).ensureChangesetsHookPresent(Mockito.eq(sampleRepository),
                 Mockito.eq(createPostcommitUrl(sampleRepository)));
         Assert.assertFalse(registration.isCallBackUrlInstalled());
         Assert.assertNotNull(registration.getCallBackUrl());
@@ -231,8 +231,8 @@ public class RepositoryServiceTest
 			}
 		}));
 		// ... with false linking
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository3, createPostcommitUrl(sampleRepository3));
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository4, createPostcommitUrl(sampleRepository4));
+		Mockito.verify(bitbucketCommunicator).ensureChangesetsHookPresent(sampleRepository3, createPostcommitUrl(sampleRepository3));
+		Mockito.verify(bitbucketCommunicator).ensureChangesetsHookPresent(sampleRepository4, createPostcommitUrl(sampleRepository4));
 
 	}
 

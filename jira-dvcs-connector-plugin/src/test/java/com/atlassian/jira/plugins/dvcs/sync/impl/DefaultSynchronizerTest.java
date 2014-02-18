@@ -1,10 +1,58 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import junit.framework.Assert;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.CommitFile;
+import org.eclipse.egit.github.core.CommitUser;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.TypedResource;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.collections.Sets;
+
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
@@ -14,7 +62,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.MessageExecutor;
@@ -50,7 +97,6 @@ import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessage
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -61,50 +107,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import junit.framework.Assert;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.Commit;
-import org.eclipse.egit.github.core.CommitFile;
-import org.eclipse.egit.github.core.CommitUser;
-import org.eclipse.egit.github.core.IRepositoryIdProvider;
-import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.TypedResource;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import org.testng.collections.Sets;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DefaultSynchronizerTest
 {
@@ -125,9 +127,6 @@ public class DefaultSynchronizerTest
 
     @Mock
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
-
-    @Mock
-    private ChangesetCache changesetCache;
 
     private BranchService branchService;
 
@@ -210,6 +209,9 @@ public class DefaultSynchronizerTest
 
     @Mock
     private RepositoryDao repositoryDao;
+    
+    @Mock
+    private ChangesetDao changesetDao;
 
     @Mock
     private PostponeOndemandPrSyncListener postponePrSyncHelper;
@@ -360,11 +362,12 @@ public class DefaultSynchronizerTest
         bitbucketCachingCommunicator = new CachingCommunicator();
         githubCachingCommunicator = new CachingCommunicator();
 
-        bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, changesetCache);
+        bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
 
-        githubCommunicator = new GithubCommunicator(changesetCache, oAuthStore, githubClientProvider);
+        githubCommunicator = new GithubCommunicator(oAuthStore, githubClientProvider);
         ReflectionTestUtils.setField(githubCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(githubCommunicator, "messagingService", messagingService);
 
@@ -847,25 +850,6 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return processedNodes.isEmpty();
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
 
         graph
                 .commit("node1", null)
@@ -901,14 +885,6 @@ public class DefaultSynchronizerTest
     public void getChangesets_Bitbucket_fullSync()
     {
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return true;
-            }
-        });
 
         Graph graph = new Graph();
 
@@ -947,26 +923,7 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return false;
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
 
         graph
                 .commit("node1", null)
@@ -1020,25 +977,6 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return processedNodes.isEmpty();
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
 
         graph
                 .commit("node1", null)
@@ -1074,14 +1012,6 @@ public class DefaultSynchronizerTest
     public void getChangesets_GitHub_fullSync()
     {
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return true;
-            }
-        });
 
         Graph graph = new Graph();
 

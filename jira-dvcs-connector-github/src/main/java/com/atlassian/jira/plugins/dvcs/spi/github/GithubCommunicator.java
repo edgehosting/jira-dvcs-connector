@@ -47,7 +47,6 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -74,9 +73,6 @@ public class GithubCommunicator implements DvcsCommunicator
     @Resource
     private  BranchService branchService;
 
-    @Resource
-    private  ChangesetCache changesetCache;
-
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
      */
@@ -95,10 +91,9 @@ public class GithubCommunicator implements DvcsCommunicator
     protected final GithubClientProvider githubClientProvider;
     protected final OAuthStore oAuthStore;
 
-    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
+    public GithubCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
-        this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
     }
@@ -342,10 +337,13 @@ public class GithubCommunicator implements DvcsCommunicator
         return isoDecoded;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setupPostcommitHook(Repository repository, String hookUrl)
+    public void ensureChangesetsHookPresent(Repository repository, String hookUrl)
     {
-        GitHubRepositoryHook[] hooks = gitHubRESTClient.getHooks(repository);
+        List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
         
         // adds changesets hook, if it does not exist
         if (!existsChangesetsHook(hooks, hookUrl))
@@ -367,7 +365,7 @@ public class GithubCommunicator implements DvcsCommunicator
      *            for which hook URL
      * @return True if changesets hook for provided information already exists
      */
-    private boolean existsChangesetsHook(GitHubRepositoryHook[] hooks, String hookUrl)
+    private boolean existsChangesetsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
     {
         for (GitHubRepositoryHook hook : hooks)
         {
@@ -389,7 +387,7 @@ public class GithubCommunicator implements DvcsCommunicator
      *            for which hook URL
      * @return True if pull requests hook for provided information already exists
      */
-    private boolean existsPullRequestsHook(GitHubRepositoryHook[] hooks, String hookUrl)
+    private boolean existsPullRequestsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
     {
         for (GitHubRepositoryHook hook : hooks)
         {
@@ -447,7 +445,7 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
-        final GitHubRepositoryHook[] hooks = gitHubRESTClient.getHooks(repository);
+        final List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
         for (GitHubRepositoryHook hook : hooks)
         {
             if (postCommitUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL)))

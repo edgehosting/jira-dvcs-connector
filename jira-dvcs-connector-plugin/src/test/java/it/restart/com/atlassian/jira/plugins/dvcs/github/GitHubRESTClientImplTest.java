@@ -1,25 +1,19 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
-import org.mockito.ArgumentCaptor;
+import java.util.List;
+
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheFactory;
-import com.atlassian.cache.CacheLoader;
-import com.atlassian.cache.CacheSettings;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
-import com.atlassian.jira.plugins.dvcs.github.impl.AbstractGitHubRESTClientImpl.WebResourceCacheKey;
 import com.atlassian.jira.plugins.dvcs.github.impl.GitHubRESTClientImpl;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.sun.jersey.api.client.WebResource;
 
 /**
  * Unit test over {@link GitHubRESTClientImpl}.
@@ -27,7 +21,7 @@ import com.sun.jersey.api.client.WebResource;
  * @author Stanislav Dvorscak
  * 
  */
-// TODO: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
+// TODO: BBC-688: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
 @Test(enabled = false)
 public class GitHubRESTClientImplTest
 {
@@ -63,50 +57,12 @@ public class GitHubRESTClientImplTest
         CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
         RepositoryService repositoryService = Mockito.mock(RepositoryService.class);
 
-        repositoryCacheMock(cacheFactory, repositoryService);
-
         gitHubRESTClientImpl.setCacheFactory(cacheFactory);
         gitHubRESTClientImpl.setRepositoryService(repositoryService);
-        gitHubRESTClientImpl.init();
         this.testedObject = gitHubRESTClientImpl;
 
         initRepositoryMock();
         removeAllHooks();
-    }
-
-    /**
-     * Mock, which returns each time {@link #repository}, if it is loaded from cache.
-     * 
-     * @param cacheFactory
-     * @param repositoryService
-     */
-    private void repositoryCacheMock(CacheFactory cacheFactory, RepositoryService repositoryService)
-    {
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        final ArgumentCaptor<CacheLoader<WebResourceCacheKey, WebResource>> cacheLoader = ArgumentCaptor.<CacheLoader<WebResourceCacheKey, WebResource>> forClass((Class) CacheLoader.class);
-        @SuppressWarnings("unchecked")
-        Cache<WebResourceCacheKey, WebResource> cache = Mockito.mock(Cache.class);
-        Mockito.when(cacheFactory.getCache(Mockito.anyString(), cacheLoader.capture(), Mockito.<CacheSettings> any())).thenReturn(cache);
-        Mockito.when(cache.get(Mockito.<WebResourceCacheKey> any())).then(new Answer<WebResource>()
-        {
-
-            @Override
-            public WebResource answer(InvocationOnMock invocation) throws Throwable
-            {
-                return cacheLoader.getValue().load((WebResourceCacheKey) invocation.getArguments()[0]);
-            }
-
-        });
-        Mockito.when(repositoryService.get(Mockito.anyInt())).then(new Answer<Repository>()
-        {
-
-            @Override
-            public Repository answer(InvocationOnMock invocation) throws Throwable
-            {
-                return repository;
-            }
-
-        });
     }
 
     /**
@@ -160,10 +116,13 @@ public class GitHubRESTClientImplTest
     @Test(dependsOnMethods = "testAddHook", enabled = false)
     public void testGetHooks()
     {
-        GitHubRepositoryHook[] hooks = testedObject.getHooks(repository);
-        Assert.assertEquals(hooks.length, 1);
+        List<GitHubRepositoryHook> hooks = testedObject.getHooks(repository);
+        Assert.assertEquals(hooks.size(), 1);
     }
 
+    /**
+     * Unit test of {@link GitHubRESTClient#deleteHook(Repository, GitHubRepositoryHook)}.
+     */
     @Test(dependsOnMethods = { "testAddHook", "testGetHooks" }, enabled = false)
     public void testDeleteHook()
     {

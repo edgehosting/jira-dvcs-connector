@@ -5,31 +5,30 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
-import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheFactory;
-import com.atlassian.cache.CacheLoader;
-import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.core.header.LinkHeader;
+import com.sun.jersey.core.header.LinkHeaders;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 /**
  * Support for {@link GitHubRESTClientImpl}.
@@ -44,11 +43,6 @@ public class AbstractGitHubRESTClientImpl
      * Jersey client.
      */
     private final Client client;
-
-    /**
-     * Cache of created {@link WebResource}-s.
-     */
-    private Cache<WebResourceCacheKey, WebResource> webResourceCache;
 
     /**
      * @see #setCacheFactory(CacheFactory)
@@ -114,64 +108,6 @@ public class AbstractGitHubRESTClientImpl
     }
 
     /**
-     * Cache value loader for {@link AbstractGitHubRESTClientImpl#webResourceCache}.
-     * 
-     * @author Stanislav Dvorscak
-     * 
-     */
-    private final class WebResourceCacheLoader implements CacheLoader<WebResourceCacheKey, WebResource>
-    {
-
-        @Override
-        public WebResource load(WebResourceCacheKey key)
-        {
-            Repository repository = repositoryService.get(key.repositoryId);
-            WebResource result = client.resource(key.uri);
-            result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
-            return result;
-        }
-    }
-
-    /**
-     * Adds access token to each request.
-     * 
-     * @author Stanislav Dvorscak
-     * 
-     */
-    private class AccessTokenFilter extends ClientFilter
-    {
-
-        /**
-         * AccessToken, which will be used for requests decoration.
-         */
-        private String accessToken;
-
-        /**
-         * Constructor.
-         * 
-         * @param accessToken
-         *            which will be used for requests decoration
-         */
-        private AccessTokenFilter(String accessToken)
-        {
-            this.accessToken = accessToken;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public ClientResponse handle(ClientRequest cr) throws ClientHandlerException
-        {
-            URI uri = cr.getURI();
-            UriBuilder uriBuilder = UriBuilder.fromUri(uri);
-            uriBuilder.queryParam("access_token", "{arg1}");
-            cr.setURI(uriBuilder.build(accessToken));
-            return getNext().handle(cr);
-        }
-    }
-
-    /**
      * Constructor.
      */
     public AbstractGitHubRESTClientImpl()
@@ -180,16 +116,6 @@ public class AbstractGitHubRESTClientImpl
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         client = Client.create(clientConfig);
 
-    }
-
-    /**
-     * Initializes this bean.
-     */
-    @PostConstruct
-    public void init()
-    {
-        webResourceCache = cacheFactory.getCache(AbstractGitHubRESTClientImpl.class.getSimpleName() + ".webResourceCache",
-                new WebResourceCacheLoader(), new CacheSettingsBuilder().local().expireAfterAccess(2, TimeUnit.HOURS).build());
     }
 
     /**
@@ -249,22 +175,78 @@ public class AbstractGitHubRESTClientImpl
             result.host(IGitHubConstants.HOST_API);
         }
 
-        result.path("repos").path(repository.getOrgName()).path(repository.getSlug());
+        result = result.path("/repos").path(repository.getOrgName()).path(repository.getSlug());
 
-        return result.build().toString();
+        // decorates URI with access token
+        result.queryParam("access_token", "{arg1}");
+        return result.build(repository.getCredential().getAccessToken()).toString();
     }
 
     /**
-     * @param repository
-     *            for which repository
-     * @param uri
-     *            of web resource (without repository url)
-     * @return cached web resource (if does not exist it will be created and inserted into the cache)
+     * @return access to configured jersey client
      */
-    protected WebResource cachedWebResource(Repository repository, String uri)
+    protected Client getClient()
     {
-        uri = getRepositoryAPIUrl(repository) + uri;
-        return webResourceCache.get(new WebResourceCacheKey(repository, uri));
+        return client;
+    }
+
+    /**
+     * Goes over all GitHub pages and return all pages union.
+     * 
+     * @param webResource
+     *            of first page
+     * @param entityType
+     *            type of entities
+     * @return union
+     */
+    protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType)
+    {
+        List<T> result = new LinkedList<T>();
+
+        WebResource cursor = webResource;
+        do
+        {
+            ClientResponse clientResponse = cursor.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+            result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
+
+            LinkHeaders linkHeaders = getLinks(clientResponse);
+            LinkHeader nextLink = linkHeaders.getLink("next");
+            URI nextPage = nextLink != null ? nextLink.getUri() : null;
+            cursor = nextPage != null ? client.resource(nextPage) : null;
+        } while (cursor != null);
+        return result;
+    }
+
+    /**
+     * TODO: workaround for bug - {@link ClientResponse} of jersey does not support comma separated multiple values headers
+     * 
+     * @param clientResponse
+     *            for processing
+     * @return proceed links
+     */
+    private LinkHeaders getLinks(ClientResponse clientResponse)
+    {
+        // raw 'Link' headers values
+        List<String> linksRaw = clientResponse.getHeaders().get("Link");
+        if (linksRaw == null) {
+            linksRaw = new LinkedList<String>();
+        }
+        
+        // proceed 'Link' values according to multiple values header policy
+        List<String> links = new LinkedList<String>();
+
+        for (String linkRaw : linksRaw)
+        {
+            // header can be comma separated - which means, that it contains multiple values
+            for (String link : linkRaw.split(","))
+            {
+                links.add(link.trim());
+            }
+        }
+        
+        MultivaluedMapImpl headers = new MultivaluedMapImpl();
+        headers.put("Link", links);
+        return new LinkHeaders(headers);
     }
 
     /**
@@ -276,11 +258,9 @@ public class AbstractGitHubRESTClientImpl
      *            of resource
      * @return created web resource
      */
-    protected WebResource newWebResource(Repository repository, String uri)
+    protected WebResource resource(Repository repository, String uri)
     {
-        uri = getRepositoryAPIUrl(repository) + uri;
-        WebResource result = client.resource(uri);
-        result.addFilter(new AccessTokenFilter(repository.getCredential().getAccessToken()));
+        WebResource result = client.resource(getRepositoryAPIUrl(repository)).path(uri);
         return result;
     }
 
