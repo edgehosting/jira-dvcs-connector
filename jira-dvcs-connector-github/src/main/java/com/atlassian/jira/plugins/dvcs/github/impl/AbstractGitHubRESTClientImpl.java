@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,8 +12,6 @@ import javax.annotation.Resource;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
 import com.atlassian.cache.CacheFactory;
@@ -55,57 +52,6 @@ public class AbstractGitHubRESTClientImpl
      */
     @Resource
     private RepositoryService repositoryService;
-
-    /**
-     * Key of {@link AbstractGitHubRESTClientImpl#webResourceCache}.
-     * 
-     * @author Stanislav Dvorscak
-     * 
-     */
-    public static final class WebResourceCacheKey implements Serializable
-    {
-
-        /**
-         * Serial version id.
-         */
-        private static final long serialVersionUID = 1L;
-
-        private final int repositoryId;
-        private final String uri;
-
-        private final int hashCode;
-
-        public WebResourceCacheKey(Repository repository, String uri)
-        {
-            this.repositoryId = repository.getId();
-            this.uri = uri;
-
-            hashCode = new HashCodeBuilder().append(repositoryId).append(uri).toHashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj instanceof WebResourceCacheKey)
-            {
-                WebResourceCacheKey key = (WebResourceCacheKey) obj;
-                EqualsBuilder equalsBuilder = new EqualsBuilder();
-                equalsBuilder.append(repositoryId, key.repositoryId);
-                equalsBuilder.append(uri, key.uri);
-                return equalsBuilder.isEquals();
-            } else
-            {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return hashCode;
-        }
-
-    }
 
     /**
      * Constructor.
