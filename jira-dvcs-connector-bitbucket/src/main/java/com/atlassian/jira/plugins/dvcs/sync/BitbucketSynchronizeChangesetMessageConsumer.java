@@ -55,24 +55,22 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     }
 
     @Override
-    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload)
+    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, final BitbucketSynchronizeChangesetMessage payload)
     {
-        BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
+        final BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        Repository repo = payload.getRepository();
+        final Repository repo = payload.getRepository();
         final Progress progress = payload.getProgress();
 
-        progress.incrementRequestCount(new Date());
-        final long startFlightTime = System.currentTimeMillis();
-        final BitbucketChangesetPage page;
-        try
+        final BitbucketChangesetPage page = FlightTimeInterceptor.execute(progress, new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
         {
-            page = communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
-        }
-        finally
-        {
-            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
-        }
+            @Override
+            public BitbucketChangesetPage call()
+            {
+                return communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
+            }
+        });
+
         process(message, payload, page);
     }
 
