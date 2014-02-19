@@ -383,7 +383,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         } else
         {
             log.warn("Sync requested but repository with id {} does not exist anymore.", repositoryId);
-//            tryUninstallHook
         }
     }
 
