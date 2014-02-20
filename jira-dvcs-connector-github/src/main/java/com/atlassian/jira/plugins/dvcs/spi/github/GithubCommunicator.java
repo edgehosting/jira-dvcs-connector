@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.github;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.ProtocolException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -11,23 +10,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -41,10 +33,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -55,11 +47,8 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
@@ -84,28 +73,34 @@ public class GithubCommunicator implements DvcsCommunicator
     @Resource
     private  BranchService branchService;
 
-    @Resource
-    private  ChangesetCache changesetCache;
-
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
      */
     @Resource
     private GitHubEventService gitHubEventService;
+    
+    /**
+     * Injected {@link GitHubRESTClient} dependency.
+     */
+    @Resource
+    private GitHubRESTClient gitHubRESTClient;
 
     @Resource
     private FeatureManager featureManager;
 
     protected final GithubClientProvider githubClientProvider;
-    private final HttpClient3ProxyConfig proxyConfig = new HttpClient3ProxyConfig();
     protected final OAuthStore oAuthStore;
 
-    public GithubCommunicator(ChangesetCache changesetCache, OAuthStore oAuthStore,
+    public GithubCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
     {
-        this.changesetCache = changesetCache;
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
+    }
+    
+    public void setGitHubRESTClient(GitHubRESTClient gitHubRESTClient)
+    {
+        this.gitHubRESTClient = gitHubRESTClient;
     }
 
     @Override
@@ -342,90 +337,121 @@ public class GithubCommunicator implements DvcsCommunicator
         return isoDecoded;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    public void ensureChangesetsHookPresent(Repository repository, String hookUrl)
     {
-        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-
-	    Map<String, RepositoryHook> hooksForRepo = getHooksForRepo(repositoryService, repositoryId);
-        if (hooksForRepo.containsKey(postCommitUrl))
+        List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
+        
+        // adds changesets hook, if it does not exist
+        if (!existsChangesetsHook(hooks, hookUrl))
         {
-            return;
+            createChangesetsHook(repository, hookUrl);
         }
-
-        final RepositoryHook repositoryHook = new RepositoryHook();
-        repositoryHook.setName("web");
-        repositoryHook.setActive(true);
-
-        Map<String, String> config = new HashMap<String, String>();
-        config.put("url", postCommitUrl);
-        repositoryHook.setConfig(config);
-
-        try
+        
+        // adds pull requests hook, if it does not exist
+        if (!existsPullRequestsHook(hooks, hookUrl))
         {
-            repositoryService.createHook(repositoryId, repositoryHook);
-        } catch (IOException e)
-        {
-            if ((e instanceof RequestException) && ((RequestException) e).getStatus() == 422)
-            {
-                throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Maximum number of postcommit hooks exceeded. ", e);
-
-            }
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add postcommit hook. Do you have administrator permissions?" , e);
+            createPullRequestsHook(repository, hookUrl);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, RepositoryHook> getHooksForRepo(RepositoryService repositoryService,
-            RepositoryId repositoryId)
+    /**
+     * @param hooks
+     *            current registered hooks
+     * @param hookUrl
+     *            for which hook URL
+     * @return True if changesets hook for provided information already exists
+     */
+    private boolean existsChangesetsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
     {
-	    try
+        for (GitHubRepositoryHook hook : hooks)
         {
-	        List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
-	        Map<String, RepositoryHook> urlToHooks = new HashMap<String, RepositoryHook>();
-	        for (RepositoryHook repositoryHook : hooks)
-	        {
-	            urlToHooks.put(repositoryHook.getConfig().get("url"), repositoryHook);
-	        }
-	        return urlToHooks;
-        } catch (IOException e)
-        {
-        	log.info("Problem getting hooks from Github for repository '" + repositoryId + "': ", e);
-        	return Collections.EMPTY_MAP;
+            // in old API (changesets) content type was undefined (default it was form)
+            // in new API (pull requests) we use recommended json
+            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
+                    && !GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
+            {
+                return true;
+            }
         }
+        return false;
+    }
+
+    /**
+     * @param hooks
+     *            current registered hooks
+     * @param hookUrl
+     *            for which hook URL
+     * @return True if pull requests hook for provided information already exists
+     */
+    private boolean existsPullRequestsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
+    {
+        for (GitHubRepositoryHook hook : hooks)
+        {
+            // in old API (changesets) content type was undefined (default it was form)
+            // in new API (pull requests) we use recommended json
+            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
+                    && GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates new hook for events related to changesets.
+     * 
+     * @param repository
+     *            on which repository
+     * @param hookUrl
+     *            on which URL
+     */
+    private void createChangesetsHook(Repository repository, String hookUrl)
+    {
+        GitHubRepositoryHook hook = new GitHubRepositoryHook();
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
+        hook.setActive(true);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PUSH);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_URL, hookUrl);
+        gitHubRESTClient.addHook(repository, hook);
+    }
+    
+    /**
+     * Creates new hook for events related to pull requests.
+     * 
+     * @param repository
+     *            on which repository
+     * @param hookUrl
+     *            on which URL
+     */
+    private void createPullRequestsHook(Repository repository, String hookUrl)
+    {
+        GitHubRepositoryHook hook = new GitHubRepositoryHook();
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
+        hook.setActive(true);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PUSH);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PULL_REQUEST);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_PULL_REQUEST_REVIEW_COMMENT);
+        hook.getEvents().add(GitHubRepositoryHook.EVENT_ISSUE_COMMENT);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_URL, hookUrl);
+        hook.getConfig().put(GitHubRepositoryHook.CONFIG_CONTENT_TYPE, GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON);
+        gitHubRESTClient.addHook(repository, hook);
     }
 
     @Override
     public void removePostcommitHook(Repository repository, String postCommitUrl)
     {
-        RepositoryService repositoryService = githubClientProvider.getRepositoryService(repository);
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-
-        try
+        final List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
+        for (GitHubRepositoryHook hook : hooks)
         {
-            final List<RepositoryHook> hooks = repositoryService.getHooks(repositoryId);
-            for (RepositoryHook hook : hooks)
+            if (postCommitUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL)))
             {
-                if (postCommitUrl.equals(hook.getConfig().get("url")))
-                {
-                    try 
-                    {
-                        repositoryService.deleteHook(repositoryId, (int) hook.getId());
-                    } catch (ProtocolException pe)
-                    {
-                        //BBC-364 if delete rest call doesn't work on Java client, we try Apache HttpClient
-                        log.debug("Error removing postcommit hook [{}] for repository [{}], trying Apache HttpClient.", hook.getId(), repository.getRepositoryUrl());
- 
-                        deleteHookByHttpClient(repository, hook);
-                        
-                        log.debug("Deletion was successfull.");
-                    }
-                }
+                gitHubRESTClient.deleteHook(repository, hook);
             }
-        } catch (IOException e)
-        {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
         }
     }
 
@@ -518,30 +544,6 @@ public class GithubCommunicator implements DvcsCommunicator
         return branches;
     }
 
-    private void deleteHookByHttpClient(Repository repository, RepositoryHook hook) throws HttpException, IOException
-    {
-        RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-        HttpClient httpClient = new HttpClient();
-        String baseUrl = repository.getOrgHostUrl();
-        if ("https://github.com".equals(baseUrl))
-        {
-            baseUrl = "https://api.github.com";
-        } else
-        {
-            baseUrl = baseUrl + "/api/v3";
-        }
-        
-        String url = baseUrl + "/repos/" + repositoryId.generateId() + "/hooks/" + hook.getId();
-        HttpMethod method = new DeleteMethod(url);
-
-        proxyConfig.configureProxy(httpClient, url);
-        
-        Authentication auth = new OAuthAuthentication(repository.getCredential().getAccessToken());
-        auth.addAuthentication(method, httpClient);
-        
-        httpClient.executeMethod(method);
-    }
-    
     @Override
     public boolean supportsInvitation(Organization organization)
     {

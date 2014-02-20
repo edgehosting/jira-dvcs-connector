@@ -90,9 +90,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Resource
-    private ChangesetCache changesetCache;
-
-    @Resource
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
@@ -536,7 +533,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureChangesetsHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else

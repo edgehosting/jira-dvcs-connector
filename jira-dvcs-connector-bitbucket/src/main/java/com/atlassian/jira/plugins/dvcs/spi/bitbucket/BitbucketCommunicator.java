@@ -1,5 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -12,7 +32,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -46,23 +65,6 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import javax.annotation.Resource;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -79,19 +81,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Resource
     private BranchService branchService;
 
-    private final ChangesetCache changesetCache;
-
     @Resource
     private MessagingService messagingService;
+    
+    @Resource
+    private ChangesetDao changesetDao;
 
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            ChangesetCache changesetCache)
+            PluginAccessor pluginAccessor, BitbucketClientBuilderFactory bitbucketClientBuilderFactory)
    {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.changesetCache = changesetCache;
     }
 
     /**
@@ -353,7 +354,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    public void ensureChangesetsHookPresent(Repository repository, String postCommitUrl)
     {
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build();
 
@@ -658,7 +659,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         List<Branch> newBranches = filterNodes.newBranches;
 
-        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
+        if (filterNodes.oldHeads.isEmpty() && changesetDao.getChangesetCount(repository.getId()) > 0)
         {
             log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].", repository.getId());
             Date synchronizationStartedAt = new Date();
