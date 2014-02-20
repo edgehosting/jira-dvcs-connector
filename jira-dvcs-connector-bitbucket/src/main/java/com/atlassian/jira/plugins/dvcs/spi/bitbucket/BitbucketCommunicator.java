@@ -60,6 +60,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransform
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.FlightTimeInterceptor;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
@@ -219,30 +220,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param currentPage
      * @return
      */
-    public BitbucketChangesetPage getNextPage(Repository repository, List<String> includeNodes, List<String> excludeNodes, BitbucketChangesetPage currentPage) {
-        long startFlightTime = System.currentTimeMillis();
+    public BitbucketChangesetPage getNextPage(final Repository repository, final List<String> includeNodes, final List<String> excludeNodes, final BitbucketChangesetPage currentPage)
+    {
         final Progress sync = repository.getSync();
-        if (sync != null)
+
+        return FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
         {
-            sync.incrementRequestCount(new Date());
-        }
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-            return remoteClient.getChangesetsRest().getNextChangesetsPage(repository.getOrgName(),
-                    repository.getSlug(),
-                    includeNodes,
-                    excludeNodes,
-                    CHANGESET_LIMIT,
-                    currentPage);
-        }
-        finally
-        {
-            if (sync != null)
+            @Override
+            public BitbucketChangesetPage call() throws RuntimeException
             {
-                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+                return remoteClient.getChangesetsRest().getNextChangesetsPage(repository.getOrgName(),
+                        repository.getSlug(),
+                        includeNodes,
+                        excludeNodes,
+                        CHANGESET_LIMIT,
+                        currentPage);
             }
-        }
+        });
     }
 
 
@@ -319,35 +314,33 @@ public class BitbucketCommunicator implements DvcsCommunicator
         });
     }
 
-    private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
+    private BitbucketBranchesAndTags getBranchesAndTags(final Repository repository)
     {
         final Progress sync = repository.getSync();
-        final long startFlightTime = System.currentTimeMillis();
-        if (sync != null)
+
+        return FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<BitbucketBranchesAndTags>()
         {
-            sync.incrementRequestCount(new Date());
-        }
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
-            // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
-            return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(),repository.getSlug());
-        } catch (BitbucketRequestException e)
-        {
-            log.debug("Could not retrieve list of branches", e);
-            throw new SourceControlException("Could not retrieve list of branches", e);
-        } catch (JsonParsingException e)
-        {
-            log.debug("The response could not be parsed", e);
-            throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
-        }
-        finally
-        {
-            if (sync != null)
+            @Override
+            public BitbucketBranchesAndTags call()
             {
-                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                try
+                {
+                    BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+                    // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+                    return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(), repository.getSlug());
+                }
+                catch (BitbucketRequestException e)
+                {
+                    log.debug("Could not retrieve list of branches", e);
+                    throw new SourceControlException("Could not retrieve list of branches", e);
+                }
+                catch (JsonParsingException e)
+                {
+                    log.debug("The response could not be parsed", e);
+                    throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
+                }
             }
-        }
+        });
     }
 
     /**
