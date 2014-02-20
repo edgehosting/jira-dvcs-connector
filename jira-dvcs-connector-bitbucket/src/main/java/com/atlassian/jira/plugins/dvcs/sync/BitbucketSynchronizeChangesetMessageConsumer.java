@@ -59,15 +59,12 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         final BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        final Repository repo = payload.getRepository();
-        final Progress progress = payload.getProgress();
-
-        final BitbucketChangesetPage page = FlightTimeInterceptor.execute(progress, new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
+        final BitbucketChangesetPage page = FlightTimeInterceptor.execute(payload.getProgress(), new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
         {
             @Override
             public BitbucketChangesetPage call()
             {
-                return communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
+                return communicator.getNextPage(payload.getRepository(), payload.getInclude(), payload.getExclude(), payload.getPage());
             }
         });
 

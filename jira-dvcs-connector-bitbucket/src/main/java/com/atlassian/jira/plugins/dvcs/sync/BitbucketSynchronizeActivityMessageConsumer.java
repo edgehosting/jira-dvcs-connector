@@ -332,7 +332,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 {
                     try
                     {
-                        Iterable<BitbucketPullRequestCommit> commitsIterator = getCommitIterator(repo, remotePullRequest, pullRestpoint);
+                        Iterable<BitbucketPullRequestCommit> commitsIterator = getCommits(repo, remotePullRequest, pullRestpoint);
 
                         for (BitbucketPullRequestCommit commit : commitsIterator)
                         {
@@ -347,7 +347,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                         }
                     } catch(BitbucketRequestException.NotFound_404 e)
                     {
-                        LOGGER.warn("There are no commits for pull request", e);
+                        LOGGER.info("There are no commits for pull request", e);
                     }
 
                     return null;
@@ -359,7 +359,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
     }
 
-    private Iterable<BitbucketPullRequestCommit> getCommitIterator(Repository repo, BitbucketPullRequest remotePullRequest, PullRequestRemoteRestpoint pullRestpoint)
+    private Iterable<BitbucketPullRequestCommit> getCommits(Repository repo, BitbucketPullRequest remotePullRequest, PullRequestRemoteRestpoint pullRestpoint)
     {
         Iterable<BitbucketPullRequestCommit> commitsIterator;
         BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
