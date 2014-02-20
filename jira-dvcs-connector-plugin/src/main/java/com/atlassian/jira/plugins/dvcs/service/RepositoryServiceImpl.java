@@ -562,7 +562,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         for (Repository repository : repositories)
         {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -572,12 +572,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-    	synchronizer.pauseSynchronization(repository, true);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**
