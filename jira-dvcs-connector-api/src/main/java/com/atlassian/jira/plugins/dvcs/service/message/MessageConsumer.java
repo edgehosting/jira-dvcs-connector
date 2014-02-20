@@ -40,7 +40,4 @@ public interface MessageConsumer<P extends HasProgress>
      * @return Count of parallel threads, which can be used for processing.
      */
     int getParallelThreads();
-
-    boolean shouldDiscard(int messageId, int retryCount, P payload, String[] tags);
-
 }

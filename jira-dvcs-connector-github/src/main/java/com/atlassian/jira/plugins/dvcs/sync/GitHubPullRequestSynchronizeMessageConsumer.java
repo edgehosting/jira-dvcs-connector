@@ -363,14 +363,4 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         // The same comments can be proceed over the same Pull Request - because of multiple messages over the same PR
         return 1;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean shouldDiscard(int messageId, int retryCount, GitHubPullRequestSynchronizeMessage payload, String[] tags)
-    {
-        return retryCount >= 3;
-    }
-
 }
