@@ -14,7 +14,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
-import com.atlassian.cache.CacheFactory;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
@@ -42,12 +41,6 @@ public class AbstractGitHubRESTClientImpl
     private final Client client;
 
     /**
-     * @see #setCacheFactory(CacheFactory)
-     */
-    @Resource
-    private CacheFactory cacheFactory;
-
-    /**
      * @see #setRepositoryService(RepositoryService)
      */
     @Resource
@@ -62,15 +55,6 @@ public class AbstractGitHubRESTClientImpl
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         client = Client.create(clientConfig);
 
-    }
-
-    /**
-     * @param cacheFactory
-     *            injected {@link CacheFactory} dependency.
-     */
-    public void setCacheFactory(CacheFactory cacheFactory)
-    {
-        this.cacheFactory = cacheFactory;
     }
 
     /**

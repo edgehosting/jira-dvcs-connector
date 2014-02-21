@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.atlassian.cache.CacheFactory;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.github.impl.GitHubRESTClientImpl;
@@ -54,10 +53,8 @@ public class GitHubRESTClientImplTest
     {
         GitHubRESTClientImpl gitHubRESTClientImpl = new GitHubRESTClientImpl();
 
-        CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
         RepositoryService repositoryService = Mockito.mock(RepositoryService.class);
 
-        gitHubRESTClientImpl.setCacheFactory(cacheFactory);
         gitHubRESTClientImpl.setRepositoryService(repositoryService);
         this.testedObject = gitHubRESTClientImpl;
 
