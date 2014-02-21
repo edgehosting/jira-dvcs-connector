@@ -48,6 +48,9 @@
         <greenhopper.version>6.3.7</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
+        <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
+        <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
+        <com.sun.xml.version>2.1.13</com.sun.xml.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -107,9 +110,21 @@
 			</plugin>
         </plugins>
     </build>
-
+    
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>

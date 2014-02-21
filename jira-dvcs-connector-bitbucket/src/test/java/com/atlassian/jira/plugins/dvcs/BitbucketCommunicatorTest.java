@@ -19,7 +19,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -51,8 +50,6 @@ public class BitbucketCommunicatorTest
     private PluginAccessor pluginAccessorMock;
     @Mock
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactoryMock;
-    @Mock
-    private ChangesetCache changesetCache;
     @Mock
     private MessagingService messagingServiceMock;
     @Mock
@@ -88,7 +85,7 @@ public class BitbucketCommunicatorTest
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
 
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
-        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        communicator.ensureHookPresent(repositoryMock, hookUrl);
 
         verify(servicesRestMock, times(1)).addPOSTService("owner", "slug", hookUrl);
         verify(servicesRestMock, times(1)).deleteService("owner", "slug", 111);
@@ -108,7 +105,7 @@ public class BitbucketCommunicatorTest
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
 
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
-        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        communicator.ensureHookPresent(repositoryMock, hookUrl);
 
         verify(servicesRestMock, never()).addPOSTService("owner", "slug", hookUrl);
         verify(servicesRestMock, times(1)).deleteService("owner", "slug", 111);
@@ -150,7 +147,7 @@ public class BitbucketCommunicatorTest
         
         bitbucketClientBuilderMock = mock(BitbucketClientBuilder.class, new BuilderAnswer());
         when(bitbucketClientBuilderFactoryMock.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilderMock);
-        communicator = new BitbucketCommunicator(bitbucketLinkerMock, pluginAccessorMock, bitbucketClientBuilderFactoryMock, changesetCache, applicationPropertiesMock);
+        communicator = new BitbucketCommunicator(bitbucketLinkerMock, pluginAccessorMock, bitbucketClientBuilderFactoryMock, applicationPropertiesMock);
         
         when(bitbucketClientBuilderMock.build()).thenReturn(bitbucketRemoteClientMock);
         when(bitbucketRemoteClientMock.getChangesetsRest()).thenReturn(changesetRestpoint);

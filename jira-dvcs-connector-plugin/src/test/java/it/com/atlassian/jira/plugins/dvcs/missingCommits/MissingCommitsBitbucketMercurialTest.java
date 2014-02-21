@@ -3,6 +3,7 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -41,11 +42,34 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     }
 
     @Override
-    void removeRemoteDvcsRepository()
+    void removeOldDvcsRepository()
     {
         try
         {
-            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, DVCS_REPO_OWNER);
+            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        }
+        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+    }
+
+    @Override
+    void removeRemoteDvcsRepository()
+    {
+        removeRepository(getMissingCommitsRepositoryName());
+
+        for ( BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                removeRepository(repository.getName());
+            }
+        }
+    }
+
+    private void removeRepository(String name)
+    {
+        try
+        {
+            bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
     }
@@ -53,7 +77,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     @Override
     void createRemoteDvcsRepository()
     {
-        bitbucketRepositoriesREST.createHgRepository(MISSING_COMMITS_REPOSITORY_NAME);
+        bitbucketRepositoriesREST.createHgRepository(getMissingCommitsRepositoryName());
     }
 
     @Override
@@ -72,7 +96,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
 
         String hgPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s", DVCS_REPO_OWNER,
                                                                                       DVCS_REPO_PASSWORD,
-                                                                                      MISSING_COMMITS_REPOSITORY_NAME);
+                                                                                      getMissingCommitsRepositoryName());
         executeCommand(extractedRepoDir, getHgCommand(), "push", hgPushUrl);
         FileUtils.deleteDirectory(extractedRepoDir);
     }

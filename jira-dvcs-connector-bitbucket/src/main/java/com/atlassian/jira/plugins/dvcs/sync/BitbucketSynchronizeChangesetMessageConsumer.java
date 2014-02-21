@@ -55,24 +55,19 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     }
 
     @Override
-    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload)
+    public void onReceive(Message<BitbucketSynchronizeChangesetMessage> message, final BitbucketSynchronizeChangesetMessage payload)
     {
-        BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
+        final BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        Repository repo = payload.getRepository();
-        final Progress progress = payload.getProgress();
+        final BitbucketChangesetPage page = FlightTimeInterceptor.execute(payload.getProgress(), new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
+        {
+            @Override
+            public BitbucketChangesetPage call()
+            {
+                return communicator.getNextPage(payload.getRepository(), payload.getInclude(), payload.getExclude(), payload.getPage());
+            }
+        });
 
-        progress.incrementRequestCount(new Date());
-        final long startFlightTime = System.currentTimeMillis();
-        final BitbucketChangesetPage page;
-        try
-        {
-            page = communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
-        }
-        finally
-        {
-            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
-        }
         process(message, payload, page);
     }
 
@@ -156,11 +151,5 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     public int getParallelThreads()
     {
         return MessageConsumer.THREADS_PER_CONSUMER;
-    }
-
-    @Override
-    public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeChangesetMessage payload, String[] tags)
-    {
-        return retryCount >= 3;
     }
 }

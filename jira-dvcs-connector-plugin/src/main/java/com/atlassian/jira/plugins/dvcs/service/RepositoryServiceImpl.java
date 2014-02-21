@@ -89,9 +89,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Resource
-    private ChangesetCache changesetCache;
-
-    @Resource
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
@@ -535,7 +532,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -564,7 +561,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         for (Repository repository : repositories)
         {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -574,12 +571,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-    	synchronizer.pauseSynchronization(repository, true);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**

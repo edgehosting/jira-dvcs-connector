@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -31,7 +32,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -60,12 +60,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.GroupTransform
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.FlightTimeInterceptor;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.ApplicationProperties;
+
 public class BitbucketCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
@@ -78,21 +80,22 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ApplicationProperties applicationProperties;
-    private final ChangesetCache changesetCache;
 
     @Resource
     private BranchService branchService;
+
     @Resource
     private MessagingService messagingService;
-
+    
+    @Resource
+    private ChangesetDao changesetDao;
 
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
-            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ChangesetCache changesetCache, ApplicationProperties ap)
+            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.changesetCache = changesetCache;
         this.applicationProperties = ap;
     }
 
@@ -236,28 +239,24 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * @param currentPage
      * @return
      */
-    public BitbucketChangesetPage getNextPage(Repository repository, List<String> includeNodes, List<String> excludeNodes,
-            BitbucketChangesetPage currentPage)
+    public BitbucketChangesetPage getNextPage(final Repository repository, final List<String> includeNodes, final List<String> excludeNodes, final BitbucketChangesetPage currentPage)
     {
-        long startFlightTime = System.currentTimeMillis();
         final Progress sync = repository.getSync();
-        if (sync != null)
+
+        return FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
         {
-            sync.incrementRequestCount(new Date());
-        }
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-            return remoteClient.getChangesetsRest().getNextChangesetsPage(repository.getOrgName(), repository.getSlug(), includeNodes,
-                    excludeNodes, CHANGESET_LIMIT, currentPage);
-        }
-        finally
-        {
-            if (sync != null)
+            @Override
+            public BitbucketChangesetPage call() throws RuntimeException
             {
-                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
+                return remoteClient.getChangesetsRest().getNextChangesetsPage(repository.getOrgName(),
+                        repository.getSlug(),
+                        includeNodes,
+                        excludeNodes,
+                        CHANGESET_LIMIT,
+                        currentPage);
             }
-        }
+        });
     }
 
     private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
@@ -334,45 +333,40 @@ public class BitbucketCommunicator implements DvcsCommunicator
         });
     }
 
-    private BitbucketBranchesAndTags getBranchesAndTags(Repository repository)
+    private BitbucketBranchesAndTags getBranchesAndTags(final Repository repository)
     {
         final Progress sync = repository.getSync();
-        final long startFlightTime = System.currentTimeMillis();
-        if (sync != null)
+
+        return FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<BitbucketBranchesAndTags>()
         {
-            sync.incrementRequestCount(new Date());
-        }
-        try
-        {
-            BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
-            // Using undocumented
-            // https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
-            return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(), repository.getSlug());
-        }
-        catch (BitbucketRequestException e)
-        {
-            log.debug("Could not retrieve list of branches", e);
-            throw new SourceControlException("Could not retrieve list of branches", e);
-        }
-        catch (JsonParsingException e)
-        {
-            log.debug("The response could not be parsed", e);
-            throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
-        }
-        finally
-        {
-            if (sync != null)
+            @Override
+            public BitbucketBranchesAndTags call()
             {
-                sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+                try
+                {
+                    BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).cached().build();
+                    // Using undocumented https://api.bitbucket.org/1.0/repositories/atlassian/jira-bitbucket-connector/branches-tags
+                    return remoteClient.getBranchesAndTagsRemoteRestpoint().getBranchesAndTags(repository.getOrgName(), repository.getSlug());
+                }
+                catch (BitbucketRequestException e)
+                {
+                    log.debug("Could not retrieve list of branches", e);
+                    throw new SourceControlException("Could not retrieve list of branches", e);
+                }
+                catch (JsonParsingException e)
+                {
+                    log.debug("The response could not be parsed", e);
+                    throw new SourceControlException.InvalidResponseException("Could not retrieve list of branches", e);
+                }
             }
-        }
+        });
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    public void ensureHookPresent(Repository repository, String postCommitUrl)
     {
         BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build();
 
@@ -703,7 +697,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         List<Branch> newBranches = filterNodes.newBranches;
 
-        if (filterNodes.oldHeads.isEmpty() && !changesetCache.isEmpty(repository.getId()))
+        if (filterNodes.oldHeads.isEmpty() && changesetDao.getChangesetCount(repository.getId()) > 0)
         {
             log.info("No previous branch heads were found, switching to old changeset synchronization for repository [{}].",
                     repository.getId());

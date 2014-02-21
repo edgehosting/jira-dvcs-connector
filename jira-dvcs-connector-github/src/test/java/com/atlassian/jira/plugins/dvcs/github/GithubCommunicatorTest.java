@@ -1,19 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.github;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.sal.api.ApplicationProperties;
+import com.google.common.collect.ImmutableMap;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
@@ -28,26 +36,27 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
-import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @author Martin Skurla
@@ -66,99 +75,99 @@ public class GithubCommunicatorTest
     @Mock
     private UserService userServiceMock;
     @Mock
+    private GitHubRESTClient gitHubRESTClient;
+
+    @Mock
     private User githubUserMock;
     @Mock
     private ApplicationProperties applicationPropertiesMock;
     @Captor
-    private ArgumentCaptor<RepositoryHook> hookCaptor;
+    private ArgumentCaptor<GitHubRepositoryHook> hookCaptor;
 
     // tested object
-    private DvcsCommunicator communicator;
+    private GithubCommunicator communicator;
 
-    
     @Test
-    public void testSetupPostHookShouldDeleteOrphan () throws IOException
+    public void testSetupPostHookShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
         when(repositoryMock.getSlug()).thenReturn("slug");
         
-        RepositoryId repoId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        when(repositoryServiceMock.getHooks(repoId)).thenReturn(sampleHooks());
+        when(gitHubRESTClient.getHooks(repositoryMock)).thenReturn(sampleHooks());
         
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
         
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
-        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        communicator.ensureHookPresent(repositoryMock, hookUrl);
         
-        verify(repositoryServiceMock, times(1)).createHook(isA(IRepositoryIdProvider.class), hookCaptor.capture());
-        verify(repositoryServiceMock, times(1)).deleteHook(repoId, 111);
-        verify(repositoryServiceMock, times(1)).deleteHook(repoId, 101);
-        
-        assertEquals(hookCaptor.getValue().getConfig().get("url"), hookUrl);
-        assertEquals(hookCaptor.getValue().getName(), "web");
+        verify(gitHubRESTClient, times(2)).addHook(isA(Repository.class), hookCaptor.capture());
+        verify(gitHubRESTClient, times(2)).deleteHook(eq(repositoryMock), hookCaptor.capture());
+
+        assertEquals(hookCaptor.getAllValues().get(0).getConfig().get(GitHubRepositoryHook.CONFIG_URL), hookUrl);
+        assertEquals(hookCaptor.getAllValues().get(0).getName(), GitHubRepositoryHook.NAME_WEB);
+        assertNull(hookCaptor.getAllValues().get(0).getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE));
+
+        assertEquals(hookCaptor.getAllValues().get(1).getConfig().get(GitHubRepositoryHook.CONFIG_URL), hookUrl);
+        assertEquals(hookCaptor.getAllValues().get(1).getName(), GitHubRepositoryHook.NAME_WEB);
+        assertEquals(hookCaptor.getAllValues().get(1).getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE), GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON);
+
+        assertEquals(hookCaptor.getAllValues().get(2).getId(), Long.valueOf(111));
+
+        assertEquals(hookCaptor.getAllValues().get(3).getId(), Long.valueOf(101));
     }
     
     @Test
-    public void testSetupPostHookAlreadySetUpShouldDeleteOrphan () throws IOException
+    public void testSetupPostHookAlreadySetUpShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
         when(repositoryMock.getSlug()).thenReturn("slug");
         
-        RepositoryId repoId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
-        List<RepositoryHook> hooks = sampleHooks();
+        List<GitHubRepositoryHook> hooks = sampleHooks();
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
-        when(repositoryServiceMock.getHooks(repoId)).thenReturn(hooks);
+        hooks.add(samplePullRequestHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
+        when(gitHubRESTClient.getHooks(repositoryMock)).thenReturn(hooks);
         
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
         
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
-        communicator.setupPostcommitHook(repositoryMock, hookUrl);
+        communicator.ensureHookPresent(repositoryMock, hookUrl);
         
-        verify(repositoryServiceMock, never()).createHook(isA(IRepositoryIdProvider.class), isA(RepositoryHook.class));
-        verify(repositoryServiceMock, times(1)).deleteHook(repoId, 111);
-        verify(repositoryServiceMock, times(1)).deleteHook(repoId, 101);
-        
+        verify(gitHubRESTClient, never()).addHook(isA(Repository.class), isA(GitHubRepositoryHook.class));
+        verify(gitHubRESTClient, times(2)).deleteHook(eq(repositoryMock), hookCaptor.capture());
+
     }
 
-    private List<RepositoryHook> sampleHooks()
+    private List<GitHubRepositoryHook> sampleHooks()
     {
-        List<RepositoryHook> hooks = Lists.newArrayList();
+        List<GitHubRepositoryHook> hooks = Lists.newArrayList();
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/55/sync", 111L));
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/45/sync", 101L));
         return hooks;
     }
 
-    protected RepositoryHook sampleHook(String url, long id)
+    protected GitHubRepositoryHook sampleHook(String url, long id)
     {
-        RepositoryHook hook = new RepositoryHook();
+        GitHubRepositoryHook hook = new GitHubRepositoryHook();
         hook.setId(id);
-        hook.setName("web");
-        hook.setConfig(ImmutableMap.of("url", url));
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
+        hook.setConfig(ImmutableMap.of(GitHubRepositoryHook.CONFIG_URL, url));
         return hook;
     }
 
-
-    private class ChangesetCacheImpl implements ChangesetCache
+    protected GitHubRepositoryHook samplePullRequestHook(String url, long id)
     {
-
-        private final List<String> cache = new ArrayList<String>();
-
-        @Override
-        public boolean isCached(int repositoryId, String changesetNode)
-        {
-            return cache.contains(changesetNode);
-        }
-
-        public void add(String node)
-        {
-            cache.add(node);
-        }
-
-        @Override
-        public boolean isEmpty(int repositoryId)
-        {
-            return cache.isEmpty();
-        }
+        GitHubRepositoryHook hook = new GitHubRepositoryHook();
+        hook.setId(id);
+        hook.setName(GitHubRepositoryHook.NAME_WEB);
+        hook.setConfig(ImmutableMap.of(
+                GitHubRepositoryHook.CONFIG_URL, url,
+                GitHubRepositoryHook.CONFIG_CONTENT_TYPE, GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON
+        ));
+        hook.setEvents(ImmutableList.of(GitHubRepositoryHook.EVENT_PUSH,
+                GitHubRepositoryHook.EVENT_PULL_REQUEST,
+                GitHubRepositoryHook.EVENT_PULL_REQUEST_REVIEW_COMMENT,
+                GitHubRepositoryHook.EVENT_ISSUE_COMMENT));
+        return hook;
     }
 
 	@BeforeMethod
@@ -166,9 +175,10 @@ public class GithubCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
-        communicator = new GithubCommunicator(new ChangesetCacheImpl(), mock(OAuthStore.class), githubClientProviderMock);
+        communicator = new GithubCommunicator(mock(OAuthStore.class), githubClientProviderMock);
+        communicator.setGitHubRESTClient(gitHubRESTClient);
         ReflectionTestUtils.setField(communicator, "applicationProperties", applicationPropertiesMock);
-        
+
         when(githubClientProviderMock.getRepositoryService(repositoryMock)).thenReturn(repositoryServiceMock);
         when(githubClientProviderMock.getUserService(repositoryMock)).thenReturn(userServiceMock);
         when(githubClientProviderMock.getCommitService(repositoryMock)).thenReturn(commitServiceMock);
@@ -177,12 +187,56 @@ public class GithubCommunicatorTest
 	@Test
 	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
     {
+        when(gitHubRESTClient.getHooks(any(Repository.class))).thenReturn(new LinkedList<GitHubRepositoryHook>());
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
 
-        communicator.setupPostcommitHook(repositoryMock, "POST-COMMIT-URL");
+        String hookUrl = "POST-COMMIT-URL";
+        communicator.ensureHookPresent(repositoryMock, hookUrl);
 
-        verify(repositoryServiceMock).createHook(Matchers.<IRepositoryIdProvider>anyObject(),Matchers.<RepositoryHook>anyObject());
+        // two times - one for changesets hook and one for pull requests hook
+        ArgumentCaptor<GitHubRepositoryHook> hooks = ArgumentCaptor.forClass(GitHubRepositoryHook.class);
+        verify(gitHubRESTClient, times(2)).addHook(any(Repository.class), hooks.capture());
+        
+        GitHubRepositoryHook hook;
+        hook = hooks.getAllValues().get(0);
+        Assert.assertEquals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL), hookUrl);
+        Assert.assertNotEquals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE), GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON);
+        Assert.assertTrue(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PUSH));
+        Assert.assertFalse(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PULL_REQUEST));
+        Assert.assertFalse(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PULL_REQUEST_REVIEW_COMMENT));
+        Assert.assertFalse(hook.getEvents().contains(GitHubRepositoryHook.EVENT_ISSUE_COMMENT));
+
+        hook = hooks.getAllValues().get(1);
+        Assert.assertEquals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE), GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON);
+        Assert.assertEquals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL), hookUrl);
+        Assert.assertTrue(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PUSH));
+        Assert.assertTrue(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PULL_REQUEST));
+        Assert.assertTrue(hook.getEvents().contains(GitHubRepositoryHook.EVENT_PULL_REQUEST_REVIEW_COMMENT));
+        Assert.assertTrue(hook.getEvents().contains(GitHubRepositoryHook.EVENT_ISSUE_COMMENT));
+    }
+
+    @Test
+    public void settingUpPostcommitHook_alreadyExisting() throws Exception
+    {
+        String postCommitUrl = "postCommitUrl";
+
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+        when(repositoryMock.getSlug()).thenReturn("SLUG");
+
+        GitHubRepositoryHook changesetsHook = mock(GitHubRepositoryHook.class);
+        when(changesetsHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl));
+
+        GitHubRepositoryHook prHook = mock(GitHubRepositoryHook.class);
+        when(prHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl, "content_type", "json"));
+
+        List<GitHubRepositoryHook> hooks = Arrays.asList(new GitHubRepositoryHook[] { changesetsHook, prHook });
+
+        when(gitHubRESTClient.getHooks(any(Repository.class))).thenReturn(hooks);
+
+        communicator.ensureHookPresent(repositoryMock, postCommitUrl);
+
+        verify(repositoryServiceMock, never()).createHook(any(IRepositoryIdProvider.class), any(RepositoryHook.class));
     }
 
     @Test

@@ -5,16 +5,18 @@ import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
 /**
  * @author Martin Skurla
  */
-public class BitbucketRepositoriesRemoteRestpoint
+public class BitbucketRepositoriesRemoteRestpoint extends RepositoryRemoteRestpoint
 {
     private final RemoteRequestor requestor;
 
     public BitbucketRepositoriesRemoteRestpoint(RemoteRequestor requestor)
     {
+        super(requestor);
         this.requestor = requestor;
     }
 

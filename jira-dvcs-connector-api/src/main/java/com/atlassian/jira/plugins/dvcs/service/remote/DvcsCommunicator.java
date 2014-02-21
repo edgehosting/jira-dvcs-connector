@@ -42,7 +42,7 @@ public interface DvcsCommunicator
      */
     List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
 
-	void setupPostcommitHook(Repository repository, String postCommitUrl);
+	void ensureHookPresent(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
 
