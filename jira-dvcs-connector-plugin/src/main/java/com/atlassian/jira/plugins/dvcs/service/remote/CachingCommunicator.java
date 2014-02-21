@@ -227,9 +227,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public void ensureChangesetsHookPresent(Repository repository, String postCommitUrl)
+    public void ensureHookPresent(Repository repository, String postCommitUrl)
     {
-        delegate.ensureChangesetsHookPresent(repository, postCommitUrl);
+        delegate.ensureHookPresent(repository, postCommitUrl);
     }
 
     @Override

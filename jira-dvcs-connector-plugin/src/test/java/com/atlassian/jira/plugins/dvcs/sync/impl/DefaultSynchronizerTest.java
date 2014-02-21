@@ -100,6 +100,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
@@ -219,6 +220,9 @@ public class DefaultSynchronizerTest
     @Mock
     private org.eclipse.egit.github.core.service.RepositoryService egitRepositoryService;
 
+    @Mock
+    private ApplicationProperties ap;
+    
     @InjectMocks
     private DefaultSynchronizer defaultSynchronizer;
 
@@ -362,7 +366,7 @@ public class DefaultSynchronizerTest
         bitbucketCachingCommunicator = new CachingCommunicator();
         githubCachingCommunicator = new CachingCommunicator();
 
-        bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory);
+        bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, ap);
         ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);

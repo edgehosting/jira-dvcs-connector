@@ -55,6 +55,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -87,6 +88,9 @@ public class GithubCommunicator implements DvcsCommunicator
 
     @Resource
     private FeatureManager featureManager;
+
+    @Resource
+    private ApplicationProperties applicationProperties;
 
     protected final GithubClientProvider githubClientProvider;
     protected final OAuthStore oAuthStore;
@@ -341,70 +345,63 @@ public class GithubCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public void ensureChangesetsHookPresent(Repository repository, String hookUrl)
+    public void ensureHookPresent(Repository repository, String hookUrl)
     {
         List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
-        
-        // adds changesets hook, if it does not exist
-        if (!existsChangesetsHook(hooks, hookUrl))
+
+	    //Cleanup orphan this instance related hooks.
+        boolean foundChangesetHook = false;
+        boolean foundPullRequesttHook = false;
+        for (GitHubRepositoryHook hook : hooks)
+	    {
+            String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+            boolean isPullRequestHook = isPullRequestHook(hook);
+
+            if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
+            {
+                foundChangesetHook = true;
+                continue;
+            }
+
+            if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
+            {
+                foundPullRequesttHook = true;
+                continue;
+            }
+
+            String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
+
+            if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
+            {
+                String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+                if (postCommitHookUrl.startsWith(thisHostAndRest))
+                {
+                    gitHubRESTClient.deleteHook(repository, hook);
+                }
+            }
+        }
+
+        if (!foundChangesetHook)
         {
+            // create hook if needed
             createChangesetsHook(repository, hookUrl);
         }
-        
-        // adds pull requests hook, if it does not exist
-        if (!existsPullRequestsHook(hooks, hookUrl))
+
+        if (!foundPullRequesttHook)
         {
+            // adds pull requests hook, if it does not exist
             createPullRequestsHook(repository, hookUrl);
         }
     }
 
-    /**
-     * @param hooks
-     *            current registered hooks
-     * @param hookUrl
-     *            for which hook URL
-     * @return True if changesets hook for provided information already exists
-     */
-    private boolean existsChangesetsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
+    private boolean isPullRequestHook(GitHubRepositoryHook hook)
     {
-        for (GitHubRepositoryHook hook : hooks)
-        {
-            // in old API (changesets) content type was undefined (default it was form)
-            // in new API (pull requests) we use recommended json
-            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
-                    && !GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param hooks
-     *            current registered hooks
-     * @param hookUrl
-     *            for which hook URL
-     * @return True if pull requests hook for provided information already exists
-     */
-    private boolean existsPullRequestsHook(List<GitHubRepositoryHook> hooks, String hookUrl)
-    {
-        for (GitHubRepositoryHook hook : hooks)
-        {
-            // in old API (changesets) content type was undefined (default it was form)
-            // in new API (pull requests) we use recommended json
-            if (hookUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL))
-                    && GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE)))
-            {
-                return true;
-            }
-        }
-        return false;
+        return GitHubRepositoryHook.CONFIG_CONTENT_TYPE_JSON.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_CONTENT_TYPE));
     }
 
     /**
      * Creates new hook for events related to changesets.
-     * 
+     *
      * @param repository
      *            on which repository
      * @param hookUrl

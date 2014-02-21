@@ -13,8 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +31,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
@@ -533,7 +532,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.ensureChangesetsHookPresent(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -551,7 +550,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**

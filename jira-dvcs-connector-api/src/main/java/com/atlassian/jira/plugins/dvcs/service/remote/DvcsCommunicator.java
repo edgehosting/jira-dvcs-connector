@@ -20,6 +20,8 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
  */
 public interface DvcsCommunicator
 {
+    String POST_HOOK_SUFFIX = String.valueOf("/rest/bitbucket/1.0/repository/");
+
     String getDvcsType();
 
 	AccountInfo getAccountInfo(String hostUrl, String accountName);
@@ -40,7 +42,7 @@ public interface DvcsCommunicator
      */
     List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
 
-	void ensureChangesetsHookPresent(Repository repository, String postCommitUrl);
+	void ensureHookPresent(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
 
