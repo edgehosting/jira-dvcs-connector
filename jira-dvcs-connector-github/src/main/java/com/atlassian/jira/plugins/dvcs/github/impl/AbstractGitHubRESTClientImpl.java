@@ -103,6 +103,9 @@ public class AbstractGitHubRESTClientImpl
         if (IGitHubConstants.HOST_DEFAULT.equals(host) || IGitHubConstants.HOST_GISTS.equals(host))
         {
             result.host(IGitHubConstants.HOST_API);
+        } else
+        {
+            result.path(IGitHubConstants.SEGMENT_V3_API);
         }
 
         result = result.path("/repos").path(repository.getOrgName()).path(repository.getSlug());
