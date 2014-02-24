@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
@@ -36,8 +37,11 @@ public class BranchServiceImpl implements BranchService
     @Override
     public void updateBranches(final Repository repository, final List<Branch> newBranches)
     {
+        // to remove possible branch duplicates
+        Set<Branch> newBranchesSet = new HashSet<Branch>(newBranches);
+
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
-        for (Branch branch : newBranches)
+        for (Branch branch : newBranchesSet)
         {
             if (oldBranches == null || !oldBranches.contains(branch))
             {
@@ -51,7 +55,7 @@ public class BranchServiceImpl implements BranchService
         {
             for (Branch oldBranch : oldBranches)
             {
-                if (!newBranches.contains(oldBranch))
+                if (!newBranchesSet.contains(oldBranch))
                 {
                     branchDao.removeBranch(repository.getId(), oldBranch);
                 }
@@ -73,7 +77,7 @@ public class BranchServiceImpl implements BranchService
         if (newBranches != null)
         {
             List<BranchHead> headAlreadyThere = new ArrayList<BranchHead>();
-            for (Branch branch : newBranches)
+            for (Branch branch : new HashSet<Branch>(newBranches))
             {
                 for (BranchHead branchHead : branch.getHeads())
                 {
