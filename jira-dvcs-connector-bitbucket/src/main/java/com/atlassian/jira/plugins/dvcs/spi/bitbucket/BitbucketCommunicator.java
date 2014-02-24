@@ -433,7 +433,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     {
                         found = true;
                     }
-                    else if (isRequiredPostCommitUrl)
+                    else
                     {
                         servicesRest.deleteService(repository.getOrgName(), repository.getSlug(), bitbucketServiceEnvelope.getId());
                     }
