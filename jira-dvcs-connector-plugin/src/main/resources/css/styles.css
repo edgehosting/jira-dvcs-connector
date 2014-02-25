@@ -231,13 +231,9 @@ a:hover.repositoryNameLink {
 .dvcs-centered {
 	text-align: center !important;
 }
-.dvcs-repos-table .dvcs-disabled {
-	filter: alpha(opacity=60);
-	opacity: 0.6;
-}
 .dvcs-repos-table .dvcs-disabled a {
-	filter: alpha(opacity=60);
-	opacity: 0.6;
+	filter: alpha(opacity=36);
+	opacity: 0.36;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/

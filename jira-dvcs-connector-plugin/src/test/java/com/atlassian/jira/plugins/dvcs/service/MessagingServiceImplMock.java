@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.cache.memory.MemoryCacheManager;
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
@@ -17,7 +18,6 @@ import java.util.List;
  * A {@link com.atlassian.jira.plugins.dvcs.service.message.MessagingService} mock implementation.
  *
  * @author Miroslav Stencel
- *
  */
 public class MessagingServiceImplMock extends MessagingServiceImpl
 {
@@ -80,9 +80,9 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     }
 
     @Override
-    public <P extends HasProgress> void discard(final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message, final DiscardReason discardReason)
     {
-        ok(null, message);
+        ok(consumer, message);
     }
 
     @Override

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator

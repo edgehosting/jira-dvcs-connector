@@ -89,9 +89,6 @@ public class RepositoryServiceImpl implements RepositoryService
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Resource
-    private SyncAuditLogDao syncAuditDao;
-
-    @Resource
     private GitHubEventService gitHubEventService;
 
     @Resource
@@ -99,6 +96,9 @@ public class RepositoryServiceImpl implements RepositoryService
 
     @Resource
     private RepositoryRemovalJobRunner repositoryRemovalJobRunner;
+
+    @Resource
+    private SyncAuditLogDao syncAuditDao;
 
     @Resource
     private ClusterLockService clusterLockService;
@@ -538,7 +538,7 @@ public class RepositoryServiceImpl implements RepositoryService
      * Adds the or remove postcommit hook.
      *
      * @param repository the repository
-     * @param postCommitCallbackUrl       commit callback url
+     * @param postCommitCallbackUrl commit callback url
      */
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
@@ -546,7 +546,7 @@ public class RepositoryServiceImpl implements RepositoryService
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -564,7 +564,7 @@ public class RepositoryServiceImpl implements RepositoryService
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**
@@ -575,7 +575,7 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -585,12 +585,17 @@ public class RepositoryServiceImpl implements RepositoryService
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-    	synchronizer.pauseSynchronization(repository, true);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**

@@ -3,42 +3,36 @@ package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Conditions;
-import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.internal.seleniumemulation.ElementFinder;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 
 /**
  * Represents repository table row of {@link AccountsPageAccountRepository}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class AccountsPageAccountRepository extends WebDriverElement
 {
 
     @Inject
-    private WebDriver webDriver;
-
-    @Inject
     private PageElementFinder elementFinder;
     /**
      * Enable checkbox - with responsibility to enable repository.
-     * 
+     *
      * @see #isEnabled()
      * @see #enable()
      */
@@ -59,7 +53,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     /**
      * Constructor.
-     * 
+     *
      * @param locator
      * @param parent
      */
@@ -71,6 +65,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
     /**
      * @return is repository enabled?
      */
+    @Override
     public boolean isEnabled()
     {
         return enableCheckbox.isSelected();
@@ -78,7 +73,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     /**
      * Enables repository.
-     * 
+     *
      * @see #isEnabled()
      */
     public void enable()
@@ -104,33 +99,13 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
-        int attempts = 5;
-        do
-        {
-            try
-            {
-                if (synchronizationIcon.isPresent())
-                {
-                    return synchronizationIcon.getAttribute("class").contains("running");
-                } else
-                {
-                    return false;
-                }
-            } catch (StaleElementReferenceException e)
-            {
-                // nothing to do - retry
-
-                // check maximal retries - prevention in front of deadlock
-                // if maximal retry attempts was exceeds - throws exception - it should never happened
-                if (attempts-- > 0)
-                {
-                    throw new RuntimeException("Unable to work with synchronization icon, it seems as detached from DOM!", e);
-                }
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && !repository.getSync().isFinished()) {
+                return true;
             }
-
-            // if StaleElementReferenceException was happened, it is necessary to wait for next attempt,
-            // because element was already replaced via AJAX by new element
-        } while (true);
+        }
+        return false;
     }
 
     /**
@@ -139,6 +114,13 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public void synchronize()
     {
         synchronizationButton.click();
+        try
+        {
+            Thread.sleep(5000l);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 
@@ -169,6 +151,13 @@ public class AccountsPageAccountRepository extends WebDriverElement
         synchronizationButton.javascript().execute(script);
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
+        try
+        {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e)
+        {
+            // ignore
+        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 

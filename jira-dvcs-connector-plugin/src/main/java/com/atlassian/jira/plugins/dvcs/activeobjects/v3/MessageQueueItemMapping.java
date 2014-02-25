@@ -44,6 +44,11 @@ public interface MessageQueueItemMapping extends Entity
     String RETRIES_COUNT = "RETRIES_COUNT";
 
     /**
+     * @see #getStateInfo()
+     */
+    String STATE_INFO = "STATE_INFO";
+
+    /**
      * @return Message for consuming.
      */
     @NotNull
@@ -95,5 +100,13 @@ public interface MessageQueueItemMapping extends Entity
      *            {@link #getRetriesCount()}
      */
     void setRetriesCount(int retriesCount);
+
+    /**
+     *
+     * @return info about the state, e.g. the reason for discard state
+     */
+    String getStateInfo();
+
+    void setStateInfo(String stateInfo);
 
 }

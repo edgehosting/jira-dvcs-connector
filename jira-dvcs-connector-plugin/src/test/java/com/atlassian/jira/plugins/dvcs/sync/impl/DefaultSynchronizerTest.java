@@ -9,6 +9,7 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
@@ -18,7 +19,6 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.MessageExecutor;
@@ -56,6 +56,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
+import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
@@ -129,7 +130,7 @@ public class DefaultSynchronizerTest
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
     @Mock
-    private ChangesetCache changesetCache;
+    private BranchService branchService;
 
     @InjectMocks
     private MessagingService messagingService = new MessagingServiceImplMock();
@@ -201,6 +202,9 @@ public class DefaultSynchronizerTest
 
     @Mock
     private RepositoryDao repositoryDao;
+    
+    @Mock
+    private ChangesetDao changesetDao;
 
     @Mock
     private PostponeOndemandPrSyncListener postponePrSyncHelper;
@@ -210,6 +214,9 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ClusterLockService clusterLockService;
+
+    @Mock
+    private ApplicationProperties ap;
 
     private final CacheManager cacheManager = new MemoryCacheManager();
 
@@ -361,7 +368,8 @@ public class DefaultSynchronizerTest
         final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
         final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager);
 
-        final BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, changesetCache);
+        final BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, ap);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
 
@@ -840,25 +848,6 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return processedNodes.isEmpty();
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
 
         graph
                 .commit("node1", null)
@@ -894,14 +883,6 @@ public class DefaultSynchronizerTest
     public void getChangesets_Bitbucket_fullSync()
     {
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return true;
-            }
-        });
 
         Graph graph = new Graph();
 
@@ -940,26 +921,7 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return false;
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
 
         graph
                 .commit("node1", null)
@@ -1013,25 +975,6 @@ public class DefaultSynchronizerTest
         final List<String> processedNodes = Lists.newArrayList();
 
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return processedNodes.isEmpty();
-            }
-        });
-
-        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                String node = (String)invocation.getArguments()[1];
-
-                return processedNodes.contains(node);
-            }
-        });
 
         graph
                 .commit("node1", null)
@@ -1067,14 +1010,6 @@ public class DefaultSynchronizerTest
     public void getChangesets_GitHub_fullSync()
     {
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
-        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
-        {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable
-            {
-                return true;
-            }
-        });
 
         Graph graph = new Graph();
 
