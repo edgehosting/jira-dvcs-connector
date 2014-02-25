@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -16,6 +17,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.JsonParsingException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranchesAndTags;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
@@ -71,14 +75,13 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     @Override
-    public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload)
+    public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, final BitbucketSynchronizeActivityMessage payload)
     {
-        Repository repo = payload.getRepository();
+        final Repository repo = payload.getRepository();
         final Progress progress = payload.getProgress();
         int jiraCount = progress.getJiraCount();
 
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
-        PullRequestRemoteRestpoint pullRestpoint = null;
 
         Date lastSync = repo.getActivityLastSync();
 
@@ -89,18 +92,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
         BitbucketRemoteClient remoteClient = bitbucketClientBuilder.apiVersion(2).build();
 
-        pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
-        progress.incrementRequestCount(new Date());
-        long startFlightTime = System.currentTimeMillis();
-        try
+        final PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
+        activityPage = FlightTimeInterceptor.execute(progress, new FlightTimeInterceptor.Callable<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
         {
-            activityPage = pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
-                    payload.getLastSyncDate());
-        }
-        finally
-        {
-            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
-        }
+            @Override
+            public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> call() throws RuntimeException
+            {
+                return pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
+                        payload.getLastSyncDate());
+            }
+        });
 
         List<BitbucketPullRequestActivityInfo> infos = activityPage.getValues();
         boolean isLastPage = isLastPage(activityPage);
@@ -179,9 +180,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return localPullRequest.getID();
     }
 
-    private RepositoryPullRequestMapping ensurePullRequestPresent(Repository repo, PullRequestRemoteRestpoint pullRestpoint, BitbucketPullRequestActivityInfo info, BitbucketSynchronizeActivityMessage payload)
+    private RepositoryPullRequestMapping ensurePullRequestPresent(final Repository repo, final PullRequestRemoteRestpoint pullRestpoint, final BitbucketPullRequestActivityInfo info, BitbucketSynchronizeActivityMessage payload)
     {
         BitbucketPullRequest remote = null;
+
         Map<String, Participant> participantIndex = null;
         Integer remoteId = info.getPullRequest().getId().intValue();
         int commentCount = 0;
@@ -190,51 +192,38 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (!payload.getProcessedPullRequests().contains(remoteId))
         {
             final Progress sync = repo.getSync();
-            final long startFlightTime = System.currentTimeMillis();
-            if (sync != null)
+
+            remote = FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<BitbucketPullRequest>()
             {
-                sync.incrementRequestCount(new Date());
-            }
-            try
-            {
-                BitbucketLink pullRequestLink = info.getPullRequest().getLinks().getSelf();
-                if (pullRequestLink != null && !StringUtils.isBlank(pullRequestLink.getHref()))
+                @Override
+                public BitbucketPullRequest call()
                 {
-                    remote = pullRestpoint.getPullRequestDetail(pullRequestLink.getHref());
-                } else
-                {
-                    // if there is no pull request link fall back to the generated pull request url
-                    remote = pullRestpoint.getPullRequestDetail(repo.getOrgName(), repo.getSlug(), info
-                            .getPullRequest().getId() + "");
+                    BitbucketLink pullRequestLink = info.getPullRequest().getLinks().getSelf();
+                    if (pullRequestLink != null && !StringUtils.isBlank(pullRequestLink.getHref()))
+                    {
+                        return pullRestpoint.getPullRequestDetail(pullRequestLink.getHref());
+                    } else
+                    {
+                        // if there is no pull request link fall back to the generated pull request url
+                        return pullRestpoint.getPullRequestDetail(repo.getOrgName(), repo.getSlug(), info
+                                .getPullRequest().getId() + "");
+                    }
                 }
-                participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
-            }
-            finally
-            {
-                if (sync != null)
-                {
-                    sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
-                }
-            }
+            });
+
+            participantIndex = loadPulRequestParticipants(pullRestpoint, remote);
 
             if (remote.getLinks().getComments() != null)
             {
-                final long startFlightTime2 = System.currentTimeMillis();
-                if (sync != null)
+                final String commentsUrl = remote.getLinks().getComments().getHref();
+                commentCount = FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Integer>()
                 {
-                    sync.incrementRequestCount(new Date());
-                }
-                try
-                {
-                    commentCount = pullRestpoint.getCount(remote.getLinks().getComments().getHref());
-                }
-                finally
-                {
-                    if (sync != null)
+                    @Override
+                    public Integer call() throws RuntimeException
                     {
-                        sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime2));
+                        return pullRestpoint.getCount(commentsUrl);
                     }
-                }
+                });
             }
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
@@ -329,56 +318,61 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 || local.getCommentCount() != commentCount;
     }
 
-    private void loadPullRequestCommits(Repository repo, PullRequestRemoteRestpoint pullRestpoint,
-            int localPullRequestId, BitbucketPullRequestUpdateActivity activity, RepositoryPullRequestMapping savedPullRequest, BitbucketPullRequest remotePullRequest)
+    private void loadPullRequestCommits(final Repository repo, final PullRequestRemoteRestpoint pullRestpoint,
+            final int localPullRequestId, final BitbucketPullRequestUpdateActivity activity, final RepositoryPullRequestMapping savedPullRequest, final BitbucketPullRequest remotePullRequest)
     {
         if (activity.getSource() != null && activity.getSource().getRepository() != null)
         {
             final Progress sync = repo.getSync();
-            long startFlightTime = System.currentTimeMillis();
-            if (sync != null)
-            {
-                sync.incrementRequestCount(new Date());
-            }
-            try
-            {
-                BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
-                Iterable<BitbucketPullRequestCommit> commitsIterator = null;
-                if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
-                {
-                    commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
-                } else
-                {
-                    // if there is no commits link, fall back to use generated commits url
-                    commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
-                }
 
-                for (BitbucketPullRequestCommit commit : commitsIterator)
+            FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Void>()
+            {
+                @Override
+                public Void call()
                 {
-                    RepositoryCommitMapping localCommit = dao.getCommitByNode(repo, localPullRequestId, commit.getHash());
-                    if (localCommit == null)
+                    try
                     {
-                        localCommit = saveCommit(repo, commit, null, localPullRequestId);
-                        linkCommit(repo, localCommit, savedPullRequest);
-                    } else {
-                        break;
+                        Iterable<BitbucketPullRequestCommit> commitsIterator = getCommits(repo, remotePullRequest, pullRestpoint);
+
+                        for (BitbucketPullRequestCommit commit : commitsIterator)
+                        {
+                            RepositoryCommitMapping localCommit = dao.getCommitByNode(repo, localPullRequestId, commit.getHash());
+                            if (localCommit == null)
+                            {
+                                localCommit = saveCommit(repo, commit, null, localPullRequestId);
+                                linkCommit(repo, localCommit, savedPullRequest);
+                            } else {
+                                break;
+                            }
+                        }
+                    } catch(BitbucketRequestException.NotFound_404 e)
+                    {
+                        LOGGER.info("There are no commits for pull request", e);
                     }
+
+                    return null;
                 }
-            } catch(BitbucketRequestException e)
-            {
-                LOGGER.warn("Could not get commits for pull request", e);
-            }
-            finally
-            {
-                if (sync != null)
-                {
-                    sync.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
-                }
-            }
+            });
         } else
         {
             LOGGER.debug("The source repository is not available for pull request [{}]. Skipping loading commits.", remotePullRequest.getId());
         }
+    }
+
+    private Iterable<BitbucketPullRequestCommit> getCommits(Repository repo, BitbucketPullRequest remotePullRequest, PullRequestRemoteRestpoint pullRestpoint)
+    {
+        Iterable<BitbucketPullRequestCommit> commitsIterator;
+        BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
+        if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
+        {
+            commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
+        } else
+        {
+            // if there is no commits link, fall back to use generated commits url
+            commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
+        }
+
+        return commitsIterator;
     }
 
     private void linkCommit(Repository domainRepository, RepositoryCommitMapping commitMapping,
@@ -471,11 +465,4 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     {
         return MessageConsumer.THREADS_PER_CONSUMER;
     }
-
-    @Override
-    public boolean shouldDiscard(int messageId, int retryCount, BitbucketSynchronizeActivityMessage payload, String[] tags)
-    {
-        return retryCount >= 3;
-    }
-
 }

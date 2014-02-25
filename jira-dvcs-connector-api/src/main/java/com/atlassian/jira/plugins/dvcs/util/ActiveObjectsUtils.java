@@ -20,7 +20,8 @@ public class ActiveObjectsUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
     private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500);
-    private static final boolean DELETE_WITH_SQL = SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
+    // Because of an issue in ActiveObjects (AO-453, AO-455) we can't use deleteWithSQL in PostgresSQL
+    private static final boolean DELETE_WITH_SQL = false; //SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
 
     public static <T extends Entity> int delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {

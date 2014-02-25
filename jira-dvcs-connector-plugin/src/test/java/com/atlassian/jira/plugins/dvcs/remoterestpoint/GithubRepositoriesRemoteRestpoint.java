@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -46,7 +47,20 @@ public class GithubRepositoriesRemoteRestpoint
             // status is not a 204 (No Content).
         }
     }
-    
+
+    public List<Repository> getRepositories(String owner)
+    {
+        RepositoryService repositoryService = getRepositoryService();
+        try
+        {
+            return repositoryService.getRepositories(owner);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     private RepositoryService getRepositoryService()
     {
         return new RepositoryService(gitHubClient);

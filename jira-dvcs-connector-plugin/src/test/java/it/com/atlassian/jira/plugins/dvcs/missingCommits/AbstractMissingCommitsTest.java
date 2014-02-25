@@ -1,5 +1,6 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
+import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
@@ -32,15 +33,19 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
     static final String DVCS_REPO_OWNER = "dvcsconnectortest";
     static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
-    static final String MISSING_COMMITS_REPOSITORY_NAME = "missingcommitstest";
+    protected static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
+    private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
     protected OAuth oAuth;
+    protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
+    private String missingCommitsRepositoryName;
 
     @BeforeMethod
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
-        removeRemoteDvcsRepository();
+        removeOldDvcsRepository();
+        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
         removeJiraProject();
 
         createRemoteDvcsRepository();
@@ -51,15 +56,16 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     public void beforeClass()
     {
         oAuth = loginToDvcsAndGetJiraOAuthCredentials();
-        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass(alwaysRun = true)
     public void afterClass()
     {
         removeOAuth();
+        removeRemoteDvcsRepository();
     }
 
+    abstract void removeOldDvcsRepository();
     abstract void removeRemoteDvcsRepository();
     abstract void createRemoteDvcsRepository();
 
@@ -70,6 +76,16 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     abstract String getSecondDvcsZipRepoPathToPush();
 
     abstract void removeOAuth();
+
+    public String getMissingCommitsRepositoryName()
+    {
+        if (missingCommitsRepositoryName == null)
+        {
+            missingCommitsRepositoryName = timestampNameTestResource.randomName(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION);
+        }
+
+        return missingCommitsRepositoryName;
+    }
 
     @Test
     public void commitsIssueTab_ShouldNotMissAnyRelatedCommits() throws Exception
@@ -141,7 +157,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         BitBucketConfigureOrganizationsPage configureOrganizationsPage =
                 jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        String repositoryId = configureOrganizationsPage.getRepositoryIdFromRepositoryName(MISSING_COMMITS_REPOSITORY_NAME);
+        String repositoryId = configureOrganizationsPage.getRepositoryIdFromRepositoryName(getMissingCommitsRepositoryName());
 
         PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
     }

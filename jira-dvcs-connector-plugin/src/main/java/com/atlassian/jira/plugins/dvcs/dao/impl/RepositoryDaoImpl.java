@@ -70,7 +70,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
         repository.setFork(repositoryMapping.isFork());
 
-        if (repository.isFork())
+        if (repository.isFork() && repositoryMapping.getForkOfSlug() != null)
         {
             Repository forkOfRepository = new Repository();
             forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());

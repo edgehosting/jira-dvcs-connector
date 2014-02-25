@@ -3,10 +3,12 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
@@ -16,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author Martin Skurla
@@ -41,11 +44,34 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     }
 
     @Override
-    void removeRemoteDvcsRepository()
+    void removeOldDvcsRepository()
     {
         try
         {
-            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, DVCS_REPO_OWNER);
+            bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        }
+        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+    }
+
+    @Override
+    void removeRemoteDvcsRepository()
+    {
+        removeRepository(getMissingCommitsRepositoryName());
+
+        for ( BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                removeRepository(repository.getName());
+            }
+        }
+    }
+
+    private void removeRepository(String name)
+    {
+        try
+        {
+            bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
         }
         catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
     }
@@ -53,7 +79,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     @Override
     void createRemoteDvcsRepository()
     {
-        bitbucketRepositoriesREST.createGitRepository(MISSING_COMMITS_REPOSITORY_NAME);
+        bitbucketRepositoriesREST.createGitRepository(getMissingCommitsRepositoryName());
     }
 
     @Override
@@ -72,7 +98,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
 
         String gitPushUrl = String.format("https://%1$s:%2$s@bitbucket.org/%1$s/%3$s.git", DVCS_REPO_OWNER,
                                                                                            DVCS_REPO_PASSWORD,
-                                                                                           MISSING_COMMITS_REPOSITORY_NAME);
+                                                                                           getMissingCommitsRepositoryName());
 
         String gitCommand = getGitCommand();
 

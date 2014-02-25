@@ -43,7 +43,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;
-    }
+        }
 
     @Override
     public void removeAllInRepository(final int repositoryId)
@@ -295,24 +295,46 @@ public class ChangesetDaoImpl implements ChangesetDao
         final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
         final List<ChangesetMapping> changesetMappings = activeObjects
                 .executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
-                {
-                    @Override
-                    public List<ChangesetMapping> doInTransaction()
-                    {
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
                         final ChangesetMapping[] mappings = activeObjects
                                 .find(ChangesetMapping.class,
-                                        Query.select("ID, *")
-                                                .alias(ChangesetMapping.class, "CHANGESET")
-                                                .alias(IssueToChangesetMapping.class, "ISSUE")
+                        Query.select("ID, *")
+                                .alias(ChangesetMapping.class, "CHANGESET")
+                                .alias(IssueToChangesetMapping.class, "ISSUE")
                                                 .join(IssueToChangesetMapping.class,
                                                         "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
                                                 .where(baseWhereClause).order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC")));
 
-                        return Arrays.asList(mappings);
-                    }
-                });
+                return Arrays.asList(mappings);
+            }
+        });
 
         return changesetMappings;
+    }
+
+    @Override
+    public List<Changeset> getByRepository(final int repositoryId)
+    {
+        final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
+                ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
+                        Query.select("ID, *")
+                                .alias(ChangesetMapping.class, "CHANGESET")
+                                .alias(RepositoryToChangesetMapping.class, "REPO")
+                                .join(RepositoryToChangesetMapping.class, "CHANGESET.ID = REPO." + RepositoryToChangesetMapping.CHANGESET_ID)
+                                .where("REPO.ID = ?", repositoryId));
+
+                return Arrays.asList(mappings);
+            }
+        });
+
+        return transformAll(changesetMappings, null);
     }
 
     @Override
@@ -324,19 +346,19 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
         final List<ChangesetMapping> changesetMappings = activeObjects
                 .executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
-                {
-                    @Override
-                    public List<ChangesetMapping> doInTransaction()
-                    {
+        {
+            @Override
+            public List<ChangesetMapping> doInTransaction()
+            {
                         final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
                         final Query query = Query.select("ID, *").alias(ChangesetMapping.class, "CHANGESET")
-                                .alias(IssueToChangesetMapping.class, "ISSUE")
-                                .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                                .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
+                        .alias(IssueToChangesetMapping.class, "ISSUE")
+                        .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                        .where(baseWhereClause).limit(maxResults).order(ChangesetMapping.DATE + " DESC");
                         final ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, query);
-                        return Arrays.asList(mappings);
-                    }
-                });
+                return Arrays.asList(mappings);
+            }
+        });
 
         return transformAll(changesetMappings, null);
     }

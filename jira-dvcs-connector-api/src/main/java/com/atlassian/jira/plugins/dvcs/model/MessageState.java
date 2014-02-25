@@ -27,6 +27,10 @@ public enum MessageState
     /**
      * Message is sleeping and it is waiting for resuming.
      */
-    SLEEPING
+    SLEEPING,
 
+    /**
+     * Message is discarded
+     */
+    DISCARDED
 }

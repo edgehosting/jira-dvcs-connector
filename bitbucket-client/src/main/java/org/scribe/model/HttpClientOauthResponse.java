@@ -7,14 +7,17 @@ import java.io.StringWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.scribe.exceptions.OAuthException;
+
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 
 public class HttpClientOauthResponse
 {
     private int statusCode;
     private String content;
 
-    public HttpClientOauthResponse (HttpResponse response)
+    public HttpClientOauthResponse (HttpResponse response, HttpRequestBase request)
     {
         // status
         try
@@ -27,6 +30,8 @@ public class HttpClientOauthResponse
             IOUtils.copy(new BufferedReader(new InputStreamReader(remoteContent)), output);
             
             content = output.toString();
+            
+            SystemUtils.releaseConnection(request, response);
         
         } catch (Exception e)
         {
