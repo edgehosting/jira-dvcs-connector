@@ -43,6 +43,8 @@
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
+    <component key="panelVisibleManager" class="com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager" />
+
     <!-- ===============================================================================================================================
          smartcommits
           =============================================================================================================================== -->
@@ -232,6 +234,11 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
 
+    <component key="bitbucketHttpClientProvider" name="bitbucketHttpClientProvider"
+               class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider">
+        <description>Bitbucket HttpClient Provider</description>
+    </component>
+
     <component key="githubClientProvider" name="githubClientProvider"
                class="com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider">
         <description>Github Client Provider</description>
@@ -251,6 +258,9 @@
     <!-- Bitbucket -->
     
     <!-- GitHub -->
+    <component key="gitHubRESTClient" class="com.atlassian.jira.plugins.dvcs.github.impl.GitHubRESTClientImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient</interface>
+    </component>
 	<component key="gitHubEventDAO" name="GitHub Event DAO" class="com.atlassian.jira.plugins.dvcs.dao.impl.GitHubEventDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO</interface>
 	</component>
@@ -330,12 +340,6 @@
                class="com.atlassian.jira.plugins.dvcs.service.ChangesetServiceImpl">
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
-    </component>
-
-    <component key="changesetCache" name="changesetCache"
-               class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
-        <description>changesetCache</description>
-        <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
     </component>
     
     <component key="branchService" name="branchService"
@@ -450,7 +454,7 @@
         <label key="Commits" />
         <tooltip key="Commits" />
         <resource type="download" name="icon.png" location="images/gh_icon.png" />
-        <condition class="com.atlassian.jira.plugins.dvcs.webwork.ViewVersionControlCondition"/> 
+        <condition class="com.atlassian.jira.plugins.dvcs.webwork.DvcsPanelCondition"/>
     </web-panel>
 
     <!-- The webwork1 plugin element is how you add new actions to JIRA -->
@@ -535,13 +539,23 @@
     <web-resource key="requiredResourceForAjaxCommitsTab" name="Resources That Needs To be Loaded On Issue View">
 		<context>jira.view.issue</context>
 		<dependency>jira.webresources:viewissue</dependency>
-		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
+		<resource type="download" name="css/issue-tabs-integration.css" location="css/issue-tabs-integration.less" />
         <resource type="download" name="javascripts/dvcs-tabs.js" location="javascripts/dvcs-tabs.js"/>
 	</web-resource>
 
     <web-resource key="requiredResourceForGreenHopperCommitsTab" name="Resources That Needs To be Loaded On GreenHopper Board">
         <context>gh-rapid</context>
-        <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.css" />
+
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
+        <resource type="download" name="issue-tabs-integration.css" location="css/issue-tabs-integration.less" />
         <resource type="download" name="greenhopper-overrides.css" location="css/greenhopper-overrides.css" />
         <resource type="download" name="javascripts/dvcs-tabs.js" location="javascripts/dvcs-tabs.js"/>
     </web-resource>

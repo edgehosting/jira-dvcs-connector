@@ -7,8 +7,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynch
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventContext;
 import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestSynchronizeMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import org.eclipse.egit.github.core.PullRequest;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,21 +35,22 @@ public class GitHubEventContextImpl implements GitHubEventContext
     }
 
     @Override
-    public void savePullRequest(PullRequest pullRequest)
+    public void savePullRequest(long pullRequestId, int pullRequestNumber)
     {
-        if (pullRequest == null || processedPullRequests.contains(pullRequest.getId()))
+        if (processedPullRequests.contains(pullRequestId))
         {
             return;
         }
 
-        processedPullRequests.add(pullRequest.getId());
+        processedPullRequests.add(pullRequestId);
 
         Progress progress = synchronizer.getProgress(repository.getId());
         GitHubPullRequestSynchronizeMessage message = new GitHubPullRequestSynchronizeMessage(progress, progress.getAuditLogId(),
-                isSoftSync, repository, pullRequest.getNumber());
+                isSoftSync, repository, pullRequestNumber);
 
         messagingService.publish(
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),
                 message, synchronizationTags);
     }
+
 }

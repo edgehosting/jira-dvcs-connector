@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -121,6 +120,12 @@ public interface RepositoryService
      * @param repositories list of repositories to delete
      */
     void removeRepositories(List<Repository> repositories);
+
+    /**
+     * marks repository as deleted and stops the running synchronization
+     * @param repository
+     */
+    void prepareForRemove(Repository repository);
 
     /**
      * @param repository

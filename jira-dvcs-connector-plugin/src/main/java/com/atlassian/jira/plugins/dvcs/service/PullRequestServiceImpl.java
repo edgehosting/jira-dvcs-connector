@@ -71,7 +71,7 @@ public class PullRequestServiceImpl implements PullRequestService
     }
 
     @Override
-    public void updatePulRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
+    public void updatePullRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
     {
         PullRequestParticipantMapping[] oldParticipants = pulLRequestDao.getParticipants(pullRequestId);
         for (PullRequestParticipantMapping participantMapping : oldParticipants)

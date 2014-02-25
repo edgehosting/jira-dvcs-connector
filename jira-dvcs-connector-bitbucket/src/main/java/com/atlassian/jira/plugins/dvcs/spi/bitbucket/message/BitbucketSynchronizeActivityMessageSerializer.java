@@ -4,21 +4,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 
 public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeActivityMessage>
 {
-
-    public BitbucketSynchronizeActivityMessageSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super(repositoryService, synchronizer);
-    }
 
     @Override
     protected void serializeInternal(JSONObject json, BitbucketSynchronizeActivityMessage payload) throws Exception
@@ -28,12 +19,12 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         json.put("processedPullRequestsLocal", payload.getProcessedPullRequestsLocal());
         if (payload.getLastSyncDate() != null)
         {
-            json.put("lastSyncDate", getDateFormat().format(payload.getLastSyncDate()));
+            json.put("lastSyncDate", payload.getLastSyncDate().getTime());
         }
     }
 
     @Override
-    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json) throws Exception
+    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
         Set<Integer> processedPullRequests;
         Set<Integer> processedPullRequestsLocal;
@@ -43,11 +34,7 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         page = json.optInt("page");
         processedPullRequests = asSet(json.optJSONArray("processedPullRequests"));
         processedPullRequestsLocal = asSet(json.optJSONArray("processedPullRequestsLocal"));
-        String lastSyncOrNull = json.optString("lastSyncDate");
-        if (StringUtils.isNotBlank(lastSyncOrNull))
-        {
-            lastSyncDate = getDateFormat().parse(lastSyncOrNull);
-        }
+        lastSyncDate = parseDate(json, "lastSyncDate", version);
 
         return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0);
     }

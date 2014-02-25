@@ -3,12 +3,13 @@ package com.atlassian.jira.plugins.dvcs.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -18,11 +19,13 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
@@ -133,8 +136,8 @@ public class RepositoryServiceTest
 		RepositoryRegistration registration = repositoryService.enableRepository(0, true);
 
 		Mockito.verify(repositoryDao).save(sampleRepository);
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(Mockito.eq(sampleRepository),
-				Mockito.eq(createPostcommitUrl(sampleRepository)));
+		Mockito.verify(bitbucketCommunicator).ensureHookPresent(Mockito.eq(sampleRepository),
+                Mockito.eq(createPostcommitUrl(sampleRepository)));
 		Assert.assertTrue(registration.isCallBackUrlInstalled());
 		Assert.assertNotNull(registration.getCallBackUrl());
 		Assert.assertEquals(registration.getRepository(), sampleRepository);
@@ -147,13 +150,13 @@ public class RepositoryServiceTest
         Repository sampleRepository = createSampleRepository();
         Mockito.when(repositoryDao.get(0)).thenReturn(sampleRepository);
         Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).setupPostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
+        Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).ensureHookPresent(Mockito.any(Repository.class), Mockito.anyString());
         Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
         RepositoryRegistration registration = repositoryService.enableRepository(0, true);
 
         Mockito.verify(repositoryDao).save(sampleRepository);
-        Mockito.verify(bitbucketCommunicator).setupPostcommitHook(Mockito.eq(sampleRepository),
+        Mockito.verify(bitbucketCommunicator).ensureHookPresent(Mockito.eq(sampleRepository),
                 Mockito.eq(createPostcommitUrl(sampleRepository)));
         Assert.assertFalse(registration.isCallBackUrlInstalled());
         Assert.assertNotNull(registration.getCallBackUrl());
@@ -195,7 +198,7 @@ public class RepositoryServiceTest
 		sampleOrganization.setAutolinkNewRepos(true);
 
 		Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		Mockito.when(bitbucketCommunicator.getRepositories(sampleOrganization)).thenReturn(remoteRepos);
+		Mockito.when(bitbucketCommunicator.getRepositories(sampleOrganization, storedRepos)).thenReturn(remoteRepos);
 		Mockito.when(repositoryDao.getAllByOrganization(5, true)).thenReturn(storedRepos);
 		Mockito.when(repositoryDao.save(sampleRepository3)).thenReturn(sampleRepository3);
 		Mockito.when(repositoryDao.save(sampleRepository4)).thenReturn(sampleRepository4);
@@ -228,8 +231,8 @@ public class RepositoryServiceTest
 			}
 		}));
 		// ... with false linking
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository3, createPostcommitUrl(sampleRepository3));
-		Mockito.verify(bitbucketCommunicator).setupPostcommitHook(sampleRepository4, createPostcommitUrl(sampleRepository4));
+		Mockito.verify(bitbucketCommunicator).ensureHookPresent(sampleRepository3, createPostcommitUrl(sampleRepository3));
+		Mockito.verify(bitbucketCommunicator).ensureHookPresent(sampleRepository4, createPostcommitUrl(sampleRepository4));
 
 	}
 
@@ -263,6 +266,55 @@ public class RepositoryServiceTest
 		Mockito.verify(bitbucketCommunicator).removePostcommitHook(Mockito.eq(sampleRepository),
 				Mockito.eq(createPostcommitUrl(sampleRepository)));
 	}
+	
+    /**
+     * Unit tests related to {@link RepositoryServiceImpl#getUser(Repository, String, String)}.
+     */
+    @Test
+    public void testGetUser()
+    {
+        Repository repository = Mockito.mock(Repository.class);
+        DvcsCommunicator testCommunicator = Mockito.mock(DvcsCommunicator.class);
+
+        String dvcsType = "test-dvcs-type";
+
+        class BooleanFlag
+        {
+            private boolean flag;
+        }
+        final BooleanFlag wasInvoked = new BooleanFlag();
+
+        Mockito.when(repository.getDvcsType()).thenReturn(dvcsType);
+        Mockito.when(dvcsCommunicatorProvider.getCommunicator(dvcsType)).thenReturn(testCommunicator);
+        Mockito.when(testCommunicator.getUser(Mockito.eq(repository), Mockito.anyString())).thenAnswer(new Answer<DvcsUser>()
+        {
+
+            @Override
+            public DvcsUser answer(InvocationOnMock invocation) throws Throwable
+            {
+                wasInvoked.flag = true;
+                return new DvcsUser((String) invocation.getArguments()[1], "", "", "", "");
+            }
+
+        });
+
+        DvcsUser user;
+
+        wasInvoked.flag = false;
+        user = repositoryService.getUser(repository, null, null);
+        Assert.assertFalse(wasInvoked.flag);
+        Assert.assertTrue(user instanceof DvcsUser.UnknownUser);
+
+        wasInvoked.flag = false;
+        user = repositoryService.getUser(repository, "", null);
+        Assert.assertFalse(wasInvoked.flag);
+        Assert.assertTrue(user instanceof DvcsUser.UnknownUser);
+
+        wasInvoked.flag = false;
+        user = repositoryService.getUser(repository, "test", null);
+        Assert.assertTrue(wasInvoked.flag);
+        Assert.assertFalse(user instanceof DvcsUser.UnknownUser);
+    }
 
 	private Repository createSampleRepository()
 	{

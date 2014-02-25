@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -119,4 +120,22 @@ public interface Progress
     EnumSet<SynchronizationFlag> getRunAgainFlags();
 
     void setRunAgainFlags(EnumSet<SynchronizationFlag> flags);
+
+    Long getStartTime();
+
+    Long getFinishTime();
+
+    Date getFirstMessageTime();
+
+    void incrementRequestCount(Date messageTime);
+
+    void addFlightTimeMs(int timeMs);
+
+    int getNumRequests();
+
+    int getFlightTimeMs();
+
+    boolean isSoftsync();
+
+    void setSoftsync(boolean softsync);
 }

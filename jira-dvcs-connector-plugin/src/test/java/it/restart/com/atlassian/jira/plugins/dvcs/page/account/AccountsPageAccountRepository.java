@@ -21,9 +21,9 @@ import com.google.common.base.Predicate;
 
 /**
  * Represents repository table row of {@link AccountsPageAccountRepository}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class AccountsPageAccountRepository extends WebDriverElement
 {
@@ -32,7 +32,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
     private PageElementFinder elementFinder;
     /**
      * Enable checkbox - with responsibility to enable repository.
-     * 
+     *
      * @see #isEnabled()
      * @see #enable()
      */
@@ -53,7 +53,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     /**
      * Constructor.
-     * 
+     *
      * @param locator
      * @param parent
      */
@@ -73,7 +73,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     /**
      * Enables repository.
-     * 
+     *
      * @see #isEnabled()
      */
     public void enable()

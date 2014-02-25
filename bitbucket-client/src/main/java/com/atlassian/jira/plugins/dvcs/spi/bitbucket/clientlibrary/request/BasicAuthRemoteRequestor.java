@@ -28,9 +28,9 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 
 	private final String password;
 
-	public BasicAuthRemoteRequestor(ApiProvider apiProvider, String username, String password)
+	public BasicAuthRemoteRequestor(ApiProvider apiProvider, String username, String password, HttpClientProvider httpClientProvider)
 	{
-		super(apiProvider);
+		super(apiProvider, httpClientProvider);
 		this.username = username;
 		this.password = password;
 	}

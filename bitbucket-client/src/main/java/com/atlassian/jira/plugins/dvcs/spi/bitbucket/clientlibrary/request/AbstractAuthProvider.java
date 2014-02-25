@@ -15,13 +15,15 @@ public abstract class AbstractAuthProvider implements AuthProvider
 {
     private final String hostUrl;
     private int apiVersion = 1;
-    private String userAgent;
     private boolean cached;
-    private int timeout;
+    private boolean closeIdleConnections;
 
-    public AbstractAuthProvider(String hostUrl)
+    protected HttpClientProvider httpClientProvider;
+
+    public AbstractAuthProvider(String hostUrl, HttpClientProvider httpClientProvider)
 	{
 		this.hostUrl = hostUrl;
+        this.httpClientProvider = httpClientProvider;
 	}
 
     @Override
@@ -43,18 +45,6 @@ public abstract class AbstractAuthProvider implements AuthProvider
     }
 
     @Override
-    public void setUserAgent(String userAgent)
-    {
-        this.userAgent = userAgent;
-    }
-
-    @Override
-    public String getUserAgent()
-    {
-        return userAgent;
-    }
-
-    @Override
     public boolean isCached()
     {
         return cached;
@@ -67,15 +57,15 @@ public abstract class AbstractAuthProvider implements AuthProvider
     }
 
     @Override
-    public int getTimeout()
+    public boolean isCloseIdleConnections()
     {
-        return timeout;
+        return closeIdleConnections;
     }
 
     @Override
-    public void setTimeout(int timeout)
+    public void setCloseIdleConnections(final boolean closeIdleConnections)
     {
-        this.timeout = timeout;
+        this.closeIdleConnections = closeIdleConnections;
     }
 }
 

@@ -12,16 +12,16 @@ import com.sun.jersey.api.json.JSONConfiguration;
 
 /**
  * {@link Repository} related resit point.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class RepositoriesLocalRestpoint
 {
 
     /**
      * REST point for "/rest/bitbucket/1.0/repositories"
-     * 
+     *
      * @return {@link RepositoryList}
      */
     public RepositoryList getRepositories()

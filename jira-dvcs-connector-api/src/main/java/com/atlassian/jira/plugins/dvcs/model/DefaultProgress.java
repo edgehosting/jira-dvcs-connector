@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -42,8 +43,20 @@ public class DefaultProgress implements Progress
     @XmlAttribute
     private String error;
 
+    @XmlAttribute
+    private Date firstMessageTime;
+
+    @XmlAttribute
+    private int flightTimeMs;
+
+    @XmlAttribute
+    private int numRequests;
+
     @XmlElement
     private List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
+
+    @XmlAttribute
+    private boolean softsync;
 
     @XmlTransient
     private boolean hasAdminPermission = true;
@@ -152,6 +165,7 @@ public class DefaultProgress implements Progress
         return finished;
     }
 
+    @Override
     public Long getStartTime()
     {
         return startTime;
@@ -162,9 +176,44 @@ public class DefaultProgress implements Progress
         this.startTime = startTime;
     }
 
+    @Override
     public Long getFinishTime()
     {
         return finishTime;
+    }
+
+    @Override
+    public Date getFirstMessageTime()
+    {
+        return this.firstMessageTime;
+    }
+
+    @Override
+    public void incrementRequestCount(final Date messageTime)
+    {
+        if (this.firstMessageTime == null)
+        {
+            this.firstMessageTime = messageTime;
+        }
+        this.numRequests++;
+    }
+
+    @Override
+    public void addFlightTimeMs(int timeMs)
+    {
+        this.flightTimeMs += timeMs;
+    }
+
+    @Override
+    public int getNumRequests()
+    {
+        return this.numRequests;
+    }
+
+    @Override
+    public int getFlightTimeMs()
+    {
+        return this.flightTimeMs;
     }
 
     public void setFinishTime(long finishTime)
@@ -244,5 +293,17 @@ public class DefaultProgress implements Progress
     public void setAuditLogId(int auditLogId)
     {
         this.auditLogId = auditLogId;
+    }
+
+    @Override
+    public boolean isSoftsync()
+    {
+        return softsync;
+    }
+
+    @Override
+    public void setSoftsync(final boolean softsync)
+    {
+        this.softsync = softsync;
     }
 }

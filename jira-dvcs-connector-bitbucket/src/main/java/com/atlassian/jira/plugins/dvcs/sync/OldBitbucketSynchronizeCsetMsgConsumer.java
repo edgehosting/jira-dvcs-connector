@@ -55,10 +55,4 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     {
         return payload.isSoftSync();
     }
-
-    @Override
-    public boolean shouldDiscard(int messageId, int retryCount, OldBitbucketSynchronizeCsetMsg payload, String[] tags)
-    {
-        return retryCount >= 3;
-    }
 }

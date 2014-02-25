@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
@@ -387,10 +388,14 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     
     private RepositoryRemoteRestpoint createRepositoryService(String username, String password)
     {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+
         // Bitbucket client setup
         AuthProvider authProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                 username,
-                password);
+                password,
+                httpClientProvider);
         
         BitbucketRemoteClient bitbucketClient = new BitbucketRemoteClient(authProvider);        
         return bitbucketClient.getRepositoriesRest();
@@ -417,7 +422,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
             {
                 return input;
             }
-        }, "DVCS Connector Tests");
+        }, "DVCS Connector Tests", new HttpClientProvider());
         Credential credential = new Credential();
         credential.setAdminUsername(owner);
         credential.setAdminPassword(password);

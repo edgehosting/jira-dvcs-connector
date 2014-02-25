@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -118,7 +119,7 @@ public class MessageExecutor
      * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
      * be slept because of empty queues.
      *
-     * @param messageAddress
+     * @param address
      *            destination address of new message
      */
     public void notify(String address)
@@ -250,9 +251,9 @@ public class MessageExecutor
         public void run()
         {
             Progress progress = null;
+            P payload = null;
             try
             {
-                P payload = null;
                 try
                 {
                     payload = messagingService.deserializePayload(message);
@@ -260,23 +261,22 @@ public class MessageExecutor
                 } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
+                    messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
                     throw e;
                 }
 
-                if (!consumer.shouldDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags()))
-                {
-                    consumer.onReceive(message, payload);
-                } else
-                {
-                    discard(message);
-                    consumer.afterDiscard(message.getId(), message.getRetriesCount(), payload, message.getTags());
-                }
+                consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
 
             } catch (Throwable t)
             {
                 LOGGER.error(t.getMessage(), t);
                 messagingService.fail(consumer, message, t);
+
+                if (message.getRetriesCount() >= 3)
+                {
+                    messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
+                }
 
                 if (progress != null)
                 {
@@ -296,7 +296,7 @@ public class MessageExecutor
                 Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
-                    messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSyncAuditIdFromTags(message.getTags()));
+                    messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSynchronizationAuditIdFromTags(message.getTags()));
                 }
             } catch (RuntimeException e)
             {
@@ -304,12 +304,6 @@ public class MessageExecutor
                 // Any RuntimeException will be ignored in this step
             }
         }
-
-        private void discard(Message<P> message)
-        {
-            messagingService.discard(message);
-        }
-
     }
 
 }

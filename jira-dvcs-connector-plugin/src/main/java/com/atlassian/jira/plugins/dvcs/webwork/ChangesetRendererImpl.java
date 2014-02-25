@@ -62,8 +62,10 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         List<IssueAction> bitbucketActions = new ArrayList<IssueAction>();
         try
         {
-            final List<Changeset> changesetList = changesetService.getByIssueKey(issueKeys, false);
-            for (Changeset changeset : changesetList)
+            final List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, false);
+            final List<Changeset> changesetDetails = changesetService.getChangesetsWithFileDetails(changesets);
+
+            for (Changeset changeset : changesetDetails)
             {
                 logger.debug("found changeset [ {} ] on issue keys [ {} ]", changeset.getNode(), StringUtils.join(issueKeys, ", "));
 

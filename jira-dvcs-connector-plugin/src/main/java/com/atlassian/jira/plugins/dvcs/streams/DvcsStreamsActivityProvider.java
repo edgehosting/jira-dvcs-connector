@@ -13,15 +13,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.issue.MutableIssue;
-import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -29,7 +27,6 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
 import com.atlassian.jira.project.Project;
@@ -282,11 +279,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 Iterable<StreamsEntry> streamEntries = new ArrayList<StreamsEntry>();
                 if (gf.getInProjects() != null && gf.getInProjects().iterator().hasNext())
                 {
-                    Iterable<Changeset> changesetEntries = changesetService.getLatestChangesets(activityRequest.getMaxResults(), gf);
+                    Iterable<Changeset> latestChangesets = changesetService.getLatestChangesets(activityRequest.getMaxResults(), gf);
                     if (cancelled.get())
                         throw new CancelledException();
-                    log.debug("Found changeset entries: " + changesetEntries);
-                    streamEntries = transformEntries(activityRequest, changesetEntries, cancelled);
+                    log.debug("Found changeset entries: {}", latestChangesets);
+
+                    final List<Changeset> changesetDetails = changesetService.getChangesetsWithFileDetails(Lists.newArrayList(latestChangesets));
+                    log.debug("Loaded details for changeset entries: {}", changesetDetails);
+
+                    streamEntries = transformEntries(activityRequest, changesetDetails, cancelled);
                 }
                 return new StreamsFeed(i18nResolver.getText("streams.external.feed.title"), streamEntries, Option.<String>none());
             }

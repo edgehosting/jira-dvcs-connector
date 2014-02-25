@@ -42,15 +42,15 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
         if ("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin".equals(event.getPlugin().getKey())
                 && featureManager.isEnabled(CoreFeatures.ON_DEMAND))
         {
-            String savedSetting = (String) pluginSettings.get(POSTPONE_GITHUB_PR_SYNC_UNTIL);
+            String savedSetting = (String) pluginSettings.get(POSTPONE_PR_SYNC_UNTIL);
             if (savedSetting == null)
             {
                 long postpone = randomPostponeTimeWithinTimeWindow();
-                long posponeUntil = postpone + System.currentTimeMillis();
+                long postponeUntil = postpone + System.currentTimeMillis();
 
-                pluginSettings.put(POSTPONE_GITHUB_PR_SYNC_UNTIL, posponeUntil + "");
+                pluginSettings.put(POSTPONE_PR_SYNC_UNTIL, postponeUntil + "");
 
-                log.info("GitHub pull request synchronization will be postponed until " + new Date(posponeUntil));
+                log.info("Pull request synchronization will be postponed until " + new Date(postponeUntil));
             }
         }
     }
@@ -64,14 +64,14 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
 
         try
         {
-            String savedSetting = (String) pluginSettings.get(POSTPONE_GITHUB_PR_SYNC_UNTIL);
+            String savedSetting = (String) pluginSettings.get(POSTPONE_PR_SYNC_UNTIL);
             long until = Long.parseLong(savedSetting);
 
             return System.currentTimeMillis() > until;
 
         } catch (NumberFormatException e)
         {
-            log.warn("Failed to get expected setting property: " + POSTPONE_GITHUB_PR_SYNC_UNTIL + ". " + e.getMessage());
+            log.warn("Failed to get expected setting property: " + POSTPONE_PR_SYNC_UNTIL + ". " + e.getMessage());
             return false;
         }
 

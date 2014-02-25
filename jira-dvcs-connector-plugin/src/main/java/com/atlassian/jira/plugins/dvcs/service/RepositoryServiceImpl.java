@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +31,14 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 /**
@@ -86,9 +87,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private PluginSettingsFactory pluginSettingsFactory;
-
-    @Resource
-    private ChangesetCache changesetCache;
 
     @Resource
     private SyncAuditLogDao syncAuditDao;
@@ -159,11 +157,14 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         // get repositories from the dvcs hosting server
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 
+        // get local repositories
+        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
+
         List<Repository> remoteRepositories;
 
         try
         {
-            remoteRepositories = communicator.getRepositories(organization);
+            remoteRepositories = communicator.getRepositories(organization, storedRepositories);
         } catch (SourceControlException.UnauthorisedException e)
         {
             // we could not load repositories, we can't continue
@@ -172,8 +173,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             throw e;
         }
 
-        // get local repositories
-        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
 
         // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
         removeDuplicateRepositories(organization, storedRepositories);
@@ -407,8 +406,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 // to disable smart commits on it, make sense
                 // in case when someone has just migrated
                 // repo to DVCS avoiding duplicate smart commits
-                flags.remove(SynchronizationFlag.SOFT_SYNC);
-                doSync(repository, flags);
+                EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
+                newFlags.remove(SynchronizationFlag.SOFT_SYNC);
+                doSync(repository, newFlags);
             }
         }
     }
@@ -532,7 +532,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -550,7 +550,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**
@@ -561,7 +561,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         for (Repository repository : repositories)
         {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -571,12 +571,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-    	synchronizer.pauseSynchronization(repository, true);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**
@@ -688,24 +693,52 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DvcsUser getUser(Repository repository, String author, String rawAuthor)
     {
         log.debug("Get user information for: [ {}, {}]", author, rawAuthor);
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
 
-        try
+        DvcsUser user = null;
+
+        if (!Strings.isNullOrEmpty(author))
         {
-            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-            DvcsUser user = communicator.getUser(repository, author);
-            if (user instanceof DvcsUser.UnknownUser)
+            try
             {
-                user.setRawAuthor(rawAuthor);
+                user = communicator.getUser(repository, author);
+            } catch (Exception e)
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
+                } else
+                {
+                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage());
+                }
+                return getUnknownUser(repository, author, rawAuthor);
             }
-            return user;
-        } catch (Exception e)
-        {
-            log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
-            return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
+
+        return user != null ? user : getUnknownUser(repository, author, rawAuthor);
+    }
+
+    /**
+     * Creates user, which is unknown - it means he does not exist as real user inside a repository. But we still want to provide some
+     * information about him.
+     * 
+     * @param repository
+     *            system, which should know, who is the provided user
+     * @param username
+     *            of user or null/empty string if does not exist
+     * @param rawUser
+     *            DVCS representation of user, for git/mercurial is it: <i>Full Name &lt;email&gt;</i>
+     * @return "unknown" user
+     */
+    private UnknownUser getUnknownUser(Repository repository, String username, String rawUser)
+    {
+        return new UnknownUser(username, rawUser != null ? rawUser : username, repository.getOrgHostUrl());
     }
 }

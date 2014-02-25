@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.stereotype.Component;
-
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 
 /**

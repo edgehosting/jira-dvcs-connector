@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 

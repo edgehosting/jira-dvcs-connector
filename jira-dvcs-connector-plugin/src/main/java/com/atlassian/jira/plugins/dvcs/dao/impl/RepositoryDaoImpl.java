@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.google.common.collect.Lists;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -70,7 +69,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
         repository.setFork(repositoryMapping.isFork());
 
-        if (repository.isFork())
+        if (repository.isFork() && repositoryMapping.getForkOfSlug() != null)
         {
             Repository forkOfRepository = new Repository();
             forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());

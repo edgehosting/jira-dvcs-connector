@@ -45,7 +45,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
             return;
         }
 
-        context.savePullRequest(pullRequest);
+        context.savePullRequest(pullRequest.getId(), pullRequest.getNumber());
     }
 
     /**

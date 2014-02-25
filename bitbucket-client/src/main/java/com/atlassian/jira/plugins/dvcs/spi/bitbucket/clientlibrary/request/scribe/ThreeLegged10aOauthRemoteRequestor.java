@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scri
 import java.io.IOException;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.HttpClient;
@@ -39,9 +40,9 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
      * @param accessTokenWithSecret
      *            the access token = TOKEN + '&' + TOKEN_SECRET
      */
-    public ThreeLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, String accessTokenWithSecret)
+    public ThreeLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, String accessTokenWithSecret, HttpClientProvider httpClientProvider)
     {
-        super(apiProvider, key, secret);
+        super(apiProvider, key, secret, httpClientProvider);
         this.accessTokenWithSecret = accessTokenWithSecret;
         this.authHeaderCreator = new HeaderExtractorImpl();
     }

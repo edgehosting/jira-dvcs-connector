@@ -2,9 +2,6 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;

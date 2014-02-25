@@ -1,7 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service.message;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -14,17 +18,15 @@ import com.atlassian.jira.util.json.JSONObject;
 
 public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> implements MessagePayloadSerializer<P>
 {
-    public static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
+    @Resource
+    private MessagingService messagingService;
+
+    @Resource
     private RepositoryService repositoryService;
-    private Synchronizer synchronizer;
 
-    protected AbstractMessagePayloadSerializer(RepositoryService repositoryService, Synchronizer synchronizer)
-    {
-        super();
-        this.repositoryService = repositoryService;
-        this.synchronizer = synchronizer;
-    }
+    @Resource
+    private Synchronizer synchronizer;
 
     @Override
     public final String serialize(P payload)
@@ -35,6 +37,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             json.put("repository", payload.getRepository().getId());
             json.put("softSync", payload.isSoftSync());
+            json.put("version", 1);
             //
             serializeInternal(json, payload);
             //
@@ -55,14 +58,17 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         {
             JSONObject jsoned = new JSONObject(message.getPayload());
 
-            P result = deserializeInternal(jsoned);
+            int version = jsoned.optInt("version", 0);
+            P result = deserializeInternal(jsoned, version);
             //
             BaseProgressEnabledMessage deserialized = (BaseProgressEnabledMessage) result;
 
             // progress stuff
             //
-            syncAudit = getSyncAuditIdFromTags(message.getTags());
+            syncAudit = messagingService.getSynchronizationAuditIdFromTags(message.getTags());
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
+
+            deserialized.softSync = jsoned.optBoolean("softSync");
 
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
@@ -70,11 +76,12 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
                 progress = new DefaultProgress();
                 // inject existing sync audit id
                 progress.setAuditLogId(result.getSyncAuditId());
+                progress.setSoftsync(deserialized.softSync);
                 synchronizer.putProgress(deserialized.repository, progress);
             }
             deserialized.progress = progress;
 
-            deserialized.softSync = jsoned.optBoolean("softSync");
+
             deserialized.syncAuditId = syncAudit;
 
             return result;
@@ -85,25 +92,34 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
         }
     }
 
-    public static <PR extends HasProgress> int getSyncAuditIdFromTags(String[] tags)
-    {
-        for (String tag : tags)
-        {
-            if (StringUtils.startsWith(tag, SYNCHRONIZATION_AUDIT_TAG_PREFIX))
-            {
-                return Integer.parseInt(tag.substring(SYNCHRONIZATION_AUDIT_TAG_PREFIX.length()));
-
-            }
-        }
-        return 0;
-    }
-
     protected abstract void serializeInternal(JSONObject json, P payload) throws Exception;
-    protected abstract P deserializeInternal(JSONObject json) throws Exception;
+    protected abstract P deserializeInternal(JSONObject json, int version) throws Exception;
 
     protected final DateFormat getDateFormat()
     {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    }
+
+    protected final Date parseDate(JSONObject json, String dateElement, int version) throws ParseException
+    {
+        Date date = null;
+        if (version == 0)
+        {
+            // for payload format version 0 the date format is serialized as formatted string
+
+            String dateStringOrNull = json.optString(dateElement);
+            if (StringUtils.isNotBlank(dateStringOrNull))
+            {
+                date = getDateFormat().parse(dateStringOrNull);
+            }
+
+        } else if (version > 0)
+        {
+            // for payload format version 1 and higher date format is serialized as long
+            date = new Date(json.optLong(dateElement));
+        }
+
+        return date;
     }
 
     public static class MessageDeserializationException extends RuntimeException

@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.AccountRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
@@ -10,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * 
@@ -53,7 +57,18 @@ public class BitbucketRemoteClient
         requestor = provider.provideRequestor();
         
         this.accountRemoteRestpoint = new AccountRemoteRestpoint(requestor);
-        this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor);
+        this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor, new ResponseCallback<BitbucketChangesetPage>()
+        {
+
+            @Override
+            public BitbucketChangesetPage onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
+                {
+                }.getType());
+            }
+
+        });
         this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);

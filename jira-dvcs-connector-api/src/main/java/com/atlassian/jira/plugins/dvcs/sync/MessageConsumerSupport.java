@@ -50,7 +50,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     protected BranchService branchService;
 
     @Override
-    public void onReceive(final Message<P> message, P payload)
+    public final void onReceive(final Message<P> message, P payload)
     {
         String[] tags = message.getTags();
 
@@ -68,11 +68,6 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             changeset.setBranch(branch);
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
-            if (CollectionUtils.isNotEmpty(issues))
-            {
-                changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getDetailChangeset(repo, changeset);
-                
-            }
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(changeset, issues);
@@ -96,12 +91,6 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 repositoryService.save(repo);
             }
         }
-    }
-
-    @Override
-    public void afterDiscard(int messageId, int retryCount, P payload, String[] tags)
-    {
-
     }
 
     static void markChangesetForSmartCommit(Repository repo, Changeset changesetForSave, boolean mark)

@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncEndAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -26,15 +28,17 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     private final ActiveObjects ao;
 
     private static final Logger log = LoggerFactory.getLogger(SyncAuditLogDaoImpl.class);
+    private EventPublisher eventPublisher;
 
-    public SyncAuditLogDaoImpl(ActiveObjects ao)
+    public SyncAuditLogDaoImpl(ActiveObjects ao, EventPublisher publisher)
     {
         super();
         this.ao = ao;
+        this.eventPublisher = publisher;
     }
 
     @Override
-    public SyncAuditLogMapping newSyncAuditLog(final int repoId, final String syncType)
+    public SyncAuditLogMapping newSyncAuditLog(final int repoId, final String syncType, final Date startDate)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -46,7 +50,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put(SyncAuditLogMapping.REPO_ID, repoId);
                 data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
-                data.put(SyncAuditLogMapping.START_DATE, new Date());
+                data.put(SyncAuditLogMapping.START_DATE, startDate);
                 data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
                 data.put(SyncAuditLogMapping.TOTAL_ERRORS , 0);
                 return ao.create(SyncAuditLogMapping.class, data);
@@ -62,7 +66,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     }
 
     @Override
-    public SyncAuditLogMapping finish(final int syncId)
+    public SyncAuditLogMapping finish(final int syncId, final Date firstRequestDate, final int numRequests, final int flightTimeMs, final Date finishDate)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -71,7 +75,10 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 SyncAuditLogMapping mapping = find(syncId);
                 if (mapping != null)
                 {
-                    mapping.setEndDate(new Date());
+                    mapping.setFirstRequestDate(firstRequestDate);
+                    mapping.setEndDate(finishDate);
+                    mapping.setNumRequests(numRequests);
+                    mapping.setFlightTimeMs(flightTimeMs);
 
                     if (StringUtils.isNotBlank(mapping.getExcTrace()))
                     {
@@ -82,10 +89,26 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                     }
 
                     mapping.save();
+                    
+                    fireAnalyticsEvent(mapping);
                 }
                 return mapping;
             }
+
         });
+    }
+    
+    private void fireAnalyticsEvent(SyncAuditLogMapping sync)
+    {
+        String syncTypeString = sync.getSyncType() == null ? "" : sync.getSyncType();
+
+        boolean soft = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_SOFT);
+        boolean commits = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_CHANGESETS);
+        boolean pullRequests = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_PULLREQUESTS);
+        boolean webhook = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_WEBHOOKS);
+
+        eventPublisher.publish(new DvcsSyncEndAnalyticsEvent(soft, commits, pullRequests, webhook, sync.getEndDate(), sync.getStartDate()
+                .getTime() - sync.getEndDate().getTime()));
     }
 
     @Override

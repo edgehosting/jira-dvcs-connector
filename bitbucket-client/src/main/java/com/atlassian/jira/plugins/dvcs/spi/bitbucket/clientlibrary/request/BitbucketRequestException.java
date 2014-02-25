@@ -66,6 +66,19 @@ public class BitbucketRequestException extends RuntimeException
         }
         
     }
+
+    public static final class InternalServerError_500 extends BitbucketRequestException
+    {
+        public InternalServerError_500()
+        {
+            super();
+        }
+        public InternalServerError_500(String message)
+        {
+            super(message);
+        }
+
+    }
     
     /**
      * Marker interface for {@link BitbucketRequestException}. All requests that throws an exception marked by this interface

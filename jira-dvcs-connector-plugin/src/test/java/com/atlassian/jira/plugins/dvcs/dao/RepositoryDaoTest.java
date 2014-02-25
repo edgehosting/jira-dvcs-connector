@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 import java.util.Date;
 import java.util.Map;
 
-import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
