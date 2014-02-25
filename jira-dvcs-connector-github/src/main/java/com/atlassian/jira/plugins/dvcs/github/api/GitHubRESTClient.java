@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.github.api;
 
 import java.util.List;
 
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -38,4 +39,12 @@ public interface GitHubRESTClient
      */
     List<GitHubRepositoryHook> getHooks(Repository repository);
 
+    /**
+     * Returns {@link GitHubPullRequest} for provided repository and its number.
+     * 
+     * @param repository
+     * @param number
+     * @return resolved {@link GitHubPullRequest}
+     */
+    GitHubPullRequest getPullRequest(Repository repository, int number);
 }

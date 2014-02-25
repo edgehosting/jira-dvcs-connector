@@ -8,6 +8,7 @@ import org.apache.commons.httpclient.HttpStatus;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -72,6 +73,15 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     {
         WebResource hooksWebResource = resource(repository, "/hooks");
         return getAll(hooksWebResource, GitHubRepositoryHook[].class);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GitHubPullRequest getPullRequest(Repository repository, int number)
+    {
+        return resource(repository, "/pulls/" + number).get(GitHubPullRequest.class);
     }
 
 }
