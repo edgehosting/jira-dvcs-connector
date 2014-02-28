@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.annotations.VisibleForTesting;
@@ -36,10 +37,10 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     private final PluginSettingsFactory pluginSettingsFactory;
 
     public DeferredBitbucketLinker(@Qualifier ("bitbucketLinker") final BitbucketLinker bitbucketLinker,
-            final ClusterLockService clusterLockService, final PluginSettingsFactory pluginSettingsFactory)
+            final ClusterLockServiceFactory clusterLockServiceFactory, final PluginSettingsFactory pluginSettingsFactory)
     {
 		this.bitbucketLinker = bitbucketLinker;
-        this.clusterLockService = clusterLockService;
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
 

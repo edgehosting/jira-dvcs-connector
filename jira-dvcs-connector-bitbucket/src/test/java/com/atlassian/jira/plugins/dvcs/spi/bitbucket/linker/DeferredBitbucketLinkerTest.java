@@ -2,11 +2,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.fest.util.Sets;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -53,8 +53,16 @@ public class DeferredBitbucketLinkerTest
         when(mockPluginSettingsFactory.createGlobalSettings()).thenReturn(mockPluginSettings);
         when(mockRepository.getRepositoryUrl()).thenReturn(REPO_URL);
         lockName = DeferredBitbucketLinker.getLockName(mockRepository);
+        final ClusterLockServiceFactory clusterLockServiceFactory = new ClusterLockServiceFactory() {
+
+            @Override
+            public ClusterLockService getClusterLockService()
+            {
+                return mockClusterLockService;
+            }
+        };
         linkerUnderTest = new DeferredBitbucketLinker(
-                mockBitbucketLinker, mockClusterLockService, mockPluginSettingsFactory);
+                mockBitbucketLinker, clusterLockServiceFactory, mockPluginSettingsFactory);
     }
 
     @Test

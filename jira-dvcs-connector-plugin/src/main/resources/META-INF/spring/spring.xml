@@ -21,6 +21,8 @@
         <property name="delegate" ref="githubEnterpriseCommunicator" />
     </bean>
 
+    <bean class="com.atlassian.beehive.compat.ClusterLockServiceFactory"/>
+
     <osgi:service interface="com.sun.jersey.spi.container.ResourceFilterFactory">
         <osgi:service-properties>
             <entry key="plugin" value="com.atlassian.plugins.rest"/>

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
@@ -79,14 +80,14 @@ public class DefaultSynchronizer implements Synchronizer
     @Resource
     private GitHubEventService gitHubEventService;
 
-    @Resource
-    private ClusterLockService clusterLockService;
+    private final ClusterLockService clusterLockService;
 
     // Cache of all synchronisation progresses, both running and finished
     private final Cache<Integer, Progress> progressMap;
 
-    public DefaultSynchronizer(final CacheManager cacheManager)
+    public DefaultSynchronizer(final CacheManager cacheManager, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
     }
 

@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.SimpleClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.event.api.EventPublisher;
@@ -221,7 +223,13 @@ public class DefaultSynchronizerTest
     private final CacheManager cacheManager = new MemoryCacheManager();
 
     @InjectMocks
-    private DefaultSynchronizer defaultSynchronizer = new DefaultSynchronizer(cacheManager);
+    private DefaultSynchronizer defaultSynchronizer = new DefaultSynchronizer(cacheManager, new ClusterLockServiceFactory() {
+        @Override
+        public ClusterLockService getClusterLockService()
+        {
+            return new SimpleClusterLockService();
+        }
+    });
 
     @Mock
     private ClusterLock clusterLock;

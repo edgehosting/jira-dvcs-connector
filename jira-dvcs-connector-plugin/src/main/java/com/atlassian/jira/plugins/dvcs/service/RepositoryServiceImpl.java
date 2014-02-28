@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
@@ -101,11 +102,14 @@ public class RepositoryServiceImpl implements RepositoryService
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
+    private ClusterLockServiceFactory clusterLockServiceFactory;
+
     private ClusterLockService clusterLockService;
 
     @PostConstruct
-    public void registerRepositoryRemovalJobRunner()
+    public void init()
     {
+        clusterLockService = clusterLockServiceFactory.getClusterLockService();
         schedulerService.registerJobRunner(RepositoryRemovalJobRunner.KEY, repositoryRemovalJobRunner);
     }
 
