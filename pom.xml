@@ -115,9 +115,8 @@
         <dependencies>
             <dependency>
                 <groupId>com.atlassian.beehive</groupId>
-                <artifactId>beehive-api</artifactId>
-                <version>0.0.2</version>
-                <scope>provided</scope>
+                <artifactId>beehive-compat</artifactId>
+                <version>0.0.4</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>

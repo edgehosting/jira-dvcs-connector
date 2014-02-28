@@ -230,7 +230,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.beehive</groupId>
-            <artifactId>beehive-api</artifactId>
+            <artifactId>beehive-compat</artifactId>
         </dependency>
     </dependencies>
     <build>
