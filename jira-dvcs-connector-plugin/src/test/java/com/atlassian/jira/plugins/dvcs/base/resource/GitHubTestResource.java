@@ -1,20 +1,29 @@
 package com.atlassian.jira.plugins.dvcs.base.resource;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.plugins.dvcs.base.AbstractTestListener;
 import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
@@ -27,6 +36,11 @@ import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
  */
 public class GitHubTestResource
 {
+
+    /**
+     * Logger for this class.
+     */
+    private static Logger logger = LoggerFactory.getLogger(GitHubTestResource.class);
 
     /**
      * Base GitHub url.
@@ -56,7 +70,27 @@ public class GitHubTestResource
      */
     public enum Lifetime
     {
-        DURING_TEST_METHOD
+        DURING_CLASS, DURING_TEST_METHOD,
+    }
+
+    /**
+     * Context infomration related to generated {@link OAuth}.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     */
+    private static class OAuthContext
+    {
+
+        private final String gitHubURL;
+        private final OAuth oAuth;
+
+        public OAuthContext(String gitHubURL, OAuth oAuth)
+        {
+            this.gitHubURL = gitHubURL;
+            this.oAuth = oAuth;
+        }
+
     }
 
     /**
@@ -94,6 +128,11 @@ public class GitHubTestResource
     }
 
     /**
+     * {@link MagicVisitor} dependency injected via constructor.
+     */
+    private final MagicVisitor magicVisitor;
+
+    /**
      * Used by repository name generation.
      */
     private TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
@@ -104,6 +143,11 @@ public class GitHubTestResource
      * @see #addOwner(String, GitHubClient)
      */
     private Map<String, GitHubClient> gitHubClientByOwner = new HashMap<String, GitHubClient>();
+
+    /**
+     * Created OAuths.
+     */
+    private Map<Lifetime, List<OAuthContext>> oAuthByLifetime = new HashMap<GitHubTestResource.Lifetime, List<OAuthContext>>();
 
     /**
      * Created repositories.
@@ -124,10 +168,18 @@ public class GitHubTestResource
      * 
      * @param testListenerDelegate
      */
-    public GitHubTestResource(TestListenerDelegate testListenerDelegate)
+    public GitHubTestResource(TestListenerDelegate testListenerDelegate, MagicVisitor magicVisitor)
     {
         testListenerDelegate.register(new AbstractTestListener()
         {
+
+            @Override
+            public void beforeClass()
+            {
+                super.beforeClass();
+                GitHubTestResource.this.beforeClass();
+            }
+
             @Override
             public void beforeMethod()
             {
@@ -150,9 +202,16 @@ public class GitHubTestResource
             }
 
         });
+        this.magicVisitor = magicVisitor;
     }
 
     // Listeners for test lifecycle.
+
+    public void beforeClass()
+    {
+        repositoryByLifetime.put(Lifetime.DURING_CLASS, new LinkedList<RepositoryContext>());
+        oAuthByLifetime.put(Lifetime.DURING_CLASS, new LinkedList<OAuthContext>());
+    }
 
     /**
      * Prepares staff related to single test method.
@@ -160,6 +219,7 @@ public class GitHubTestResource
     public void beforeMethod()
     {
         repositoryByLifetime.put(Lifetime.DURING_TEST_METHOD, new LinkedList<RepositoryContext>());
+        oAuthByLifetime.put(Lifetime.DURING_TEST_METHOD, new LinkedList<OAuthContext>());
     }
 
     /**
@@ -167,8 +227,11 @@ public class GitHubTestResource
      */
     public void afterMethod()
     {
-        List<RepositoryContext> testMethodRepositories = repositoryByLifetime.remove(Lifetime.DURING_TEST_METHOD);
-        for (RepositoryContext testMethodRepository : testMethodRepositories)
+        for (OAuthContext oAuthContext : oAuthByLifetime.get(Lifetime.DURING_TEST_METHOD))
+        {
+            removeOAuth(oAuthContext.gitHubURL, oAuthContext.oAuth);
+        }
+        for (RepositoryContext testMethodRepository : repositoryByLifetime.remove(Lifetime.DURING_TEST_METHOD))
         {
             removeRepository(testMethodRepository.owner, testMethodRepository.repository.getName());
         }
@@ -179,10 +242,54 @@ public class GitHubTestResource
      */
     public void afterClass()
     {
+        for (OAuthContext oAuthContext : oAuthByLifetime.get(Lifetime.DURING_CLASS))
+        {
+            removeOAuth(oAuthContext.gitHubURL, oAuthContext.oAuth);
+        }
+        for (RepositoryContext testMethodRepository : repositoryByLifetime.remove(Lifetime.DURING_CLASS))
+        {
+            removeRepository(testMethodRepository.owner, testMethodRepository.repository.getName());
+        }
         for (String owner : gitHubClientByOwner.keySet())
         {
             removeExpiredRepository(owner);
         }
+    }
+
+    /**
+     * Adds {@link OAuth} for provided GitHub information.
+     * 
+     * @param gitHubURL
+     *            URL for GitHub
+     * @param callbackURL
+     * @param lifetime
+     * @return OAuth
+     */
+    public OAuth addOAuth(String gitHubURL, String callbackURL, Lifetime lifetime)
+    {
+        magicVisitor.visit(GithubLoginPage.class, gitHubURL).doLogin();
+        GithubOAuthPage gitHubOAuthPage = magicVisitor.visit(GithubOAuthPage.class, gitHubURL);
+        OAuth result = gitHubOAuthPage.addConsumer(callbackURL);
+        oAuthByLifetime.get(lifetime).add(new OAuthContext(gitHubURL, result));
+        magicVisitor.visit(GithubLoginPage.class, gitHubURL).doLogout();
+        return result;
+    }
+
+    /**
+     * Removes provided {@link OAuth}.
+     * 
+     * @param gitHubURL
+     *            url of GitHub
+     * @param oAuth
+     *            to remove
+     * @see #addOAuth(String, String, Lifetime)
+     */
+    private void removeOAuth(String gitHubURL, OAuth oAuth)
+    {
+        magicVisitor.visit(GithubLoginPage.class, gitHubURL).doLogin();
+        GithubOAuthPage gitHubOAuthPage = magicVisitor.visit(oAuth.applicationId, GithubOAuthPage.class);
+        gitHubOAuthPage.removeConsumer();
+        magicVisitor.visit(GithubLoginPage.class, gitHubURL).doLogout();
     }
 
     /**
@@ -243,8 +350,8 @@ public class GitHubTestResource
 
         try
         {
-            Repository repository = repositoryService.forkRepository(RepositoryId.create(repositoryOwner, repositoryName), gitHubClient
-                    .getUser().equals(owner) ? null : owner);
+            Repository repository = repositoryService.forkRepository(RepositoryId.create(repositoryOwner, repositoryName),
+                    gitHubClient.getUser().equals(owner) ? null : owner);
 
             // wait until forked repository is prepared
             do
@@ -485,18 +592,39 @@ public class GitHubTestResource
     {
         GitHubClient gitHubClient = getGitHubClient(owner);
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+        List<Repository> repositories;
         try
         {
-            for (Repository repository : repositoryService.getRepositories(owner))
-            {
-                if (timestampNameTestResource.isExpired(repository.getName()))
-                {
-                    gitHubClient.delete("/repos/" + owner + "/" + repository.getName());
-                }
-            }
+            repositories = repositoryService.getRepositories(owner);
         } catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+
+        for (Repository repository : repositories)
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                try
+                {
+                    gitHubClient.delete("/repos/" + owner + "/" + repository.getName());
+                } catch (RequestException e)
+                {
+                    if (e.getStatus() == HttpStatus.SC_NOT_FOUND)
+                    {
+                        // Old GitHub Enterprise caches list of repositories and if this repository was already removed, it can be still
+                        // presented in this list
+                        logger.warn("Can not remove repository: " + owner + "/" + repository.getName() + ", because it was not found!", e);
+                    } else
+                    {
+                        throw new RuntimeException(e);
+                    }
+                } catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 }

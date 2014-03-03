@@ -53,7 +53,11 @@ public class OrganizationDiv
     public List<RepositoryDiv> getRepositories()
     {
         List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
-        List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
+        if (!repositoriesTable.isPresent()) {
+            return list;
+        }
+        
+        List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr[contains(concat(@class, ' '), 'dvcs-repo-row')]"));
         for (PageElement tr : trs)
         {
             list.add(pageBinder.bind(RepositoryDiv.class, tr));

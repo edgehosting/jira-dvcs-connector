@@ -6,8 +6,16 @@ package com.atlassian.jira.plugins.dvcs.base;
  * @author Stanislav Dvorscak
  * 
  */
-public class AbstractTestListener implements TestListener
+public abstract class AbstractTestListener implements TestListener
 {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beforeClass()
+    {
+        // feel free to override
+    }
 
     /**
      * {@inheritDoc}
@@ -16,7 +24,6 @@ public class AbstractTestListener implements TestListener
     public void beforeMethod()
     {
         // feel free to override
-
     }
 
     /**
