@@ -131,8 +131,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Resource
     private HttpClientProvider httpClientProvider;
 
-    private final Object endProgressLock = new Object();
-
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
      */
@@ -735,15 +733,15 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.
      *
-     * @param messageId
-     *            {@link Message#getId()}
-     * @param queue
-     * @param state
+     * @param messageId {@link Message#getId()}
+     * @param queue the queue
+     * @param state the message state
+     * @param stateInfo ?
      * @return mapped entity
      */
     private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state, String stateInfo)
     {
-        Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageQueueItemMapping.MESSAGE, messageId);
         result.put(MessageQueueItemMapping.QUEUE, queue);
@@ -752,7 +750,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         result.put(MessageQueueItemMapping.RETRIES_COUNT, 0);
 
         return result;
-
     }
 
     @Override
@@ -792,11 +789,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     private boolean endProgress(Repository repository, Progress progress)
     {
-        int queuedCount;
-        synchronized(endProgressLock)
-        {
-            queuedCount = getQueuedCount(getTagForSynchronization(repository));
-        }
+        final int queuedCount = getQueuedCount(getTagForSynchronization(repository));
         if (queuedCount == 0)
         {
             try
