@@ -1,17 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.entry;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Map;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.Query;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -21,14 +18,19 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
-import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.Map;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.entry;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 public class OrganizationDaoTest
 {
@@ -67,21 +69,21 @@ public class OrganizationDaoTest
         when(activeObjectsMock.create(eq(OrganizationMapping.class), isA(Map.class))).thenReturn(
                 organizationMapping);
         when(activeObjectsMock.find(eq(OrganizationMapping.class), anyString(), any())).thenReturn(
-                new OrganizationMapping[]{organizationMapping});
+                new OrganizationMapping[] { organizationMapping });
 
         organizationDao.save(organization);
 
         verify(activeObjectsMock).create(eq(OrganizationMapping.class), mapArgumentCaptor.capture());
 
-        assertThat(mapArgumentCaptor.getValue()).contains(entry(OrganizationMapping.ACCESS_TOKEN,   "accessToken"),
-                                                          entry(OrganizationMapping.ADMIN_USERNAME, "adminUserName"),
-                                                          entry(OrganizationMapping.DVCS_TYPE,      "bitbucket"),
-                                                          entry(OrganizationMapping.HOST_URL,       "organizationHostUrl"),
-                                                          entry(OrganizationMapping.NAME,           "organizationName"),
+        assertThat(mapArgumentCaptor.getValue()).contains(entry(OrganizationMapping.ACCESS_TOKEN, "accessToken"),
+                entry(OrganizationMapping.ADMIN_USERNAME, "adminUserName"),
+                entry(OrganizationMapping.DVCS_TYPE, "bitbucket"),
+                entry(OrganizationMapping.HOST_URL, "organizationHostUrl"),
+                entry(OrganizationMapping.NAME, "organizationName"),
 
-                                                          entry(OrganizationMapping.AUTOLINK_NEW_REPOS,    true),
+                entry(OrganizationMapping.AUTOLINK_NEW_REPOS, true),
 
-                                                          entry(OrganizationMapping.ADMIN_PASSWORD, null));
+                entry(OrganizationMapping.ADMIN_PASSWORD, null));
     }
 
     @SuppressWarnings("unchecked")
@@ -106,7 +108,7 @@ public class OrganizationDaoTest
 
         organizationDao.save(organization);
 
-        verify(organizationMappingMock).setAccessToken  (eq("accessToken"));
+        verify(organizationMappingMock).setAccessToken(eq("accessToken"));
         verify(organizationMappingMock).setAdminUsername(eq("adminUserName"));
         verify(organizationMappingMock).setDvcsType     (eq("bitbucket"));
         verify(organizationMappingMock).setHostUrl      (eq("organizationHostUrl"));
@@ -119,7 +121,7 @@ public class OrganizationDaoTest
         verify(organizationMappingMock).save();
     }
 
-    private static Organization createSampleOrganization()
+    private Organization createSampleOrganization()
     {
         Organization organization = new Organization();
 
@@ -135,5 +137,30 @@ public class OrganizationDaoTest
         organization.setCredential(organizationCredential);
 
         return organization;
+    }
+    
+    @Test
+    public void testGetByHostAndName()
+    {
+        when(activeObjectsMock.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable
+            {
+                return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
+            }
+        });
+
+        when(activeObjectsMock.find(eq(OrganizationMapping.class), any(Query.class))).thenReturn(
+                new OrganizationMapping[] {
+                        organizationMappingMock, organizationMapping
+                });
+        when(organizationMapping.getName()).thenReturn("test");
+
+        assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "test"));
+        assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "teSt"));
+        assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "TEST"));
+        assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "Test"));
+        assertNull(organizationDao.getByHostAndName("https://bitbucket.org", "nontest"));
     }
 }
