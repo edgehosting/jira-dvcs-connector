@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import javax.annotation.Resource;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
@@ -36,16 +37,17 @@ public class ChangesetServiceImpl implements ChangesetService
 
     private final ChangesetDao changesetDao;
     private final ClusterLockService clusterLockService;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private final RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory,
-            final DvcsCommunicatorProvider dvcsCommunicatorProvider, final RepositoryDao repositoryDao)
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    @Resource
+    private RepositoryDao repositoryDao;
+
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.repositoryDao = repositoryDao;
     }
 
     @Override

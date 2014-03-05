@@ -5,6 +5,7 @@ import com.atlassian.scheduler.JobRunner;
 import com.atlassian.scheduler.JobRunnerRequest;
 import com.atlassian.scheduler.JobRunnerResponse;
 import com.atlassian.scheduler.config.JobRunnerKey;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -21,6 +22,7 @@ public class RepositoryRemovalJobRunner implements JobRunner
 
     private final RepositoryService repositoryService;
 
+    @Autowired
     public RepositoryRemovalJobRunner(final RepositoryService repositoryService)
     {
         this.repositoryService = repositoryService;

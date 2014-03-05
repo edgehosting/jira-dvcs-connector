@@ -9,6 +9,7 @@ import com.atlassian.scheduler.JobRunnerRequest;
 import com.atlassian.scheduler.JobRunnerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ public class DvcsSchedulerJob implements JobRunner
     private final OrganizationService organizationService;
     private final RepositoryService repositoryService;
 
+    @Autowired
     public DvcsSchedulerJob(final OrganizationService organizationService, final RepositoryService repositoryService)
     {
         this.organizationService = organizationService;

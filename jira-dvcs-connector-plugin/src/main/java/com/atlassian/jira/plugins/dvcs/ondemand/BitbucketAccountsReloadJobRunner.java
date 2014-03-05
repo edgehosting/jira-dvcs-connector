@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 
 import static com.atlassian.scheduler.JobRunnerResponse.success;
 import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
@@ -29,12 +30,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Component
 public class BitbucketAccountsReloadJobRunner implements JobRunner
 {
-    private final BitbucketAccountsConfigService accountsConfigService;
-
-    public BitbucketAccountsReloadJobRunner(final BitbucketAccountsConfigService accountsConfigService)
-    {
-        this.accountsConfigService = accountsConfigService;
-    }
+    @Resource
+    private BitbucketAccountsConfigService accountsConfigService;
 
     @Override
     public JobRunnerResponse runJob(final JobRunnerRequest jobRunnerRequest)

@@ -8,6 +8,7 @@ import com.atlassian.scheduler.config.JobConfig;
 import com.atlassian.scheduler.config.JobId;
 import com.atlassian.scheduler.config.JobRunnerKey;
 import com.google.common.annotations.VisibleForTesting;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -43,6 +44,7 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     private final JobRunner jobRunner;
     private final SchedulerService schedulerService;
 
+    @Autowired
     public BitbucketAccountsReloadJobSchedulerImpl(
             final SchedulerService schedulerService, final BitbucketAccountsReloadJobRunner jobRunner)
     {

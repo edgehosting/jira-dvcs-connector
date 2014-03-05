@@ -5,6 +5,7 @@ import com.atlassian.scheduler.JobRunnerRequest;
 import com.atlassian.scheduler.JobRunnerResponse;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -22,7 +23,8 @@ public class BitbucketAccountsReloadJobRunnerTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-        jobRunner = new BitbucketAccountsReloadJobRunner(mockAccountsConfigService);
+        jobRunner = new BitbucketAccountsReloadJobRunner();
+        ReflectionTestUtils.setField(jobRunner, "accountsConfigService", mockAccountsConfigService);
     }
 
     @Test
