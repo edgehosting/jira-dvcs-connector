@@ -191,11 +191,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
     </component-->
     
-    <component key="concurrencyService" class="com.atlassian.jira.plugins.dvcs.service.ConcurrencyServiceImpl">
-    	<description>Concurrency utilities</description>
-    	<interface>com.atlassian.jira.plugins.dvcs.service.ConcurrencyService</interface>
-    </component>
-
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
         <description>ExecutorService factory bean for creating executor services</description>
