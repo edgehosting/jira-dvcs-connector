@@ -9,6 +9,8 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
+import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,12 @@ public class MessageExecutor
      */
     @Resource
     private MessageConsumer<?>[] consumers;
+
+    /**
+     * Used to capture events raised during synchronisation.
+     */
+    @Resource
+    private SyncThreadEvents syncThreadEvents;
 
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
@@ -251,6 +259,7 @@ public class MessageExecutor
         public void run()
         {
             Progress progress = null;
+            SyncEvents syncEvents = null;
             P payload = null;
             try
             {
@@ -263,6 +272,13 @@ public class MessageExecutor
                     progress = e.getProgressOrNull();
                     messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
                     throw e;
+                }
+
+                // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
+                // subsequently re-added
+                if (progress.isSoftsync())
+                {
+                    syncEvents = syncThreadEvents.startCapturing();
                 }
 
                 consumer.onReceive(message, payload);
@@ -285,6 +301,12 @@ public class MessageExecutor
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
+                if (syncEvents != null)
+                {
+                    syncEvents.stopCapturing();
+                    syncEvents.publish();
+                }
+
                 tryEndProgress(message, consumer, progress);
             }
         }

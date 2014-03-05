@@ -11,6 +11,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
@@ -60,10 +62,16 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
      */
     private final ActiveObjects activeObjects;
 
-    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects)
+    /**
+     * Used to publish CRUD events.
+     */
+    private final ThreadEvents threadEvents;
+
+    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, ThreadEvents threadEvents)
     {
         super();
         this.activeObjects = activeObjects;
+        this.threadEvents = threadEvents;
     }
 
     /**
@@ -94,7 +102,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     @Override
     public RepositoryPullRequestMapping savePullRequest(final Repository domain, final Map<String, Object> request)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+        RepositoryPullRequestMapping repositoryPullRequestMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
         {
             @Override
             public RepositoryPullRequestMapping doInTransaction()
@@ -104,6 +112,13 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             }
 
         });
+
+        // broadcast a "PR created" event. this would normally be done in the PR service with a model class rather than
+        // an AO entity but the PR synchronisation code for BB and GH is using the DAO directly so this is the right
+        // place to do it for the moment.
+        threadEvents.broadcast(new RepositoryPullRequestMappingCreated(repositoryPullRequestMapping));
+
+        return repositoryPullRequestMapping;
     }
 
     @Override

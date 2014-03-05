@@ -7,6 +7,8 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -97,6 +99,8 @@ import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessage
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
+import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -128,6 +132,12 @@ public class DefaultSynchronizerTest
 
     @Mock
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+
+    @Mock
+    private SyncThreadEvents syncThreadEvents;
+
+    @Mock
+    private SyncEvents syncEvents;
 
     private BranchService branchService;
 
@@ -225,6 +235,12 @@ public class DefaultSynchronizerTest
     
     @InjectMocks
     private DefaultSynchronizer defaultSynchronizer;
+
+    @BeforeMethod
+    public void setUp() throws Exception
+    {
+        when(syncThreadEvents.startCapturing()).thenReturn(syncEvents);
+    }
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -405,6 +421,7 @@ public class DefaultSynchronizerTest
         messageExecutor = new MessageExecutor();
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
+        ReflectionTestUtils.setField(messageExecutor, "syncThreadEvents", syncThreadEvents);
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
         ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
@@ -957,6 +974,37 @@ public class DefaultSynchronizerTest
 
         checkSynchronization(graph, processedNodes, true);
         checkSynchronization(graph, processedNodes, true);
+    }
+
+    @Test
+    public void syncEventsShouldBePublishedDuringSoftSync()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        verify(syncEvents).stopCapturing();
+        verify(syncEvents).publish();
+    }
+
+    @Test
+    public void syncEventsShouldNotBePublishedDuringFullSync()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+
+        checkSynchronization(graph, processedNodes, false);
+        verifyZeroInteractions(syncEvents);
     }
 
     @Test
