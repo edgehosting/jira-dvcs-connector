@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
-import com.atlassian.beehive.SimpleClusterLockService;
-import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.event.api.EventPublisher;
@@ -66,6 +64,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
@@ -223,13 +222,8 @@ public class DefaultSynchronizerTest
     private final CacheManager cacheManager = new MemoryCacheManager();
 
     @InjectMocks
-    private DefaultSynchronizer defaultSynchronizer = new DefaultSynchronizer(cacheManager, new ClusterLockServiceFactory() {
-        @Override
-        public ClusterLockService getClusterLockService()
-        {
-            return new SimpleClusterLockService();
-        }
-    });
+    private DefaultSynchronizer defaultSynchronizer =
+            new DefaultSynchronizer(cacheManager, new DumbClusterLockServiceFactory());
 
     @Mock
     private ClusterLock clusterLock;
@@ -414,6 +408,7 @@ public class DefaultSynchronizerTest
 
         final MessageExecutor messageExecutor = new MessageExecutor();
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
+        ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
