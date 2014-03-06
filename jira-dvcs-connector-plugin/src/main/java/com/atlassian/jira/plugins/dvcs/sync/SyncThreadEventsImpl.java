@@ -19,7 +19,7 @@ public class SyncThreadEventsImpl implements SyncThreadEvents
     private final SyncEventListenerProvider listenersProvider;
 
     /**
-     * Creates a new DvcsSyncEventBroadcaster, registering it with the {@code EventPublisher}.
+     * Creates a new SyncThreadEventsImpl, registering it with the {@code EventPublisher}.
      *
      * @param threadEvents the EntityEvents
      */
