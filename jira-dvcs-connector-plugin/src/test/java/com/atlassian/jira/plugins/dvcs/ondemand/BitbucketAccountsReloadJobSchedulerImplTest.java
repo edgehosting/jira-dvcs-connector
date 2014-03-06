@@ -77,6 +77,6 @@ public class BitbucketAccountsReloadJobSchedulerImplTest
         reloadJobScheduler.schedule();
 
         // Check
-        verify(mockScheduler).scheduleClusteredJob(eq(JOB_ID), eq(JOB_HANDLER_KEY), any(Date.class), eq(0L));
+        verify(mockScheduler).scheduleClusteredJob(eq(JOB_ID), eq(JOB_HANDLER_KEY), any(Date.class), eq(Long.MAX_VALUE));
     }
 }

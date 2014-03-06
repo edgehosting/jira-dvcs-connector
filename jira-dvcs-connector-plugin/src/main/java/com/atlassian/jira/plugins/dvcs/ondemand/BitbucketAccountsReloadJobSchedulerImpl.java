@@ -57,7 +57,9 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     {
         if (scheduler.getJobInfo(JOB_ID) == null)
         {
-            scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, new Date(currentTimeMillis() + DELAY), 0);
+            // We'd like to use zero to mean "once only", but SAL rejects that interval
+            final long intervalInMillis = Long.MAX_VALUE;
+            scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, new Date(currentTimeMillis() + DELAY), intervalInMillis);
         }
     }
 }
