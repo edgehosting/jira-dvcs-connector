@@ -1,10 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.upgrade;
 
-import java.util.Collection;
-
 import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 import com.google.common.collect.Lists;
+
+import java.util.Collection;
+
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 
 /**
  * For Bitbucket.
@@ -13,6 +15,7 @@ import com.google.common.collect.Lists;
  * Will be deleted later.
  */
 @Deprecated
+@SuppressWarnings("unused")
 public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
 
@@ -52,7 +55,6 @@ public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 	@Override
 	public String getPluginKey()
 	{
-		return "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
+		return PLUGIN_KEY;
 	}
-
 }
