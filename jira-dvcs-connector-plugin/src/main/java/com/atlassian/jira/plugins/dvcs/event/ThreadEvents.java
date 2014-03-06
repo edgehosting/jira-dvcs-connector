@@ -1,6 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.google.common.collect.Lists;
+import com.google.common.eventbus.EventBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Thread-local event bus.
@@ -8,10 +16,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ThreadEvents
 {
+    private static final Logger logger = LoggerFactory.getLogger(ThreadEvents.class);
+
     /**
      * Captures thread-local events until they are published or discarded.
      */
-    private final ThreadLocal<ThreadEventsCapture> threadEventCapture = new ThreadLocal<ThreadEventsCapture>();
+    private final ThreadLocal<EventsCapture> threadEventsCapture = new ThreadLocal<EventsCapture>();
 
     public ThreadEvents()
     {
@@ -19,15 +29,22 @@ public class ThreadEvents
 
     /**
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
-     * events can be published using {@link ThreadEventsCapture#publishTo(java.util.Collection)}.
+     * events can be published using {@link com.atlassian.jira.plugins.dvcs.event.ThreadEvents.EventsCapture#publishTo(java.util.Collection)}.
      * <p/>
      * Remember to <b>call {@code EventsCapture.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
      * @return a new EventsCapture
+     * @throws java.lang.IllegalStateException if there is already an active ThreadEventsCapture on the current thread
      */
     public ThreadEventsCapture startCapturingEvents()
     {
-        return new ThreadEventsCapture(this);
+        if (threadEventsCapture.get() != null)
+        {
+            // we could chain these up but YAGNI... just error out for now
+            throw new IllegalStateException("There is already an active ThreadEventsCapture");
+        }
+
+        return new EventsCapture();
     }
 
     /**
@@ -37,34 +54,67 @@ public class ThreadEvents
      */
     public void broadcast(Object event)
     {
-        ThreadEventsCapture threadEventsCapture = threadEventCapture.get();
-        if (threadEventsCapture != null)
+        EventsCapture eventsCapture = threadEventsCapture.get();
+        logger.debug("There is no active ThreadEventsCapture. Dropping event: {}", event);
+
+        if (eventsCapture != null)
         {
-            threadEventsCapture.capture(event);
+            eventsCapture.capture(event);
         }
     }
 
-    /**
-     * Sets the EventsCapture for the current thread.
-     *
-     * @param threadEventsCapture an EventsCapture
-     */
-    void setThreadEventCapture(ThreadEventsCapture threadEventsCapture)
+    private final class EventsCapture implements ThreadEventsCapture
     {
-        if (threadEventCapture.get() != null)
+        /**
+         * Where we hold captured events until they are published or discarded.
+         */
+        @Nonnull
+        private List<Object> capturedEvents = Lists.newArrayList();
+
+        /**
+         * Creates a new ThreadEventsCapture and sets it as the active capture in the enclosing ThreadEvents.
+         */
+        EventsCapture()
         {
-            // we could chain these up but YAGNI... just error out for now
-            throw new IllegalStateException("There is already an active EventsCapture");
+            threadEventsCapture.set(this);
         }
 
-        threadEventCapture.set(threadEventsCapture);
-    }
+        @Override
+        public void stopCapturing()
+        {
+            threadEventsCapture.remove();
+        }
 
-    /**
-     * Unsets the EventsCapture for the current thread.
-     */
-    void unsetThreadEventsCapture()
-    {
-        threadEventCapture.remove();
+        @Override
+        public void publishTo(Collection<?> listeners)
+        {
+            // create a new event bus just for publishing
+            final EventBus eventBus = new EventBus();
+            for (Object listener : listeners)
+            {
+                logger.debug("Registering listener: {}", listener);
+                eventBus.register(listener);
+            }
+
+            for (Object event : capturedEvents)
+            {
+                logger.debug("Posting event: {}", event);
+                eventBus.post(event);
+            }
+
+            logger.debug("Published {} events to {}", capturedEvents.size(), listeners);
+            capturedEvents = Lists.newArrayList();
+        }
+
+        /**
+         * Captures an event that was raised while this EventsCapture is active.
+         *
+         * @param event an event
+         */
+        void capture(final Object event)
+        {
+            logger.debug("Capturing event: {}", event);
+            capturedEvents.add(event);
+        }
     }
 }
