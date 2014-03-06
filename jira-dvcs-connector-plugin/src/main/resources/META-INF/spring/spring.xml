@@ -26,6 +26,10 @@
 
     <bean class="com.atlassian.beehive.compat.ClusterLockServiceFactory"/>
 
+    <bean class="com.atlassian.scheduler.compat.AutoDetectingCompatibilityPluginScheduler">
+        <constructor-arg ref="pluginScheduler"/>
+    </bean>
+
     <osgi:service interface="com.sun.jersey.spi.container.ResourceFilterFactory">
         <osgi:service-properties>
             <entry key="plugin" value="com.atlassian.plugins.rest"/>

@@ -21,11 +21,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.scheduler.SchedulerRuntimeException;
-import com.atlassian.scheduler.SchedulerService;
-import com.atlassian.scheduler.SchedulerServiceException;
-import com.atlassian.scheduler.config.JobConfig;
-import com.atlassian.scheduler.config.Schedule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -33,26 +28,20 @@ import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.KEY;
-import static com.atlassian.jira.plugins.dvcs.service.RepositoryRemovalJobRunner.REPOSITORIES_PARAMETER_KEY;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_PULL_REQUESTS;
-import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
-import static com.atlassian.scheduler.config.Schedule.forInterval;
-import static java.util.Collections.singletonMap;
 
 /**
  * The Class RepositoryServiceImpl.
@@ -63,7 +52,6 @@ public class RepositoryServiceImpl implements RepositoryService
     static final String SYNC_REPOSITORY_LIST_LOCK = RepositoryService.class.getName() + ".syncRepositoryList";
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
-    private static final Schedule RUN_NOW = forInterval(0, null);
 
     @Resource
     private DvcsCommunicatorProvider communicatorProvider;
@@ -93,12 +81,6 @@ public class RepositoryServiceImpl implements RepositoryService
     private GitHubEventService gitHubEventService;
 
     @Resource
-    private SchedulerService schedulerService;
-
-    @Resource
-    private RepositoryRemovalJobRunner repositoryRemovalJobRunner;
-
-    @Resource
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
@@ -106,17 +88,12 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private ClusterLockService clusterLockService;
 
+    private final Executor repositoryDeletionExecutor = Executors.newSingleThreadExecutor();
+
     @PostConstruct
     public void init()
     {
         clusterLockService = clusterLockServiceFactory.getClusterLockService();
-        schedulerService.registerJobRunner(RepositoryRemovalJobRunner.KEY, repositoryRemovalJobRunner);
-    }
-
-    @PreDestroy
-    public void destroy() throws Exception
-    {
-        schedulerService.unregisterJobRunner(RepositoryRemovalJobRunner.KEY);
     }
 
     /**
@@ -654,20 +631,17 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeOrphanRepositories(final List<Repository> orphanRepositories)
     {
-        final Serializable repositories = new ArrayList<Repository>(orphanRepositories);
-        final JobConfig jobConfig = JobConfig.forJobRunnerKey(KEY)
-                .withParameters(singletonMap(REPOSITORIES_PARAMETER_KEY, repositories))
-                .withRunMode(RUN_ONCE_PER_CLUSTER)
-                .withSchedule(RUN_NOW);
-        try
+        repositoryDeletionExecutor.execute(new Runnable()
         {
-            // Using a generated ID to ensure that different jobs do not clobber each other
-            schedulerService.scheduleJobWithGeneratedId(jobConfig);
-        }
-        catch (SchedulerServiceException e)
-        {
-            throw new SchedulerRuntimeException("Could not schedule removal of orphan repositories", e);
-        }
+            @Override
+            public void run()
+            {
+                for (final Repository repository : orphanRepositories)
+                {
+                    remove(repository);
+                }
+            }
+        });
     }
 
     @Override

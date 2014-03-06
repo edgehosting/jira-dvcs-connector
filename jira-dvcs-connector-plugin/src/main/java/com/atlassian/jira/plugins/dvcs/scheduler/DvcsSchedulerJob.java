@@ -4,9 +4,8 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.scheduler.JobRunner;
-import com.atlassian.scheduler.JobRunnerRequest;
-import com.atlassian.scheduler.JobRunnerResponse;
+import com.atlassian.scheduler.compat.JobHandler;
+import com.atlassian.scheduler.compat.JobInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +13,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Nullable;
-
-import static com.atlassian.scheduler.JobRunnerResponse.success;
 
 @Component
-public class DvcsSchedulerJob implements JobRunner
+public class DvcsSchedulerJob implements JobHandler
 {
     private static final Logger LOG = LoggerFactory.getLogger(DvcsSchedulerJob.class);
 
@@ -33,15 +29,12 @@ public class DvcsSchedulerJob implements JobRunner
         this.repositoryService = repositoryService;
     }
 
-
-    @Nullable
     @Override
-    public JobRunnerResponse runJob(final JobRunnerRequest jobRunnerRequest)
+    public void execute(final JobInfo jobInfo)
     {
         LOG.debug("Running DvcsSchedulerJob");
         syncOrganizations();
         cleanOrphanRepositories();
-        return success();
     }
 
     private void syncOrganizations()

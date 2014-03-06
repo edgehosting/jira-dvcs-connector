@@ -29,9 +29,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
-		    <artifactId>jira-core</artifactId>
-		    <version>${jira.compile.version}</version>
-            <scope>provided</scope>
+            <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
         	<groupId>com.atlassian.activeobjects</groupId>

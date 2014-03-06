@@ -1,91 +1,102 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.scheduler.SchedulerRuntimeException;
-import com.atlassian.scheduler.SchedulerService;
-import com.atlassian.scheduler.SchedulerServiceException;
-import com.atlassian.scheduler.config.JobConfig;
-import com.atlassian.scheduler.config.JobId;
-import com.atlassian.scheduler.config.JobRunnerKey;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
+import com.atlassian.sal.api.lifecycle.LifecycleAware;
+import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
+import com.atlassian.scheduler.compat.JobHandlerKey;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import static com.atlassian.scheduler.config.RunMode.RUN_ONCE_PER_CLUSTER;
-import static com.atlassian.scheduler.config.Schedule.forInterval;
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 
-public class DvcsScheduler
+public class DvcsScheduler implements LifecycleAware
 {
     @VisibleForTesting
     static final String PROPERTY_KEY = "dvcs.connector.scheduler.interval";
 
     @VisibleForTesting
-    static final JobRunnerKey JOB_RUNNER_KEY = JobRunnerKey.of(DvcsScheduler.class.getName());
+    static final JobHandlerKey JOB_HANDLER_KEY = JobHandlerKey.of(DvcsScheduler.class.getName());
 
     @VisibleForTesting
-    static final JobId JOB_ID = JobId.of(DvcsScheduler.class.getName() + ":job");
+    static final String JOB_ID = DvcsScheduler.class.getName() + ":job";
 
     private static final Logger log = LoggerFactory.getLogger(DvcsScheduler.class);
     private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job interval (1 hour)
 
-    private final DvcsSchedulerJob dvcsSchedulerJobRunner;
+    private final CompatibilityPluginScheduler scheduler;
+    private final DvcsSchedulerJob dvcsSchedulerJob;
+    private final EventPublisher eventPublisher;
     private final MessagingService messagingService;
-    private final SchedulerService schedulerService;
 
-    public DvcsScheduler(final MessagingService messagingService, final SchedulerService schedulerService,
-            final DvcsSchedulerJob dvcsSchedulerJobRunner)
+    // Three because we wait for postConstruct(), onStart(), and onPluginEnabled()
+    private final AtomicInteger readyToSchedule = new AtomicInteger(3);
+
+    public DvcsScheduler(final MessagingService messagingService, final CompatibilityPluginScheduler scheduler,
+            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher)
     {
-        this.dvcsSchedulerJobRunner = dvcsSchedulerJobRunner;
+        this.dvcsSchedulerJob = dvcsSchedulerJob;
+        this.eventPublisher = eventPublisher;
         this.messagingService = messagingService;
-        this.schedulerService = schedulerService;
+        this.scheduler = scheduler;
     }
 
     @PostConstruct
+    public void postConstruct()
+    {
+        eventPublisher.register(this);
+        scheduleJobIfReady();
+    }
+
+    /**
+     * This is received from the plugin system after the plugin is fully initialized.  It is not safe to use
+     * Active Objects before this event is received.
+     */
+    @EventListener
+    public void onPluginEnabled(final PluginEnabledEvent event)
+    {
+        if (PLUGIN_KEY.equals(event.getPlugin().getKey()))
+        {
+            scheduleJobIfReady();
+        }
+    }
+
     public void onStart()
     {
-        log.debug("onStart");
+        log.debug("LifecycleAware#onStart");
         messagingService.onStart();
-        schedulerService.registerJobRunner(JOB_RUNNER_KEY, dvcsSchedulerJobRunner);
-        reschedule();
+        scheduleJobIfReady();
     }
 
     @PreDestroy
     public void destroy() throws Exception
     {
-        schedulerService.unregisterJobRunner(JOB_RUNNER_KEY);
+        scheduler.unregisterJobHandler(JOB_HANDLER_KEY);
+        eventPublisher.unregister(this);
         log.info("DvcsScheduler job unscheduled");
     }
 
-    private void reschedule()
+    private void scheduleJobIfReady()
     {
-        if (schedulerService.getJobDetails(JOB_ID) != null)
+        if (readyToSchedule.decrementAndGet() != 0 || scheduler.getJobInfo(JOB_ID) != null)
         {
-            // Already scheduled
+            // Not ready to schedule or already scheduled
             return;
         }
+        scheduler.registerJobHandler(JOB_HANDLER_KEY, dvcsSchedulerJob);
         final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
         final Date startTime = new Date(randomStartTimeWithinInterval);
-        try
-        {
-            schedulerService.scheduleJob(JOB_ID, getJobConfig(startTime, interval));
-            log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
-        }
-        catch (SchedulerServiceException e)
-        {
-            throw new SchedulerRuntimeException("Failed to schedule job", e);
-        }
-    }
-
-    private JobConfig getJobConfig(final Date firstRunTime, final long intervalInMillis)
-    {
-        return JobConfig.forJobRunnerKey(JOB_RUNNER_KEY)
-                .withRunMode(RUN_ONCE_PER_CLUSTER)
-                .withSchedule(forInterval(intervalInMillis, firstRunTime));
+        scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, startTime, interval);
+        log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
     }
 }

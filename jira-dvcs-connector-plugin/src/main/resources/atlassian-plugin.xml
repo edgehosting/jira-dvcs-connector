@@ -19,6 +19,14 @@
                 com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
                 com.atlassian.jira.plugins.dvcs.ondemand
             </Export-Package>
+            <Import-Package>
+                com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
+                com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
+                com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
+                net.sf.ehcache.*;resolution:="optional",
+                net.spy.memcached.*;resolution:="optional",
+                *
+            </Import-Package>
         </bundle-instructions>
     </plugin-info>
 
@@ -41,7 +49,7 @@
     <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager" />
 
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler">
-        <interface>com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler</interface>
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
     <component key="panelVisibleManager" class="com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager" />

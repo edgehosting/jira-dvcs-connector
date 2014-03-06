@@ -4,9 +4,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.scheduler.JobRunnerRequest;
-import com.atlassian.scheduler.JobRunnerResponse;
-import com.atlassian.scheduler.status.RunOutcome;
+import com.atlassian.scheduler.compat.JobInfo;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -14,7 +12,6 @@ import org.testng.annotations.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,7 +24,7 @@ public class DvcsSchedulerJobTest
 
     // Fixture
     private DvcsSchedulerJob job;
-    @Mock private JobRunnerRequest mockJobRunnerRequest;
+    @Mock private JobInfo mockJobInfo;
     @Mock private OrganizationService mockOrganizationService;
     @Mock private RepositoryService mockRepositoryService;
 
@@ -50,11 +47,9 @@ public class DvcsSchedulerJobTest
                 .thenReturn(asList(mockActiveRepository, mockOrphanRepository));
 
         // Invoke
-        final JobRunnerResponse response = job.runJob(mockJobRunnerRequest);
+        job.execute(mockJobInfo);
 
         // Check
-        assertThat(response).isNotNull();
-        assertThat(response.getRunOutcome()).isNotNull().isEqualTo(RunOutcome.SUCCESS);
         verify(mockRepositoryService).syncRepositoryList(mockOrganization);
         verify(mockRepositoryService).removeOrphanRepositories(singletonList(mockOrphanRepository));
     }

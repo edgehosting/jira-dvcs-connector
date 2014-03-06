@@ -50,14 +50,6 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-core</artifactId>
-            <version>${jira.compile.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.collections</groupId>
-                    <artifactId>google-collections</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -230,6 +222,10 @@
         <dependency>
             <groupId>com.atlassian.beehive</groupId>
             <artifactId>beehive-compat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.scheduler</groupId>
+            <artifactId>atlassian-scheduler-compat</artifactId>
         </dependency>
     </dependencies>
     <build>
