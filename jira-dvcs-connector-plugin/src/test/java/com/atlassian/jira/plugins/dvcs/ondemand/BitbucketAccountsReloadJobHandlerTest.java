@@ -4,24 +4,33 @@ import com.atlassian.scheduler.compat.JobHandler;
 import com.atlassian.scheduler.compat.JobInfo;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
+import java.util.Map;
+
+import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BitbucketAccountsReloadJobHandlerTest
 {
+    @Mock private ApplicationContext mockApplicationContext;
     @Mock private BitbucketAccountsConfigService mockAccountsConfigService;
-    private JobHandler jobHandler;
+    private BitbucketAccountsReloadJobHandler jobHandler;
 
     @BeforeMethod
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
+        final Map<String, BitbucketAccountsConfigService> serviceMap = singletonMap("anything", mockAccountsConfigService);
+        when(mockApplicationContext.getBeansOfType(BitbucketAccountsConfigService.class)).thenReturn(serviceMap);
         jobHandler = new BitbucketAccountsReloadJobHandler();
-        ReflectionTestUtils.setField(jobHandler, "accountsConfigService", mockAccountsConfigService);
+        jobHandler.setApplicationContext(mockApplicationContext);
     }
 
     @Test
