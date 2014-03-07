@@ -288,6 +288,36 @@
                             </excludes>
                         </testGroup>
                     </testGroups>
+                    <instructions>
+                        <Export-Package>
+                            <!--
+                                Explicit declaration of the packages to export externally
+
+                                All new public services must also have their packages exported here.
+                                Atlassian Plugin SDK does not automatically generate an osgi manifest when
+                                an explicit build-instruction is specified.
+                            -->
+                            com.atlassian.jira.plugins.dvcs.model,
+                            com.atlassian.jira.plugins.dvcs.service.api,
+                            com.atlassian.jira.plugins.dvcs.smartcommits,
+                            com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
+                            com.atlassian.jira.plugins.dvcs.ondemand
+                        </Export-Package>
+                        <Import-Package>
+                            com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
+                            com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
+                            com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
+                            !com.google.gson.stream,
+                            !com.sun.jdmk.comm,
+                            !javax.jms,
+                            !net.sf.ehcache,
+                            !net.spy.memcached,
+                            !org.apache.avalon.framework*,
+                            !org.apache.log,
+                            !sun.security.util,
+                            *
+                        </Import-Package>
+                    </instructions>
                 </configuration>
             </plugin>
             <plugin>
