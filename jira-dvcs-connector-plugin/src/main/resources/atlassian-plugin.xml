@@ -85,7 +85,7 @@
     </component>
 
     <!-- Active Objects -->
-    <ao key="ao-module" name="Active Objects Module">
+    <ao key="ao-module" name="Active Objects Module" namespace="com.atlassian.jira.plugins.jira-bitbucket-connector-plugin">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
