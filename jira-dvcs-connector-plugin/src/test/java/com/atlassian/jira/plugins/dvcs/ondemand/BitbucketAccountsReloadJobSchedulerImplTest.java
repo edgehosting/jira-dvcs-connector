@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 
 import java.util.Date;
 
+import static com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsReloadJobSchedulerImpl.A_VERY_LONG_TIME_INDEED;
 import static com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsReloadJobSchedulerImpl.JOB_ID;
 import static com.atlassian.jira.plugins.dvcs.ondemand.BitbucketAccountsReloadJobSchedulerImpl.JOB_HANDLER_KEY;
 import static org.mockito.Matchers.any;
@@ -77,6 +78,7 @@ public class BitbucketAccountsReloadJobSchedulerImplTest
         reloadJobScheduler.schedule();
 
         // Check
-        verify(mockScheduler).scheduleClusteredJob(eq(JOB_ID), eq(JOB_HANDLER_KEY), any(Date.class), eq(Long.MAX_VALUE));
+        verify(mockScheduler).scheduleClusteredJob(
+                eq(JOB_ID), eq(JOB_HANDLER_KEY), any(Date.class), eq(A_VERY_LONG_TIME_INDEED));
     }
 }

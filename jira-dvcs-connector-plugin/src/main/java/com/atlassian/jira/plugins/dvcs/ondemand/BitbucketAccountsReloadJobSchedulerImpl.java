@@ -28,6 +28,18 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     // Having this delay minimises the impact of a race in the schedule method
     static final long DELAY = MILLISECONDS.convert(15, SECONDS);
 
+    /*
+        In theory we should be able to set a repeat interval of zero milliseconds
+        to mean "run once", however SAL incorrectly rejects this value. So instead
+        we set the repeat interval to such a long time that in reality the job will
+        never repeat. Note that we have chosen a value that fits into the database
+        column, which has size (18,0).
+
+        In Java 7, we can punctuate this constant to make its intent clearer.
+     */
+    @VisibleForTesting
+    static final long A_VERY_LONG_TIME_INDEED = 99999999999999999L;
+
     private final JobHandler jobHandler;
     private final CompatibilityPluginScheduler scheduler;
 
@@ -57,9 +69,8 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     {
         if (scheduler.getJobInfo(JOB_ID) == null)
         {
-            // We'd like to use zero to mean "once only", but SAL rejects that interval
-            final long intervalInMillis = Long.MAX_VALUE;
-            scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, new Date(currentTimeMillis() + DELAY), intervalInMillis);
+            scheduler.scheduleClusteredJob(
+                    JOB_ID, JOB_HANDLER_KEY, new Date(currentTimeMillis() + DELAY), A_VERY_LONG_TIME_INDEED);
         }
     }
 }
