@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -21,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -29,42 +32,37 @@ import javax.annotation.Resource;
  * Is responsible for message execution.
  *
  * @author Stanislav Dvorscak
- *
  */
 public class MessageExecutor
 {
-
-    /**
-     * Logger of this class.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumer.class);
 
+    private static final String PROCESS_MESSAGE_LOCK = MessageExecutor.class.getName() + ".processMessage";
+
     /**
-     * Executor, which is used for consumer-s execution.
+     * Executor that is used for consumer execution.
      */
     private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES,
             new LinkedBlockingQueue<Runnable>())
     {
-
         protected void afterExecute(Runnable r, Throwable t)
         {
             MessageRunnable<?> messageRunnable = (MessageRunnable<?>) r;
             releaseToken(messageRunnable.getConsumer());
             tryToProcessNextMessage(messageRunnable.getConsumer());
         }
-
     };
 
-    /**
-     * Injected {@link MessagingService} dependency.
-     */
+    private ClusterLockService clusterLockService;
+
+    @Resource
+    private ClusterLockServiceFactory clusterLockServiceFactory;
+
     @Resource
     private MessagingService messagingService;
 
-    /**
-     * Injected {@link MessageConsumer} dependencies.
-     */
     @Resource
+    @SuppressWarnings ("MismatchedReadAndWriteOfArray")
     private MessageConsumer<?>[] consumers;
 
     /**
@@ -88,7 +86,8 @@ public class MessageExecutor
     @PostConstruct
     public void init()
     {
-        for (MessageConsumer<?> consumer : consumers)
+        clusterLockService = clusterLockServiceFactory.getClusterLockService();
+        for (final MessageConsumer<?> consumer : consumers)
         {
             List<MessageConsumer<?>> byAddress = messageAddressToConsumers.get(consumer.getAddress().getId());
             if (byAddress == null)
@@ -97,7 +96,6 @@ public class MessageExecutor
             }
             byAddress.add(consumer);
             consumerToRemainingTokens.put(consumer, new AtomicInteger(consumer.getParallelThreads()));
-
         }
     }
 
@@ -116,11 +114,11 @@ public class MessageExecutor
     }
 
     /**
-     * Notifies that new message with provided address was added into the queues. It is necessary because of consumers' weak-up, which can
-     * be slept because of empty queues.
+     * Notifies that a message with the given address was added to the queues.
+     * It is necessary because of consumers' weak-up, which can be slept
+     * because of empty queues.
      *
-     * @param address
-     *            destination address of new message
+     * @param address destination address of new message
      */
     public void notify(String address)
     {
@@ -137,7 +135,7 @@ public class MessageExecutor
      * @param consumer
      *            for processing
      */
-    private <P extends HasProgress> void tryToProcessNextMessage(MessageConsumer<P> consumer)
+    private <P extends HasProgress> void tryToProcessNextMessage(final MessageConsumer<P> consumer)
     {
         if (stop)
         {
@@ -145,7 +143,9 @@ public class MessageExecutor
         }
 
         Message<P> message;
-        synchronized (this)
+        final Lock lock = clusterLockService.getLockForName(PROCESS_MESSAGE_LOCK);
+        lock.lock();
+        try
         {
             message = messagingService.getNextMessageForConsuming(consumer, consumer.getAddress().getId());
 
@@ -163,6 +163,10 @@ public class MessageExecutor
 
             // we have token and message - message is going to be marked that is queued / busy - and can be proceed
             messagingService.running(consumer, message);
+        }
+        finally
+        {
+            lock.unlock();
         }
 
         // process message itself
@@ -227,8 +231,8 @@ public class MessageExecutor
         /**
          * Constructor.
          *
-         * @param message
-         * @param consumer
+         * @param message the message
+         * @param consumer the consumer of the message
          */
         public MessageRunnable(Message<P> message, MessageConsumer<P> consumer)
         {
@@ -251,14 +255,15 @@ public class MessageExecutor
         public void run()
         {
             Progress progress = null;
-            P payload = null;
             try
             {
+                P payload;
                 try
                 {
                     payload = messagingService.deserializePayload(message);
                     progress = payload.getProgress();
-                } catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
+                }
+                catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
                     progress = e.getProgressOrNull();
                     messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
@@ -268,7 +273,8 @@ public class MessageExecutor
                 consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
 
-            } catch (Throwable t)
+            }
+            catch (Throwable t)
             {
                 LOGGER.error(t.getMessage(), t);
                 messagingService.fail(consumer, message, t);
@@ -283,7 +289,8 @@ public class MessageExecutor
                     progress.setError("Error during sync. See server logs.");
                 }
                 Throwables.propagateIfInstanceOf(t, Error.class);
-            } finally
+            }
+            finally
             {
                 tryEndProgress(message, consumer, progress);
             }
@@ -298,7 +305,8 @@ public class MessageExecutor
                 {
                     messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSynchronizationAuditIdFromTags(message.getTags()));
                 }
-            } catch (RuntimeException e)
+            }
+            catch (RuntimeException e)
             {
                 LOGGER.error(e.getMessage(), e);
                 // Any RuntimeException will be ignored in this step

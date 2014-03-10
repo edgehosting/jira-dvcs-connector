@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,7 +14,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Repository
+public class Repository implements Serializable
 {
     private int id;
     private int organizationId;

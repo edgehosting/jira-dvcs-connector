@@ -10,10 +10,9 @@
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Jira DVCS Connector Api</name>
-    <description>Jira DVCS Connector Api</description>
+    <name>Jira DVCS Connector API</name>
+    <description>Jira DVCS Connector API</description>
 
     <dependencies>
         <dependency>
@@ -30,9 +29,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
-		    <artifactId>jira-core</artifactId>
-		    <version>${jira.compile.version}</version>
-            <scope>provided</scope>
+            <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
         	<groupId>com.atlassian.activeobjects</groupId>

@@ -1,13 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -29,12 +23,20 @@ import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import javax.annotation.Resource;
+
 public class ChangesetServiceImpl implements ChangesetService
 {
     private static final Logger logger = LoggerFactory.getLogger(ChangesetServiceImpl.class);
-    private final ConcurrencyService concurrencyService;
 
     private final ChangesetDao changesetDao;
+    private final ClusterLockService clusterLockService;
 
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -42,25 +44,26 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
-        this.concurrencyService = concurrencyService;
         this.changesetDao = changesetDao;
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
     }
 
     @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
-        return concurrencyService.synchronizedBlock(new ConcurrencyService.SynchronizedBlock<Changeset, RuntimeException>()
+        final String lockName = Changeset.class.getName() + changeset.getRawNode();
+        final Lock createLock = clusterLockService.getLockForName(lockName);
+        createLock.lock();
+        try
         {
-
-            @Override
-            public Changeset perform() throws RuntimeException
-            {
-                return changesetDao.create(changeset, extractedIssues);
-            }
-
-        }, Changeset.class, changeset.getRawNode());
+            return changesetDao.create(changeset, extractedIssues);
+        }
+        finally
+        {
+            createLock.unlock();
+        }
     }
 
     @Override

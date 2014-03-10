@@ -1,38 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.client.PageIterator;
-import org.eclipse.egit.github.core.client.RequestException;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
@@ -61,6 +28,36 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.RequestException;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Resource;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -85,9 +82,6 @@ public class GithubCommunicator implements DvcsCommunicator
      */
     @Resource
     private GitHubRESTClient gitHubRESTClient;
-
-    @Resource
-    private FeatureManager featureManager;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -311,6 +305,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @SuppressWarnings("unused")
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
@@ -321,11 +316,11 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it
-     * and encode UTF-8 instead
+     * The git library encodes parameters using ISO-8859-1. Let's trick it and
+     * encode using UTF-8 instead.
      * 
-     * @param branch
-     * @return
+     * @param branch the branch name to encode as UTF-8
+     * @return the UTF-8 encoded branch name
      */
     private String doTheUtfEncoding(String branch)
     {
@@ -617,16 +612,11 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private String getRef(String slug, String branch)
     {
-        String ref = null;
         if (slug != null)
         {
-            ref = slug + ":" + branch;
-        } else
-        {
-            ref = branch;
+            return slug + ":" + branch;
         }
-
-        return ref;
+        return branch;
     }
 
     @Override
@@ -640,5 +630,4 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
-
 }
