@@ -134,16 +134,9 @@ public interface RepositoryService
     void remove(Repository repository);
     
     /**
-     * The same as {@link #removeOrphanRepositories()}, but it will run in background.
+     * Removes orphan repositories (asynchronously).
      * 
-     * @param orphanRepositories to removes
-     */
-    public void removeOrphanRepositoriesAsync(List<Repository> orphanRepositories);
-
-    /**
-     * Removes orphan repositories.
-     * 
-     * @param orphanRepositories to removes
+     * @param orphanRepositories the repositories to remove
      */
     void removeOrphanRepositories(List<Repository> orphanRepositories);
 

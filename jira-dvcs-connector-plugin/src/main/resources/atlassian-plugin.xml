@@ -5,21 +5,7 @@
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
         <bundle-instructions>
-            <Export-Package>
-                <!--
-                    Explicit declaration of the packages to export externally
-
-                    All new public services must also have their packages exported here.
-                    Atlassian Plugin SDK does not automatically generate an osgi manifest when
-                    an explicit build-instruction is specified.
-                -->
-                com.atlassian.jira.plugins.dvcs.model,
-                com.atlassian.jira.plugins.dvcs.event,
-                com.atlassian.jira.plugins.dvcs.service.api,
-                com.atlassian.jira.plugins.dvcs.smartcommits,
-                com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
-                com.atlassian.jira.plugins.dvcs.ondemand
-            </Export-Package>
+            <!-- These are now in jira-dvcs-connector-plugin/pom.xml, in the maven-jira-plugin config -->
         </bundle-instructions>
     </plugin-info>
 
@@ -39,8 +25,9 @@
     <component-import key="userManager" interface="com.atlassian.jira.user.util.UserManager" />
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
     <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
+    <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager" />
 
-    <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
+    <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
@@ -98,7 +85,7 @@
     </component>
 
     <!-- Active Objects -->
-    <ao key="ao-module" name="Active Objects Module">
+    <ao key="ao-module" name="Active Objects Module" namespace="com.atlassian.jira.plugins.jira-bitbucket-connector-plugin">
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
@@ -191,11 +178,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
     </component-->
     
-    <component key="concurrencyService" class="com.atlassian.jira.plugins.dvcs.service.ConcurrencyServiceImpl">
-    	<description>Concurrency utilities</description>
-    	<interface>com.atlassian.jira.plugins.dvcs.service.ConcurrencyService</interface>
-    </component>
-
     <component key="executorService" name="Executor Service Factory Component"
             class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
         <description>ExecutorService factory bean for creating executor services</description>
@@ -424,7 +406,7 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="gitHubPullRequestSynchronizeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessageSerializer">
-    <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"

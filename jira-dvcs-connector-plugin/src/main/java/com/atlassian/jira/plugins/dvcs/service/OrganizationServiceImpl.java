@@ -133,7 +133,7 @@ public class OrganizationServiceImpl implements OrganizationService
         }
         organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
-        repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);
+        repositoryService.removeOrphanRepositories(repositoriesToDelete);
     }
 
     @Override

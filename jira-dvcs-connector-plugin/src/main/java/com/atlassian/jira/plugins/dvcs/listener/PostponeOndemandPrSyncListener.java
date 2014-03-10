@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import java.util.Date;
-import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.CoreFeatures;
@@ -15,13 +7,20 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Date;
+import java.util.Random;
+
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 
 public class PostponeOndemandPrSyncListener implements InitializingBean, DisposableBean
 {
-
     private static final long POSTPONE_PR_SYNC_FRAME_MS = /* two days */ 2 * 24 * 60 * 60 * 1000;
     private static final String POSTPONE_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone";
-    private static final String POSTPONE_GITHUB_PR_SYNC_UNTIL = "plugin.dvcs.prsyncpostpone.github";
     private static final Logger log = LoggerFactory.getLogger(PostponeOndemandPrSyncListener.class);
 
     private final EventPublisher eventPublisher;
@@ -30,16 +29,15 @@ public class PostponeOndemandPrSyncListener implements InitializingBean, Disposa
 
     public PostponeOndemandPrSyncListener(EventPublisher eventPublisher, FeatureManager featureManager, PluginSettingsFactory settings)
     {
-        super();
         this.eventPublisher = eventPublisher;
         this.featureManager = featureManager;
         this.pluginSettings = settings.createGlobalSettings();
     }
 
     @EventListener
-    public void pluginInstalled(PluginEnabledEvent event)
+    public void pluginInstalled(final PluginEnabledEvent event)
     {
-        if ("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin".equals(event.getPlugin().getKey())
+        if (PLUGIN_KEY.equals(event.getPlugin().getKey())
                 && featureManager.isEnabled(CoreFeatures.ON_DEMAND))
         {
             String savedSetting = (String) pluginSettings.get(POSTPONE_PR_SYNC_UNTIL);
