@@ -1,21 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -26,93 +15,85 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronisationOperation;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_PULL_REQUESTS;
 
 /**
  * The Class RepositoryServiceImpl.
  */
-public class RepositoryServiceImpl implements RepositoryService, DisposableBean
+public class RepositoryServiceImpl implements RepositoryService
 {
+    @VisibleForTesting
+    static final String SYNC_REPOSITORY_LIST_LOCK = RepositoryService.class.getName() + ".syncRepositoryList";
 
-    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(RepositoryServiceImpl.class);
 
-    /**
-     * Only single {@link #removeOrphanRepositories()} can running at same time.
-     */
-    private final Object removeOrphanRepositoriesLock = new Object();
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
-    /**
-     * @see #removeOrphanRepositoriesAsync(List)
-     */
-    private final ExecutorService removeOrphanRepositoriesExecutor = new ThreadPoolExecutor(//
-            0, 1, // no remaining threads and at most single thread
-            0, TimeUnit.MILLISECONDS, // destroys thread immediately, when is not used
-            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnectoRemoveRepositoriesExecutorThread"));
+    @Resource
+    private RepositoryDao repositoryDao;
 
-    /** The communicator provider. */
-    private final DvcsCommunicatorProvider communicatorProvider;
+    @Resource
+    private RepositoryPullRequestDao repositoryPullRequestDao;
 
-    /** The repository dao. */
-    private final RepositoryDao repositoryDao;
+    @Resource
+    private Synchronizer synchronizer;
 
-    /** The synchronizer. */
-    private final Synchronizer synchronizer;
+    @Resource
+    private ChangesetService changesetService;
 
-    /** The changeset service. */
-    private final ChangesetService changesetService;
+    @Resource
+    private BranchService branchService;
 
-    /** The branch service. */
-    private final BranchService branchService;
+    @Resource
+    private ApplicationProperties applicationProperties;
 
-    /** The application properties. */
-    private final ApplicationProperties applicationProperties;
+    @Resource
+    private PluginSettingsFactory pluginSettingsFactory;
 
-    private final PluginSettingsFactory pluginSettingsFactory;
+    @Resource
+    private GitHubEventService gitHubEventService;
 
-    /**
-     * The Constructor.
-     *
-     * @param communicatorProvider
-     *            the communicator provider
-     * @param repositoryDao
-     *            the repository dao
-     * @param synchronizer
-     *            the synchronizer
-     * @param changesetService
-     *            the changeset service Add a comment to this line
-     * @param applicationProperties
-     *            the application properties
-     */
-    public RepositoryServiceImpl(DvcsCommunicatorProvider communicatorProvider, RepositoryDao repositoryDao, Synchronizer synchronizer,
-                                 ChangesetService changesetService, BranchService branchService, ApplicationProperties applicationProperties, PluginSettingsFactory pluginSettingsFactory)
+    @Resource
+    private SyncAuditLogDao syncAuditDao;
+
+    @Resource
+    private ClusterLockServiceFactory clusterLockServiceFactory;
+
+    private ClusterLockService clusterLockService;
+
+    private final Executor repositoryDeletionExecutor = Executors.newSingleThreadExecutor();
+
+    @PostConstruct
+    public void init()
     {
-        this.communicatorProvider = communicatorProvider;
-        this.repositoryDao = repositoryDao;
-        this.branchService = branchService;
-        this.synchronizer = synchronizer;
-        this.changesetService = changesetService;
-        this.applicationProperties = applicationProperties;
-        this.pluginSettingsFactory = pluginSettingsFactory;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void destroy() throws Exception
-    {
-        removeOrphanRepositoriesExecutor.shutdown();
-        if (!removeOrphanRepositoriesExecutor.awaitTermination(1, TimeUnit.MINUTES))
-        {
-            log.error("Unable properly shutdown queued tasks.");
-        }
+        clusterLockService = clusterLockServiceFactory.getClusterLockService();
     }
 
     /**
@@ -155,43 +136,58 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public synchronized void syncRepositoryList(Organization organization, boolean soft)
+    public void syncRepositoryList(final Organization organization, final boolean soft)
     {
-        log.debug("Synchronising list of repositories");
-
-        InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-        invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
-
-        // get repositories from the dvcs hosting server
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-
-        List<Repository> remoteRepositories;
-
+        final Lock lock = clusterLockService.getLockForName(SYNC_REPOSITORY_LIST_LOCK);
+        lock.lock();
         try
         {
-            remoteRepositories = communicator.getRepositories(organization);
-        } catch (SourceControlException.UnauthorisedException e)
-        {
-            // we could not load repositories, we can't continue
-            // mark the organization as invalid
-            invalidOrganizationsManager.setOrganizationValid(organization.getId(), false);
-            throw e;
+            log.debug("Synchronising list of repositories");
+
+            InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
+            invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
+
+            // get repositories from the dvcs hosting server
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+
+            // get local repositories
+            List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
+
+            List<Repository> remoteRepositories;
+
+            try
+            {
+                remoteRepositories = communicator.getRepositories(organization, storedRepositories);
+            } catch (SourceControlException.UnauthorisedException e)
+            {
+                // we could not load repositories, we can't continue
+                // mark the organization as invalid
+                invalidOrganizationsManager.setOrganizationValid(organization.getId(), false);
+                throw e;
+            }
+
+            // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
+            removeDuplicateRepositories(organization, storedRepositories);
+            // update names of existing repositories in case their names changed
+            updateExistingRepositories(storedRepositories, remoteRepositories);
+            // repositories that are no longer on hosting server will be marked as deleted
+            removeDeletedRepositories(storedRepositories, remoteRepositories);
+            // new repositories will be added to the database
+            Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
+
+            // start asynchronous changesets synchronization for all linked repositories in organization
+            EnumSet<SynchronizationFlag> synchronizationFlags = EnumSet.of(SYNC_CHANGESETS, SYNC_PULL_REQUESTS);
+            if (soft)
+            {
+                synchronizationFlags.add(SynchronizationFlag.SOFT_SYNC);
+            }
+            syncAllInOrganization(organization.getId(), synchronizationFlags, newRepoSlugs);
+
         }
-
-        // get local repositories
-        List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
-
-        // BBC-231 somehow we ended up with duplicated repositories on QA-EACJ
-        removeDuplicateRepositories(organization, storedRepositories);
-        // update names of existing repositories in case their names changed
-        updateExistingRepositories(storedRepositories, remoteRepositories);
-        // repositories that are no longer on hosting server will be marked as deleted
-        removeDeletedRepositories(storedRepositories, remoteRepositories);
-        // new repositories will be added to the database
-        Set<String> newRepoSlugs = addNewReposReturnNewSlugs(storedRepositories, remoteRepositories, organization);
-
-        // start asynchronous changesets synchronization for all linked repositories in organization
-        syncAllInOrganization(organization.getId(), soft, newRepoSlugs);
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -202,17 +198,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Removes duplicated repositories.
+     * Removes any repositories with duplicate slugs.
      *
-     * @param organization
-     * @param storedRepositories
+     * @param organization the owning organisation
+     * @param storedRepositories the repositories from which to remove the duplicates
      */
-    private void removeDuplicateRepositories(Organization organization, List<Repository> storedRepositories)
+    private void removeDuplicateRepositories(final Organization organization, final List<Repository> storedRepositories)
     {
-        Set<String> existingRepositories = new HashSet<String>();
-        for (Repository repository : storedRepositories)
+        final Set<String> existingRepositories = new HashSet<String>();
+        for (final Repository repository : storedRepositories)
         {
-            String slug = repository.getSlug();
+            final String slug = repository.getSlug();
             if (existingRepositories.contains(slug))
             {
                 log.warn("Repository " + organization.getName() + "/" + slug + " is duplicated. Will be deleted.");
@@ -298,8 +294,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /**
      * Removes the deleted repositories.
      *
-     * @param storedRepositories the stored repositories
-     * @param remoteRepositories the remote repositories
+     * @param storedRepositories
+     *            the stored repositories
+     * @param remoteRepositories
+     *            the remote repositories
      */
     private void removeDeletedRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -322,8 +320,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * - undelete existing deleted
      * - updates names.
      *
-     * @param storedRepositories the stored repositories
-     * @param remoteRepositories the remote repositories
+     * @param storedRepositories
+     *            the stored repositories
+     * @param remoteRepositories
+     *            the remote repositories
      */
     private void updateExistingRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -347,10 +347,10 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     }
 
     /**
-     * Converts collection of repository objects into map where key is
-     * repository slug and value is repository object.
+     * Converts collection of repository objects into map where key is repository slug and value is repository object.
      *
-     * @param repositories the repositories
+     * @param repositories
+     *            the repositories
      * @return the map< string, repository>
      */
     private Map<String, Repository> makeRepositoryMap(Collection<Repository> repositories)
@@ -367,14 +367,14 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public void sync(int repositoryId, boolean softSync)
+    public void sync(int repositoryId, EnumSet<SynchronizationFlag> flags)
     {
         Repository repository = get(repositoryId);
 
         // looks like repository was deleted before we started to synchronise it
         if (repository != null && !repository.isDeleted())
         {
-            doSync(repository, softSync);
+            doSync(repository, flags);
         } else
         {
             log.warn("Sync requested but repository with id {} does not exist anymore.", repositoryId);
@@ -383,11 +383,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     /**
      * synchronization of changesets in all repositories which are in given organization
+     *
      * @param organizationId organizationId
-     * @param soft
-     * @param newRepoSlugs
+     * @param flags flags
+     * @param newRepoSlugs newRepoSlugs
      */
-    private void syncAllInOrganization(int organizationId, boolean soft, Set<String> newRepoSlugs)
+    private void syncAllInOrganization(int organizationId, EnumSet<SynchronizationFlag> flags, Set<String> newRepoSlugs)
     {
         List<Repository> repositories = getAllByOrganization(organizationId);
         for (Repository repository : repositories)
@@ -395,14 +396,16 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             if (!newRepoSlugs.contains(repository.getSlug()))
             {
                 // not a new repo
-                doSync(repository, soft);
+                doSync(repository, flags);
             } else
             {
                 // it is a new repo, we force to hard sync
                 // to disable smart commits on it, make sense
                 // in case when someone has just migrated
                 // repo to DVCS avoiding duplicate smart commits
-                doSync(repository, false);
+                EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
+                newFlags.remove(SynchronizationFlag.SOFT_SYNC);
+                doSync(repository, newFlags);
             }
         }
     }
@@ -411,17 +414,11 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * Do sync.
      *
      * @param repository the repository
-     * @param softSync   the soft sync
+     * @param flags the flags
      */
-    private void doSync(Repository repository, boolean softSync)
+    private void doSync(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
-        if (repository.isLinked())
-        {
-            DefaultSynchronisationOperation synchronisationOperation = new DefaultSynchronisationOperation(
-                    communicatorProvider.getCommunicator(repository.getDvcsType()), repository, this, changesetService, branchService,
-                    softSync);
-            synchronizer.synchronize(repository, synchronisationOperation, changesetService);
-        }
+        synchronizer.doSync(repository, flags);
     }
 
     /**
@@ -442,6 +439,12 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         return repositoryDao.getAll(includeDeleted);
     }
 
+    @Override
+    public List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted)
+    {
+        return repositoryDao.getAllByType(dvcsType, includeDeleted);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -455,7 +458,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public RepositoryRegistration enableRepository(int repoId, boolean linked)
+    public RepositoryRegistration  enableRepository(int repoId, boolean linked)
     {
         RepositoryRegistration registration = new RepositoryRegistration();
 
@@ -465,11 +468,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         {
             registration.setRepository(repository);
 
-            if (!linked)
-            {
-                synchronizer.stopSynchronization(repository);
-                synchronizer.removeProgress(repository);
-            }
+            // un/pause possible synchronization
+            synchronizer.pauseSynchronization(repository, !linked);
 
             repository.setLinked(linked);
 
@@ -519,7 +519,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      * Adds the or remove postcommit hook.
      *
      * @param repository the repository
-     * @param post       commit callback url
+     * @param postCommitCallbackUrl commit callback url
      */
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
@@ -527,7 +527,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -539,12 +539,13 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /**
      * Gets the post commit url.
      *
-     * @param repo the repo
+     * @param repo
+     *            the repo
      * @return the post commit url
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**
@@ -553,15 +554,9 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void removeRepositories(List<Repository> repositories)
     {
-        // we stop all synchronizations first to prevent starting a new redundant synchronization
         for (Repository repository : repositories)
         {
-            synchronizer.stopSynchronization(repository);
-        }
-
-        for (Repository repository : repositories)
-        {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -571,12 +566,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-        synchronizer.removeProgress(repository);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**
@@ -586,6 +586,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     public void remove(Repository repository)
     {
         synchronizer.stopSynchronization(repository);
+
         // try remove postcommit hook
         if (repository.isLinked())
         {
@@ -595,8 +596,14 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         changesetService.removeAllInRepository(repository.getId());
         // remove progress
         synchronizer.removeProgress(repository);
-        // delete branch heads saved for repository
+        // delete branches saved for repository
         branchService.removeAllBranchHeadsInRepository(repository.getId());
+        branchService.removeAllBranchesInRepository(repository.getId());
+        // remove pull requests things
+        gitHubEventService.removeAll(repository);
+        repositoryPullRequestDao.removeAll(repository);
+        // remove sync logs
+        syncAuditDao.removeAllForRepo(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
     }
@@ -604,7 +611,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     /**
      * Removes the postcommit hook.
      *
-     * @param repository the repository
+     * @param repository
+     *            the repository
      */
     private void removePostcommitHook(Repository repository)
     {
@@ -615,40 +623,25 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             communicator.removePostcommitHook(repository, postCommitUrl);
         } catch (Exception e)
         {
-            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId()
-                    + ", slug = " + repository.getRepositoryUrl(), e);
+            log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+                    + repository.getRepositoryUrl(), e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void removeOrphanRepositoriesAsync(final List<Repository> orphanRepositories)
+    public void removeOrphanRepositories(final List<Repository> orphanRepositories)
     {
-        removeOrphanRepositoriesExecutor.execute(new Runnable()
+        repositoryDeletionExecutor.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                removeOrphanRepositories(orphanRepositories);
+                for (final Repository repository : orphanRepositories)
+                {
+                    remove(repository);
+                }
             }
         });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void removeOrphanRepositories(List<Repository> orphanRepositories)
-    {
-        synchronized (removeOrphanRepositoriesLock)
-        {
-            for (Repository repository : orphanRepositories)
-            {
-                remove(repository);
-            }
-        }
     }
 
     @Override
@@ -680,25 +673,52 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DvcsUser getUser(Repository repository, String author, String rawAuthor)
     {
         log.debug("Get user information for: [ {}, {}]", author, rawAuthor);
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
 
-        try
+        DvcsUser user = null;
+
+        if (!Strings.isNullOrEmpty(author))
         {
-            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-            DvcsUser user = communicator.getUser(repository, author);
-            if (user instanceof DvcsUser.UnknownUser)
+            try
             {
-                user.setRawAuthor(rawAuthor);
+                user = communicator.getUser(repository, author);
+            } catch (Exception e)
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
+                } else
+                {
+                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage());
+                }
+                return getUnknownUser(repository, author, rawAuthor);
             }
-            return user;
-        } catch (Exception e)
-        {
-            log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
-            return new UnknownUser(author, rawAuthor != null ? rawAuthor : author, repository.getOrgHostUrl());
         }
+
+        return user != null ? user : getUnknownUser(repository, author, rawAuthor);
     }
 
+    /**
+     * Creates user, which is unknown - it means he does not exist as real user inside a repository. But we still want to provide some
+     * information about him.
+     * 
+     * @param repository
+     *            system, which should know, who is the provided user
+     * @param username
+     *            of user or null/empty string if does not exist
+     * @param rawUser
+     *            DVCS representation of user, for git/mercurial is it: <i>Full Name &lt;email&gt;</i>
+     * @return "unknown" user
+     */
+    private UnknownUser getUnknownUser(Repository repository, String username, String rawUser)
+    {
+        return new UnknownUser(username, rawUser != null ? rawUser : username, repository.getOrgHostUrl());
+    }
 }

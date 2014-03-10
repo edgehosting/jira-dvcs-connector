@@ -4,10 +4,9 @@ public class BasicAuthAuthProvider extends AbstractAuthProvider
 {
 	private final String username;
 	private final String password;
-
-	public BasicAuthAuthProvider(String hostUrl, String username, String password)
+	public BasicAuthAuthProvider(String hostUrl, String username, String password, HttpClientProvider httpClientProvider)
 	{
-		super(hostUrl);
+		super(hostUrl, httpClientProvider);
 		this.username = username;
 		this.password = password;
 	}
@@ -15,8 +14,7 @@ public class BasicAuthAuthProvider extends AbstractAuthProvider
 	@Override
 	public RemoteRequestor provideRequestor()
 	{
-		return new BasicAuthRemoteRequestor(this, username, password);
+		return new BasicAuthRemoteRequestor(this, username, password, httpClientProvider);
 	}
-
 }
 

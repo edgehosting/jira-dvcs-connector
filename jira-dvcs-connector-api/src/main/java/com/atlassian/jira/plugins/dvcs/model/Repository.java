@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,7 +14,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @XmlRootElement(name = "repository")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Repository
+public class Repository implements Serializable
 {
     private int id;
     private int organizationId;
@@ -25,6 +26,13 @@ public class Repository
     private boolean deleted;
     private boolean smartcommitsEnabled;
     private String owner;
+    
+    private Date activityLastSync;
+    
+    /**
+     * Last activity date, either last commit or last PR activity
+     */
+    private Date lastActivityDate;
     
     private String repositoryUrl;
     private String logo;
@@ -115,6 +123,16 @@ public class Repository
     public void setLastCommitDate(Date lastCommitDate)
     {
         this.lastCommitDate = lastCommitDate;
+    }
+    
+    public Date getLastActivityDate()
+    {
+        return lastActivityDate;
+    }
+
+    public void setLastActivityDate(Date lastActivityDate)
+    {
+        this.lastActivityDate = lastActivityDate;
     }
 
     public boolean isLinked()
@@ -271,6 +289,16 @@ public class Repository
     public String toString()
     {
         return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
+	}
+
+    public Date getActivityLastSync()
+    {
+        return activityLastSync;
+    }
+
+    public void setActivityLastSync(Date activityLastSync)
+    {
+        this.activityLastSync = activityLastSync;
     }
 
 }

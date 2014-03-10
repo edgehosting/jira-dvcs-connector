@@ -1,29 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
+
     /**
      * Represents advertisement content of commit tab panel shown when no repository is linked.
      *
@@ -67,11 +65,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
                 return "";
             }
         }
-    }
 
+    }
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
-    private final PermissionManager permissionManager;
+    private final PanelVisibilityManager panelVisibilityManager;
+
     private final RepositoryService repositoryService;
 
     private final SoyTemplateRenderer soyTemplateRenderer;
@@ -81,11 +80,11 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private final EventPublisher eventPublisher;
 
-    public DvcsTabPanel(PermissionManager permissionManager,
+    public DvcsTabPanel(PanelVisibilityManager panelVisibilityManager,
             SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher)
     {
-        this.permissionManager = permissionManager;
+        this.panelVisibilityManager = panelVisibilityManager;
         this.renderer = renderer;
         this.soyTemplateRenderer = soyTemplateRendererProvider.getRenderer();
         this.repositoryService = repositoryService;
@@ -116,7 +115,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     @Override
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user);
+        return panelVisibilityManager.showPanel(issue, user);
     }
 
 }

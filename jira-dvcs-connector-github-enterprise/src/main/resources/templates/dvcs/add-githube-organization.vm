@@ -35,7 +35,6 @@
 	            <input class="field-value text" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
 			  </div>
 
-              ##if($action.getOauthRequiredGhe() == "true")	
 	          	<input type="hidden" name="oauthRequiredGhe" value="true" />
 	          	<div class="field-group" >
 	          		<label for="oauthClientIdGhe">OAuth Key:</label>
@@ -46,7 +45,6 @@
 	          		<label for="oauthSecretGhe">OAuth Secret:</label>
 	            	<input class="field-value text" type="text" id="oauthSecretGhe" name="oauthSecretGhe" value="$textutils.htmlEncode($action.getOauthSecretGhe())"/>
 			   </div>
-	          ##end
             </fieldset>
 			
 			<fieldset class="group">

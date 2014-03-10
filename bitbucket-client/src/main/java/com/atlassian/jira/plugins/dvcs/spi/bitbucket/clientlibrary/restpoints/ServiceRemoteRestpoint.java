@@ -15,6 +15,9 @@ import com.google.gson.reflect.TypeToken;
 
 public class ServiceRemoteRestpoint
 {
+    public static final String SERVICE_TYPE_POST = "POST";
+    public static final String SERVICE_TYPE_PULL_REQUEST_POST = "Pull Request POST";
+
     private final RemoteRequestor requestor;
 
     public ServiceRemoteRestpoint(RemoteRequestor remoteRequestor)
@@ -24,10 +27,20 @@ public class ServiceRemoteRestpoint
 
     public BitbucketService addPOSTService(String owner, String slug, String serviceUrl)
     {
+        return addService(owner, slug, serviceUrl, SERVICE_TYPE_POST);
+    }
+
+    public BitbucketService addPullRequestPOSTService(String owner, String slug, String serviceUrl)
+    {
+        return addService(owner, slug, serviceUrl, SERVICE_TYPE_PULL_REQUEST_POST);
+    }
+
+    private BitbucketService addService(final String owner, final String slug, final String serviceUrl, final String serviceType)
+    {
         String addServiceUrl = URLPathFormatter.format("/repositories/%s/%s/services", owner, slug);
 
         Map<String, String> addServiceParameters = new HashMap<String, String>();
-        addServiceParameters.put("type", "POST");
+        addServiceParameters.put("type", serviceType);
         addServiceParameters.put("URL", serviceUrl);
 
         return requestor.post(addServiceUrl, addServiceParameters, new ResponseCallback<BitbucketService>()

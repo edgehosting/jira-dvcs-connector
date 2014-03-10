@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.ConfirmationDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -17,7 +16,7 @@ public class OrganizationDiv
 {
     @Inject
     private PageBinder pageBinder;
-    
+
     @Inject
     private PageElementFinder elementFinder;
     
@@ -61,7 +60,7 @@ public class OrganizationDiv
         }
         return list;
     }
-    
+
     public boolean containsRepository(String name)
     {
         List<RepositoryDiv> repositories = getRepositories();
@@ -72,6 +71,7 @@ public class OrganizationDiv
                 return true;
             }
         }
+
         return false;
     }
     

@@ -1,9 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -12,35 +10,27 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestAuthor;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
-import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
-import com.atlassian.jira.project.Project;
-import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -78,11 +68,7 @@ public class RootResource
     /** The repository service. */
     private final RepositoryService repositoryService;
 
-    private final ChangesetService changesetService;
-
     private final AccountsConfigService ondemandAccountConfig;
-
-    private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     /**
      * The Constructor.
@@ -90,15 +76,12 @@ public class RootResource
      * @param organizationService
      *            the organization service
      * @param repositoryService
-     *            the repository service
+     * @param pullRequestService
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, ChangesetService changesetService,
-            IssueAndProjectKeyManager issueAndProjectKeyManager, AccountsConfigService ondemandAccountConfig)
+    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, AccountsConfigService ondemandAccountConfig)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
-        this.changesetService = changesetService;
-        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
         this.ondemandAccountConfig = ondemandAccountConfig;
     }
 
@@ -156,10 +139,43 @@ public class RootResource
     @Path("/repository/{id}/sync")
     public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
     {
-        log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
         log.info("Postcommit hook started synchronization for repository [{}].", id);
+        log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
 
-        repositoryService.sync(id, true);
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.WEBHOOK_SYNC));
+
+        return Response.ok().build();
+    }
+
+    @AnonymousAllowed
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/sync")
+    public Response startRepositoryPRSync(@PathParam("id") int id, String source)
+    {
+        log.info("Pull Request Postcommit hook started synchronization for repository [{}].", id);
+        String key = null;
+
+        try
+        {
+            JSONObject jsoned = new JSONObject(source);
+            Iterator<String> keys = jsoned.keys();
+            if (keys.hasNext())
+            {
+                key = keys.next();
+            }
+        }
+        catch (JSONException e)
+        {
+            log.info("Could not parse json request.");
+        }
+
+        log.debug("Rest request to soft sync pull requests for repository [{}] with type [{}]", id, key);
+
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_PULL_REQUESTS, SynchronizationFlag.WEBHOOK_SYNC));
 
         return Response.ok().build();
     }
@@ -179,7 +195,8 @@ public class RootResource
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
-        repositoryService.sync(id, true);
+        repositoryService.sync(id,
+                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         // ...
         // redirect to Repository resource - that will contain sync
@@ -205,7 +222,45 @@ public class RootResource
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, false);
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncChangesets")
+    @AdminOnly
+    public Response startRepositoryChangesetsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to changesets fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
+
+        // ...
+        // redirect to Repository resource - that will contain sync
+        // message/status
+        UriBuilder ub = uriInfo.getBaseUriBuilder();
+        URI uri = ub.path("/repository/{id}").build(id);
+
+        return Response.seeOther(uri).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Path("/repository/{id}/fullSyncPullRequests")
+    @AdminOnly
+    public Response startRepositoryPullRequestsSynchronization(@PathParam("id") int id)
+    {
+        log.debug("Rest request to pull request fullsync repository [{}] ", id);
+
+        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
 
         // ...
         // redirect to Repository resource - that will contain sync
@@ -284,7 +339,13 @@ public class RootResource
         }
 
         Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
-        repositoryService.syncRepositoryList(organization);
+        try
+        {
+            repositoryService.syncRepositoryList(organization);
+        } catch (SourceControlException e)
+        {
+            log.error("Could not refresh repository list", e);
+        }
         return Response.noContent().build();
     }
 
@@ -387,7 +448,6 @@ public class RootResource
                     .message(
                             "Error retrieving list of groups for " + organization.getOrganizationUrl()
                                     + ". Please check JIRA logs for details.").response();
-
         }
 
     }
@@ -477,7 +537,7 @@ public class RootResource
     {
         try
         {
-            ondemandAccountConfig.reload(true);
+            ondemandAccountConfig.reloadAsync();
             return Response.ok("OK").build();
         } catch (Exception e)
         {
@@ -512,113 +572,5 @@ public class RootResource
         }
 
         return Response.noContent().build();
-    }
-
-    @GET
-    @Path("/jira-dev/detail")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCommits(@QueryParam("issue") String issueKey)
-    {
-        Issue issue = issueAndProjectKeyManager.getIssue(issueKey);
-        if (issue == null)
-        {
-            return Status.notFound().message("Issue not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
-        {
-            throw new AuthorizationException();
-        }
-
-        Project project = issue.getProjectObject();
-
-        if (project == null)
-        {
-            return Status.notFound().message("Project was not found").response();
-        }
-
-        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
-        {
-            throw new AuthorizationException();
-        }
-
-        Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
-        List<Changeset> changesets = changesetService.getByIssueKey(issueKeys, true);
-
-        ListMultimap<Integer, Changeset> changesetTorepositoryMapping = ArrayListMultimap.create();
-        Map<Integer, Repository> repositories = new HashMap<Integer, Repository>();
-
-        // group changesets by repository
-        for (Changeset changeset : changesets)
-        {
-            for (int repositoryId : changeset.getRepositoryIds())
-            {
-                changesetTorepositoryMapping.put(repositoryId, changeset);
-            }
-        }
-
-        List<RestRepository> restRepositories = new ArrayList<RestRepository>();
-        for (int repositoryId : changesetTorepositoryMapping.keySet())
-        {
-            Repository repository = repositories.get(repositoryId);
-
-            if (repository == null)
-            {
-                repository = repositoryService.get(repositoryId);
-                repositories.put(repositoryId, repository);
-            }
-
-            RestRepository restRepository = new RestRepository();
-            restRepository.setName(repository.getName());
-            restRepository.setSlug(repository.getSlug());
-            restRepository.setUrl(repository.getRepositoryUrl());
-            restRepository.setAvatar(repository.getLogo());
-            restRepository.setCommits(createCommits(repository, changesetTorepositoryMapping.get(repositoryId)));
-                        restRepository.setFork(repository.isFork());
-            if (repository.isFork() && repository.getForkOf() != null)
-            {
-                RestRepository forkOfRepository = new RestRepository();
-                forkOfRepository.setName(repository.getForkOf().getName());
-                forkOfRepository.setSlug(repository.getForkOf().getSlug());
-                forkOfRepository.setUrl(repository.getForkOf().getRepositoryUrl());
-                restRepository.setForkOf(forkOfRepository);
-            }
-
-            restRepositories.add(restRepository);
-        }
-
-        RestChangesets result = new RestChangesets();
-        result.setRepositories(restRepositories);
-        return Response.ok(result).build();
-    }
-
-    private List<RestChangeset> createCommits(Repository repository, List<Changeset> changesets)
-    {
-        List<RestChangeset> restChangesets = new ArrayList<RestChangeset>();
-        for (Changeset changeset : changesets)
-        {
-            DvcsUser user = repositoryService.getUser(repository, changeset.getAuthor(), changeset.getRawAuthor());
-            RestChangeset restChangeset = new RestChangeset();
-            restChangeset.setAuthor(new RestAuthor(user.getFullName(), changeset.getAuthorEmail(), user.getAvatar()));
-            restChangeset.setAuthorTimestamp(changeset.getDate().getTime());
-            restChangeset.setDisplayId(changeset.getNode().substring(0, 7));
-            restChangeset.setId(changeset.getRawNode());
-            restChangeset.setMessage(changeset.getMessage());
-            restChangeset.setFileCount(changeset.getAllFileCount());
-            restChangeset.setUrl(changesetService.getCommitUrl(repository, changeset));
-
-            if (changeset.getParents() == null)
-            {
-                // no parents are set, it means that the length of the parent json is too long, so it was large merge (e.g Octopus merge)
-                restChangeset.setMerge(true);
-            } else
-            {
-                restChangeset.setMerge(changeset.getParents().size() > 1);
-            }
-
-            restChangesets.add(restChangeset);
-        }
-
-        return restChangesets;
     }
 }

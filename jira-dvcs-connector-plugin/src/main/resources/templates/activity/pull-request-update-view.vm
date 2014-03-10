@@ -1,0 +1,62 @@
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="$pullRequestUpdate.authorUrl"><img class="avatar avatar32" src="$pullRequestUpdate.authorAvatar"></a>
+        <a href="$pullRequestUpdate.authorUrl" class="author" title="$pullRequestUpdate.authorName">$pullRequestUpdate.authorName</a>
+        <span class="aui-lozenge pull-request-state $pullRequestUpdate.lozengeStyle" title="">$pullRequestUpdate.status</span> a pull request
+        <a href="$pullRequest.url">$pullRequest.name</a>
+        on <time>$velocityUtils.getRelativePastDate($pullRequestUpdate.lastUpdatedOn)</time>
+      </div>
+    </header>
+    
+    <div class="content">
+    <table class="aui commit-list">
+      <thead>
+      <tr id="chg_0">
+        <th class="author">Author</th>
+        <th class="hash">Commit</th>
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>
+      <tbody>
+        #foreach( $commit in $pullRequestUpdate.commits )
+        <tr class="" id="chg_1">
+          <td class="author">
+            <div>
+                <span><a href="$commit.authorUrl" title="$commit.authorName"><img class="avatar avatar16" src="$commit.authorAvatarUrl" alt="$commit.authorName"></a><span>$commit.authorName</span></span>
+            </div>
+          </td>
+          <td class="hash">
+            <div><a class="hash" href="$commit.url">$commit.node</a></div>
+          </td>
+          <td class="text">
+            <div title="$commit.message">$commit.message</div>
+          </td>
+          <td class="labels fade-left">
+            <dl class="commit-labels clearfix">
+            </dl>
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="" title="$commit.date">$velocityUtils.getRelativePastDate($commit.date)</time>
+            </div>
+          </td>
+        </tr>
+        #end
+
+        
+        
+      </tbody>
+    </table>
+  </div>
+    
+    
+    
+  </article>
+  
+</div>
+    
+

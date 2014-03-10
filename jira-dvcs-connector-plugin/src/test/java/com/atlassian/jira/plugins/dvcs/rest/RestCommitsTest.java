@@ -13,12 +13,12 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesets;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestRepository;
-import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl;
@@ -68,17 +68,19 @@ import static org.testng.Assert.assertTrue;
  */
 public class RestCommitsTest
 {
-    @Mock
-    private RootResource rootResource;
-
-    @Mock
-    private OrganizationService organizationService;
+    private DevToolsResource devToolsResource;
 
     @Mock
     private RepositoryService repositoryService;
 
     @Mock
     private ChangesetService changesetService;
+
+    @Mock
+    private PullRequestService pullRequestService;
+
+    @Mock
+    private BranchService branchService;
 
     @Mock
     private IssueManager issueManager;
@@ -96,9 +98,6 @@ public class RestCommitsTest
     private JiraAuthenticationContext jiraAuthenticationContext;
 
     private IssueAndProjectKeyManager issueAndProjectKeyManager;
-
-    @Mock
-    private AccountsConfigService ondemandAccountConfig;
 
     private int issueIdSequence;
     private int projectIdSequence;
@@ -133,7 +132,7 @@ public class RestCommitsTest
 
         when(repositoryService.getUser(any(Repository.class), anyString(), anyString())).thenReturn(new DvcsUser("USERNAME", "FULL_NAME", "RAW_AUTHOR", "AVATAR", "URL"));
 
-        rootResource = new RootResource(organizationService, repositoryService, changesetService, issueAndProjectKeyManager, ondemandAccountConfig);
+        devToolsResource = new DevToolsResource(repositoryService, changesetService, pullRequestService, branchService, issueAndProjectKeyManager);
     }
 
     class RepositoryBuilder
@@ -151,7 +150,7 @@ public class RestCommitsTest
             {
                 parents.add("ANOTHER_PARENT_OF_"+id);
             }
-            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id, "BRANCH", issueKey + " commit " + id, parents, Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id, 1, 0)), 1, "AUTHOR_EMAIL");
+            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id, "BRANCH", issueKey + " commit " + id, parents, Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id)), 1, "AUTHOR_EMAIL");
             changeset.setRepositoryIds(Lists.asList(repositoryId, otherRepositoryIds));
 
             changesetToIssues.put(issueKey, changeset);
@@ -214,12 +213,12 @@ public class RestCommitsTest
     @Test
     public void testCommits()
     {
-        Response response = rootResource.getCommits("TST-1");
+        Response response = devToolsResource.getCommits("TST-1");
 
         assertEquals(response.getStatus(), 200, "Status should be 200");
-        RestChangesets restChangesets = (RestChangesets) response.getEntity();
+        RestDevResponse restChangesets = (RestDevResponse) response.getEntity();
 
-        List<RestRepository> restRepositories = restChangesets.getRepositories();
+        List<RestChangesetRepository> restRepositories = (List<RestChangesetRepository>) restChangesets.getRepositories();
         // checking repositories count
         assertThat(restRepositories, hasSize(3));
 
@@ -239,7 +238,7 @@ public class RestCommitsTest
         checkChangeset(restRepositories.get(2).getCommits().get(0), false, 1, "TST-1");
     }
 
-    private void checkRepository(RestRepository restRepository, int id, int commitCounts, String forkOf)
+    private void checkRepository(RestChangesetRepository restRepository, int id, int commitCounts, String forkOf)
     {
         assertThat(restRepository.getCommits(), hasSize(commitCounts));
         assertEquals(restRepository.getSlug(), "SLUG_"+id);
@@ -267,7 +266,7 @@ public class RestCommitsTest
     @Test
     public void testIssueNotFound()
     {
-        Response response = rootResource.getCommits("TST-123");
+        Response response = devToolsResource.getCommits("TST-123");
 
         assertEquals(response.getStatus(), 404, "Status should be 404");
         assertEquals(response.getEntity().getClass(), Status.class);
@@ -276,13 +275,13 @@ public class RestCommitsTest
     @Test(expectedExceptions = AuthorizationException.class)
     public void testIssueNoPermission()
     {
-        rootResource.getCommits("TST-2");
+        devToolsResource.getCommits("TST-2");
     }
 
     @Test(expectedExceptions = AuthorizationException.class)
     public void testProjectNoPermission()
     {
-        rootResource.getCommits("FORBIDDEN-1");
+        devToolsResource.getCommits("FORBIDDEN-1");
     }
 }
 

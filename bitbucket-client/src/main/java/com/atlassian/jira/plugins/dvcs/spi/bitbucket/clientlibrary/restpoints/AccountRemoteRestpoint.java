@@ -16,19 +16,16 @@ import com.google.common.base.Preconditions;
 public class AccountRemoteRestpoint
 {
     private final RemoteRequestor requestor;
-
     
     public AccountRemoteRestpoint(RemoteRequestor remoteRequestor)
     {
         this.requestor = remoteRequestor;
     }
 
-
     // https://confluence.atlassian.com/display/BITBUCKET/account+Resource#accountResource-GETtheaccountprofile
     public BitbucketAccount getUser(String ownerOrEmail)
     {
         checkBlank(ownerOrEmail, "Empty username information. This is probably unassigned user.");
-        
         String getUserUrl = URLPathFormatter.format("/users/%s", ownerOrEmail);
         
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
@@ -40,19 +37,16 @@ public class AccountRemoteRestpoint
             }
         });
     }
-    
-    private void checkBlank(String string, String message) {
+
+    private void checkBlank(String string, String message)
+    {
         Preconditions.checkState(string != null && !string.trim().isEmpty(), message);
     }
 
-    public static void main(String[] args) {
-        Preconditions.checkState(false, "Empty username information. This is probably unassigned user.");
-    }
-    
     public BitbucketAccount getCurrentUser()
     {
         String getUserUrl = URLPathFormatter.format("/user");
-        
+
         return requestor.get(getUserUrl, null, new ResponseCallback<BitbucketAccount>()
         {
             @Override
@@ -62,7 +56,7 @@ public class AccountRemoteRestpoint
             }
         });
     }
-    
+
     /**
      * Inviting 'userEmail' to group 'repositorySlugToInvite' of bitbucket organization repositoryOwnerToInvite.
      * 

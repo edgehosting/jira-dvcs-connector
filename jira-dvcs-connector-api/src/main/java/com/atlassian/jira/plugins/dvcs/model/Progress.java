@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -16,6 +20,14 @@ public interface Progress
      * @param synchroErrorCount
      */
     void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
+
+    int getAuditLogId();
+    void setAuditLogId(int id);
+
+    /**
+     * Marks progress as finished.
+     */
+    void finish();
 
     /**
      * @return true if the progress is Finished
@@ -37,26 +49,36 @@ public interface Progress
      */
     int getSynchroErrorCount();
 
-    /**
-     * @return error messages
-     */
-    String getError();
+    int getPullRequestActivityCount();
+
+	/**
+	 * @return error messages
+	 */
+	String getError();
+
+	/**
+	 * Indication that the synchronisation should stop.
+	 * Used when repository is unlinked or organisation and its repositories are deleted.
+	 *
+	 * @param shouldStop
+	 */
+	void setShouldStop(boolean shouldStop);
+
+	/**
+	 * Indication that the synchronisation should pause
+	 * Used when repository is unlinked or organisation and its repositories are deleted.
+	 *
+	 * @return
+	 */
+	boolean isShouldStop();
 
     /**
-     * Indication that the synchronisation should stop.
-     * Used when repository is unlinked or organisation and its repositories are deleted.
+     * Call this method to update the current status of the pull request progress.
      *
-     * @param shouldStop
+     * @param pullRequestActivityCount
+     * @param jiraCount
      */
-    void setShouldStop(boolean shouldStop);
-
-    /**
-     * Indication that the synchronisation should stop
-     * Used when repository is unlinked or organisation and its repositories are deleted.
-     *
-     * @return
-     */
-    boolean isShouldStop();
+    void inPullRequestProgress(int pullRequestActivityCount, int jiraCount);
 
     /**
      * Indication whether the synchronisation has been finished
@@ -92,4 +114,28 @@ public interface Progress
      * @param smartCommitErrors
      */
     void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors);
+
+    void setError(String error);
+
+    EnumSet<SynchronizationFlag> getRunAgainFlags();
+
+    void setRunAgainFlags(EnumSet<SynchronizationFlag> flags);
+
+    Long getStartTime();
+
+    Long getFinishTime();
+
+    Date getFirstMessageTime();
+
+    void incrementRequestCount(Date messageTime);
+
+    void addFlightTimeMs(int timeMs);
+
+    int getNumRequests();
+
+    int getFlightTimeMs();
+
+    boolean isSoftsync();
+
+    void setSoftsync(boolean softsync);
 }

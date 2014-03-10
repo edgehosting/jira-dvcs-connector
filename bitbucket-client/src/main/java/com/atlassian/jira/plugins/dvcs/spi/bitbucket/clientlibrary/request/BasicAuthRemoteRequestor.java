@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.client.HttpClient;
 
 /**
  * BasicAuthRemoteRequestor
@@ -28,17 +28,17 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 
 	private final String password;
 
-	public BasicAuthRemoteRequestor(ApiProvider apiProvider, String username, String password)
+	public BasicAuthRemoteRequestor(ApiProvider apiProvider, String username, String password, HttpClientProvider httpClientProvider)
 	{
-		super(apiProvider);
+		super(apiProvider, httpClientProvider);
 		this.username = username;
 		this.password = password;
 	}
 
-    @Override
-    protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> params)
-            throws IOException
-    {
+	@Override
+	protected void onConnectionCreated(HttpClient client, HttpRequestBase method, Map<String, ? extends Object> params)
+	        throws IOException
+	{
         UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
         try
         {
@@ -47,5 +47,5 @@ public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
         {
             // This should not happen for BasicScheme
         }
-    }
+	}
 }

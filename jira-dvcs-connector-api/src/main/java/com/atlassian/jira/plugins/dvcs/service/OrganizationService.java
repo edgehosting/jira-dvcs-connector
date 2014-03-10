@@ -144,5 +144,6 @@ public interface OrganizationService
      */
     List<Group> getGroupsForOrganization(Organization organization);
 
+    boolean existsOrganizationWithType(String... types);
 }
 

@@ -1,6 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,9 +17,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DefaultProgress implements Progress
+public class DefaultProgress implements Progress, Serializable
 {
-    private volatile boolean shouldStop = false;
 
     @XmlAttribute
     private boolean finished = false;
@@ -26,25 +30,52 @@ public class DefaultProgress implements Progress
     private int jiraCount = 0;
 
     @XmlAttribute
+    private int pullRequestActivityCount = 0;
+
+    @XmlAttribute
     private int synchroErrorCount = 0;
 
     @XmlAttribute
-    private long startTime = 0;
+    private Long startTime;
 
     @XmlAttribute
-    private long finishTime = 0;
+    private Long finishTime;
 
     @XmlAttribute
     private String error;
 
+    @XmlAttribute
+    private Date firstMessageTime;
+
+    @XmlAttribute
+    private int flightTimeMs;
+
+    @XmlAttribute
+    private int numRequests;
+
     @XmlElement
     private List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
+
+    @XmlAttribute
+    private boolean softsync;
 
     @XmlTransient
     private boolean hasAdminPermission = true;
 
+    @XmlTransient
+    @Deprecated
+    // to be removed
+    private boolean shouldStop = false;
+
+    @XmlTransient
+    private int auditLogId;
+
+    @XmlTransient
+    private EnumSet<SynchronizationFlag> runAgain;
+
     public DefaultProgress()
     {
+        super();
     }
 
     @Override
@@ -54,6 +85,13 @@ public class DefaultProgress implements Progress
         this.changesetCount = changesetCount;
         this.jiraCount = jiraCount;
         this.synchroErrorCount = synchroErrorCount;
+    }
+
+    @Override
+    public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
+    {
+        this.pullRequestActivityCount = pullRequestActivityCount;
+        this.jiraCount = jiraCount;
     }
 
     public void queued()
@@ -67,6 +105,7 @@ public class DefaultProgress implements Progress
         smartCommitErrors.clear();
     }
 
+    @Override
     public void finish()
     {
         finishTime = System.currentTimeMillis();
@@ -86,14 +125,31 @@ public class DefaultProgress implements Progress
     }
 
     @Override
+    public int getPullRequestActivityCount()
+    {
+        return pullRequestActivityCount;
+    }
+
+    @Override
     public int getSynchroErrorCount()
     {
         return synchroErrorCount;
     }
 
+    @Override
     public void setError(String error)
     {
         this.error = error;
+    }
+
+    public EnumSet<SynchronizationFlag> getRunAgainFlags()
+    {
+        return runAgain;
+    }
+
+    public void setRunAgainFlags(final EnumSet<SynchronizationFlag> runAgain)
+    {
+        this.runAgain = runAgain;
     }
 
     @Override
@@ -108,7 +164,8 @@ public class DefaultProgress implements Progress
         return finished;
     }
 
-    public long getStartTime()
+    @Override
+    public Long getStartTime()
     {
         return startTime;
     }
@@ -118,9 +175,44 @@ public class DefaultProgress implements Progress
         this.startTime = startTime;
     }
 
-    public long getFinishTime()
+    @Override
+    public Long getFinishTime()
     {
         return finishTime;
+    }
+
+    @Override
+    public Date getFirstMessageTime()
+    {
+        return this.firstMessageTime;
+    }
+
+    @Override
+    public void incrementRequestCount(final Date messageTime)
+    {
+        if (this.firstMessageTime == null)
+        {
+            this.firstMessageTime = messageTime;
+        }
+        this.numRequests++;
+    }
+
+    @Override
+    public void addFlightTimeMs(int timeMs)
+    {
+        this.flightTimeMs += timeMs;
+    }
+
+    @Override
+    public int getNumRequests()
+    {
+        return this.numRequests;
+    }
+
+    @Override
+    public int getFlightTimeMs()
+    {
+        return this.flightTimeMs;
     }
 
     public void setFinishTime(long finishTime)
@@ -142,6 +234,11 @@ public class DefaultProgress implements Progress
     public void setJiraCount(int jiraCount)
     {
         this.jiraCount = jiraCount;
+    }
+
+    public void setPullRequestActivityCount(int pullRequestActivityCount)
+    {
+        this.pullRequestActivityCount = pullRequestActivityCount;
     }
 
     public void setSynchroErrorCount(int synchroErrorCount)
@@ -183,5 +280,27 @@ public class DefaultProgress implements Progress
     public void setAdminPermission(boolean hasAdminPermission)
     {
         this.hasAdminPermission = hasAdminPermission;
+    }
+
+    public int getAuditLogId()
+    {
+        return auditLogId;
+    }
+
+    public void setAuditLogId(int auditLogId)
+    {
+        this.auditLogId = auditLogId;
+    }
+
+    @Override
+    public boolean isSoftsync()
+    {
+        return softsync;
+    }
+
+    @Override
+    public void setSoftsync(final boolean softsync)
+    {
+        this.softsync = softsync;
     }
 }

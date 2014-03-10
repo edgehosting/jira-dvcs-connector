@@ -48,6 +48,9 @@ public class BitbucketAccountsConfigServiceTest
     @Mock
     private WebFragmentModuleDescriptor webFragmentModuleDescriptor;
 
+    @Mock
+    private BitbucketAccountsReloadJobScheduler mockBitbucketAccountsReloadJobScheduler;
+
     @Captor
     ArgumentCaptor<Organization> organizationCaptor;
 
@@ -63,7 +66,8 @@ public class BitbucketAccountsConfigServiceTest
     {
         MockitoAnnotations.initMocks(this);
 
-        testedService = new BitbucketAccountsConfigService(configProvider, organizationService, pluginScheduler, pluginController, pluginAccessor);
+        testedService = new BitbucketAccountsConfigService(configProvider, organizationService,
+                mockBitbucketAccountsReloadJobScheduler, pluginController, pluginAccessor);
 
         when(configProvider.supportsIntegratedAccounts()).thenReturn(true);
         when(pluginAccessor.getEnabledPluginModule(anyString())).thenReturn(webFragmentModuleDescriptor);
@@ -78,7 +82,7 @@ public class BitbucketAccountsConfigServiceTest
         when(organizationService.findIntegratedAccount()).thenReturn(null);
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService).save(organizationCaptor.capture());
 
@@ -96,7 +100,7 @@ public class BitbucketAccountsConfigServiceTest
         when(configProvider.provideConfiguration()).thenReturn(null);
         when(organizationService.findIntegratedAccount()).thenReturn(null);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService, times(0)).save(organizationCaptor.capture());
 
@@ -111,7 +115,7 @@ public class BitbucketAccountsConfigServiceTest
         Organization existingAccount = createSampleAccount("A", "B", "S", "token");
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService, times(0)).save(organizationCaptor.capture());
 
@@ -128,7 +132,7 @@ public class BitbucketAccountsConfigServiceTest
         when(organizationService.findIntegratedAccount()).thenReturn(existingAccount);
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService).findIntegratedAccount();
         verify(organizationService).getByHostAndName("https://bitbucket.org", "A");
@@ -146,7 +150,7 @@ public class BitbucketAccountsConfigServiceTest
 
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(null);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService).remove(eq(5));
 
@@ -166,7 +170,7 @@ public class BitbucketAccountsConfigServiceTest
         Organization userAddedAccount = createSampleAccount("A", "key", "secret", "token");
         when(organizationService.getByHostAndName(eq("https://bitbucket.org"), eq("A"))).thenReturn(userAddedAccount);
 
-        testedService.reload(false);
+        testedService.reload();
 
         verify(organizationService).updateCredentials(userAddedAccount.getId(), new Credential("K", "S", null));
     }

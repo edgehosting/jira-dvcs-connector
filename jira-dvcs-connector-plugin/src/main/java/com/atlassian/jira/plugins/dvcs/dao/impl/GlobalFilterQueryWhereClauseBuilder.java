@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 
 import java.util.Iterator;
 
@@ -98,50 +99,11 @@ public class GlobalFilterQueryWhereClauseBuilder
 
     private StringBuilder renderSqlNotIn(final String column, final Iterable<String> values)
     {
-        return renderListOperator(column, "NOT IN", "AND", values);
+        return ActiveObjectsUtils.renderListStringsOperator(column, "NOT IN", "AND", values);
     }
 
     private StringBuilder renderSqlIn(final String column, final Iterable<String> values)
     {
-        return renderListOperator(column, "IN", "OR", values);
-    }
-
-    /**
-     * Oracle can't handle IN with more than 1000 values, this code makes sure larger sets are split to contain no more than 1000 items each
-     *
-     * @param column
-     * @param operator
-     * @param joinWithOperator
-     * @param values
-     * @return
-     */
-    private StringBuilder renderListOperator(final String column, final String operator, final String joinWithOperator, final Iterable<String> values)
-    {
-        final StringBuilder builder = new StringBuilder(column);
-        builder.append(" ").append(operator).append(" (");
-        final Iterator<String> valuesIterator = values.iterator();
-        int valuesInQuery = 0;
-        boolean overThousandValues = false;
-        while(valuesIterator.hasNext())
-        {
-            final String value = valuesIterator.next();
-            if (StringUtils.isNotEmpty(value))
-            {
-                if (valuesInQuery > 0)
-                {
-                    builder.append(", ");
-                }
-                builder.append("'").append(value).append("'");
-                ++valuesInQuery;
-                if (valuesInQuery >= 1000)
-                {
-                    overThousandValues = true;
-                    valuesInQuery = 0;
-                    builder.append(") ").append(joinWithOperator).append(" ").append(column).append(" ").append(operator).append(" (");
-                }
-            }
-        }
-        builder.append(")");
-        return overThousandValues ? builder.insert(0, "(").append(")") : builder;
+        return ActiveObjectsUtils.renderListStringsOperator(column, "IN", "OR", values);
     }
 }

@@ -22,7 +22,7 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     @Override
     public List<Changeset> getChangesets(Repository repository)
     {
-        return ImmutableList.copyOf(changesetService.getChangesetsFromDvcs(repository));
+        return ImmutableList.copyOf(changesetService.getChangesets(repository));
     }
 
     @Override
@@ -32,15 +32,15 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     }
 
     @Override
-    public List<Changeset> getChangesets(int maxResults, GlobalFilter globalFilter)
+    public List<Changeset> getChangesets(Iterable<String> issueKeys, String dvcsType)
     {
-        return ImmutableList.copyOf(changesetService.getLatestChangesets(maxResults, globalFilter));
+        return ImmutableList.copyOf(changesetService.getByIssueKey(issueKeys, dvcsType, false));
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public List<Changeset> getChangesets(int maxResults, GlobalFilter globalFilter)
     {
-        return changesetService.getDetailChangesetFromDvcs(repository, changeset);
+        return ImmutableList.copyOf(changesetService.getLatestChangesets(maxResults, globalFilter));
     }
 
     @Override
@@ -53,5 +53,11 @@ public class DvcsChangesetServiceImpl implements DvcsChangesetService
     public Map<ChangesetFile, String> getFileChangesets(Repository repository, Changeset changeset)
     {
         return changesetService.getFileCommitUrls(repository, changeset);
+    }
+
+    @Override
+    public List<Changeset> getChangesetsWithFileDetails(final List<Changeset> changesets)
+    {
+        return changesetService.getChangesetsWithFileDetails(changesets);
     }
 }

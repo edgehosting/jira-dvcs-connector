@@ -1,45 +1,58 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
 public interface DvcsCommunicator
 {
+    String POST_HOOK_SUFFIX = String.valueOf("/rest/bitbucket/1.0/repository/");
 
     String getDvcsType();
 
-    AccountInfo getAccountInfo(String hostUrl, String accountName);
+	AccountInfo getAccountInfo(String hostUrl, String accountName);
 
-    List<Repository> getRepositories(Organization organization);
+	List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories);
+    
+    List<Branch> getBranches(Repository repository);
 
     Changeset getChangeset(Repository repository, String node);
 
-    Changeset getDetailChangeset(Repository repository, Changeset changeset);
+    /**
+     * Gets the file details for a given changeset.
+     *
+     * @param repository the Repository
+     * @param changeset the Changeset
+     * @return a list of ChangesetFileDetail
+     * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
+     */
+    List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
 
-    Iterable<Changeset> getChangesets(Repository repository);
-
-    void setupPostcommitHook(Repository repository, String postCommitUrl);
+	void ensureHookPresent(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
 
     void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys);
 
-    void removePostcommitHook(Repository repository, String postCommitUrl);
+	void removePostcommitHook(Repository repository, String postCommitUrl);
 
-    String getCommitUrl(Repository repository, Changeset changeset);
+	String getCommitUrl(Repository repository, Changeset changeset);
 
-    String getFileCommitUrl(Repository repository, Changeset changeset, String file,  int index);
+	String getFileCommitUrl(Repository repository, Changeset changeset, String file, int index);
 
     DvcsUser getUser(Repository repository, String author);
 
@@ -83,4 +96,9 @@ public interface DvcsCommunicator
      */
     void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail);
 
+    String getBranchUrl(Repository repository, Branch branch);
+
+    String getCreatePullRequestUrl(Repository repository, String sourceSlug, final String sourceBranch, String destinationSlug, final String destinationBranch, String eventSource);
+
+    void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId);
 }

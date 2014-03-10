@@ -34,6 +34,8 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
     @Override
     public void upgrade(ModelVersion currentVersion, ActiveObjects activeObjects)
     {
+        log.info("upgrade [ " + getModelVersion() + " ]: started");
+
         try
         {
             activeObjects.migrate(OrganizationMapping.class, RepositoryMapping.class, ChangesetMapping.class,
@@ -43,11 +45,12 @@ public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
             {
                 setChangesetDate(activeObjects, DATE_IN_THE_PAST, changesetMapping);
             }
+
+            log.info("upgrade [ " + getModelVersion() + " ]: finished");
         } catch(RuntimeException e)
         {
             log.warn("Cleaning of future dates did not finished correctly. This will not affect the behavior, only the changesets from the future will be still there. To fix them run full synchronization.", e);
         }
-            
     }
 
     private void setChangesetDate(ActiveObjects activeObjects, Date dateInThePast, final ChangesetMapping changesetMapping)

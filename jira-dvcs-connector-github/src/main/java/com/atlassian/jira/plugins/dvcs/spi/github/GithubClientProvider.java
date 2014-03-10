@@ -9,6 +9,9 @@ import java.net.URL;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.EventService;
+import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
@@ -50,7 +53,7 @@ public class GithubClientProvider
     {
         return createClient(url, userAgent);
     }
-
+    
     public GitHubClient createClient(Organization organization)
     {
         GitHubClient client = createClientInternal(organization.getHostUrl(), userAgent);
@@ -93,7 +96,20 @@ public class GithubClientProvider
         return new RepositoryService(createClient(organization));
     }
 
+    public PullRequestService getPullRequestService(Repository repository)
+    {
+        return new PullRequestService(createClient(repository));
+    }
+    
+    public IssueService getIssueService(Repository repository) {
+        return new IssueService(createClient(repository));
+    }
 
+    public EventService getEventService(Repository repository)
+    {
+        return new EventService(createClient(repository));
+    }
+    
     /**
      * Create a GithubClientWithTimeout to connect to the api.
      *

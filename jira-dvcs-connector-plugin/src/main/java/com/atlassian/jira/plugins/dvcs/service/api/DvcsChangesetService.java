@@ -38,6 +38,15 @@ public interface DvcsChangesetService
     List<Changeset> getChangesets(Iterable<String> issueKeys);
 
     /**
+     * Find all changesets by one or more issue keys for certain dvcs type
+     *
+     * @param issueKeys the list of issue keys to find
+     * @param dvcsType the dvcs type
+     * @return list of (@link Changeset}
+     */
+    List<Changeset> getChangesets(Iterable<String> issueKeys, String dvcsType);
+
+    /**
      * Find all changesets by defining a {@link GlobalFilter}.
      * Result is ordered in date descending order (latest first), limited by maxResults
      *
@@ -46,15 +55,6 @@ public interface DvcsChangesetService
      * @return
      */
     List<Changeset> getChangesets(int maxResults, GlobalFilter globalFilter);
-
-    /**
-     * Retrieve the commit statistics for a particular {@link Changeset} from the given {@link Repository}
-     *
-     * @param repository the repository to find
-     * @param changeset the changeset to get the commit statistics
-     * @return {@link Changeset} with the commit statistics filled in
-     */
-    Changeset getDetailChangeset(Repository repository, Changeset changeset);
 
     /**
      * Retrieve the commit URL of a the given {@link Changeset} from the given {@link Repository}
@@ -75,4 +75,15 @@ public interface DvcsChangesetService
      * @return {@link Map<ChangesetFile, String>} a mapping of the file changeset to changeset url
      */
     Map<ChangesetFile, String> getFileChangesets(Repository repository, Changeset changeset);
+
+    /**
+     * Ensures that the passed in Changeset instances have file details, fetching them from the remote system if
+     * necessary. Note that this is a potentially expensive operation which should not be performed systematically but
+     * should instead be triggered by a user action.
+     *
+     * @param changesets the Changesets
+     * @return a read-only list of Changesets with file details
+     * @since 2.0.0
+     */
+    List<Changeset> getChangesetsWithFileDetails(List<Changeset> changesets);
 }
