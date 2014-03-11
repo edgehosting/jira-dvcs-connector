@@ -1,5 +1,42 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import junit.framework.Assert;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.CommitFile;
+import org.eclipse.egit.github.core.CommitUser;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.TypedResource;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.collections.Sets;
+
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.cache.CacheManager;
@@ -53,6 +90,8 @@ import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessage
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
+import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -65,40 +104,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
-import junit.framework.Assert;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.Commit;
-import org.eclipse.egit.github.core.CommitFile;
-import org.eclipse.egit.github.core.CommitUser;
-import org.eclipse.egit.github.core.IRepositoryIdProvider;
-import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.TypedResource;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import org.testng.collections.Sets;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -107,6 +112,8 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -129,6 +136,12 @@ public class DefaultSynchronizerTest
 
     @Mock
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+
+    @Mock
+    private SyncThreadEvents syncThreadEvents;
+
+    @Mock
+    private SyncEvents syncEvents;
 
     @Mock
     private BranchService branchService;
@@ -227,6 +240,12 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ClusterLock clusterLock;
+
+    @BeforeMethod
+    public void setUp() throws Exception
+    {
+        when(syncThreadEvents.startCapturing()).thenReturn(syncEvents);
+    }
 
     private static class BuilderAnswer implements Answer<Object>
     {
@@ -410,6 +429,7 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
+        ReflectionTestUtils.setField(messageExecutor, "syncThreadEvents", syncThreadEvents);
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
         ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
@@ -954,6 +974,37 @@ public class DefaultSynchronizerTest
 
         checkSynchronization(graph, processedNodes, true);
         checkSynchronization(graph, processedNodes, true);
+    }
+
+    @Test
+    public void syncEventsShouldBePublishedDuringSoftSync()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        verify(syncEvents).stopCapturing();
+        verify(syncEvents).publish();
+    }
+
+    @Test
+    public void syncEventsShouldNotBePublishedDuringFullSync()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+
+        checkSynchronization(graph, processedNodes, false);
+        verifyZeroInteractions(syncEvents);
     }
 
     @Test

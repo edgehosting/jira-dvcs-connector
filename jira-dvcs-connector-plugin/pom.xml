@@ -295,6 +295,7 @@
                                 Atlassian Plugin SDK does not automatically generate an osgi manifest when
                                 an explicit build-instruction is specified.
                             -->
+                            com.atlassian.jira.plugins.dvcs.event,
                             com.atlassian.jira.plugins.dvcs.model,
                             com.atlassian.jira.plugins.dvcs.service.api,
                             com.atlassian.jira.plugins.dvcs.smartcommits,
