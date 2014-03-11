@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -28,7 +29,7 @@ import java.util.List;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class GithubTests implements BasicTests
+public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
