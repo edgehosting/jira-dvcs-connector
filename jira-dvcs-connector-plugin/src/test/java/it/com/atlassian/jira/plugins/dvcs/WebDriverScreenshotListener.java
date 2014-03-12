@@ -63,12 +63,16 @@ public class WebDriverScreenshotListener extends TestListenerAdapter
     @Override
     public void onTestFailure(final ITestResult tr)
     {
+        super.onTestFailure(tr);
+
+        // create the dir if not exists
         File dir = getTargetDir(tr);
         if (!dir.exists())
         {
             checkState(dir.mkdirs(), "Unable to create screenshot output directory " + dir.getAbsolutePath());
         }
 
+        // capture screenshot and html source
         final AtlassianWebDriver driver = webDriverSupport.getDriver();
         final File dumpFile = getTargetFile(tr, "html");
         final File screenShotFile = getTargetFile(tr, "png");
