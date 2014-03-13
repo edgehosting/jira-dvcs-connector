@@ -99,13 +99,20 @@ public class ChangesetServiceImpl implements ChangesetService
         ListMultimap<Integer, Changeset> changesetsByRepo = Multimaps.index(changesets, Changesets.TO_REPOSITORY_ID);
         for (Map.Entry<Integer, Collection<Changeset>> repoChangesets : changesetsByRepo.asMap().entrySet())
         {
-            final Repository repository = repositoryDao.get(repoChangesets.getKey());
-            final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+            Repository repository = null;
+            DvcsCommunicator communicator = null;
 
-            for (Changeset changeset : changesets)
+            for (Changeset changeset : repoChangesets.getValue())
             {
                 if (changeset.getFileDetails() == null)
                 {
+                    // lazy load repository and communicator
+                    if (communicator == null)
+                    {
+                        repository = repositoryDao.get(repoChangesets.getKey());
+                        communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+                    }
+
                     try
                     {
                         List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);

@@ -1,26 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.EntityStreamCallback;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.Table;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
@@ -31,6 +16,22 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.schema.Table;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -275,7 +276,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
-        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst, null);
 
         return transformAll(changesetMappings, null);
     }
@@ -283,16 +284,43 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final String dvcsType, final boolean newestFirst)
     {
-        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        final List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst, dvcsType);
 
         return transformAll(changesetMappings, dvcsType);
     }
 
-    private List<ChangesetMapping> getChangesetMappingsByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
+    private List<ChangesetMapping> getChangesetMappingsByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst, String dvcsType)
     {
         final GlobalFilter gf = new GlobalFilter();
         gf.setInIssues(issueKeys);
         final String baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+
+        final Query query = Query.select("ID, *")
+                .alias(ChangesetMapping.class, "CHANGESET")
+                .alias(IssueToChangesetMapping.class, "ISSUE")
+                .alias(RepositoryToChangesetMapping.class, "RCH")
+                .alias(RepositoryMapping.class, "REPOSITORY")
+                .join(IssueToChangesetMapping.class,
+                        "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                .join(RepositoryToChangesetMapping.class,
+                        "CHANGESET.ID = RCH." + RepositoryToChangesetMapping.CHANGESET_ID)
+                .join(RepositoryMapping.class,
+                        "REPOSITORY.ID = RCH." + RepositoryToChangesetMapping.REPOSITORY_ID)
+                .order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC"));
+
+        if (StringUtils.isNotBlank(dvcsType))
+        {
+            query
+                    .alias(OrganizationMapping.class, "ORG")
+                    .join(OrganizationMapping.class,
+                            "ORG.ID = REPOSITORY." + RepositoryMapping.ORGANIZATION_ID)
+                    .where("ORG." + OrganizationMapping.DVCS_TYPE + " = ? AND " +
+                            "REPOSITORY." + RepositoryMapping.DELETED + " = ? AND REPOSITORY." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, dvcsType, Boolean.FALSE, Boolean.TRUE);
+        } else
+        {
+            query.where("REPOSITORY." + RepositoryMapping.DELETED + " = ? AND REPOSITORY." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, Boolean.FALSE, Boolean.TRUE);
+        }
+
         final List<ChangesetMapping> changesetMappings = activeObjects
                 .executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
         {
@@ -301,12 +329,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             {
                         final ChangesetMapping[] mappings = activeObjects
                                 .find(ChangesetMapping.class,
-                        Query.select("ID, *")
-                                .alias(ChangesetMapping.class, "CHANGESET")
-                                .alias(IssueToChangesetMapping.class, "ISSUE")
-                                                .join(IssueToChangesetMapping.class,
-                                                        "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
-                                                .where(baseWhereClause).order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC")));
+                                        query);
 
                 return Arrays.asList(mappings);
             }
