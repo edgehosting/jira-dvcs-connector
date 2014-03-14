@@ -13,8 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Map;
-
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -50,4 +48,6 @@ public class RepositoryPullRequestDaoImplTest
         repositoryPullRequestDao.savePullRequest(repository, Maps.<String, Object>newHashMap());
         verify(threadEvents).broadcast(argThat(instanceOf(RepositoryPullRequestMappingCreated.class)));
     }
+
+
 }
