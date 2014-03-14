@@ -66,7 +66,7 @@ public class ChangesetTransformer
             final String dvcsType)
     {
         //
-        RepoCache repoCache = new RepoCache().populate(changesetMappings);
+        RepoCache repoCache = new RepoCache().populate(changesetMappings, dvcsType);
         //
         final List<Changeset> transformed = Lists.newArrayList();
 
@@ -92,10 +92,15 @@ public class ChangesetTransformer
         final Map<Integer, RepositoryMapping> repos = Maps.newHashMap();
         final ListMultimap<Integer, RepositoryToChangesetMapping> changesetToRepo = LinkedListMultimap.create();
 
-        public RepoCache populate(final Collection<ChangesetMapping> changesetMappings)
+        public RepoCache populate(final Collection<ChangesetMapping> changesetMappings, final String dvcsType)
         {
+            if (changesetMappings.isEmpty())
+            {
+                return this;
+            }
+
             Set<Integer> repositoryIds = getRepositoriesIdsAndCreateIndex(changesetMappings);
-            populateRepositories(repositoryIds);
+            populateRepositories(repositoryIds, dvcsType);
             return this;
         }
 
@@ -148,8 +153,26 @@ public class ChangesetTransformer
             return repositoryIds;
         }
 
-        private void populateRepositories(final Set<Integer> repositoryIds)
+        private void populateRepositories(final Set<Integer> repositoryIds, final String dvcsType)
         {
+            final Query query = Query.select("ID, *");
+
+            if (StringUtils.isNotEmpty(dvcsType))
+            {
+                query
+                    .alias(OrganizationMapping.class, "ORG")
+                    .alias(RepositoryMapping.class, "REPOSITORY")
+                    .join(OrganizationMapping.class,
+                            "ORG.ID = REPOSITORY." + RepositoryMapping.ORGANIZATION_ID)
+                    .where("REPOSITORY." + RepositoryMapping.DELETED + " = ? AND REPOSITORY." + RepositoryMapping.LINKED + " = ? AND "
+                            + "ORG." + OrganizationMapping.DVCS_TYPE + " = ? AND " + ActiveObjectsUtils.renderListNumbersOperator("REPOSITORY.ID", "IN", "OR", repositoryIds).toString(),
+                            Boolean.FALSE, Boolean.TRUE, dvcsType);
+            } else
+            {
+                query.where(RepositoryMapping.DELETED + " = ? AND " + RepositoryMapping.LINKED + " = ? AND " +
+                        ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", repositoryIds).toString(), Boolean.FALSE, Boolean.TRUE);
+            }
+
             // get repositories
             final List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
             {
@@ -158,8 +181,7 @@ public class ChangesetTransformer
                 {
                     final RepositoryMapping[] mappings = activeObjects
                             .find(RepositoryMapping.class,
-                                    Query.select("ID, *")
-                                            .where(ActiveObjectsUtils.renderListNumbersOperator("ID", "IN", "OR", repositoryIds).toString()));
+                                    query);
 
                     return Arrays.asList(mappings);
                 }
@@ -204,22 +226,6 @@ public class ChangesetTransformer
 
         for (final RepositoryMapping repositoryMapping : repoCache.get(changesetMapping))
         {
-            if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
-            {
-                continue;
-            }
-
-            if (!StringUtils.isEmpty(dvcsType))
-            {
-                final OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class,
-                        repositoryMapping.getOrganizationId());
-
-                if (!dvcsType.equals(organizationMapping.getDvcsType()))
-                {
-                    continue;
-                }
-            }
-
             if (repositories == null)
             {
                 repositories = new ArrayList<Integer>();
