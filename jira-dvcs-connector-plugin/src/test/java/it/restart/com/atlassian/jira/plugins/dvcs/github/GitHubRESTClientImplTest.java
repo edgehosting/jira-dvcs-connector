@@ -2,6 +2,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
 import java.util.List;
 
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -22,7 +23,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
  */
 // TODO: BBC-688: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
 @Test(enabled = false)
-public class GitHubRESTClientImplTest
+public class GitHubRESTClientImplTest extends DvcsWebDriverTestCase
 {
 
     /**
