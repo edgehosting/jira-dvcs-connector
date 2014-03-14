@@ -10,6 +10,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.beust.jcommander.internal.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import net.java.ao.Query;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,7 +24,6 @@ import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.isSelect;
 import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereParamsThat;
 import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereThat;
 import static com.google.common.collect.Iterables.toArray;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -74,7 +74,7 @@ public class RepositoryPullRequestDaoImplTest
                 newIssueMapping(1, "ISSUE-3")),
                 RepositoryPullRequestIssueKeyMapping.class
         );
-        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(allOf(
+        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
                 isSelect(),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
@@ -90,7 +90,7 @@ public class RepositoryPullRequestDaoImplTest
     @Test
     public void testGetIssueKeysWithNoExistingPullRequestIssueMappings()
     {
-        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(allOf(
+        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
                 isSelect(),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
