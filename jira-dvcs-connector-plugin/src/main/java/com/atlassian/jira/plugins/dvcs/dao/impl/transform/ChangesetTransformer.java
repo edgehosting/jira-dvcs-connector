@@ -95,6 +95,11 @@ public class ChangesetTransformer
 
         private void populateRepositoryIds(final Collection<ChangesetMapping> changesetMappings)
         {
+            if (changesetMappings.isEmpty())
+            {
+                return;
+            }
+
             final Iterable<Integer> changesetMappingsIds = Iterables.transform(changesetMappings, new Function<ChangesetMapping, Integer>()
             {
                 @Override
