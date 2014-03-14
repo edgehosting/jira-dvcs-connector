@@ -1,21 +1,37 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.beust.jcommander.internal.Maps;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import java.util.Set;
+
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.isSelect;
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereParamsThat;
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereThat;
+import static com.google.common.collect.Iterables.toArray;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,5 +65,49 @@ public class RepositoryPullRequestDaoImplTest
         verify(threadEvents).broadcast(argThat(instanceOf(RepositoryPullRequestMappingCreated.class)));
     }
 
+    @Test
+    public void testGetIssueKeysWithExistingPullRequestIssueMappings()
+    {
+        RepositoryPullRequestIssueKeyMapping[] mappingsInDb = toArray(ImmutableList.of(
+                newIssueMapping(1, "ISSUE-1"),
+                newIssueMapping(1, "ISSUE-2"),
+                newIssueMapping(1, "ISSUE-3")),
+                RepositoryPullRequestIssueKeyMapping.class
+        );
+        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(allOf(
+                isSelect(),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
+                withWhereParamsThat(Matchers.<Object>contains(1, 1))
+        )))).thenReturn(mappingsInDb);
 
+        Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
+
+        assertNotNull("Result should be never null", result);
+        assertEquals(ImmutableSet.of("ISSUE-1", "ISSUE-2", "ISSUE-3"), result);
+    }
+
+    @Test
+    public void testGetIssueKeysWithNoExistingPullRequestIssueMappings()
+    {
+        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(allOf(
+                isSelect(),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
+                withWhereParamsThat(Matchers.<Object>contains(1, 1))
+        )))).thenReturn(new RepositoryPullRequestIssueKeyMapping[0]);
+
+        Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
+
+        assertNotNull("Result should be never null", result);
+        assertTrue("Result should be empty", result.isEmpty());
+    }
+
+    private RepositoryPullRequestIssueKeyMapping newIssueMapping(int prId, String issueKey)
+    {
+        RepositoryPullRequestIssueKeyMapping mapping = mock(RepositoryPullRequestIssueKeyMapping.class);
+        when(mapping.getPullRequestId()).thenReturn(prId);
+        when(mapping.getIssueKey()).thenReturn(issueKey);
+        return mapping;
+    }
 }
