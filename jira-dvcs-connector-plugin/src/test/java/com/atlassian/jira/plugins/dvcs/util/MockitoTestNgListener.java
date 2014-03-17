@@ -8,7 +8,9 @@ import org.mockito.internal.util.reflection.Fields;
 import org.mockito.internal.util.reflection.InstanceField;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
+import org.testng.ITestNGListener;
 import org.testng.ITestResult;
+import org.testng.annotations.Listeners;
 
 import static org.mockito.internal.util.reflection.Fields.annotatedBy;
 
@@ -28,12 +30,32 @@ public class MockitoTestNgListener implements IInvokedMethodListener
 {
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
     {
-        resetMocks(testResult.getInstance());
-        MockitoAnnotations.initMocks(testResult.getInstance());
+        if (isAnnotated(testResult.getTestClass().getRealClass()))
+        {
+            resetMocks(testResult.getInstance());
+            MockitoAnnotations.initMocks(testResult.getInstance());
+        }
     }
 
     public void afterInvocation(IInvokedMethod method, ITestResult testResult)
     {
+    }
+
+    private boolean isAnnotated(Class<?> realClass)
+    {
+        Listeners listeners = realClass.getAnnotation(Listeners.class);
+        if (listeners == null)
+        {
+            return false;
+        }
+        for (Class<? extends ITestNGListener> listenerClass : listeners.value())
+        {
+            if (listenerClass.equals(MockitoTestNgListener.class))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void resetMocks(Object instance)
