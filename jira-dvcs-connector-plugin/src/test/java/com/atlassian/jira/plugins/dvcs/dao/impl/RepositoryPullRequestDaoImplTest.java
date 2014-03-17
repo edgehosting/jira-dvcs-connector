@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.beust.jcommander.internal.Maps;
 import com.google.common.collect.ImmutableList;
@@ -14,8 +15,7 @@ import net.java.ao.Query;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Set;
@@ -36,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Listeners(MockitoTestNgListener.class)
 public class RepositoryPullRequestDaoImplTest
 {
     @Mock
@@ -49,12 +50,6 @@ public class RepositoryPullRequestDaoImplTest
 
     @Mock
     Repository repository;
-
-    @BeforeMethod
-    public void setUp() throws Exception
-    {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void savePullRequestRaisesEvent() throws Exception
@@ -90,17 +85,19 @@ public class RepositoryPullRequestDaoImplTest
     @Test
     public void testGetIssueKeysWithNoExistingPullRequestIssueMappings()
     {
-        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
-                isSelect(),
-                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
-                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
-                withWhereParamsThat(Matchers.<Object>contains(1, 1))
-        )))).thenReturn(new RepositoryPullRequestIssueKeyMapping[0]);
+        when(activeObjects.find(any(Class.class), any(Query.class)))
+                .thenReturn(new RepositoryPullRequestIssueKeyMapping[0]);
 
         Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
 
         assertNotNull("Result should be never null", result);
         assertTrue("Result should be empty", result.isEmpty());
+        verify(activeObjects).find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
+                isSelect(),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
+                withWhereParamsThat(Matchers.<Object>contains(1, 1))
+        )));
     }
 
     private RepositoryPullRequestIssueKeyMapping newIssueMapping(int prId, String issueKey)
