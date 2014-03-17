@@ -12,7 +12,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
-    
+
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
 
@@ -21,7 +21,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         this.jira = jira;
         this.page = jira.visit(RepositoriesPage.class);
     }
-    
+
     @Override
     public RepositoriesPage getPage()
     {
@@ -44,7 +44,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
-        
+
         assertThat(page.getErrorStatusMessage()).isNull();
 
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
@@ -58,6 +58,12 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return organization;
     }
 
+    /**
+     * Waiting until synchronization is done.
+     * 
+     * @param organization
+     *            on which organization we are waiting
+     */
     public void waitForSyncToFinish(OrganizationDiv organization)
     {
         do
@@ -71,7 +77,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
         } while (!isSyncFinished(organization));
     }
-    
+
     private boolean isSyncFinished(OrganizationDiv organization)
     {
         List<RepositoryDiv> repositories = organization.getRepositories();
@@ -87,17 +93,15 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private boolean requiresGrantAccess()
     {
-        // if access has been granted before browser will 
+        // if access has been granted before browser will
         // redirect immediately back to jira
         String currentUrl = jira.getTester().getDriver().getCurrentUrl();
         return !currentUrl.contains("/jira");
     }
 
-
     /**
     *
     */
-
     public static class AccountType
     {
         public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", null, new BitbucketGrantAccessPageController());
@@ -121,5 +125,5 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         }
 
     }
-    
+
 }

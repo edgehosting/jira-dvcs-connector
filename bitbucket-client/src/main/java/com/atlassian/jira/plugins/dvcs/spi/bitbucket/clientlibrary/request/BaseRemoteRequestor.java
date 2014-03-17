@@ -1,5 +1,30 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -10,6 +35,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,75 +43,50 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheStorage;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-
 /**
  * BaseRemoteRequestor
- *
- *
+ * <p/>
+ * <p/>
  * <br />
  * <br />
  * Created on 13.7.2012, 10:25:24 <br />
  * <br />
  *
  * @author jhocman@atlassian.com
- *
  */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
-    private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
-
-    private int connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
-    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
-
     protected final ApiProvider apiProvider;
-    private final HttpClientProxyConfig proxyConfig;
 
-    private static HttpCacheStorage storage;
+    private final HttpClientProvider httpClientProvider;
 
-    private final boolean cached;
-
-    public BaseRemoteRequestor(ApiProvider apiProvider)
+    public BaseRemoteRequestor(ApiProvider apiProvider, HttpClientProvider httpClientProvider)
     {
         this.apiProvider = apiProvider;
-        this.proxyConfig = new HttpClientProxyConfig();
-        this.cached = apiProvider.isCached();
-        if (apiProvider.getTimeout() >= 0)
-        {
-            this.connectionTimeout = apiProvider.getTimeout();
-            this.socketTimeout = apiProvider.getTimeout();
-        }
+        this.httpClientProvider = httpClientProvider;
     }
 
     @Override
     public <T> T get(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    {
+        return getWithRetry(uri, parametersToListParams(parameters), callback);
+    }
+
+    private Map<String, List<String>> parametersToListParams(Map<String, String> parameters)
+    {
+        if (parameters == null)
+        {
+            return null;
+        } else
+        {
+            return Maps.transformValues(parameters, STRING_TO_LIST_STRING);
+        }
+    }
+
+    @Override
+    public <T> T getWithMultipleVals(String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
     {
         return getWithRetry(uri, parameters, callback);
     }
@@ -93,11 +94,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
     @Override
     public <T> T delete(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
-        return deleteWithRetry(uri, parameters, callback);
+        return deleteWithRetry(uri, parametersToListParams(parameters), callback);
     }
 
     @Override
-    public  <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
+    public <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
     }
@@ -112,8 +113,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Retryers...
     // --------------------------------------------------------------------------------------------------
 
-    private <T> T getWithRetry(final String uri, final Map<String, String> parameters,
-            final ResponseCallback<T> callback)
+    private <T> T getWithRetry(final String uri, final Map<String, List<String>> parameters,
+                               final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -126,8 +127,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         });
     }
 
-    private <T> T deleteWithRetry(final String uri, final Map<String, String> parameters,
-            final ResponseCallback<T> callback)
+    private <T> T deleteWithRetry(final String uri, final Map<String, List<String>> parameters,
+                                  final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -141,7 +142,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T postWithRetry(final String uri, final Map<String, ? extends Object> parameters,
-            final ResponseCallback<T> callback)
+                                final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -155,7 +156,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
-            final ResponseCallback<T> callback)
+                               final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -171,6 +172,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
     // extension hooks
     // --------------------------------------------------------------------------------------------------
+
     /**
      * E.g. append basic auth headers ...
      */
@@ -192,6 +194,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // Helpers
     // --------------------------------------------------------------------------------------------------
 
+    private static final Function<String, List<String>> STRING_TO_LIST_STRING = new Function<String, List<String>>()
+    {
+        @Override
+        public List<String> apply(@Nullable String input)
+        {
+            return Collections.singletonList(input);
+        }
+    };
+
     protected void logRequest(HttpRequestBase method, String finalUrl, Map<String, ? extends Object> params)
     {
         final StringBuilder sb = new StringBuilder("{");
@@ -212,21 +223,22 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         if (log.isDebugEnabled())
         {
-            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[]{method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders())});
         }
     }
 
     private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
+        HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
 
+        HttpResponse httpResponse = null;
         try
         {
             createConnection(client, method, uri, params);
             setPayloadParams(method, params);
 
-            HttpResponse httpResponse = client.execute(method);
+            httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
@@ -245,6 +257,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
+            SystemUtils.releaseConnection(method, httpResponse);
+            if (apiProvider.isCloseIdleConnections())
+            {
+                httpClientProvider.closeIdleConnections();
+            }
         }
     }
 
@@ -256,20 +273,18 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, String> parameters, ResponseCallback<T> callback)
+    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
     {
-        HttpClient client = newDefaultHttpClient();
-        if (cached)
-        {
-            client = new EtagCachingHttpClient(client, getStorage());
-        }
+        HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
+
         RemoteResponse response = null;
 
+        HttpResponse httpResponse = null;
         try
         {
-            createConnection(client, method, uri + paramsToString(parameters, uri.contains("?")), parameters);
+            createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
 
-            HttpResponse httpResponse = client.execute(method);
+            httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
@@ -286,36 +301,41 @@ public class BaseRemoteRequestor implements RemoteRequestor
         } finally
         {
             closeResponse(response);
+            SystemUtils.releaseConnection(method, httpResponse);
         }
     }
 
     private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
     {
+
         RemoteResponse response = new RemoteResponse();
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode >= 300)
         {
-            logRequestAndResponse(method, httpResponse, statusCode);
+            String content = logRequestAndResponse(method, httpResponse, statusCode);
 
             RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
                     + statusCode);
 
             switch (statusCode)
             {
-            case HttpStatus.SC_BAD_REQUEST:
-                toBeThrown = new BitbucketRequestException.BadRequest_400();
-                break;
-            case HttpStatus.SC_UNAUTHORIZED:
-                toBeThrown = new BitbucketRequestException.Unauthorized_401();
-                break;
-            case HttpStatus.SC_FORBIDDEN:
-                toBeThrown = new BitbucketRequestException.Forbidden_403();
-                break;
-            case HttpStatus.SC_NOT_FOUND:
-                toBeThrown = new BitbucketRequestException.NotFound_404();
-                break;
+                case HttpStatus.SC_BAD_REQUEST:
+                    toBeThrown = new BitbucketRequestException.BadRequest_400();
+                    break;
+                case HttpStatus.SC_UNAUTHORIZED:
+                    toBeThrown = new BitbucketRequestException.Unauthorized_401();
+                    break;
+                case HttpStatus.SC_FORBIDDEN:
+                    toBeThrown = new BitbucketRequestException.Forbidden_403();
+                    break;
+                case HttpStatus.SC_NOT_FOUND:
+                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI()+" content "+content);
+                    break;
+                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+                    toBeThrown = new BitbucketRequestException.InternalServerError_500(content);
             }
+
 
             throw toBeThrown;
         }
@@ -325,11 +345,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             response.setResponse(httpResponse.getEntity().getContent());
         }
-        response.setHttpClient(client);
+
         return response;
     }
 
-    private void logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
+    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
     {
         String responseAsString = null;
         if (httpResponse.getEntity() != null)
@@ -343,18 +363,19 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (log.isWarnEnabled())
         {
             log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
-                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
+                    new Object[]{method.getMethod(), method.getURI(), method.getParams(), statusCode});
         }
 
         if (log.isDebugEnabled())
         {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                    statusCode, responseAsString });
+                    new Object[]{method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                            statusCode, responseAsString});
         }
 
+        return responseAsString;
     }
-    
+
     private Header[] sanitizeHeadersForLogging(Header[] headers)
     {
         List<Header> result = new LinkedList<Header>(Arrays.asList(headers));
@@ -370,6 +391,11 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     protected String paramsToString(Map<String, String> parameters, boolean urlAlreadyHasParams)
+    {
+        return multiParamsToString(parametersToListParams(parameters), urlAlreadyHasParams);
+    }
+
+    protected String multiParamsToString(Map<String, List<String>> parameters, boolean urlAlreadyHasParams)
     {
         StringBuilder queryStringBuilder = new StringBuilder();
 
@@ -388,19 +414,32 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return queryStringBuilder.toString();
     }
 
-    private void paramsMapToString(Map<String, String> parameters, StringBuilder builder)
+    private void paramsMapToString(Map<String, List<String>> parameters, StringBuilder builder)
     {
-        for (Iterator<Map.Entry<String, String>> iterator = parameters.entrySet().iterator(); iterator.hasNext();)
+        final Predicate<String> notNullOrEmpty = new Predicate<String>()
         {
-            Map.Entry<String, String> entry = iterator.next();
-            builder.append(encode(entry.getKey()));
-            builder.append("=");
-            builder.append(encode(entry.getValue()));
-            if (iterator.hasNext())
+            @Override
+            public boolean apply(@Nullable String input)
             {
-                builder.append("&");
+                return input != null && !input.isEmpty();
             }
-        }
+        };
+
+        builder.append(Joiner.on("&").join(Iterables.concat(Iterables.transform(parameters.entrySet(), new Function<Entry<String, List<String>>, Iterable<String>>()
+        {
+            @Override
+            public Iterable<String> apply(@Nullable final Entry<String, List<String>> entry)
+            {
+                return Iterables.transform(Iterables.filter(entry.getValue(), notNullOrEmpty), new Function<String, String>()
+                {
+                    @Override
+                    public String apply(@Nullable String entryValue)
+                    {
+                        return encode(entry.getKey()) + "=" + encode(entryValue);
+                    }
+                });
+            }
+        }))));
     }
 
     private static String encode(String str)
@@ -422,24 +461,17 @@ public class BaseRemoteRequestor implements RemoteRequestor
     private void createConnection(HttpClient client, HttpRequestBase method, String uri, Map<String, ? extends Object> params)
             throws IOException, URISyntaxException
     {
-        if (StringUtils.isNotBlank(apiProvider.getUserAgent()))
-        {
-            HttpProtocolParams.setUserAgent(client.getParams(), apiProvider.getUserAgent());
-        }
-
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), connectionTimeout);
-        HttpConnectionParams.setSoTimeout(client.getParams(), socketTimeout);
-
         String remoteUrl;
-        if (uri.startsWith("http:/") || uri.startsWith("https:/")) {
+        if (uri.startsWith("http:/") || uri.startsWith("https:/"))
+        {
             remoteUrl = uri;
 
-        } else {
+        } else
+        {
             String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
             remoteUrl = apiUrl + uri;
         }
 
-        proxyConfig.configureProxy(client, remoteUrl);
         String finalUrl = afterFinalUriConstructed(method, remoteUrl, params);
         method.setURI(new URI(finalUrl));
         //
@@ -449,10 +481,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         //
         onConnectionCreated(client, method, params);
 
-    }
-    
-    protected HttpClient newDefaultHttpClient() {
-        return new DefaultHttpClient();
     }
 
     protected interface ParameterProcessor
@@ -507,22 +535,5 @@ public class BaseRemoteRequestor implements RemoteRequestor
                 }
             }
         }
-    }
-
-    private static synchronized HttpCacheStorage getStorage()
-    {
-        if (storage == null)
-        {
-            CacheConfig config = new CacheConfig();
-            // if max cache entries value is not present the CacheConfig's default (CacheConfig.DEFAULT_MAX_CACHE_ENTRIES = 1000) will be used
-            Integer maxCacheEntries = Integer.getInteger("bitbucket.client.cache.maxentries");
-            if (maxCacheEntries != null)
-            {
-                config.setMaxCacheEntries(maxCacheEntries);
-            }
-            storage = new BasicHttpCacheStorage(config);
-        }
-
-        return storage;
     }
 }

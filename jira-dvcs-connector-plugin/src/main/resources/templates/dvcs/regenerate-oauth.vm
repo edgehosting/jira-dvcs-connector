@@ -27,7 +27,7 @@
         #end
         
         <br/>
-		<div>Continue to <a href="ConfigureDvcsOrganizations!default.jspa">Manage DVCS Accounts</a></div>
+		<div>Continue to <a href="ConfigureDvcsOrganizations!default.jspa">DVCS Accounts</a></div>
     
   </body>
 </html>

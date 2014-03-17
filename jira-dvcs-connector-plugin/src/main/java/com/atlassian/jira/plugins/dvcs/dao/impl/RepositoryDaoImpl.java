@@ -3,9 +3,12 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.collect.Lists;
 import net.java.ao.Query;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -20,8 +23,9 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+
+import javax.annotation.Resource;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -29,12 +33,13 @@ public class RepositoryDaoImpl implements RepositoryDao
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
     private final ActiveObjects activeObjects;
-    private final Synchronizer synchronizer;
 
-    public RepositoryDaoImpl(ActiveObjects activeObjects, Synchronizer synchronizer)
+    @Resource
+    private Synchronizer synchronizer;
+
+    public RepositoryDaoImpl(ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
-        this.synchronizer = synchronizer;
     }
 
     protected Repository transform(RepositoryMapping repositoryMapping)
@@ -51,12 +56,21 @@ public class RepositoryDaoImpl implements RepositoryDao
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
                 repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
+        repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
+
+        Date lastDate = repositoryMapping.getLastCommitDate();
+
+        if (lastDate == null || (repositoryMapping.getActivityLastSync() != null && repositoryMapping.getActivityLastSync().after(lastDate)))
+        {
+            lastDate = repositoryMapping.getActivityLastSync();
+        }
+        repository.setLastActivityDate(lastDate);
         repository.setLogo(repositoryMapping.getLogo());
         // set sync progress
         repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
         repository.setFork(repositoryMapping.isFork());
 
-        if (repository.isFork())
+        if (repository.isFork() && repositoryMapping.getForkOfSlug() != null)
         {
             Repository forkOfRepository = new Repository();
             forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());
@@ -112,28 +126,20 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
     {
-        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        Query query = Query.select();
+        if (includeDeleted)
         {
-            @Override
-            public List<RepositoryMapping> doInTransaction()
-            {
-                Query query = Query.select();
-                if (includeDeleted)
-                {
-                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-                } else
-                {
-                    query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
-                            Boolean.FALSE);
-                }
-                query.order(RepositoryMapping.NAME);
+            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
+        } else
+        {
+            query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
+                    Boolean.FALSE);
+        }
+        query.order(RepositoryMapping.NAME);
 
-                final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
-                return Arrays.asList(rms);
-            }
-        });
+        final RepositoryMapping[] rms = activeObjects.find(RepositoryMapping.class, query);
 
-        return (List<Repository>) CollectionUtils.collect(repositoryMappings, new Transformer()
+        return (List<Repository>) CollectionUtils.collect(Arrays.asList(rms), new Transformer()
         {
 
             @Override
@@ -149,25 +155,40 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public List<Repository> getAll(final boolean includeDeleted)
     {
-
-        List<RepositoryMapping> repositoryMappings = activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        Query select = Query.select();
+        if (!includeDeleted)
         {
-            @Override
-            public List<RepositoryMapping> doInTransaction()
-            {
-                Query select = Query.select();
-                if (!includeDeleted)
-                {
-                    select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
-                }
-                select.order(RepositoryMapping.NAME);
+            select = select.where(RepositoryMapping.DELETED + " = ? ", Boolean.FALSE);
+        }
+        select.order(RepositoryMapping.NAME);
 
-                final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
-                return Arrays.asList(repos);
-            }
-        });
+        final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
 
-        final Collection<Repository> repositories = transformRepositories(repositoryMappings);
+        final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
+
+        return new ArrayList<Repository>(repositories);
+
+    }
+
+    @Override
+    public List<Repository> getAllByType(final String dvcsType, final boolean includeDeleted)
+    {
+        Query select = Query.select()
+                .alias(OrganizationMapping.class, "org")
+                .alias(RepositoryMapping.class, "repo")
+                .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID");
+
+        if (!includeDeleted)
+        {
+            select.where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? ", dvcsType, Boolean.FALSE);
+        } else
+        {
+            select.where("org." + OrganizationMapping.DVCS_TYPE + " = ?", dvcsType);
+        }
+
+        final RepositoryMapping[] repos = activeObjects.find(RepositoryMapping.class, select);
+
+        final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
 
@@ -176,23 +197,16 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public boolean existsLinkedRepositories(final boolean includeDeleted)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
+        Query query = Query.select();
+        if (includeDeleted)
         {
-            @Override
-            public Boolean doInTransaction()
-            {
-                Query query = Query.select();
-                if (includeDeleted)
-                {
-                    query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
-                } else
-                {
-                    query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
-                }
+            query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
+        } else
+        {
+            query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
+        }
 
-                return activeObjects.count(RepositoryMapping.class, query) > 0;
-            }
-        });
+        return activeObjects.count(RepositoryMapping.class, query) > 0;
     }
 
     /**
@@ -233,7 +247,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             log.warn("Repository with id {} was not found.", repositoryId);
             return null;
-
         } else
         {
             return transform(repositoryMapping);
@@ -263,6 +276,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.LINKED, repository.isLinked());
                     map.put(RepositoryMapping.DELETED, repository.isDeleted());
                     map.put(RepositoryMapping.SMARTCOMMITS_ENABLED, repository.isSmartcommitsEnabled());
+                    map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
                     map.put(RepositoryMapping.LOGO, repository.getLogo());
                     map.put(RepositoryMapping.IS_FORK, repository.isFork());
                     if (repository.getForkOf() != null)
@@ -283,6 +297,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setLinked(repository.isLinked());
                     rm.setDeleted(repository.isDeleted());
                     rm.setSmartcommitsEnabled(repository.isSmartcommitsEnabled());
+                    rm.setActivityLastSync(repository.getActivityLastSync());
                     rm.setLogo(repository.getLogo());
                     rm.setFork(repository.isFork());
                     if (repository.getForkOf() != null)
@@ -303,7 +318,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
 
         return transform(repositoryMapping);
-
     }
 
     @Override
@@ -312,16 +326,18 @@ public class RepositoryDaoImpl implements RepositoryDao
         activeObjects.delete(activeObjects.get(RepositoryMapping.class, repositoryId));
     }
 
-    private OrganizationMapping getOrganizationMapping(final int organizationId)
+    @Override
+    public void setLastActivitySyncDate(final Integer repositoryId, final Date date)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<OrganizationMapping>()
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
-            @Override
-            public OrganizationMapping doInTransaction()
+            public Void doInTransaction()
             {
-                return activeObjects.get(OrganizationMapping.class, organizationId);
+                RepositoryMapping repo = activeObjects.get(RepositoryMapping.class, repositoryId);
+                repo.setActivityLastSync(date);
+                repo.save();
+                return null;
             }
         });
     }
-
 }

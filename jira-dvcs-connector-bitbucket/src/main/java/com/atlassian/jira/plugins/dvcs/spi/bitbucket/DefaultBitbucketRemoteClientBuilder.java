@@ -8,9 +8,7 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
     private final AuthProvider authProvider;
     private int apiVersion = 1;
     private boolean cached;
-    private int timeout = -1;
-
-
+    private boolean closeIdleConnections;
 
     public DefaultBitbucketRemoteClientBuilder(AuthProvider authProvider)
     {
@@ -25,16 +23,16 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
     }
 
     @Override
-    public BitbucketClientBuilder apiVersion(int apiVersion)
+    public BitbucketClientBuilder closeIdleConnections()
     {
-        this.apiVersion = apiVersion;
-        return this;
+       this.closeIdleConnections = true;
+       return this;
     }
 
     @Override
-    public BitbucketClientBuilder timeout(int timeout)
+    public BitbucketClientBuilder apiVersion(int apiVersion)
     {
-        this.timeout = timeout;
+        this.apiVersion = apiVersion;
         return this;
     }
 
@@ -45,7 +43,7 @@ public class DefaultBitbucketRemoteClientBuilder implements BitbucketClientBuild
 
         authProvider.setCached(cached);
 
-        authProvider.setTimeout(timeout);
+        authProvider.setCloseIdleConnections(closeIdleConnections);
 
         return new BitbucketRemoteClient(authProvider);
     }

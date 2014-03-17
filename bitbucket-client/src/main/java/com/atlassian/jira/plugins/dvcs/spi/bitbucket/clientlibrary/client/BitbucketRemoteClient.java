@@ -1,14 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.AccountRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.BranchesAndTagsRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ChangesetRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.GroupRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.ServiceRemoteRestpoint;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * 
@@ -45,19 +50,31 @@ public class BitbucketRemoteClient
     private final RemoteRequestor requestor;
 
     private final BranchesAndTagsRemoteRestpoint branchesAndTagsRemoteRestpoint;
-    
+    private final PullRequestRemoteRestpoint pullRequestsEndpoint;
 	
 	public BitbucketRemoteClient(AuthProvider provider)
 	{
         requestor = provider.provideRequestor();
         
         this.accountRemoteRestpoint = new AccountRemoteRestpoint(requestor);
-        this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor);
+        this.changesetRemoteRestpoint = new ChangesetRemoteRestpoint(requestor, new ResponseCallback<BitbucketChangesetPage>()
+        {
+
+            @Override
+            public BitbucketChangesetPage onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketChangesetPage>()
+                {
+                }.getType());
+            }
+
+        });
         this.groupRemoteRestpoint = new GroupRemoteRestpoint(requestor);
         this.repositoryLinkRemoteRestpoint = new RepositoryLinkRemoteRestpoint(requestor);
         this.repositoryRemoteRestpoint = new RepositoryRemoteRestpoint(requestor);
         this.serviceRemoteRestpoint = new ServiceRemoteRestpoint(requestor);
         this.branchesAndTagsRemoteRestpoint = new BranchesAndTagsRemoteRestpoint(requestor);
+        this.pullRequestsEndpoint = new PullRequestRemoteRestpoint(requestor);
 	}
 	
     public AccountRemoteRestpoint getAccountRest()
@@ -94,6 +111,11 @@ public class BitbucketRemoteClient
     {
         return branchesAndTagsRemoteRestpoint;
     }
+	
+	public PullRequestRemoteRestpoint getPullRequestAndCommentsRemoteRestpoint()
+	{
+	    return this.pullRequestsEndpoint;
+	}
 
     public RemoteRequestor getRequestor()
     {

@@ -1,7 +1,15 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
-import static org.fest.assertions.api.Assertions.assertThat;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.pages.DashboardPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.atlassian.pageobjects.TestedProductFactory;
+import com.atlassian.pageobjects.elements.PageElement;
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
@@ -14,9 +22,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-
-import java.util.List;
-
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -25,17 +30,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.pageobjects.pages.DashboardPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.pageobjects.elements.PageElement;
+import java.util.List;
 
-public class BitbucketTests implements BasicTests, MissingCommitsTests, ActivityStreamsTest
+import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+
+public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
@@ -52,6 +52,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         // setup up OAuth from bitbucket
         oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
         // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
+        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass

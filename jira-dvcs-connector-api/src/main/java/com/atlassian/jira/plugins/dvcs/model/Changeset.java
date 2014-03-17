@@ -1,22 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-
+    
     private int id;
+    
+    private Date synchronizedAt;
+
     // the main repository
     private int repositoryId;
-    // list of all repositories the changeset is in
-    private List<Integer> repositoryIds;
     private String node;
+      // list of all repositories the changeset is in
+    private List<Integer> repositoryIds;
     private String rawAuthor;
     private String author;
     private Date date;
@@ -29,6 +34,8 @@ public class Changeset
 
     private List<ChangesetFile> files;
     private int allFileCount;
+
+    private ImmutableList<ChangesetFileDetail> fileDetails = null;
 
     private Integer version;
 
@@ -56,6 +63,16 @@ public class Changeset
         this.allFileCount = allFileCount;
         this.authorEmail = authorEmail;
     }
+    
+    public Date getSynchronizedAt()
+    {
+        return synchronizedAt;
+    }
+    
+    public void setSynchronizedAt(Date synchronizedAt)
+    {
+        this.synchronizedAt = synchronizedAt;
+    }
 
     public int getRepositoryId()
     {
@@ -65,16 +82,6 @@ public class Changeset
     public void setRepositoryId(int repositoryId)
     {
         this.repositoryId = repositoryId;
-    }
-
-    public List<Integer> getRepositoryIds()
-    {
-        return repositoryIds;
-    }
-
-    public void setRepositoryIds(final List<Integer> repositoryIds)
-    {
-        this.repositoryIds = repositoryIds;
     }
 
     public String getNode()
@@ -87,7 +94,16 @@ public class Changeset
         this.node = node;
     }
 
+    public List<Integer> getRepositoryIds()
+    {
+        return repositoryIds;
+    }
 
+    public void setRepositoryIds(final List<Integer> repositoryIds)
+    {
+        this.repositoryIds = repositoryIds;
+    }
+    
     public String getRawAuthor()
     {
         return rawAuthor;
@@ -264,4 +280,25 @@ public class Changeset
 	{
 		this.id = id;
 	}
+
+    /**
+     * Returns a list of file details or null if the details have not been loaded yet.
+     *
+     * @return a list of ChangesetFileDetail
+     */
+    @Nullable
+    public List<ChangesetFileDetail> getFileDetails()
+    {
+        return fileDetails;
+    }
+
+    /**
+     * Sets the file details.
+     *
+     * @param fileDetails a list of ChangesetFileDetail
+     */
+    public void setFileDetails(List<ChangesetFileDetail> fileDetails)
+    {
+        this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
+    }
 }

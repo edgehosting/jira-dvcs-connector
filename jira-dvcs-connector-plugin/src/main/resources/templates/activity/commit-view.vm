@@ -1,0 +1,45 @@
+<div class="dvcs activity-item commit">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="$user.url"><img class="avatar avatar32" src="$user.avatar"></a>
+        <a href="$user.url" class="author" title="$user.rawAuthor">$user.fullName</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span> 
+        changeset <a class="hash" href="$commit_url">$commit_hash</a>
+      </div>
+    </header>
+  </article>
+  <div class="content">
+    <table class="aui commit-list">
+    <thead>
+      <tr>
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="comments">Comments</th>
+        <th class="likes">Approvals</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>      
+      <tbody>
+        <tr>
+          <td class="text">
+              <div title="$changeset.message">$commitMessageHtml</div>
+          </td>
+          <td class="labels fade-left">
+            <dl class="commit-labels clearfix">
+            </dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time title="$changeset.date">$velocityUtils.getRelativePastDate($changeset.date)</time>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

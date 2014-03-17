@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.smartcommits;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.java.ao.Entity;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 
@@ -16,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.SmartCommitError;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommandsResults;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -32,20 +33,21 @@ public class SmartcommitOperation implements Runnable
 
     private final ChangesetDao changesetDao;
 
-    private final Synchronizer synchronizer;
     private final Repository repository;
     private final ChangesetService changesetService;
+
+    private Progress progress;
 
     /**
      * The Constructor.
      */
     public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser,
-                                SmartcommitsService smartcommitsService, Synchronizer synchronizer, Repository repository, ChangesetService changesetService)
+                                SmartcommitsService smartcommitsService, Progress progress, Repository repository, ChangesetService changesetService)
     {
         this.changesetDao = changesetDao;
         this.commitMessageParser = commitMessageParser;
         this.smartcommitsService = smartcommitsService;
-        this.synchronizer = synchronizer;
+        this.progress = progress;
         this.repository = repository;
         this.changesetService = changesetService;
     }
@@ -63,8 +65,9 @@ public class SmartcommitOperation implements Runnable
             changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(), new ForEachChangesetClosure()
             {
                 @Override
-                public void execute(ChangesetMapping changesetMapping)
+                public void execute(Entity mapping)
                 {
+                    ChangesetMapping changesetMapping = (ChangesetMapping) mapping;
                     log.debug("Processing message \n {} \n for smartcommits. Changeset id = {} node = {}.", new Object[]
                             {changesetMapping.getMessage(), changesetMapping.getID(), changesetMapping.getNode()});
 
@@ -74,7 +77,6 @@ public class SmartcommitOperation implements Runnable
                     CommitCommands commands = commitMessageParser.parseCommitComment(changesetMapping.getMessage());
                     commands.setCommitDate(changesetMapping.getDate());
                     commands.setAuthorEmail(changesetMapping.getAuthorEmail());
-                    commands.setAuthorName(changesetMapping.getAuthor());
                     // do commands
                     if (CollectionUtils.isNotEmpty(commands.getCommands()))
                     {
@@ -87,17 +89,16 @@ public class SmartcommitOperation implements Runnable
                             {
                                 final String commitUrl = changesetService.getCommitUrl(repository, changeset);
 
-                                final Progress progress = synchronizer.getProgress(repository.getId());
-
                                 List<SmartCommitError> smartCommitErrors = new ArrayList<SmartCommitError>();
                                 for (String error : commandsResults.getAllErrors())
                                 {
                                     SmartCommitError sce = new SmartCommitError(changeset.getNode(), commitUrl, error);
                                     smartCommitErrors.add(sce);
                                 }
-                                progress.setSmartCommitErrors(smartCommitErrors);
-
-
+                                if (progress != null)
+                                {
+                                    progress.setSmartCommitErrors(smartCommitErrors);
+                                }
                             }
                         }
                     }

@@ -4,14 +4,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
-import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.util.concurrent.ThreadFactories;
 
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor, DisposableBean
@@ -38,7 +38,7 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
                 new LinkedBlockingQueue<Runnable>(),
                 ThreadFactories.namedThreadFactory(DefaultSmartcommitsChangesetsProcessor.class.getSimpleName()));
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -56,9 +56,9 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
      * {@inheritDoc}
      */
     @Override
-    public void startProcess(Synchronizer synchronizer, Repository repository, ChangesetService changesetService)
+    public void startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
     {
-        executor.execute(new SmartcommitOperation(changesetDao, commitParser, smartcommitService, synchronizer, repository, changesetService));
+        executor.execute(new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService));
     }
 
 }

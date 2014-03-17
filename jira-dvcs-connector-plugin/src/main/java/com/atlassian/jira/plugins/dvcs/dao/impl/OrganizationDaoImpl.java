@@ -1,20 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.Query;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -24,11 +9,26 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -383,6 +383,24 @@ public class OrganizationDaoImpl implements OrganizationDao
         }
     }
 
+    @Override
+    public boolean existsOrganizationWithType(final String... types)
+    {
+        if (ArrayUtils.isEmpty(types))
+        {
+            return false;
+        }
 
+        return activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
+        {
+            @Override
+            public Boolean doInTransaction()
+            {
+                Query query = Query.select().where(ActiveObjectsUtils.renderListStringsOperator(OrganizationMapping.DVCS_TYPE,"IN", "OR", Arrays.asList(types)).toString());
+
+                return activeObjects.count(OrganizationMapping.class, query) > 0;
+            }
+        });
+    }
 
 }

@@ -76,8 +76,12 @@ function retrieveSyncStatus() {
         AJS.$.each(data.repositories, function (a, repo) {
             updateSyncStatus(repo);
         });
-        window.setTimeout(retrieveSyncStatus, 4000)
-    });
+        window.setTimeout(retrieveSyncStatus, 4000);
+    }).fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        dvcsLogConsole("Request Failed: " + err);
+        window.setTimeout(retrieveSyncStatus, 40000);
+       });
 }
 
 function updateSyncStatus(repo) {
@@ -93,32 +97,36 @@ function updateSyncStatus(repo) {
     if (repo.sync) {
 
     	if (repo.sync.finished) {
-            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
             var title = syncRepoIconElement.attr("data-title");
             if (repo.sync.finishTime) {
               var finishSyncDateTime = new Date(repo.sync.finishTime);
-              title = title + " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
+              title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
             }
             syncRepoIconElement.attr("title", title);
-        } else if (repo.sync.startTime === 0) {
+            if (repo.sync.error) {
+                syncStatusHtml = "";
+                syncIcon = "error";
+                syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
+                        "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
+            } else {
+                syncErrorDiv.html("");
+            }
+        }/* else if (repo.sync.startTime === 0) {
             syncRepoIcon = "syncrepoiconqueue";
             syncRepoIconElement.attr("title", "In queue");
-        } else {
-            var startSyncDateTime = new Date(repo.sync.startTime);
-            syncRepoIconElement.attr("title", "Synchronizing... (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")");
+        }*/ else {
+            syncErrorDiv.html("");
+            var title = "Synchronizing...";
+            if (repo.sync.startTime) {
+               var startSyncDateTime = new Date(repo.sync.startTime);
+                title += " (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")";
+            }
+            syncRepoIconElement.attr("title", title);
             syncRepoIcon = "running";
-            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong>" + repo.sync.jiraCount + "</strong> issues found";
+            syncStatusHtml = "Synchronizing: <strong>" + repo.sync.changesetCount + "</strong> changesets, <strong> " + repo.sync.pullRequestActivityCount + " </strong> pull requests, <strong>" + repo.sync.jiraCount + "</strong> issues found";
             if (repo.sync.synchroErrorCount > 0)
                 syncStatusHtml += ", <span style='color:#e16161;'><strong>" + repo.sync.synchroErrorCount + "</strong> changesets incomplete</span>";
-        }
-
-        if (repo.sync.error) {
-            syncStatusHtml = "";
-            syncIcon = "error";
-            syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
-                "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
-        } else {
-            syncErrorDiv.html("");
         }
 
         var errorSmrtcmmtIcon = AJS.$("#error_smrtcmmt_icon_" + repo.id);
@@ -133,7 +141,8 @@ function updateSyncStatus(repo) {
     }
 
     else {
-        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastCommitDate);
+    	if (repo.lastActivityDate)
+        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").removeClass("syncrepoiconqueue").addClass(syncRepoIcon);
@@ -149,7 +158,7 @@ function getLastCommitRelativeDateHtml(daysAgo) {
     return html;
 }
 
-function showAddRepoDetails(show) {
+function showAddRepoDetails(show, hostToSelect) {
     if (!dvcs.connector.plugin.addOrganizationDialog) {
         createAddOrganizationDialog();
     }
@@ -158,9 +167,30 @@ function showAddRepoDetails(show) {
     AJS.$('#repoEntry').attr("action", "");
     // - hide username/password
     AJS.$("#github-form-section").hide();
+
     // - show url, organization field
-    AJS.$('#urlSelect').show();
-    AJS.$('#urlSelect').val(0); // select BB by default
+    var urlSelect = AJS.$('#urlSelect');
+    urlSelect.show();
+    /**
+     * Building an internal map of all of the available hosts to avoid the use of AJS.$ or .find
+     * in the case of potential XSS hole when mixing input from url with query string
+     */
+    var availableHosts = {};
+    urlSelect.find("option").each(function(index, option) {
+        var $option = AJS.$(option);
+        $option.data("index", index);
+        availableHosts[$option.attr("value")] = $option;
+    });
+
+    var selectedHost;
+    if (hostToSelect && availableHosts[hostToSelect]) {
+        selectedHost = AJS.$(availableHosts[hostToSelect]);
+    } else {
+        //Defaults to bitbucket
+        selectedHost = AJS.$(availableHosts["bitbucket"]);
+    }
+
+    urlSelect.val(selectedHost.attr("value"));
     AJS.$('#urlReadOnly').hide();
 
     AJS.$('#organization').show();
@@ -171,8 +201,8 @@ function showAddRepoDetails(show) {
     // clear all form errors
     DvcsValidator.clearAllErrors();
 
-    // enable bitbucket form
-    switchDvcsDetailsInternal(0);
+    // Enable form for the selected host
+    switchDvcsDetailsInternal(selectedHost.data("index"));
 
     AJS.$("#organization").focus().select();
     dialog.gotoPage(0);
@@ -749,7 +779,7 @@ function registerInlineDialogTooltip(element, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_" + AJS.$(element).attr('id'),
         function (content, trigger, showPopup) {
             var inlineDialogContent = AJS.$(element).data("inlineDialogContent");
-            content.css({"padding":"10px", "width":"auto"}).html(inlineDialogContent);
+            content.css({"padding":"20px", "width":"auto"}).html(inlineDialogContent);
             showPopup();
             return false;
         }, 
@@ -965,13 +995,28 @@ AJS.$(document).ready(function () {
 
         // defined in macro
         init_repositories();
-        //
+
+        /**
+         * DVCS connector uses the hash '#expand' in the URL to determine whether to automatically open the
+         * 'Add New Account' dialog.
+         */
         if (window.location.hash == '#expand') {
-            showAddRepoDetails(true);
+            var hostToSelect = undefined;
+            if (parseUri) {
+                //queryKey should always be available in the object returned by parseUri(), but it's good to be defensive anyway
+                var urlQueries = parseUri(window.location.href).queryKey || {};
+                hostToSelect = urlQueries.selectHost;
+            }
+            showAddRepoDetails(true, hostToSelect);
         }
     }
 });
 
+function dvcsLogConsole(msg) {
+    if ( window.console && window.console.log ) {
+       console.log("DVCS: " + msg);
+    }
+}
 //---------------------------------------------------------
 
 AJS.$.fn.extend({

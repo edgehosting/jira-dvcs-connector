@@ -36,13 +36,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private String oauthClientId;
     private String oauthSecret;
 
-    // sent by GH on the way back
-    private String code;
+	// sent by GH on the way back
+	private String code;
 
     private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
-
 
     public AddGithubOrganization(ApplicationProperties applicationProperties,
                                  EventPublisher eventPublisher,
@@ -111,14 +110,14 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
-            if ( sce.getCause() != null )
+            if (sce.getCause() != null)
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
-
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             addErrorMessage("Error obtain access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
             return INPUT;

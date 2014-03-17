@@ -1,0 +1,465 @@
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/detkin" class="author">Dylan Etkin</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success" title="The status of this pull request has been changed to merged.">merged</span>
+        this pull request
+        <time datetime="2013-01-03T23:46:23.774326">2013-01-03</time>
+      </div>
+    </header>
+  </article>
+</div>
+
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/nvenegas" class="author">Nicolas Venegas</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="This pull request has been approved.">approved</span>
+        this pull request
+        <time datetime="2013-01-03T20:07:06.550576">2013-01-03</time>
+      </div>
+    </header>
+  </article>
+</div>
+
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/detkin"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/detkin" class="author">Dylan Etkin</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success" title="The status of this pull request has been changed to merged.">merged</span>
+        this pull request
+        <time datetime="2013-01-03T23:46:23.774326">2013-01-03</time>
+      </div>
+    </header>
+  </article>
+</div>
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/dhornik"><img class="avatar avatar32" src="https://i0.wp.com/d3oaxc4q5k2d6q.cloudfront.net/m/62affb77bca2/img/default_avatar/32/user_blue.png"></a>
+        <a href="/dhornik" class="author">Dusan Hornik</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-moved">commited</span>
+        changeset <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                  60d4c78
+                </a>
+      </div>
+    </header>
+  </article>
+  <div class="content">
+    <table class="aui commit-list">
+    <thead>
+      <tr id="chg_0">
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="comments">Comments</th>
+        <th class="likes">Approvals</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>      
+      <tbody>
+        <tr class="" id="chg_1">
+          <td class="text">
+              <div title="BB-7053: API commit handler diffstat is broken.">
+                <a href="http://jira.atlassian.com/browse/BB-7053" rel="nofollow">BB-7053</a>: API commit handler diffstat is broken.
+              </div>
+          </td>
+          <td class="labels fade-left">
+<dl class="commit-labels clearfix">
+</dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="2013-01-03T03:08:40+01:00" data-title="true" title="3 January 2013 03:08">29 days ago</time>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="dvcs comment">
+    <article data-comment-id="16415">
+        <header>
+            <a href="/nvenegas"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/283225c91c158f3a10927e9d76a71be7?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+            <a href="/nvenegas" class="author">Nicolas Venegas</a>
+          commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
+        </header>
+          <div class="comment-content">&nbsp;</div>
+    </article>
+</div>
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/jespern"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/191bc8371e6b2ad27f36f55fb6e26bcb?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/jespern" class="author">Jesper Nøhr</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-success aui-lozenge-subtle" title="This pull request has been approved.">approved</span>
+        this pull request
+        <time datetime="2013-01-03T18:42:57.208732">2013-01-03</time>
+      </div>
+    </header>
+  </article>
+</div>
+<div class="dvcs comment">
+    <article data-comment-id="16403">
+        <header>
+            <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+            <a href="/erik" class="author">Erik van Zĳst</a>
+          commented on a file
+            <a href="hash">apps/api/v10/handlers.py</a>
+        </header>
+        <div class="comment-content">&nbsp;</div>
+    </article>
+</div>
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/erik" class="author">Erik van Zĳst</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-current" title="This pull request has been updated.">updated</span>
+        by
+            adding 1 commit
+        <time datetime="2013-01-03T03:20:18.899878">2013-01-03</time>
+      </div>
+    </header>
+    <div class="content">
+<div>
+    <div id="commits-graph" data-graph="[]"></div>
+    <table class="aui commit-list">
+      <thead>
+      <tr id="chg_0">
+        <th class="author">Author</th>
+        <th class="hash">Commit</th>
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="comments">Comments</th>
+        <th class="likes">Approvals</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>
+      <tbody>
+        <tr class="" id="chg_1">
+          <td class="author">
+            <div>
+                <span><a href="/erik" title="Erik van Zĳst"><img class="avatar avatar16" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F16%2Fuser_blue.png&amp;s=16" alt="Erik van Zĳst avatar"></a><span>Erik van Zĳst</span></span>
+            </div>
+          </td>
+          <td class="hash">
+            <div>
+                <a class="hash" href="/bitbucket/bitbucket/commits/c99b66ab7e159c558f36c79e876b1ed9cd70fa1b">
+                  c99b66a
+                </a>
+            </div>
+          </td>
+          <td class="text">
+              <div title="BB-7053: API commit handler diffstat is broken.">
+                <a href="http://jira.atlassian.com/browse/BB-7053" rel="nofollow">BB-7053</a>: API commit handler diffstat is broken.
+              </div>
+          </td>
+          <td class="labels fade-left">
+<dl class="commit-labels clearfix">
+</dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="2013-01-03T03:19:56+01:00" data-title="true" title="3 January 2013 03:19">29 days ago</time>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+    <script id="unmapped-author-dialog" type="text/html">
+<h3>Unmapped user</h3>
+<p>This user is not recognised in Bitbucket.</p>
+<pre>[[raw_author]]</pre>
+<a href="[[link]]">Create an alias in your repository administration.</a>
+</script>
+    </div>
+  </article>
+</div>
+<div class="dvcs activity-item">
+  <article>
+    <header>
+      <div class="summary">
+        <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+        <a href="/erik" class="author">Erik van Zĳst</a>
+        <span class="aui-lozenge pull-request-state aui-lozenge-complete" title="This pull request has been opened.">opened</span>
+        this pull request
+        <time datetime="2013-01-03T03:15:40.995589">2013-01-03</time>
+      </div>
+    </header>
+    <div class="content">
+<div>
+    <table class="aui commit-list">
+      <thead>
+      <tr id="chg_0">
+        <th class="author">Author</th>
+        <th class="hash">Commit</th>
+        <th class="text">Message</th>
+        <th class="labels">Labels</th>
+        <th class="comments">Comments</th>
+        <th class="likes">Approvals</th>
+        <th class="date">Date</th>
+      </tr>
+      </thead>
+      <tbody>
+        <tr class="" id="chg_1">
+          <td class="author">
+            <div>
+                <span><a href="/erik" title="Erik van Zĳst"><img class="avatar avatar16" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F16%2Fuser_blue.png&amp;s=16" alt="Erik van Zĳst avatar"></a><span>Dusan Hornik</span></span>
+            </div>
+          </td>
+          <td class="hash">
+            <div>
+                <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                  60d4c78
+                </a>
+            </div>
+          </td>
+          <td class="text">
+              <div title="BB-7053: API commit handler diffstat is broken.">
+                <a href="http://jira.atlassian.com/browse/BB-7053" rel="nofollow">BB-7053</a>: API commit handler diffstat is broken.
+              </div>
+          </td>
+          <td class="labels fade-left">
+<dl class="commit-labels clearfix">
+</dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="2013-01-03T03:08:40+01:00" data-title="true" title="3 January 2013 03:08">29 days ago</time>
+            </div>
+          </td>
+        </tr>
+        <tr class="" id="chg_1">
+          <td class="author">
+            <div>
+                <span><a href="/erik" title="Erik van Zĳst"><img class="avatar avatar16" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F16%2Fuser_blue.png&amp;s=16" alt="Erik van Zĳst avatar"></a><span>Erik van Zĳst</span></span>
+            </div>
+          </td>
+          <td class="hash">
+            <div>
+                <a class="hash" href="/bitbucket/bitbucket/commits/60d4c78ea8749368af4d36e55660be5863694ae2">
+                  60d4c78
+                </a>
+            </div>
+          </td>
+          <td class="text">
+              <div title="BB-7053: API commit handler diffstat is broken.">
+                <a href="http://jira.atlassian.com/browse/BB-7053" rel="nofollow">BB-7053</a>: API commit handler diffstat is broken.
+              </div>
+          </td>
+          <td class="labels fade-left">
+<dl class="commit-labels clearfix">
+</dl>
+          </td>
+          <td class="comments count-badge">
+          </td>
+          <td class="likes count-badge">
+          </td>
+          <td class="date">
+            <div>
+              <time datetime="2013-01-03T03:08:40+01:00" data-title="true" title="3 January 2013 03:08">29 days ago</time>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+    <script id="unmapped-author-dialog" type="text/html">
+<h3>Unmapped user</h3>
+<p>This user is not recognised in Bitbucket.</p>
+<pre>[[raw_author]]</pre>
+<a href="[[link]]">Create an alias in your repository administration.</a>
+</script>
+    </div>
+  </article>
+</div>
+
+<div class="dvcs comment">
+        <article id="comment-16411" data-comment-id="16411">
+            <header>
+                <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/brodie" class="author">ブロディ ラオ</a>
+            </header>
+                <div class="wiki-content comment-content">
+                    <p>Before we go ahead with an API change like this, can you think of other places in the API where we might need to omit information because it took too long? Would using <code>null</code> in those cases make sense as well?</p>
+<p>Now that I think about it, this resource is solely dedicated to giving you the diffstat. If it only gives back nulls, I wonder if you'd be better off sending an HTTP error code instead.</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16411" title="Link directly to this comment"><time datetime="2013-01-03T19:40:41+01:00" data-title="true" title="3 January 2013 19:40">29 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+<div class="dvcs comment">
+        <article id="comment-16417" data-comment-id="16417">
+            <header>
+                <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/erik" class="author">Erik van Zĳst</a>
+                    <span class="aui-lozenge aui-lozenge-subtle aui-lozenge-complete">author</span>
+            </header>
+                <div class="wiki-content comment-content">
+                    <blockquote>
+<p>Now that I think about it, this resource is solely dedicated to giving you the diffstat. If it only gives back nulls, I wonder if you'd be better off sending an HTTP error code instead.</p>
+</blockquote>
+<p>Maybe. Although the current approach will still give you a partial result, as well as a complete list of files that were changed (even those for which the diffstat was truncated.</p>
+<p>Would you prefer us to return an error (what kind would be appropriate, a generic 500?)?</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16417" title="Link directly to this comment"><time datetime="2013-01-03T19:51:56+01:00" data-title="true" title="3 January 2013 19:51">29 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+<div class="dvcs comment">
+        <article id="comment-16440" data-comment-id="16440">
+            <header>
+                <a href="/brodie"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/bf177bdb506069ef00253f61a9a6f015?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/brodie" class="author">ブロディ ラオ</a>
+            </header>
+                <div class="wiki-content comment-content">
+                    <p>I'm not sure there's a good error code for us to use. My initial inclination is to go for something like service unavailable, but it's hard to distinguish that from the site being unavailable.</p>
+<p>Another concern is that if the diffstat resource gets embedded in other resources, it could cause them to return HTTP error codes when maybe they shouldn't. I'm not sure we use this resource like that now, but the general approach has that issue.</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16440" title="Link directly to this comment"><time datetime="2013-01-03T23:02:22+01:00" data-title="true" title="3 January 2013 23:02">29 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+<div class="dvcs comment">
+        <article id="comment-16443"  data-comment-id="16443">
+            <header>
+                <a href="/erik"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/3d3f7d1bc4c6386815e2c1e16c2d1c46?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/erik" class="author">Erik van Zĳst</a>
+                    <span class="aui-lozenge aui-lozenge-subtle aui-lozenge-complete">author</span>
+            </header>
+                <div class="wiki-content comment-content">
+                    <p>I'm going to keep it the way it is for now and update CAC to include the <code>null</code> behavior. I'll also inform the guys in Slovakia who maintain the DVCS connector.</p>
+<p>Should this be a problem for them, then we'll take it from there (it might not cause any real regressions as such diffs would have timed out and failed before).</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16443" title="Link directly to this comment"><time datetime="2013-01-04T00:28:45+01:00" data-title="true" title="4 January 2013 00:28">28 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+<div class="dvcs comment">
+        <article id="comment-16501" data-comment-id="16501">
+            <header>
+                <a href="/shaldane"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/99a1bc597e528ac60324149da1819c73?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/shaldane" class="author">shaldane</a>
+            </header>
+                <div class="wiki-content comment-content">
+                    <p>This is a problem for the DVCS Connector at the moment as customers are seeing an NPE message where the diffstat numbers should be. This will be handled more gracefully in the next version of the connector, but could you change this to return 0 or even -1 for the time being until we get customers upgraded to a newer version?</p>
+<p>Open to other suggestions.</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16501" title="Link directly to this comment"><time datetime="2013-01-07T23:24:15+01:00" data-title="true" title="7 January 2013 23:24">25 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+            </ol>
+</li>
+            </ol>
+</li>
+            </ol>
+</li>
+            </ol>
+</li>
+            </ol>
+</div>
+<div class="dvcs comment">
+        <article id="comment-16500" data-comment-id="16500">
+            <header>
+                <a href="/juliushocman"><img class="avatar avatar32" src="https://secure.gravatar.com/avatar/23d0d498ca487a87a56289478380dd85?d=https%3A%2F%2Fdir3o3ncbjs72.cloudfront.net%2Fm%2F54593a8c76b5%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32"></a>
+                <a href="/juliushocman" class="author">Julius Hocman</a>
+            </header>
+                <div class="wiki-content comment-content">
+                    <p>DVCS Connector is using commit statistics from first 5 files in the changeset. If these statistics are missing it currently breaks the connector - see <a href="https://sdog.jira.com/browse/BBC-381" rel="nofollow">https://sdog.jira.com/browse/BBC-381</a><br>
+This will be fixed in the next Connector release but existing customers will have NPEs.</p>
+                </div>
+                <ul class="comment-actions">
+                    <li>
+                        <a href="#reply" class="reply-link click" data-add-to-stack="true">Reply</a>
+                    </li>
+                    <li>
+                        <a class="permalink" href="#comment-16500" title="Link directly to this comment"><time datetime="2013-01-07T14:11:04+01:00" data-title="true" title="7 January 2013 14:11">25 days ago</time></a>
+                    </li>
+                </ul>
+        </article>
+            <ol class="child-comments iterable">
+            </ol>
+</div>
+    
+  
+    <!-- Gravatar -->
+    <div class="CommitContainerMargin">
+        <a href="$user_url" target="_blank">
+            <div class="ComiterImage">
+                <img src="$gravatar_url" alt="" title="" width="32" height="32"/>
+            </div>
+        </a>
+        <!-- Body -->
+        <div class="CommiterBody">
+            <!-- name and date -->
+            <div class="CommiterInfoPanel">
+                <a href="$user_url" target="_blank">
+                    <span class="CommitUser">$user_name</span>
+                </a>
+				committed
+				<a href="$commit_url" target="_blank">
+					<span>$commit_hash</span>
+				</a>
+				<span>&#39;$issue_linker.createLinks($commit_message)&#39;</span>
+                <span>$velocity_utils.getRelativePastDate($changeset.getDate())</span>
+				#if ($changeset.getBranch()!="null")
+                    <span>$changeset.getBranch()</span>
+                #end
+            </div>
+        </div>
+    </div>

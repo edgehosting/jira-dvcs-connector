@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,7 +67,7 @@ public class SystemUtils
         return getMethodExists(ProjectManager.class, "getAllProjectKeys", Long.class);
     }
 
-    private static boolean getMethodExists(Class<?> clazz, String method, Class<?>... parameterTypes)
+    public static boolean getMethodExists(Class<?> clazz, String method, Class<?>... parameterTypes)
     {
         try
         {
@@ -143,4 +142,5 @@ public class SystemUtils
             return Collections.singleton(project.getKey());
         }
     }
+
 }

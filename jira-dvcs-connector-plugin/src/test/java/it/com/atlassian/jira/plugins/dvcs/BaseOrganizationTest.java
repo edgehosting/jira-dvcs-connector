@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Base class for BitBucket integration tests. Initializes the JiraTestedProduct and logs admin in.
  */
-public abstract class BaseOrganizationTest<T extends BaseConfigureOrganizationsPage>
+public abstract class BaseOrganizationTest<T extends BaseConfigureOrganizationsPage> extends DvcsWebDriverTestCase
 {
     protected static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     protected T configureOrganizations;

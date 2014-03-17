@@ -6,6 +6,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -15,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import static org.mockito.Matchers.anyBoolean;
 
 /**
  * Unit tests over {@link BaseRemoteRequestor} implementation.
@@ -36,6 +39,12 @@ public class BaseRemoteRequestorTest
     @Mock
     private HttpClient httpClient;
 
+    @Mock
+    private HttpClientProvider httpClientProvider;
+
+    @Mock
+    private ClientConnectionManager connectionManager;
+
     /**
      * Captures performed requests.
      */
@@ -53,24 +62,20 @@ public class BaseRemoteRequestorTest
         MockitoAnnotations.initMocks(this);
 
         ApiProvider apiProvider = Mockito.mock(ApiProvider.class);
-        testedObject = new BaseRemoteRequestor(apiProvider)
-        {
-            @Override
-            protected HttpClient newDefaultHttpClient()
-            {
-                return httpClient;
-            }
-        };
+        testedObject = new BaseRemoteRequestor(apiProvider, httpClientProvider);
 
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         StatusLine statusLine = Mockito.mock(StatusLine.class);
 
+        Mockito.doReturn(connectionManager).when(httpClient).getConnectionManager();
         Mockito.doReturn(httpResponse).when(httpClient).execute(Mockito.<HttpUriRequest> any());
         Mockito.doReturn(new BasicHttpParams()).when(httpClient).getParams();
         Mockito.doReturn(statusLine).when(httpResponse).getStatusLine();
 
         Mockito.doReturn("http://bitbucket.org").when(apiProvider).getHostUrl();
         Mockito.doReturn("http://bitbucket.org/api").when(apiProvider).getApiUrl();
+        Mockito.doReturn(httpClient).when(httpClientProvider).getHttpClient();
+        Mockito.doReturn(httpClient).when(httpClientProvider).getHttpClient(anyBoolean());
     }
 
     /**

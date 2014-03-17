@@ -30,8 +30,6 @@ public interface ChangesetService
 
     void removeAllInRepository(int repositoryId);
 
-    Iterable<Changeset> getChangesetsFromDvcs(Repository repository);
-
     /**
      * returns all changesets for given issues
      * @param issueKeys set of issue keys
@@ -40,15 +38,30 @@ public interface ChangesetService
      */
     List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst);
 
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
+
     String getCommitUrl(Repository repository, Changeset changeset);
 
     Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset);
+
+    List<Changeset> getChangesets(Repository repository);
 
     Iterable<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
 
     void markSmartcommitAvailability(int id, boolean available);
 
     Set<String> findReferencedProjects(int repositoryId);
+    
+    Changeset getByNode(int repositoryId, String changesetNode);
 
-	Changeset getDetailChangesetFromDvcs(Repository repository, Changeset changeset);
+    /**
+     * Ensures that the passed in Changeset instances have file details, fetching them from the remote system if
+     * necessary. Note that this is a potentially expensive operation which should not be performed systematically but
+     * should instead be triggered by a user action.
+     *
+     * @param changesets the Changesets
+     * @return a read-only list of Changesets with file details
+     * @since 2.0.0
+     */
+    List<Changeset> getChangesetsWithFileDetails(List<Changeset> changesets);
 }

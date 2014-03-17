@@ -1,11 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -21,11 +25,12 @@ import com.google.common.collect.ComputationException;
 import com.google.common.collect.MapMaker;
 
 /**
- * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent lookup times
+ * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent
+ * lookup times
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    private final DvcsCommunicator delegate;
+    private DvcsCommunicator delegate;
 
     private class UserKey
     {
@@ -41,11 +46,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null) return false;
-            if (this == obj) return true;
-            if (this.getClass() != obj.getClass()) return false;
+            if (obj == null)
+                return false;
+            if (this == obj)
+                return true;
+            if (this.getClass() != obj.getClass())
+                return false;
             UserKey that = (UserKey) obj;
-            return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username).isEquals();
+            return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username)
+                    .isEquals();
         }
 
         @Override
@@ -59,22 +68,28 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private class OrganisationKey
     {
         private final Organization organization;
+
         public OrganisationKey(Organization organization)
         {
             this.organization = organization;
         }
+
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null) return false;
-            if (this == obj) return true;
-            if (this.getClass() != obj.getClass()) return false;
+            if (obj == null)
+                return false;
+            if (this == obj)
+                return true;
+            if (this.getClass() != obj.getClass())
+                return false;
             OrganisationKey that = (OrganisationKey) obj;
             return new EqualsBuilder()
                     .append(organization.getHostUrl(), that.organization.getHostUrl())
                     .append(organization.getName(), that.organization.getName())
                     .isEquals();
         }
+
         @Override
         public int hashCode()
         {
@@ -82,15 +97,14 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
     }
 
-    private final Map<UserKey, DvcsUser> usersCache =
-            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<UserKey, DvcsUser>()
+    private final Map<UserKey, DvcsUser> usersCache = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
+            new Function<UserKey, DvcsUser>()
             {
                 @Override
                 public DvcsUser apply(UserKey key)
                 {
                     return delegate.getUser(key.repository, key.username);
                 }
-
             });
 
     private final Map<OrganisationKey, List<Group>> groupsCache =
@@ -103,8 +117,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
                         }
 
                     });
-
-    public CachingCommunicator(DvcsCommunicator delegate)
+    
+    public CachingCommunicator()
+    {
+    }
+    
+    public void setDelegate(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
     }
@@ -123,8 +141,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
 
     private SourceControlException unrollException(ComputationException e)
     {
-        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(e
-                .getCause());
+        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(
+                e.getCause());
     }
 
     @Override
@@ -152,6 +170,24 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
+    public String getBranchUrl(final Repository repository, final Branch branch)
+    {
+        return delegate.getBranchUrl(repository, branch);
+    }
+
+    @Override
+    public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
+    {
+        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
+    }
+
+    @Override
+    public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
+    {
+        delegate.startSynchronisation(repo, flags, auditId);
+    }
+
+    @Override
     public String getDvcsType()
     {
         return delegate.getDvcsType();
@@ -164,9 +200,18 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public List<Repository> getRepositories(Organization organization)
+    public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories)
     {
-        return delegate.getRepositories(organization);
+        return delegate.getRepositories(organization, storedRepositories);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Branch> getBranches(Repository repository)
+    {
+        return delegate.getBranches(repository);
     }
 
     @Override
@@ -176,21 +221,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Changeset getDetailChangeset(Repository repository, Changeset changeset)
+    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
     {
-        return delegate.getDetailChangeset(repository, changeset);
+        return delegate.getFileDetails(repository, changeset);
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public void ensureHookPresent(Repository repository, String postCommitUrl)
     {
-        return delegate.getChangesets(repository);
-    }
-
-    @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
-    {
-        delegate.setupPostcommitHook(repository, postCommitUrl);
+        delegate.ensureHookPresent(repository, postCommitUrl);
     }
 
     @Override
@@ -227,5 +266,11 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public DvcsUser getTokenOwner(Organization organization)
     {
         return delegate.getTokenOwner(organization);
+    }
+
+    @Override
+    public DvcsCommunicator getDelegate()
+    {
+        return delegate;
     }
 }

@@ -18,6 +18,7 @@ public interface RepositoryMapping extends Entity
     public static final String LINKED = "LINKED";
     public static final String DELETED = "DELETED";
     public static final String SMARTCOMMITS_ENABLED = "SMARTCOMMITS_ENABLED";
+    public static final String ACTIVITY_LAST_SYNC = "ACTIVITY_LAST_SYNC";
     public static final String LOGO = "LOGO";
     public static final String IS_FORK = "FORK";
     public static final String FORK_OF_SLUG = "FORK_OF_SLUG";
@@ -33,6 +34,7 @@ public interface RepositoryMapping extends Entity
     boolean isLinked();
     boolean isDeleted();
     boolean isSmartcommitsEnabled();
+    Date getActivityLastSync();
     @StringLength (StringLength.UNLIMITED)
     String getLogo();
     boolean isFork();
@@ -49,6 +51,7 @@ public interface RepositoryMapping extends Entity
     void setLinked(boolean linked);
     void setDeleted(boolean deleted);
     void setSmartcommitsEnabled(boolean enabled);
+    void setActivityLastSync(Date dateOrNull);
     @StringLength(StringLength.UNLIMITED)
     void setLogo(String logo);
     void setFork(boolean isFork);

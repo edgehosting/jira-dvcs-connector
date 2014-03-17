@@ -89,12 +89,13 @@
 }
 
 .githubeLogo {
-	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
+	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/githube_logo.png);
 	background-repeat: no-repeat;
 }
 
 h4.bitbucketLogo, h4.githubLogo, h4.githubeLogo {
-	padding-left: 27px;	
+	padding-left: 27px;
+	background-size: 20px 20px;
 }
 
 #postCommitServiceDetails{
@@ -230,13 +231,9 @@ a:hover.repositoryNameLink {
 .dvcs-centered {
 	text-align: center !important;
 }
-.dvcs-repos-table .dvcs-disabled {
-	filter: alpha(opacity=60);
-	opacity: 0.6;
-}
 .dvcs-repos-table .dvcs-disabled a {
-	filter: alpha(opacity=60);
-	opacity: 0.6;
+	filter: alpha(opacity=36);
+	opacity: 0.36;
 }
 .dvcs-action-container {
 	/*white-space: nowrap;*/
@@ -260,7 +257,7 @@ select#urlSelect {
 	clear: none !important;
 }
 
-.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo {
+.aui.bitbucketLogo, .aui.githubLogo, .aui.githubeLogo, .aui.dvcsLogo {
 	float: left;
 	position: relative;
 	top: 2px;
