@@ -52,18 +52,25 @@ public interface RepositoryPullRequestDao
     RepositoryPullRequestMapping findRequestByRemoteId(Repository domain, long remoteId);
 
     /**
+     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or
+     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
+     *
      * @param repositoryId ID of the repository
      * @param pullRequestId ID of the pull request
-     * @return keys of issues associated with the pull request
+     * @return keys of issues associated with the pull request, or an empty set in case there were no matching issue
+     * keys found.
      * @since v2.1.1
      */
     Set<String> getIssueKeys(int repositoryId, int pullRequestId);
 
     /**
+     * Retrieves keys of issues associated with the pull request. If either {@code domain.id} or
+     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
      *
      * @param domain the repository
      * @param pullRequestId pull request ID
-     * @return keys of issues associated with the pull request
+     * @return keys of issues associated with the pull request, or an empty set in case there were no matching issue
+     * keys found.
      * @deprecated in v2.1.1, use {@link #getIssueKeys(int, int)} instead
      */
     @Deprecated

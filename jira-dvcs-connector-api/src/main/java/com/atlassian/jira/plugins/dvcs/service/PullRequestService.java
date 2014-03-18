@@ -23,9 +23,13 @@ public interface PullRequestService
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource);
 
     /**
+     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or
+     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
+     *
      * @param repositoryId id of the repository to query
      * @param pullRequestId id of the pull request to query
-     * @return set of issue keys associated with the {@code pullRequest}
+     * @return keys of issues associated with the pull request, or an empty set in case there were no matching issue
+     * keys found.
      * @since v2.1.1
      */
     @Nonnull
