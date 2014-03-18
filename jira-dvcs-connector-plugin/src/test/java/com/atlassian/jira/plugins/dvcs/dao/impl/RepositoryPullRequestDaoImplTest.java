@@ -69,17 +69,18 @@ public class RepositoryPullRequestDaoImplTest
                 newIssueMapping(1, "ISSUE-3")),
                 RepositoryPullRequestIssueKeyMapping.class
         );
-        when(activeObjects.find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
-                isSelect(),
-                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
-                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
-                withWhereParamsThat(Matchers.<Object>contains(1, 1))
-        )))).thenReturn(mappingsInDb);
+        when(activeObjects.find(any(Class.class), any(Query.class))).thenReturn(mappingsInDb);
 
         Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
 
         assertNotNull("Result should be never null", result);
         assertEquals(ImmutableSet.of("ISSUE-1", "ISSUE-2", "ISSUE-3"), result);
+        verify(activeObjects).find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
+                isSelect(),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
+                withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)),
+                withWhereParamsThat(Matchers.<Object>contains(1, 1))
+        )));
     }
 
     @Test

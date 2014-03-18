@@ -26,7 +26,7 @@ public interface PullRequestService
      * @param repositoryId id of the repository to query
      * @param pullRequestId id of the pull request to query
      * @return set of issue keys associated with the {@code pullRequest}
-     * @since 2.1.1
+     * @since v2.1.1
      */
     @Nonnull
     Set<String> getIssueKeys(int repositoryId, int pullRequestId);

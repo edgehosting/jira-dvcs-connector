@@ -24,7 +24,7 @@ import static org.mockito.internal.util.reflection.Fields.annotatedBy;
  * the mocks in different ways.
  *
  * <p/>
- * Inspired by {@code MockitoTestNgListener} in {@code Mockito} but works in a little bit more brute-force'y way.
+ * Inspired by {@code MockitoTestNGListener} in {@code Mockito} but works in a little bit more brute-force'y way.
  */
 public class MockitoTestNgListener implements IInvokedMethodListener
 {

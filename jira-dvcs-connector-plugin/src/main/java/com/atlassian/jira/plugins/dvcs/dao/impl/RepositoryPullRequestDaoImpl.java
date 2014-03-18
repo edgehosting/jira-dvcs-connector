@@ -204,7 +204,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public int updatePullRequestIssueKeys(Repository domain, int pullRequestId)
     {
         RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
-        Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
+        Set<String> existingIssueKeys = getIssueKeys(domain.getId(), pullRequestId);
 
         Set<String> currentIssueKeys = new HashSet<String>();
         currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(repositoryPullRequestMapping.getName(), repositoryPullRequestMapping.getSourceBranch()));

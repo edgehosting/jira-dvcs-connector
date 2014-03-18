@@ -55,7 +55,7 @@ public interface RepositoryPullRequestDao
      * @param repositoryId ID of the repository
      * @param pullRequestId ID of the pull request
      * @return keys of issues associated with the pull request
-     * @since 2.1.1
+     * @since v2.1.1
      */
     Set<String> getIssueKeys(int repositoryId, int pullRequestId);
 
@@ -64,7 +64,7 @@ public interface RepositoryPullRequestDao
      * @param domain the repository
      * @param pullRequestId pull request ID
      * @return keys of issues associated with the pull request
-     * @deprecated use {@link #getIssueKeys(int, int)} instead
+     * @deprecated in v2.1.1, use {@link #getIssueKeys(int, int)} instead
      */
     @Deprecated
     Set<String> getExistingIssueKeysMapping(Repository domain, Integer pullRequestId);
