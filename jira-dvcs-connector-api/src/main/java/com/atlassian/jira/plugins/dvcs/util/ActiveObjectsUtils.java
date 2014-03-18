@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +27,7 @@ public class ActiveObjectsUtils
     {
         log.debug("Deleting type {}", entityType);
 
-        final Set<Integer> ids = new HashSet<Integer>();
+        final Set<Integer> ids = new LinkedHashSet<Integer>();
         activeObjects.stream(entityType, query, new EntityStreamCallback<T, Integer>()
         {
 
