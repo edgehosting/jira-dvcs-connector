@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 
 import static org.fest.assertions.api.Assertions.*;
 
-public class TestAccountInfoDetection
+public class TestAccountInfoDetection extends DvcsWebDriverTestCase
 {
 
     @Test

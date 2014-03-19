@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPage;
@@ -45,7 +46,7 @@ import com.google.common.base.Predicate;
  * @author Stanislav Dvorscak
  * 
  */
-public class IntegratedAccountsTest
+public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
     /**
@@ -68,17 +69,17 @@ public class IntegratedAccountsTest
     {
 
         /**
-         * @see #IntegratedAccountsTest(String, String, String)
+         * @see #IntegratedAccount(String, String, String)
          */
         public final String name;
 
         /**
-         * @see #IntegratedAccountsTest(String, String, String)
+         * @see #IntegratedAccount(String, String, String)
          */
         public final String key;
 
         /**
-         * @see #IntegratedAccountsTest(String, String, String)
+         * @see #IntegratedAccount(String, String, String)
          */
         public final String secret;
 

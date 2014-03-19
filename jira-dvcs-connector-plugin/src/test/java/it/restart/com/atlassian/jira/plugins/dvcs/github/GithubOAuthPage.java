@@ -79,7 +79,7 @@ public class GithubOAuthPage implements Page
     public void removeConsumer()
     {
         deleteApplication.click();
-//        Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+        Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
         deleteApplicationConfirm.click();
     }
 

@@ -4,7 +4,6 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.components.JiraHeader;
 import com.atlassian.jira.pageobjects.dialogs.quickedit.CreateIssueDialog;
 import com.atlassian.jira.pageobjects.pages.DashboardPage;
-import com.atlassian.jira.pageobjects.project.AddProjectDialog;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
@@ -31,14 +30,6 @@ public class JiraPageUtils
         long projectId = projectSummaryPageTab.getProjectId();
 
         jira.getPageBinder().navigateToAndBind(DeleteProjectPage.class, projectId).submitConfirm();
-    }
-
-    public static void createProject(JiraTestedProduct jira, String projectKey, String projectName)
-    {
-        ViewProjectsPage viewProjectsPage = jira.getPageBinder().navigateToAndBind(ViewProjectsPage.class);
-
-        AddProjectDialog addProjectDialog = viewProjectsPage.openCreateProjectDialog();
-        addProjectDialog.createProjectSuccess(projectKey, projectName, null); // no leader
     }
 
     public static void createIssue(JiraTestedProduct jira, String projectName)
