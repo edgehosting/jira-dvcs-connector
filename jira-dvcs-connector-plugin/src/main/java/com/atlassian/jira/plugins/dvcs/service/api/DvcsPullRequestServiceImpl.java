@@ -6,6 +6,8 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Set;
+import javax.annotation.Nonnull;
 
 public class DvcsPullRequestServiceImpl implements DvcsPullRequestService
 {
@@ -16,7 +18,15 @@ public class DvcsPullRequestServiceImpl implements DvcsPullRequestService
         this.pullRequestService = pullRequestService;
     }
 
+    @Nonnull
     @Override
+    public Set<String> getIssueKeys(int repositoryId, int pullRequestId)
+    {
+        return pullRequestService.getIssueKeys(repositoryId, pullRequestId);
+    }
+
+    @Override
+    @Nonnull
     public List<PullRequest> getPullRequests(final Iterable<String> issueKeys)
     {
         return ImmutableList.copyOf(pullRequestService.getByIssueKeys(issueKeys));
@@ -29,8 +39,10 @@ public class DvcsPullRequestServiceImpl implements DvcsPullRequestService
     }
 
     @Override
-    public String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource)
+    public String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch,
+                                          String destinationSlug, String destinationBranch, String eventSource)
     {
-        return pullRequestService.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
+        return pullRequestService.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug,
+                destinationBranch, eventSource);
     }
 }
