@@ -23,7 +23,7 @@ public interface DvcsPullRequestService
      * @param pullRequestId id of the pull request to query
      * @return keys of issues associated with the pull request, or an empty set in case there were no matching issue
      * keys found.
-     * @since v2.1.1
+     * @since v2.1.2
      */
     @Nonnull
     Set<String> getIssueKeys(int repositoryId, int pullRequestId);
