@@ -102,10 +102,11 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete association issues - changeset
                 query = Query.select()
                         .alias(IssueToChangesetMapping.class, "i2c")
-                        .alias(RepositoryToChangesetMapping.class, "r2c")
-                        .join(RepositoryToChangesetMapping.class,
-                                "i2c." + IssueToChangesetMapping.CHANGESET_ID + " = r2c." + RepositoryToChangesetMapping.CHANGESET_ID)
-                        .where("r2c.ID is null ");
+                        .where("not exists " +
+                            "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where i2c." +
+                                queryHelper.getSqlColumnName(IssueToChangesetMapping.CHANGESET_ID) + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+
+
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
@@ -113,9 +114,10 @@ public class ChangesetDaoImpl implements ChangesetDao
                 // delete orphaned changesets
                 query = Query.select()
                         .alias(ChangesetMapping.class, "c")
-                        .alias(RepositoryToChangesetMapping.class, "r2c")
-                        .join(RepositoryToChangesetMapping.class, "c.ID = r2c." + RepositoryToChangesetMapping.CHANGESET_ID)
-                        .where("r2c.ID is null ");
+                        .where("not exists " +
+                                "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where c." +
+                                queryHelper.getSqlColumnName("ID") + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 
