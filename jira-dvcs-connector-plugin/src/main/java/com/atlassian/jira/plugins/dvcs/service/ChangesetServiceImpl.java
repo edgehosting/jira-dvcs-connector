@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.Changesets;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -102,17 +103,18 @@ public class ChangesetServiceImpl implements ChangesetService
             final Repository repository = repositoryDao.get(repoChangesets.getKey());
             final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            for (Changeset changeset : changesets)
+            for (Changeset changeset : repoChangesets.getValue())
             {
                 if (changeset.getFileDetails() == null)
                 {
                     try
                     {
-                        List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);
+                        ChangesetFileDetailsEnvelope changesetFileDetailsEnvelope = communicator.getFileDetails(repository, changeset);
+                        List<ChangesetFileDetail> fileDetails = changesetFileDetailsEnvelope.getFileDetails();
                         logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
 
-                        // update the changeset count and file details with the first few file details
-                        changeset.setAllFileCount(Math.max(changeset.getAllFileCount(), fileDetails.size()));
+                        changeset.setAllFileCount(changesetFileDetailsEnvelope.getCount());
+
                         fileDetails = fileDetails.subList(0, Math.min(fileDetails.size(), Changeset.MAX_VISIBLE_FILES));
 
                         // keep these two in sync
