@@ -12,7 +12,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-    
+    private static final Date NUMBER_OF_FILES_DATE_FIX = new Date(1396828800000L); // 2014/04/07
+    private final boolean ENABLE_NUMBER_OF_FILES_CHANGED_FIX = Boolean.getBoolean("dvcs.connector.synchronization.changedfilesnumberfix");
+
     private int id;
     
     private Date synchronizedAt;
@@ -289,6 +291,18 @@ public class Changeset
     @Nullable
     public List<ChangesetFileDetail> getFileDetails()
     {
+        // https://jdog.jira-dev.com/browse/BBC-719 forcing file details to reload if changed files number is incorrect
+
+        if (ENABLE_NUMBER_OF_FILES_CHANGED_FIX)
+        {
+            if (synchronizedAt.before(NUMBER_OF_FILES_DATE_FIX) && fileDetails != null && allFileCount == 6)
+            {
+                synchronizedAt = new Date();
+                // forcing to reload file details
+                fileDetails = null;
+            }
+        }
+
         return fileDetails;
     }
 
