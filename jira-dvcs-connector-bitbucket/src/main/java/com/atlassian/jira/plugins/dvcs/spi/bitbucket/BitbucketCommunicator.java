@@ -215,7 +215,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     repository.getOrgName(), repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
             // merge it all
             List<ChangesetFileDetail> changesetFileDetails = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(changesetDiffStat);
-            int fileCount = getFileCount(repository, changeset, changesetFileDetails, remoteClient);
+            int fileCount = getFileCount(repository, changeset, changesetFileDetails.size(), remoteClient);
             return new ChangesetFileDetailsEnvelope(changesetFileDetails, fileCount);
         }
         catch (BitbucketRequestException e)
@@ -232,16 +232,25 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    private int getFileCount(final Repository repository, final Changeset changeset, final List<ChangesetFileDetail> fileDetails, final BitbucketRemoteClient remoteClient)
+    private int getFileCount(final Repository repository, final Changeset changeset, final int fileDetailsSize, final BitbucketRemoteClient remoteClient)
     {
-        if (fileDetails.size() < Changeset.MAX_VISIBLE_FILES)
+        if (fileDetailsSize < Changeset.MAX_VISIBLE_FILES)
         {
-            return fileDetails.size();
-        } else
+            return fileDetailsSize;
+        }
+        else
         {
             // if files in statistics is greater than maximum visible files, we need to find out the number of files changed
             BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(), repository.getSlug(), changeset.getNode());
-            return bitbucketChangeset.getFiles() != null ? Math.max(bitbucketChangeset.getFiles().size(), fileDetails.size()): fileDetails.size();
+            if (bitbucketChangeset.getFiles() != null)
+            {
+                return Math.max(bitbucketChangeset.getFiles().size(), fileDetailsSize);
+            }
+            else
+            {
+                log.warn("Bitbucket returned changeset ({}) without any files information, could not find out the number of changes. Using file details size instead.", changeset.getNode());
+                return fileDetailsSize;
+            }
         }
     }
 

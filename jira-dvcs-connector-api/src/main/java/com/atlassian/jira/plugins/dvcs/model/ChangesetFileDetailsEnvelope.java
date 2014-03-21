@@ -4,11 +4,13 @@ import java.util.List;
 
 /**
  * Changeset file details file information with first few details and number of changes
+ *
+ * @since 2.0.3, 2.1.3
  */
 public class ChangesetFileDetailsEnvelope
 {
-    private List<ChangesetFileDetail> fileDetails;
-    private int count;
+    private final List<ChangesetFileDetail> fileDetails;
+    private final int count;
 
     public ChangesetFileDetailsEnvelope(final List<ChangesetFileDetail> fileDetails, final int count)
     {
@@ -21,18 +23,8 @@ public class ChangesetFileDetailsEnvelope
         return fileDetails;
     }
 
-    public void setFileDetails(final List<ChangesetFileDetail> fileDetails)
-    {
-        this.fileDetails = fileDetails;
-    }
-
     public int getCount()
     {
         return count;
-    }
-
-    public void setCount(final int count)
-    {
-        this.count = count;
     }
 }
