@@ -160,16 +160,18 @@ public class ChangesetServiceImpl implements ChangesetService
     public Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset)
     {
         HashMap<ChangesetFile, String> fileCommitUrls = new HashMap<ChangesetFile, String>();
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-
-        for (int i = 0;  i < changeset.getFiles().size(); i++)
+        if (changeset.getFiles() != null)
         {
-            ChangesetFile changesetFile = changeset.getFiles().get(i);
-            String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+            DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            fileCommitUrls.put(changesetFile, fileCommitUrl);
+            for (int i = 0;  i < changeset.getFiles().size(); i++)
+            {
+                ChangesetFile changesetFile = changeset.getFiles().get(i);
+                String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+
+                fileCommitUrls.put(changesetFile, fileCommitUrl);
+            }
         }
-
         return fileCommitUrls;
     }
 

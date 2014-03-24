@@ -30,6 +30,7 @@ public class FileData
      * @param changeset a Changeset
      * @return a JSON string containing the file data
      */
+    @Deprecated
     public static String toJSON(final Changeset changeset)
     {
         JSONObject filesDataJson = new JSONObject();
@@ -74,6 +75,7 @@ public class FileData
      * @param changesetMapping a ChangesetMapping
      * @return a FileData
      */
+    @Deprecated
     public static FileData from(final ChangesetMapping changesetMapping)
     {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();

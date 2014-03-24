@@ -7,11 +7,13 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.model.FileData;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.google.common.collect.ImmutableList;
@@ -24,10 +26,12 @@ public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
     private final ActiveObjects activeObjects;
+    private final ChangesetDao changesetDao;
 
-    public ChangesetTransformer(final ActiveObjects activeObjects)
+    public ChangesetTransformer(final ActiveObjects activeObjects, final ChangesetDao changesetDao)
     {
         this.activeObjects = activeObjects;
+        this.changesetDao = changesetDao;
     }
 
     public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
@@ -40,7 +44,7 @@ public class ChangesetTransformer
 
 //        log.debug("Changeset transformation: [{}] ", changesetMapping);
 
-        final Changeset changeset = transform(mainRepositoryId, changesetMapping);
+        final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
         
         List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
@@ -88,13 +92,15 @@ public class ChangesetTransformer
         return CollectionUtils.isEmpty(changeset.getRepositoryIds())? null : changeset;
     }
 
-    public Changeset transform(int repositoryId, ChangesetMapping changesetMapping)
+    public Changeset transform(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
     {
         if (changesetMapping == null)
         {
             return null;
         }
 
+        // prefer the file details info
+        List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(changesetMapping.getFileDetailsJson());
         final FileData fileData = FileData.from(changesetMapping);
 
         final Changeset changeset = new Changeset(repositoryId,
@@ -106,18 +112,37 @@ public class ChangesetTransformer
                 changesetMapping.getBranch(),
                 changesetMapping.getMessage(),
                 parseParentsData(changesetMapping.getParentsData()),
-                fileData.getFiles(),
-                fileData.getFileCount(),
+                fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
+                changesetMapping.getFileCount(),
                 changesetMapping.getAuthorEmail());
 
         changeset.setId(changesetMapping.getID());
         changeset.setVersion(changesetMapping.getVersion());
         changeset.setSmartcommitAvaliable(changesetMapping.isSmartcommitAvailable());
 
-        // prefer the file details info
-        List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(changesetMapping.getFileDetailsJson());
-        changeset.setFiles(fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : changeset.getFiles());
         changeset.setFileDetails(fileDetails);
+
+        if (changesetMapping.getFilesData() != null)
+        {
+            // file data still there, we need to migrate
+
+            if (changesetMapping.getFileCount() == 0)
+            {
+                // we can use the file count in file data directly
+                // https://jdog.jira-dev.com/browse/BBC-709 migrating file count from file data to separate column
+                changeset.setAllFileCount(fileData.getFileCount());
+
+                if (BitbucketCommunicator.BITBUCKET.equals(dvcsType) && fileData.getFileCount() == Changeset.MAX_VISIBLE_FILES + 1)
+                {
+                    // file count in file data is 6 for Bitbucket, we need to refetch the diffstat to find out the correct number
+                    // https://jdog.jira-dev.com/browse/BBC-719 forcing file details to reload if changed files number is incorrect
+                    changeset.setFileDetails(null);
+                }
+
+            }
+
+            changesetDao.update(changeset);
+        }
 
         return changeset;
     }

@@ -22,10 +22,10 @@ public interface ChangesetMapping extends Entity
     public static final String BRANCH = "BRANCH";
     public static final String MESSAGE = "MESSAGE";
     public static final String PARENTS_DATA = "PARENTS_DATA";
-    public static final String FILES_DATA = "FILES_DATA";
     public static final String VERSION = "VERSION";
     public static final String AUTHOR_EMAIL = "AUTHOR_EMAIL";
     public static final String SMARTCOMMIT_AVAILABLE = "SMARTCOMMIT_AVAILABLE";
+    public static final String FILE_COUNT = "FILE_COUNT";
 
     /**
      * Constant used to indicate that parents data could not be saved because they are too many
@@ -60,9 +60,6 @@ public interface ChangesetMapping extends Entity
     @StringLength(StringLength.UNLIMITED)
     String getMessage();
 
-    @StringLength(StringLength.UNLIMITED)
-    String getFilesData();
-
     String getParentsData();
 
     Integer getVersion();
@@ -70,6 +67,8 @@ public interface ChangesetMapping extends Entity
     String getAuthorEmail();
 
     Boolean isSmartcommitAvailable();
+
+    int getFileCount();
 
     void setNode(String node);
 
@@ -86,9 +85,6 @@ public interface ChangesetMapping extends Entity
     @StringLength(StringLength.UNLIMITED)
     void setMessage(String message);
 
-    @StringLength(StringLength.UNLIMITED)
-    void setFilesData(String files);
-
     void setParentsData(String parents);
 
     void setVersion(Integer version);
@@ -100,6 +96,8 @@ public interface ChangesetMapping extends Entity
     @StringLength(StringLength.UNLIMITED)
     String getFileDetailsJson();
     void setFileDetailsJson(String fileDetailsJson);
+
+    void setFileCount(int fileCount);
 
     // Deprecated stuff
 
@@ -125,6 +123,12 @@ public interface ChangesetMapping extends Entity
      */
     @Deprecated
     public static final String ISSUE_KEY = "ISSUE_KEY";
+
+    /**
+     * @deprecated was removed
+     */
+    @Deprecated
+    public static final String FILES_DATA = "FILES_DATA";
 
     /**
      * @return {@link #REPOSITORY_ID}
@@ -165,4 +169,20 @@ public interface ChangesetMapping extends Entity
     @Deprecated
     void setIssueKey(String issueKey);
 
+
+    /**
+     * @deprecated use {@link #getFileDetailsJson()} and {@link #getFileCount()} instead
+     * @return
+     */
+    @Deprecated
+    @StringLength(StringLength.UNLIMITED)
+    String getFilesData();
+
+    /**
+     * @deprecated use {@link #setFileDetailsJson(String)} and {@link #setFileCount(int)} instead
+     * @param files
+     */
+    @Deprecated
+    @StringLength(StringLength.UNLIMITED)
+    void setFilesData(String files);
 }
