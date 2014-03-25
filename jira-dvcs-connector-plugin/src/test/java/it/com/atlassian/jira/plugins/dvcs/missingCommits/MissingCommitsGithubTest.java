@@ -147,9 +147,11 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOAuth()
     {
-        // remove OAuth in github
-        new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
-
+        if (oAuth != null)
+        {
+            // remove OAuth in github
+            new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
+        }
         // log out from github
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
