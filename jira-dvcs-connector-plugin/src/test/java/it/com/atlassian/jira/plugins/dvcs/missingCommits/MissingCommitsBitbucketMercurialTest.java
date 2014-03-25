@@ -13,6 +13,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
 
@@ -146,5 +147,11 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         }
         // log out from bitbucket
         new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogout();
+    }
+
+    @Override
+    protected AccountsPageAccount.AccountType getAccountType()
+    {
+        return AccountsPageAccount.AccountType.BITBUCKET;
     }
 }
