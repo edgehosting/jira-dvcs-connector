@@ -101,7 +101,6 @@ public class ChangesetTransformer
 
         // prefer the file details info
         List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(changesetMapping.getFileDetailsJson());
-        final FileData fileData = FileData.from(changesetMapping);
 
         final Changeset changeset = new Changeset(repositoryId,
                 changesetMapping.getNode(),
@@ -130,6 +129,7 @@ public class ChangesetTransformer
             {
                 // we can use the file count in file data directly
                 // https://jdog.jira-dev.com/browse/BBC-709 migrating file count from file data to separate column
+                final FileData fileData = FileData.from(changesetMapping);
                 changeset.setAllFileCount(fileData.getFileCount());
 
                 if (BitbucketCommunicator.BITBUCKET.equals(dvcsType) && fileData.getFileCount() == Changeset.MAX_VISIBLE_FILES + 1)

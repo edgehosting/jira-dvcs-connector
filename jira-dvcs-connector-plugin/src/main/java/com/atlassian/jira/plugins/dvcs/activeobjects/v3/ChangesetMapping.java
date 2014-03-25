@@ -68,6 +68,9 @@ public interface ChangesetMapping extends Entity
 
     Boolean isSmartcommitAvailable();
 
+    /**
+     * @since 2.0.3
+     */
     int getFileCount();
 
     void setNode(String node);
@@ -97,6 +100,9 @@ public interface ChangesetMapping extends Entity
     String getFileDetailsJson();
     void setFileDetailsJson(String fileDetailsJson);
 
+    /**
+     * @since 2.0.3
+     */
     void setFileCount(int fileCount);
 
     // Deprecated stuff
@@ -125,7 +131,7 @@ public interface ChangesetMapping extends Entity
     public static final String ISSUE_KEY = "ISSUE_KEY";
 
     /**
-     * @deprecated was removed
+     * @deprecated as of 2.0.3
      */
     @Deprecated
     public static final String FILES_DATA = "FILES_DATA";
@@ -171,7 +177,7 @@ public interface ChangesetMapping extends Entity
 
 
     /**
-     * @deprecated use {@link #getFileDetailsJson()} and {@link #getFileCount()} instead
+     * @deprecated as of 2.0.3, replaced by {@link #getFileDetailsJson()} and {@link #getFileCount()} instead
      * @return
      */
     @Deprecated
@@ -179,7 +185,7 @@ public interface ChangesetMapping extends Entity
     String getFilesData();
 
     /**
-     * @deprecated use {@link #setFileDetailsJson(String)} and {@link #setFileCount(int)} instead
+     * @deprecated as of 2.0.3, replaced by {@link #setFileDetailsJson(String)} and {@link #setFileCount(int)} instead
      * @param files
      */
     @Deprecated
