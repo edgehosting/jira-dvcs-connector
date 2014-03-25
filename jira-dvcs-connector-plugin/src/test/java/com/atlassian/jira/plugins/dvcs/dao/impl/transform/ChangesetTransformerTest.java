@@ -5,19 +5,14 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,25 +25,16 @@ public class ChangesetTransformerTest
     @Mock
     private ChangesetDao changesetDao;
 
-    @InjectMocks
-    private ChangesetTransformer changesetTransformer;
-
     @Captor
     private ArgumentCaptor<Changeset> changesetArgumentCaptor;
+
+    private ChangesetTransformer changesetTransformer;
 
     @BeforeMethod
     public void init()
     {
         MockitoAnnotations.initMocks(this);
-
-        when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable
-            {
-                return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
-            }
-        });
+        changesetTransformer = new ChangesetTransformer(activeObjects, changesetDao);
     }
 
     @Test
