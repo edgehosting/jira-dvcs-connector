@@ -80,6 +80,7 @@ public class FileData
     {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
+        boolean hasFileDetails = false;
 
         String filesData = changesetMapping.getFilesData();
         if (StringUtils.isNotBlank(filesData))
@@ -95,6 +96,7 @@ public class FileData
                 {
                     //noinspection ConstantConditions
                     files.addAll(ChangesetFileDetails.fromJSON(fileDetailsJson));
+                    hasFileDetails = true;
                 }
                 else
                 {
@@ -104,8 +106,19 @@ public class FileData
                         JSONObject file = filesJson.getJSONObject(i);
                         String filename = file.getString("filename");
                         String status = file.getString("status");
+                        if (file.isNull("additions") && file.isNull("deletions"))
+                        {
+                            files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
+                        }
+                        else
+                        {
+                            int additions = file.getInt("additions");
+                            int deletions = file.getInt("deletions");
 
-                        files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
+                            files.add(new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(status),
+                                    filename, additions, deletions));
+                            hasFileDetails = true;
+                        }
                     }
                 }
             }
@@ -115,16 +128,18 @@ public class FileData
             }
         }
 
-        return new FileData(files, fileCount);
+        return new FileData(files, fileCount, hasFileDetails);
     }
 
     private final List<ChangesetFile> files;
     private final int fileCount;
+    private final boolean hasDetails;
 
-    FileData(List<ChangesetFile> files, int fileCount)
+    FileData(List<ChangesetFile> files, int fileCount, boolean hasDetails)
     {
         this.files = files;
         this.fileCount = fileCount;
+        this.hasDetails = hasDetails;
     }
 
     public List<ChangesetFile> getFiles()
@@ -135,6 +150,11 @@ public class FileData
     public int getFileCount()
     {
         return fileCount;
+    }
+
+    public boolean hasDetails()
+    {
+        return hasDetails;
     }
 
     @Override

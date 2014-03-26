@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import org.mockito.ArgumentCaptor;
@@ -164,6 +165,30 @@ public class ChangesetTransformerTest
         Assert.assertEquals(changeset.getAllFileCount(), 0);
         Assert.assertNotNull(changeset.getFileDetails());
         Assert.assertEquals(changeset.getFileDetails().size(), 0);
+    }
+
+    /**
+     * Testing migration of files data to file details
+     */
+    @Test
+    public void testFileDataToFileDetails()
+    {
+        ChangesetMapping changesetMapping = mock(ChangesetMapping.class);
+        when(changesetMapping.getFilesData()).thenReturn("{\"count\":1,\"files\":[{\"filename\":\"file\", \"status\":\"MODIFIED\", \"additions\":1, \"deletions\":2}]}");
+
+        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        verify(changesetDao).update(changesetArgumentCaptor.capture());
+
+        Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), 1);
+        Assert.assertNotNull(changesetArgumentCaptor.getValue().getFileDetails());
+
+        Assert.assertEquals(changeset.getAllFileCount(), 1);
+        Assert.assertNotNull(changeset.getFileDetails());
+        Assert.assertEquals(changeset.getFileDetails().size(), 1);
+        Assert.assertEquals(changeset.getFileDetails().get(0).getAdditions(), 1);
+        Assert.assertEquals(changeset.getFileDetails().get(0).getDeletions(), 2);
+        Assert.assertEquals(changeset.getFileDetails().get(0).getFile(), "file");
+        Assert.assertEquals(changeset.getFileDetails().get(0).getFileAction(), ChangesetFileAction.MODIFIED);
     }
 
     private ChangesetMapping mockChangesetMapping(int fileCount, boolean withFilesData)

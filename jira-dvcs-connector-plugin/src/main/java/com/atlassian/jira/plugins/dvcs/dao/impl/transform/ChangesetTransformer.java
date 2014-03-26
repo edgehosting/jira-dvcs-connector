@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
@@ -21,6 +18,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ChangesetTransformer
 {
@@ -138,6 +139,13 @@ public class ChangesetTransformer
                     // https://jdog.jira-dev.com/browse/BBC-719 forcing file details to reload if changed files number is incorrect
                     changeset.setFileDetails(null);
                 }
+                else
+                {
+                    if (changeset.getFileDetails() == null && fileData.hasDetails())
+                    {
+                        migrateFromFileData(changeset, fileData);
+                    }
+                }
 
             }
 
@@ -145,6 +153,16 @@ public class ChangesetTransformer
         }
 
         return changeset;
+    }
+
+    private void migrateFromFileData(final Changeset changeset, final FileData fileData)
+    {
+        List<ChangesetFileDetail> changesetFileDetails = new LinkedList<ChangesetFileDetail>();
+        for (ChangesetFile file : fileData.getFiles())
+        {
+            changesetFileDetails.add(new ChangesetFileDetail(file.getFileAction(), file.getFile(), ((ChangesetFileDetail) file).getAdditions(), ((ChangesetFileDetail) file).getDeletions()));
+        }
+        changeset.setFileDetails(changesetFileDetails);
     }
 
     private List<String> parseParentsData(String parentsData)
