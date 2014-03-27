@@ -80,7 +80,7 @@ public class FileData
     {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
-        boolean hasFileDetails = false;
+        boolean hasFileDetails = true;
 
         String filesData = changesetMapping.getFilesData();
         if (StringUtils.isNotBlank(filesData))
@@ -96,28 +96,35 @@ public class FileData
                 {
                     //noinspection ConstantConditions
                     files.addAll(ChangesetFileDetails.fromJSON(fileDetailsJson));
-                    hasFileDetails = true;
                 }
                 else
                 {
                     JSONArray filesJson = filesDataJson.optJSONArray("files");
-                    for (int i = 0; i < filesJson.length(); i++)
+                    if (filesJson.length() == 0)
                     {
-                        JSONObject file = filesJson.getJSONObject(i);
-                        String filename = file.getString("filename");
-                        String status = file.getString("status");
-                        if (file.isNull("additions") && file.isNull("deletions"))
+                        // empty files can indicate commit without changed files (create branch commit), but also unfilled data
+                        hasFileDetails = false;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < filesJson.length(); i++)
                         {
-                            files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
-                        }
-                        else
-                        {
-                            int additions = file.getInt("additions");
-                            int deletions = file.getInt("deletions");
+                            JSONObject file = filesJson.getJSONObject(i);
+                            String filename = file.getString("filename");
+                            String status = file.getString("status");
+                            if (file.isNull("additions") && file.isNull("deletions"))
+                            {
+                                files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
+                                hasFileDetails = false;
+                            }
+                            else
+                            {
+                                int additions = file.getInt("additions");
+                                int deletions = file.getInt("deletions");
 
-                            files.add(new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(status),
-                                    filename, additions, deletions));
-                            hasFileDetails = true;
+                                files.add(new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(status),
+                                        filename, additions, deletions));
+                            }
                         }
                     }
                 }
