@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.google.common.collect.Lists;
 import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         pushToRemoteDvcsRepository(getFirstDvcsZipRepoPathToPush());
 
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
-        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), true);
+        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false);
+        configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
@@ -108,6 +110,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         jira.goTo(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
     }
+
+    protected abstract AccountsPageAccount.AccountType getAccountType();
 
     public String getGitCommand()
     {
@@ -161,7 +165,6 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
         PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
     }
-
 
     protected void executeCommand(File workingDirectory, String... command) throws IOException, InterruptedException
     {
