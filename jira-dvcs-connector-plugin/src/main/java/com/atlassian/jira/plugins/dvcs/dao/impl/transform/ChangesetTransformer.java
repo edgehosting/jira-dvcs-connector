@@ -143,7 +143,7 @@ public class ChangesetTransformer
                 {
                     if (changeset.getFileDetails() == null && fileData.hasDetails())
                     {
-                        migrateFromFileData(changeset, fileData);
+                        changeset.setFileDetails(transfromFileData(fileData));
                     }
                 }
 
@@ -155,14 +155,21 @@ public class ChangesetTransformer
         return changeset;
     }
 
-    private void migrateFromFileData(final Changeset changeset, final FileData fileData)
+    private List<ChangesetFileDetail> transfromFileData(final FileData fileData)
     {
         List<ChangesetFileDetail> changesetFileDetails = new LinkedList<ChangesetFileDetail>();
         for (ChangesetFile file : fileData.getFiles())
         {
-            changesetFileDetails.add(new ChangesetFileDetail(file.getFileAction(), file.getFile(), ((ChangesetFileDetail) file).getAdditions(), ((ChangesetFileDetail) file).getDeletions()));
+            int additions = 0;
+            int deletions = 0;
+            if (file instanceof ChangesetFileDetail)
+            {
+                additions = ((ChangesetFileDetail) file).getAdditions();
+                deletions = ((ChangesetFileDetail) file).getDeletions();
+            }
+            changesetFileDetails.add(new ChangesetFileDetail(file.getFileAction(), file.getFile(), additions , deletions));
         }
-        changeset.setFileDetails(changesetFileDetails);
+        return changesetFileDetails;
     }
 
     private List<String> parseParentsData(String parentsData)
