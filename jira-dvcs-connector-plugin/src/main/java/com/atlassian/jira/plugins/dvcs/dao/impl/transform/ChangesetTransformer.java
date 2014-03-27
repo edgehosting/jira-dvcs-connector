@@ -131,6 +131,7 @@ public class ChangesetTransformer
                 // we can use the file count in file data directly
                 // https://jdog.jira-dev.com/browse/BBC-709 migrating file count from file data to separate column
                 final FileData fileData = FileData.from(changesetMapping);
+                log.debug("Migrating file count from old file data structure.");
                 changeset.setAllFileCount(fileData.getFileCount());
 
                 if (BitbucketCommunicator.BITBUCKET.equals(dvcsType) && fileData.getFileCount() == Changeset.MAX_VISIBLE_FILES + 1)
@@ -139,12 +140,10 @@ public class ChangesetTransformer
                     // https://jdog.jira-dev.com/browse/BBC-719 forcing file details to reload if changed files number is incorrect
                     changeset.setFileDetails(null);
                 }
-                else
+                else if (changeset.getFileDetails() == null && fileData.hasDetails())
                 {
-                    if (changeset.getFileDetails() == null && fileData.hasDetails())
-                    {
-                        changeset.setFileDetails(transfromFileData(fileData));
-                    }
+                    log.debug("Migrating data from old file data structure.");
+                    changeset.setFileDetails(transfromFileData(fileData));
                 }
 
             }
