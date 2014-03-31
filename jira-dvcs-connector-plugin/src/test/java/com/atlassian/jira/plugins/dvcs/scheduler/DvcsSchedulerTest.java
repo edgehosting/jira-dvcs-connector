@@ -47,7 +47,7 @@ public class DvcsSchedulerTest
     public void startingTheDvcsSchedulerShouldAlsoStartTheMessagingService()
     {
         // Invoke
-        dvcsScheduler.onStart();
+        invokeStartupMethodsRequiredForScheduling();
 
         // Verify
         verify(mockMessagingService).onStart();
@@ -88,6 +88,7 @@ public class DvcsSchedulerTest
 
         // Check
         verify(mockScheduler).getJobInfo(JOB_ID);
+        verify(mockScheduler).registerJobHandler(JOB_HANDLER_KEY, mockDvcsSchedulerJob);
         verifyNoMoreInteractions(mockScheduler);
     }
 

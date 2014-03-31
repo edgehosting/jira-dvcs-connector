@@ -12,10 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.concurrent.GuardedBy;
 
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 
@@ -38,8 +40,8 @@ public class DvcsScheduler implements LifecycleAware
     private final EventPublisher eventPublisher;
     private final MessagingService messagingService;
 
-    // Three because we wait for postConstruct(), onStart(), and onPluginEnabled()
-    private final AtomicInteger readyToSchedule = new AtomicInteger(3);
+    @GuardedBy("this")
+    private final Set<LifecycleEvent> lifecycleEvents = EnumSet.noneOf(LifecycleEvent.class);
 
     public DvcsScheduler(final MessagingService messagingService, final CompatibilityPluginScheduler scheduler,
             final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher)
@@ -54,7 +56,7 @@ public class DvcsScheduler implements LifecycleAware
     public void postConstruct()
     {
         eventPublisher.register(this);
-        scheduleJobIfReady();
+        onLifecycleEvent(LifecycleEvent.POST_CONSTRUCT);
     }
 
     /**
@@ -66,15 +68,14 @@ public class DvcsScheduler implements LifecycleAware
     {
         if (PLUGIN_KEY.equals(event.getPlugin().getKey()))
         {
-            scheduleJobIfReady();
+            onLifecycleEvent(LifecycleEvent.PLUGIN_ENABLED);
         }
     }
 
     public void onStart()
     {
         log.debug("LifecycleAware#onStart");
-        messagingService.onStart();
-        scheduleJobIfReady();
+        onLifecycleEvent(LifecycleEvent.LIFECYCLE_AWARE_ON_START);
     }
 
     @PreDestroy
@@ -85,15 +86,8 @@ public class DvcsScheduler implements LifecycleAware
         log.info("DvcsScheduler job unscheduled");
     }
 
-    private void scheduleJobIfReady()
+    private void scheduleJob()
     {
-        if (readyToSchedule.decrementAndGet() != 0)
-        {
-            // Not ready to schedule or already scheduled
-            return;
-        }
-        // we don't need to listen to events anymore
-        eventPublisher.unregister(this);
         scheduler.registerJobHandler(JOB_HANDLER_KEY, dvcsSchedulerJob);
         if (scheduler.getJobInfo(JOB_ID) != null)
         {
@@ -104,5 +98,60 @@ public class DvcsScheduler implements LifecycleAware
         final Date startTime = new Date(randomStartTimeWithinInterval);
         scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, startTime, interval);
         log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
+    }
+
+    /**
+     * The latch which ensures all of the plugin/application lifecycle progress is completed before we call
+     * {@code launch()}.
+     */
+    private void onLifecycleEvent(LifecycleEvent event)
+    {
+        log.debug("onLifecycleEvent: " + event);
+        if (isLifecycleReady(event))
+        {
+            log.debug("Got the last lifecycle event... Time to get started!");
+            // we don't need to listen to events anymore
+            eventPublisher.unregister(this);
+
+            try
+            {
+                scheduleJob();
+            }
+            catch (Exception ex)
+            {
+                log.error("Unexpected error during launch", ex);
+            }
+            messagingService.onStart();
+        }
+    }
+
+    /**
+     * The event latch.
+     * <p>
+     * When something related to the plugin initialization happens, we call this with
+     * the corresponding type of the event.  We will return {@code true} at most once, when the very last type
+     * of event is triggered.  This method has to be {@code synchronized} because {@code EnumSet} is not
+     * thread-safe and because we have multiple accesses to {@code lifecycleEvents} that need to happen
+     * atomically for correct behaviour.
+     * </p>
+     *
+     * @param event the lifecycle event that occurred
+     * @return {@code true} if this completes the set of initialization-related events; {@code false} otherwise
+     */
+    synchronized private boolean isLifecycleReady(LifecycleEvent event)
+    {
+        return lifecycleEvents.add(event) && lifecycleEvents.size() == LifecycleEvent.values().length;
+    }
+
+    /**
+     * Used to keep track of everything that needs to happen before we are sure that it is safe
+     * to talk to all of the components we need to use, particularly the {@code SchedulerService}
+     * and Active Objects.  We will not try to initialize until all of them have happened.
+     */
+    static enum LifecycleEvent
+    {
+        POST_CONSTRUCT,
+        PLUGIN_ENABLED,
+        LIFECYCLE_AWARE_ON_START
     }
 }
