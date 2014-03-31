@@ -27,6 +27,7 @@
     <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
     <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager" />
 
+    <!-- Note: This MUST be public and registered under the LifecycleAware interface to work! -->
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>

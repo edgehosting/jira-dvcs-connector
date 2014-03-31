@@ -83,30 +83,33 @@ public class DvcsScheduler implements LifecycleAware
     {
         scheduler.unregisterJobHandler(JOB_HANDLER_KEY);
         eventPublisher.unregister(this);
-        log.info("DvcsScheduler job unscheduled");
+        log.info("DvcsScheduler job handler unregistered");
     }
 
     private void scheduleJob()
     {
+        // always register the job handler, regardless of whether the job has been scheduled
         scheduler.registerJobHandler(JOB_HANDLER_KEY, dvcsSchedulerJob);
-        if (scheduler.getJobInfo(JOB_ID) != null)
+        log.info("DvcsScheduler job handler registered");
+
+        if (scheduler.getJobInfo(JOB_ID) == null)
         {
-            return;
+            // only schedule the job when it's not already scheduled
+            final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
+            final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
+            final Date startTime = new Date(randomStartTimeWithinInterval);
+            scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, startTime, interval);
+            log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
         }
-        final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
-        final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
-        final Date startTime = new Date(randomStartTimeWithinInterval);
-        scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, startTime, interval);
-        log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
     }
 
     /**
      * The latch which ensures all of the plugin/application lifecycle progress is completed before we call
      * {@code launch()}.
      */
-    private void onLifecycleEvent(LifecycleEvent event)
+    private void onLifecycleEvent(final LifecycleEvent event)
     {
-        log.debug("onLifecycleEvent: " + event);
+        log.debug("onLifecycleEvent: {}", event);
         if (isLifecycleReady(event))
         {
             log.debug("Got the last lifecycle event... Time to get started!");
@@ -138,7 +141,7 @@ public class DvcsScheduler implements LifecycleAware
      * @param event the lifecycle event that occurred
      * @return {@code true} if this completes the set of initialization-related events; {@code false} otherwise
      */
-    synchronized private boolean isLifecycleReady(LifecycleEvent event)
+    synchronized private boolean isLifecycleReady(final LifecycleEvent event)
     {
         return lifecycleEvents.add(event) && lifecycleEvents.size() == LifecycleEvent.values().length;
     }
