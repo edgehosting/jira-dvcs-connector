@@ -87,12 +87,18 @@ public class DvcsScheduler implements LifecycleAware
 
     private void scheduleJobIfReady()
     {
-        if (readyToSchedule.decrementAndGet() != 0 || scheduler.getJobInfo(JOB_ID) != null)
+        if (readyToSchedule.decrementAndGet() != 0)
         {
             // Not ready to schedule or already scheduled
             return;
         }
+        // we don't need to listen to events anymore
+        eventPublisher.unregister(this);
         scheduler.registerJobHandler(JOB_HANDLER_KEY, dvcsSchedulerJob);
+        if (scheduler.getJobInfo(JOB_ID) != null)
+        {
+            return;
+        }
         final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
         final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
         final Date startTime = new Date(randomStartTimeWithinInterval);
