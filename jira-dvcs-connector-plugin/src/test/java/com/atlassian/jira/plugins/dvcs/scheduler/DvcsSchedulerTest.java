@@ -54,6 +54,16 @@ public class DvcsSchedulerTest
     }
 
     @Test
+    public void startingTheDvcsSchedulerShouldAlsoUnregisterEventPublisher()
+    {
+        // Invoke
+        invokeStartupMethodsRequiredForScheduling();
+
+        // Verify
+        verify(mockEventPublisher).unregister(dvcsScheduler);
+    }
+
+    @Test
     public void onStartShouldScheduleTheJobIfItDoesNotAlreadyExist() throws Exception
     {
         // Set up
@@ -67,6 +77,42 @@ public class DvcsSchedulerTest
         verify(mockScheduler).getJobInfo(JOB_ID);
         verify(mockScheduler).scheduleClusteredJob(eq(JOB_ID), eq(JOB_HANDLER_KEY), any(Date.class), anyLong());
         verifyNoMoreInteractions(mockScheduler);
+    }
+
+    @Test
+    public void partialEventsShouldNotTriggerScheduling1() throws Exception
+    {
+        // Invoke
+        dvcsScheduler.postConstruct();
+        dvcsScheduler.onStart();
+
+        // Check
+        verifyNoMoreInteractions(mockScheduler);
+        verifyNoMoreInteractions(mockMessagingService);
+    }
+
+    @Test
+    public void partialEventsShouldNotTriggerScheduling2() throws Exception
+    {
+        // Invoke
+        dvcsScheduler.postConstruct();
+        dvcsScheduler.onPluginEnabled(mockPluginEnabledEvent);
+
+        // Check
+        verifyNoMoreInteractions(mockScheduler);
+        verifyNoMoreInteractions(mockMessagingService);
+    }
+
+    @Test
+    public void partialEventsShouldNotTriggerScheduling3() throws Exception
+    {
+        // Invoke
+        dvcsScheduler.onStart();
+        dvcsScheduler.onPluginEnabled(mockPluginEnabledEvent);
+
+        // Check
+        verifyNoMoreInteractions(mockScheduler);
+        verifyNoMoreInteractions(mockMessagingService);
     }
 
     private void invokeStartupMethodsRequiredForScheduling()
