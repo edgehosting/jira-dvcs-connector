@@ -19,6 +19,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.GuardedBy;
 
+import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleEvent.LIFECYCLE_AWARE_ON_START;
+import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleEvent.PLUGIN_ENABLED;
+import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleEvent.POST_CONSTRUCT;
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 
 public class DvcsScheduler implements LifecycleAware
@@ -56,7 +59,7 @@ public class DvcsScheduler implements LifecycleAware
     public void postConstruct()
     {
         eventPublisher.register(this);
-        onLifecycleEvent(LifecycleEvent.POST_CONSTRUCT);
+        onLifecycleEvent(POST_CONSTRUCT);
     }
 
     /**
@@ -68,14 +71,14 @@ public class DvcsScheduler implements LifecycleAware
     {
         if (PLUGIN_KEY.equals(event.getPlugin().getKey()))
         {
-            onLifecycleEvent(LifecycleEvent.PLUGIN_ENABLED);
+            onLifecycleEvent(PLUGIN_ENABLED);
         }
     }
 
     public void onStart()
     {
         log.debug("LifecycleAware#onStart");
-        onLifecycleEvent(LifecycleEvent.LIFECYCLE_AWARE_ON_START);
+        onLifecycleEvent(LIFECYCLE_AWARE_ON_START);
     }
 
     @PreDestroy
@@ -133,7 +136,7 @@ public class DvcsScheduler implements LifecycleAware
      * <p>
      * When something related to the plugin initialization happens, we call this with
      * the corresponding type of the event.  We will return {@code true} at most once, when the very last type
-     * of event is triggered.  This method has to be {@code synchronized} because {@code EnumSet} is not
+     * of event is triggered.  This method is {@code synchronized} because {@code EnumSet} is not
      * thread-safe and because we have multiple accesses to {@code lifecycleEvents} that need to happen
      * atomically for correct behaviour.
      * </p>
@@ -147,7 +150,7 @@ public class DvcsScheduler implements LifecycleAware
     }
 
     /**
-     * Used to keep track of everything that needs to happen before we are sure that it is safe
+     * Keeps track of everything that needs to happen before we are sure that it is safe
      * to talk to all of the components we need to use, particularly the {@code SchedulerService}
      * and Active Objects.  We will not try to initialize until all of them have happened.
      */
