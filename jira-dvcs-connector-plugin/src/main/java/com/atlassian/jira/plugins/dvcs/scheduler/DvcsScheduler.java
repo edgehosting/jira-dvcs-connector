@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.scheduler;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
@@ -42,17 +43,19 @@ public class DvcsScheduler implements LifecycleAware
     private final DvcsSchedulerJob dvcsSchedulerJob;
     private final EventPublisher eventPublisher;
     private final MessagingService messagingService;
+    private final Synchronizer synchronizer;
 
     @GuardedBy("this")
     private final Set<LifecycleEvent> lifecycleEvents = EnumSet.noneOf(LifecycleEvent.class);
 
     public DvcsScheduler(final MessagingService messagingService, final CompatibilityPluginScheduler scheduler,
-            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher)
+            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher, final Synchronizer synchronizer)
     {
         this.dvcsSchedulerJob = dvcsSchedulerJob;
         this.eventPublisher = eventPublisher;
         this.messagingService = messagingService;
         this.scheduler = scheduler;
+        this.synchronizer = synchronizer;
     }
 
     @PostConstruct
@@ -117,7 +120,7 @@ public class DvcsScheduler implements LifecycleAware
         {
             log.debug("Got the last lifecycle event... Time to get started!");
             // we don't need to listen to events anymore
-            eventPublisher.unregister(this);
+//            eventPublisher.unregister(this);
 
             try
             {
@@ -128,6 +131,7 @@ public class DvcsScheduler implements LifecycleAware
                 log.error("Unexpected error during launch", ex);
             }
             messagingService.onStart();
+            synchronizer.removeAllProgress();
         }
     }
 
