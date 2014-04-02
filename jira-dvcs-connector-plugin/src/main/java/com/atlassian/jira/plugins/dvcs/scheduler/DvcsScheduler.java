@@ -120,7 +120,7 @@ public class DvcsScheduler implements LifecycleAware
         {
             log.debug("Got the last lifecycle event... Time to get started!");
             // we don't need to listen to events anymore
-//            eventPublisher.unregister(this);
+            eventPublisher.unregister(this);
 
             try
             {
