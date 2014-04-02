@@ -38,10 +38,10 @@ public class BranchServiceImpl implements BranchService
     public void updateBranches(final Repository repository, final List<Branch> newBranches)
     {
         // to remove possible branch duplicates
-        Set<Branch> newBranchesSet = new HashSet<Branch>(newBranches);
+        Set<Branch> branchSet = new HashSet<Branch>(newBranches);
 
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
-        for (Branch branch : newBranchesSet)
+        for (Branch branch : branchSet)
         {
             if (oldBranches == null || !oldBranches.contains(branch))
             {
@@ -55,9 +55,11 @@ public class BranchServiceImpl implements BranchService
         {
             for (Branch oldBranch : oldBranches)
             {
-                if (!newBranchesSet.contains(oldBranch))
+                if (!branchSet.contains(oldBranch))
                 {
                     branchDao.removeBranch(repository.getId(), oldBranch);
+                    // adding existing branch to remove all subsequent duplicate branches
+                    branchSet.add(oldBranch);
                 }
             }
         }
@@ -76,7 +78,7 @@ public class BranchServiceImpl implements BranchService
     {
         if (newBranches != null)
         {
-            List<BranchHead> headAlreadyThere = new ArrayList<BranchHead>();
+            Set<BranchHead> headAlreadyThere = new HashSet<BranchHead>();
             for (Branch branch : new HashSet<Branch>(newBranches))
             {
                 for (BranchHead branchHead : branch.getHeads())
