@@ -286,4 +286,10 @@ public class DefaultSynchronizer implements Synchronizer
     {
         progressMap.remove(repository.getId());
     }
+
+    @Override
+    public void removeAllProgress()
+    {
+        progressMap.removeAll();
+    }
 }
