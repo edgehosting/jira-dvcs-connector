@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
@@ -24,6 +25,11 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     private final List<Message> running = new ArrayList<Message>();
     private final Multimap<Integer, String> messageTags = LinkedListMultimap.create();
     private int messageIdSequence = 1;
+
+    public MessagingServiceImplMock()
+    {
+        super(new MemoryCacheManager());
+    }
 
     @Override
     protected <P extends HasProgress> void createMessage(final Message<P> message, final MessageState state, final String... tags)
