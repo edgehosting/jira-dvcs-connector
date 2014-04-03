@@ -163,9 +163,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @SuppressWarnings("unchecked")
     public MessagingServiceImpl(final CacheManager cacheManager)
     {
+        // altassian-cache 2.0.8 or later will auto clear a local cache
         idToMessageAddress = cacheManager.getCache(
                 getClass().getName() + ".idToMessageAddress", new MessageAddressLoader(), CACHE_SETTINGS);
-        idToMessageAddress.removeAll(); // clear the cache upon plugin startup
     }
 
     /**
