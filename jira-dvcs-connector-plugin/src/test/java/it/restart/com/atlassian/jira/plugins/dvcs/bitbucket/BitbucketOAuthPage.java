@@ -8,6 +8,7 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.WebDriverException;
 
 public class BitbucketOAuthPage implements Page
 {    
@@ -48,7 +49,15 @@ public class BitbucketOAuthPage implements Page
 
     public OAuth addConsumer()
     {
-        addConsumerButton.click();
+        try
+        {
+            addConsumerButton.click();
+        }
+        catch(WebDriverException e)
+        {
+            // workaround for Permission denied to access property 'nr@context' issue
+            addConsumerButton.click();
+        }
 
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
         String consumerName = "Test_OAuth_" + System.currentTimeMillis();
@@ -74,6 +83,14 @@ public class BitbucketOAuthPage implements Page
     {
         PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
         PageElement deleteButton = oauthConsumer.find(By.linkText("Delete"));
-        deleteButton.click();
+        try
+        {
+            deleteButton.click();
+        }
+        catch (WebDriverException e)
+        {
+            // workaround for Permission denied to access property 'nr@context' issue
+            deleteButton.click();
+        }
     }
 }
