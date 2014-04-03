@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
@@ -588,9 +587,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             result = (MessageAddress<P>) idToMessageAddress.get(id);
             if (result == null)
             {
-                idToMessageAddress.put(id, result = new MessageAddress<P>()
+                result = new MessageAddress<P>()
                 {
-
                     @Override
                     public String getId()
                     {
@@ -602,8 +600,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     {
                         return payloadType;
                     }
-
-                });
+                };
+                idToMessageAddress.put(id, result);
             }
         }
 
@@ -862,16 +860,5 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public void destroy() throws Exception
     {
         stop = true;
-    }
-
-    private static class IdKey<P extends HasProgress> implements Serializable
-    {
-        private final String id;
-        private final Class<P> payloadType;
-
-        private IdKey(final String id, final Class<P> payloadType) {
-            this.id = id;
-            this.payloadType = payloadType;
-        }
     }
 }
