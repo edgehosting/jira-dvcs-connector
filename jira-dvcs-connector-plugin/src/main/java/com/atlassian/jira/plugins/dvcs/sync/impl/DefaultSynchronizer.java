@@ -28,6 +28,7 @@ import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.concurrent.locks.Lock;
@@ -89,6 +90,16 @@ public class DefaultSynchronizer implements Synchronizer
     {
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
+        // clear the cache as a temp fix for BBC-744
+        if (LOG.isDebugEnabled())
+        {
+            final Collection<Integer> keys = progressMap.getKeys();
+            if (!keys.isEmpty())
+            {
+                LOG.debug("clearing progressMap of size {} ", keys.size());
+            }
+        }
+        progressMap.removeAll();
     }
 
     @Override
