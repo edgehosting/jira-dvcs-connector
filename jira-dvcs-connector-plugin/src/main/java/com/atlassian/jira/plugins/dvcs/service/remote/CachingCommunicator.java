@@ -111,6 +111,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
 
     public CachingCommunicator(final CacheManager cacheManager)
     {
+        // self-loading caches returned from getCache are always clean/empty
         usersCache = cacheManager.getCache(getClass().getName() + ".usersCache", new UserLoader(), CACHE_SETTINGS);
         groupsCache = cacheManager.getCache(getClass().getName() + ".groupsCache", new GroupLoader(), CACHE_SETTINGS);
     }

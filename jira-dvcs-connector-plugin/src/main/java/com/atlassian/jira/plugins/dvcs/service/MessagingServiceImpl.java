@@ -21,6 +21,8 @@ import javax.annotation.Resource;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
+import com.atlassian.cache.CacheSettings;
+import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.util.concurrent.NotNull;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import net.java.ao.DBParam;
@@ -136,6 +138,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private final Cache<IdKey<?>, MessageAddress<?>> idToMessageAddress;
 
+    private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().local().build();
+
     /**
      * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
      */
@@ -159,8 +163,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @SuppressWarnings("unchecked")
     public MessagingServiceImpl(final CacheManager cacheManager)
     {
+        // altassian-cache 2.0.8 or later will auto clear a local cache
         idToMessageAddress = cacheManager.getCache(
-                getClass().getName() + ".idToMessageAddress", new MessageAddressLoader());
+                getClass().getName() + ".idToMessageAddress", new MessageAddressLoader(), CACHE_SETTINGS);
     }
 
     /**

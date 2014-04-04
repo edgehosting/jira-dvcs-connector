@@ -42,7 +42,7 @@ public class DvcsSchedulerTest
         MockitoAnnotations.initMocks(this);
         when(mockPluginEnabledEvent.getPlugin()).thenReturn(mockPlugin);
         when(mockPlugin.getKey()).thenReturn(PLUGIN_KEY);
-        dvcsScheduler = new DvcsScheduler(mockMessagingService, mockScheduler, mockDvcsSchedulerJob, mockEventPublisher, synchronizer);
+        dvcsScheduler = new DvcsScheduler(mockMessagingService, mockScheduler, mockDvcsSchedulerJob, mockEventPublisher);
     }
 
     @Test
