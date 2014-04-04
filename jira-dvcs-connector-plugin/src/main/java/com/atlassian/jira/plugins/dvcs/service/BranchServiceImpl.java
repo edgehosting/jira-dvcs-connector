@@ -8,7 +8,6 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,10 +37,12 @@ public class BranchServiceImpl implements BranchService
     public void updateBranches(final Repository repository, final List<Branch> newBranches)
     {
         // to remove possible branch duplicates
-        Set<Branch> branchSet = new HashSet<Branch>(newBranches);
+        Set<Branch> newBranchSet = new HashSet<Branch>(newBranches);
 
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
-        for (Branch branch : branchSet)
+        removeDuplicatesIfNeeded(repository, oldBranches);
+
+        for (Branch branch : newBranchSet)
         {
             if (oldBranches == null || !oldBranches.contains(branch))
             {
@@ -55,14 +56,69 @@ public class BranchServiceImpl implements BranchService
         {
             for (Branch oldBranch : oldBranches)
             {
-                if (!branchSet.contains(oldBranch))
+                if (!newBranchSet.contains(oldBranch))
                 {
                     branchDao.removeBranch(repository.getId(), oldBranch);
-                    // adding existing branch to remove all subsequent duplicate branches
-                    branchSet.add(oldBranch);
+                }
+                else
+                {
+                    // removing existing branch to remove all subsequent duplicate branches
+                    newBranchSet.remove(oldBranch);
                 }
             }
         }
+    }
+
+    private void removeDuplicatesIfNeeded(final Repository repository, final List<Branch> oldBranches)
+    {
+        Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
+        if (oldBranches.size() != oldBranchesSet.size())
+        {
+            Set<Branch> duplicates = findDuplicates(oldBranches, oldBranchesSet);
+
+            for (Branch branch : duplicates)
+            {
+                branchDao.removeBranch(repository.getId(), branch);
+            }
+            oldBranches.removeAll(duplicates);
+        }
+
+    }
+
+    private void removeDuplicateBranchHeadIfNeeded(final Repository repository, final List<BranchHead> oldBranchHeads)
+    {
+        Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
+        if (oldBranchHeads.size() != oldBranchHeadsSet.size())
+        {
+            Set<BranchHead> duplicates = findDuplicates(oldBranchHeads, oldBranchHeadsSet);
+
+            for (BranchHead branchHead : duplicates)
+            {
+                branchDao.removeBranchHead(repository.getId(), branchHead);
+            }
+            oldBranchHeads.removeAll(duplicates);
+        }
+    }
+
+    private <T> Set<T> findDuplicates(List<T> list, Set<T> set)
+    {
+        Set<T> duplicates = new HashSet<T>();
+
+        // removing duplicates
+        for (T element : list)
+        {
+            if (set.contains(element))
+            {
+                set.remove(element);
+            }
+            else
+            {
+                // we found duplicate
+                duplicates.add(element);
+            }
+        }
+
+        return duplicates;
     }
 
     @Override
@@ -78,6 +134,8 @@ public class BranchServiceImpl implements BranchService
     {
         if (newBranches != null)
         {
+            removeDuplicateBranchHeadIfNeeded(repository, oldBranchHeads);
+
             Set<BranchHead> headAlreadyThere = new HashSet<BranchHead>();
             for (Branch branch : new HashSet<Branch>(newBranches))
             {
