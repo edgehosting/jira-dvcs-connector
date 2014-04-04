@@ -36,6 +36,7 @@ public class BitbucketLoginPage implements Page
 
     public void doLogin(String username, String password)
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
 
         usernameOrEmailInput.clear().type(username);
@@ -45,6 +46,7 @@ public class BitbucketLoginPage implements Page
     
     public void doLogout()
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
 
         userDropdownTriggerLink.click();

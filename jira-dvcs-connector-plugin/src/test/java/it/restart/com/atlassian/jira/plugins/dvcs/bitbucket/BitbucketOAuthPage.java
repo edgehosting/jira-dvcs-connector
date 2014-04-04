@@ -49,6 +49,7 @@ public class BitbucketOAuthPage implements Page
 
     public OAuth addConsumer()
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(addConsumerButton);
 
         addConsumerButton.click();
@@ -76,7 +77,10 @@ public class BitbucketOAuthPage implements Page
     {
         PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
         PageElement deleteButton = oauthConsumer.find(By.linkText("Delete"));
+
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(deleteButton);
+
         deleteButton.click();
     }
 }

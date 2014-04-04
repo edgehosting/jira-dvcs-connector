@@ -22,6 +22,7 @@ public class BitbucketGrantAccessPage implements Page
     {
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
 
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(bodyElement);
 
         PageElement grantAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv, "button", "type", "submit");

@@ -55,7 +55,10 @@ public final class PageElementUtils
     }
 
     /**
-     * This is workaround for Permission denied to access property 'nr@context' issue
+     * This is workaround for Permission denied to access property 'nr@context' issue.
+     * Accessing page element e.g. reading it's tag name, before any action on the page.
+     *
+     * This must be removed after the issue is fixed in Selenium
      *
      * @param pageElement any page element to be used
      */
