@@ -43,7 +43,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;
-        this.transformer = new ChangesetTransformer(activeObjects);
+        this.transformer = new ChangesetTransformer(activeObjects, this);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -227,7 +227,9 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
         chm.setParentsData(parentsData);
 
-        chm.setFilesData(FileData.toJSON(changeset));
+        // cleaning up deprecated files data
+        chm.setFilesData(null);
+        chm.setFileCount(changeset.getAllFileCount());
         chm.setFileDetailsJson(ChangesetFileDetails.toJSON(changeset.getFileDetails()));
         chm.setVersion(ChangesetMapping.LATEST_VERSION);
         chm.save();

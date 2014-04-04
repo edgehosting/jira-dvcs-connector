@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -204,7 +205,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
      * {@inheritDoc}
      */
     @Override
-    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
+    public ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset)
     {
         try
         {
@@ -213,7 +214,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
             List<BitbucketChangesetWithDiffstat> changesetDiffStat = remoteClient.getChangesetsRest().getChangesetDiffStat(
                     repository.getOrgName(), repository.getSlug(), changeset.getNode(), Changeset.MAX_VISIBLE_FILES);
             // merge it all
-            return ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(changesetDiffStat);
+            List<ChangesetFileDetail> changesetFileDetails = ChangesetFileTransformer.fromBitbucketChangesetsWithDiffstat(changesetDiffStat);
+            int fileCount = getFileCount(repository, changeset, changesetFileDetails.size(), remoteClient);
+            return new ChangesetFileDetailsEnvelope(changesetFileDetails, fileCount);
         }
         catch (BitbucketRequestException e)
         {
@@ -226,6 +229,28 @@ public class BitbucketCommunicator implements DvcsCommunicator
             log.debug(e.getMessage(), e);
             throw new SourceControlException.InvalidResponseException("Could not get changeset [" + changeset.getNode() + "] from "
                     + repository.getRepositoryUrl(), e);
+        }
+    }
+
+    private int getFileCount(final Repository repository, final Changeset changeset, final int fileDetailsSize, final BitbucketRemoteClient remoteClient)
+    {
+        if (fileDetailsSize < Changeset.MAX_VISIBLE_FILES)
+        {
+            return fileDetailsSize;
+        }
+        else
+        {
+            // if files in statistics is greater than maximum visible files, we need to find out the number of files changed
+            BitbucketChangeset bitbucketChangeset = remoteClient.getChangesetsRest().getChangeset(repository.getOrgName(), repository.getSlug(), changeset.getNode());
+            if (bitbucketChangeset.getFiles() != null)
+            {
+                return Math.max(bitbucketChangeset.getFiles().size(), fileDetailsSize);
+            }
+            else
+            {
+                log.warn("Bitbucket returned changeset ({}) without any files information, could not find out the number of changes. Using file details size instead.", changeset.getNode());
+                return fileDetailsSize;
+            }
         }
     }
 

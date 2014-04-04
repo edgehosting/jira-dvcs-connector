@@ -30,6 +30,7 @@ public class FileData
      * @param changeset a Changeset
      * @return a JSON string containing the file data
      */
+    @Deprecated
     public static String toJSON(final Changeset changeset)
     {
         JSONObject filesDataJson = new JSONObject();
@@ -74,10 +75,12 @@ public class FileData
      * @param changesetMapping a ChangesetMapping
      * @return a FileData
      */
+    @Deprecated
     public static FileData from(final ChangesetMapping changesetMapping)
     {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
+        boolean hasFileDetails = true;
 
         String filesData = changesetMapping.getFilesData();
         if (StringUtils.isNotBlank(filesData))
@@ -97,13 +100,32 @@ public class FileData
                 else
                 {
                     JSONArray filesJson = filesDataJson.optJSONArray("files");
-                    for (int i = 0; i < filesJson.length(); i++)
+                    if (filesJson.length() == 0)
                     {
-                        JSONObject file = filesJson.getJSONObject(i);
-                        String filename = file.getString("filename");
-                        String status = file.getString("status");
+                        // empty files can indicate commit without changed files (create branch commit), but also unfilled data
+                        hasFileDetails = false;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < filesJson.length(); i++)
+                        {
+                            JSONObject file = filesJson.getJSONObject(i);
+                            String filename = file.getString("filename");
+                            String status = file.getString("status");
+                            if (file.isNull("additions") && file.isNull("deletions"))
+                            {
+                                files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
+                                hasFileDetails = false;
+                            }
+                            else
+                            {
+                                int additions = file.getInt("additions");
+                                int deletions = file.getInt("deletions");
 
-                        files.add(new ChangesetFile(CustomStringUtils.getChangesetFileAction(status), filename));
+                                files.add(new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(status),
+                                        filename, additions, deletions));
+                            }
+                        }
                     }
                 }
             }
@@ -113,16 +135,18 @@ public class FileData
             }
         }
 
-        return new FileData(files, fileCount);
+        return new FileData(files, fileCount, hasFileDetails);
     }
 
     private final List<ChangesetFile> files;
     private final int fileCount;
+    private final boolean hasDetails;
 
-    FileData(List<ChangesetFile> files, int fileCount)
+    FileData(List<ChangesetFile> files, int fileCount, boolean hasDetails)
     {
         this.files = files;
         this.fileCount = fileCount;
+        this.hasDetails = hasDetails;
     }
 
     public List<ChangesetFile> getFiles()
@@ -133,6 +157,11 @@ public class FileData
     public int getFileCount()
     {
         return fileCount;
+    }
+
+    public boolean hasDetails()
+    {
+        return hasDetails;
     }
 
     @Override

@@ -4,10 +4,9 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryDomainMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
@@ -23,7 +22,6 @@ import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -134,55 +132,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
      * {@inheritDoc}
      */
     @Override
-    public void updateCommitIssueKeys(Repository domain)
-    {
-        // finds currently presented issue keys
-        Set<String> currentIssueKeys = new HashSet<String>();
-        Set<String> existingIssueKeys = new HashSet<String>();
-
-        for (RepositoryCommitMapping commit : activeObjects.find(RepositoryCommitMapping.class,
-                Query.select().where(RepositoryCommitMapping.DOMAIN + " = ? ", domain.getId())))
-        {
-            existingIssueKeys.addAll(getExistingIssueKeysMapping(domain, commit));
-            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
-
-            Set<String> addedIssueKeys = new HashSet<String>();
-            addedIssueKeys.addAll(currentIssueKeys);
-            addedIssueKeys.removeAll(existingIssueKeys);
-
-            Set<String> removedIssueKeys = new HashSet<String>();
-            removedIssueKeys.addAll(existingIssueKeys);
-            removedIssueKeys.removeAll(currentIssueKeys);
-
-            for (String issueKey : removedIssueKeys)
-            {
-                activeObjects.delete(activeObjects.find(
-                        RepositoryCommitIssueKeyMapping.class,
-                        Query.select().where(
-                                RepositoryCommitIssueKeyMapping.DOMAIN + " = ? AND " + RepositoryCommitIssueKeyMapping.COMMIT + " = ? AND "
-                                        + RepositoryCommitIssueKeyMapping.ISSUE_KEY + " = ? ", domain.getId(), commit.getID(), issueKey)));
-            }
-
-            // adds remaining - newly presented issue keys
-            Map<String, Object> params = new HashMap<String, Object>();
-            for (String issueKey : addedIssueKeys)
-            {
-                params.put(RepositoryCommitIssueKeyMapping.DOMAIN, domain.getId());
-                params.put(RepositoryCommitIssueKeyMapping.COMMIT, commit.getID());
-                params.put(RepositoryCommitIssueKeyMapping.ISSUE_KEY, issueKey);
-                activeObjects.create(RepositoryCommitIssueKeyMapping.class, params);
-                params.clear();
-            }
-
-            currentIssueKeys.clear();
-            existingIssueKeys.clear();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public int updatePullRequestIssueKeys(Repository domain, int pullRequestId)
     {
         RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
@@ -226,22 +175,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         }
 
         return currentIssueKeys.size();
-    }
-
-    private Set<String> getExistingIssueKeysMapping(Repository domain, RepositoryCommitMapping commitMapping)
-    {
-        Query query = Query
-                .select()
-                .from(RepositoryCommitIssueKeyMapping.class)
-                .where(RepositoryDomainMapping.DOMAIN + " = ? AND " + RepositoryCommitIssueKeyMapping.COMMIT + " = ? ", domain.getId(),
-                        commitMapping);
-        RepositoryCommitIssueKeyMapping[] mappings = activeObjects.find(RepositoryCommitIssueKeyMapping.class, query);
-        Set<String> issueKeys = new java.util.HashSet<String>();
-        for (RepositoryCommitIssueKeyMapping repositoryCommitIssueKeyMapping : mappings)
-        {
-            issueKeys.add(repositoryCommitIssueKeyMapping.getIssueKey());
-        }
-        return issueKeys;
     }
 
     @Override
@@ -324,21 +257,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
-    @SuppressWarnings("unused")
-    private List<Integer> findRelatedCommits(String issueKey)
-    {
-        List<Integer> prIds = new ArrayList<Integer>();
-        final Query query = Query.select().from(RepositoryCommitIssueKeyMapping.class)
-                .where(RepositoryCommitIssueKeyMapping.ISSUE_KEY + " = ?", issueKey.toUpperCase());
-
-        RepositoryCommitIssueKeyMapping[] mappings = activeObjects.find(RepositoryCommitIssueKeyMapping.class, query);
-        for (RepositoryCommitIssueKeyMapping issueKeyMapping : mappings)
-        {
-            prIds.add(issueKeyMapping.getCommit().getID());
-        }
-        return prIds;
-    }
-
     private Collection<Integer> findRelatedPullRequests(final Iterable<String> issueKeys)
     {
         return Collections2.transform(findRelatedPullRequestsObjects(issueKeys), new Function<RepositoryPullRequestIssueKeyMapping, Integer>()
@@ -370,7 +288,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class, RepositoryCommitIssueKeyMapping.class,
+        { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class,
                 RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,

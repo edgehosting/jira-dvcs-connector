@@ -17,13 +17,6 @@ public interface RepositoryPullRequestDao
             Date updatedOn, String sourceRepo, final int commentCount);
 
     /**
-     * Updates issue keys related to commits of provided repository.
-     *
-     * @param domain
-     */
-    void updateCommitIssueKeys(Repository domain);
-
-    /**
      * Updates issue keys related to the provided pull request to reflect current state.
      *
      * @param pullRequestId
