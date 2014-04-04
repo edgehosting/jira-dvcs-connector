@@ -111,13 +111,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
 
     public CachingCommunicator(final CacheManager cacheManager)
     {
+        // self-loading caches returned from getCache are always clean/empty
         usersCache = cacheManager.getCache(getClass().getName() + ".usersCache", new UserLoader(), CACHE_SETTINGS);
-        // temporary fix for BBC-747 to clear all caches to avoid potential CCE
-        //  this will clear the cache three times as the same cache is shared by BB/GH/GHE
-        usersCache.removeAll();
         groupsCache = cacheManager.getCache(getClass().getName() + ".groupsCache", new GroupLoader(), CACHE_SETTINGS);
-        // temporary fix for BBC-747 to clear all caches to avoid potential CCE
-        groupsCache.removeAll();
     }
     
     public void setDelegate(DvcsCommunicator delegate)
