@@ -864,6 +864,20 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             this.id = id;
             this.payloadType = payloadType;
         }
+
+        @Override
+        public int hashCode()
+        {
+            return id.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj)
+        {
+            //noinspection unchecked
+            return (this == obj) ||
+                    (obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>)obj).id));
+        }
     }
 
     /**
@@ -876,6 +890,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         @Override
         public MessageAddress<P> load(@NotNull final IdKey<P> key)
         {
+            log.debug("idToMessageAddress loading new item for key id: {} payloadType: {} ", key.id, key.payloadType);
             return new MessageAddress<P>()
             {
                 @Override
