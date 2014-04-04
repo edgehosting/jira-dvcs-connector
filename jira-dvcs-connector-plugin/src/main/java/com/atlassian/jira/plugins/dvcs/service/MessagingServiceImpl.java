@@ -875,7 +875,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         public boolean equals(final Object obj)
         {
             //noinspection unchecked
-            return obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>)obj).id);
+            return (this == obj) ||
+                    (obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>)obj).id));
         }
     }
 
