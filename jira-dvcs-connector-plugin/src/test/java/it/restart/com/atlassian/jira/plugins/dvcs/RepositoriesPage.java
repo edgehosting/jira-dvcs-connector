@@ -194,6 +194,9 @@ public class RepositoriesPage implements Page
 
     public String getErrorStatusMessage()
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(messageBarDiv);
+
         return messageBarDiv.find(By.className("error")).timed().getText().by(1000l);
     }
 

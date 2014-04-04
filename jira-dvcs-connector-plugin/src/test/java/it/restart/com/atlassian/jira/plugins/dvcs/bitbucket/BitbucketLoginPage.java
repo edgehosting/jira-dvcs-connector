@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -35,6 +36,9 @@ public class BitbucketLoginPage implements Page
 
     public void doLogin(String username, String password)
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
+
         usernameOrEmailInput.clear().type(username);
         passwordInput.clear().type(password);
         loginButton.click();
@@ -42,6 +46,9 @@ public class BitbucketLoginPage implements Page
     
     public void doLogout()
     {
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
+
         userDropdownTriggerLink.click();
         logoutLink.click();
     }
