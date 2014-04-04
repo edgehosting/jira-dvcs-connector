@@ -86,7 +86,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(5);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
         
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(5);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
 
         assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3",1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -132,7 +132,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials("xxx", "yyy"), true);
         
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(4);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test

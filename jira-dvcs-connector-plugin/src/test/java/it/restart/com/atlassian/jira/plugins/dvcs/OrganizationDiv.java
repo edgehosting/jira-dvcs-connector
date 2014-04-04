@@ -14,6 +14,8 @@ import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 
 public class OrganizationDiv
 {
+    private static final String DYNAMIC_REPOSITORIES_PREFIX = "it.restart";
+
     @Inject
     private PageBinder pageBinder;
 
@@ -52,11 +54,21 @@ public class OrganizationDiv
 
     public List<RepositoryDiv> getRepositories()
     {
+        return getRepositories(false);
+    }
+
+    public List<RepositoryDiv> getRepositories(boolean filterDynamicRepositories)
+    {
         List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
         List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
         for (PageElement tr : trs)
         {
-            list.add(pageBinder.bind(RepositoryDiv.class, tr));
+
+            RepositoryDiv repositoryDiv = pageBinder.bind(RepositoryDiv.class, tr);
+            if (!filterDynamicRepositories || !repositoryDiv.getRepositoryName().startsWith(DYNAMIC_REPOSITORIES_PREFIX))
+            {
+                list.add(pageBinder.bind(RepositoryDiv.class, tr));
+            }
         }
         return list;
     }
