@@ -21,6 +21,9 @@ public class BitbucketGrantAccessPage implements Page
     public void grantAccess()
     {
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
+
+        PageElementUtils.permissionDeniedWorkAround(bodyElement);
+
         PageElement grantAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv, "button", "type", "submit");
         grantAccessButton.click();
     }

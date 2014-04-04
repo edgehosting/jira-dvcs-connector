@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import org.openqa.selenium.WebDriverException;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -33,14 +32,7 @@ public class BitbucketGrandOAuthAccessPage implements Page
         
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
 
-        try
-        {
-            bodyElement.getText();
-        }
-        catch (WebDriverException e)
-        {
-            // workaround for Permission denied to access property 'nr@context' issue
-        }
+        PageElementUtils.permissionDeniedWorkAround(buttonsDiv);
 
         PageElement grandAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv,
                                                                                    "button",

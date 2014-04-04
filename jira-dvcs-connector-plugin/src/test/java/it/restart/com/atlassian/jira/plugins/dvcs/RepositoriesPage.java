@@ -194,6 +194,8 @@ public class RepositoriesPage implements Page
 
     public String getErrorStatusMessage()
     {
+        PageElementUtils.permissionDeniedWorkAround(messageBarDiv);
+
         return messageBarDiv.find(By.className("error")).timed().getText().by(1000l);
     }
 

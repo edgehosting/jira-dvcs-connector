@@ -1,10 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import org.openqa.selenium.WebDriverException;
 
 public class BitbucketLoginPage implements Page
 {
@@ -36,31 +36,18 @@ public class BitbucketLoginPage implements Page
 
     public void doLogin(String username, String password)
     {
-        try
-        {
-            usernameOrEmailInput.clear().type(username);
-        }
-        catch(WebDriverException e)
-        {
-            // workaround for Permission denied to access property 'nr@context' issue
-            usernameOrEmailInput.clear().type(username);
-        }
+        PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
+
+        usernameOrEmailInput.clear().type(username);
         passwordInput.clear().type(password);
         loginButton.click();
     }
     
     public void doLogout()
     {
-        try
-        {
-            userDropdownTriggerLink.click();
-        }
-        catch(WebDriverException e)
-        {
-            // workaround for Permission denied to access property 'nr@context' issue
-            userDropdownTriggerLink.click();
-        }
+        PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
 
+        userDropdownTriggerLink.click();
         logoutLink.click();
     }
     

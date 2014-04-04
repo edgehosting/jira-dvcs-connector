@@ -53,4 +53,21 @@ public final class PageElementUtils
 
         return null;
     }
+
+    /**
+     * This is workaround for Permission denied to access property 'nr@context' issue
+     *
+     * @param pageElement any page element to be used
+     */
+    public static void permissionDeniedWorkAround(PageElement pageElement)
+    {
+        try
+        {
+            pageElement.getTagName();
+        }
+        catch (Throwable t)
+        {
+            // ignoring any errors
+        }
+    }
 }
