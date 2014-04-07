@@ -6,6 +6,8 @@ import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Lists;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -19,6 +21,7 @@ import java.util.List;
 
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -96,6 +99,53 @@ public class BranchServiceImplTest
     }
 
     @Test
+    public void testRemovingOldBranches()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                new Branch(0, "branch3", repository.getId())
+        );
+
+        List<Branch> oldBranches = Lists.newArrayList(
+                new Branch(1, "branch1", repository.getId()),
+                new Branch(2, "branch2", repository.getId())
+        );
+
+        when(branchDao.getBranches(repository.getId())).thenReturn(oldBranches);
+
+        branchService.updateBranches(repository, newBranches);
+
+        verify(branchDao, times(2)).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
+        verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
+
+        Assert.assertThat(removeBranchArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranches.toArray(new Branch[] { })));
+        assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
+    }
+
+    @Test
+    public void testUpdateBranches()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                new Branch(0, "branch1", repository.getId()),
+                new Branch(0, "branch3", repository.getId())
+        );
+
+        List<Branch> oldBranches = Lists.newArrayList(
+                new Branch(1, "branch1", repository.getId()),
+                new Branch(2, "branch2", repository.getId())
+        );
+
+        when(branchDao.getBranches(repository.getId())).thenReturn(oldBranches);
+
+        branchService.updateBranches(repository, newBranches);
+
+        verify(branchDao).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
+        verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
+
+        assertEquals(removeBranchArgumentCaptor.getValue().getName(), "branch2");
+        assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
+    }
+
+    @Test
     public void testDuplicateNewBranchHeads()
     {
         List<Branch> newBranches = Lists.newArrayList(
@@ -134,10 +184,61 @@ public class BranchServiceImplTest
         assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node");
     }
 
-    private Branch createBranchWithHead(String name, String node)
+    @Test
+    public void testRemovingOldBranchHeads()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                createBranchWithHead("branch", "node3")
+        );
+
+        List<BranchHead> oldBranchHeads = Lists.newArrayList(
+                new BranchHead("branch", "node1"),
+                new BranchHead("branch", "node2")
+        );
+
+        branchService.updateBranchHeads(repository, newBranches, oldBranchHeads);
+
+        verify(branchDao, times(2)).removeBranchHead(eq(repository.getId()), removeBranchHeadArgumentCaptor.capture());
+        verify(branchDao).createBranchHead(eq(repository.getId()), branchHeadArgumentCaptor.capture());
+
+        Assert.assertThat(removeBranchHeadArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranchHeads.toArray(new BranchHead[] { })));
+        assertEquals(branchHeadArgumentCaptor.getValue().getName(), "branch");
+        assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node3");
+    }
+
+    @Test
+    public void testUpdateBranchHeads()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                createBranchWithHead("branch", "node1", "node3")
+        );
+
+        List<BranchHead> oldBranchHeads = Lists.newArrayList(
+                new BranchHead("branch", "node1"),
+                new BranchHead("branch", "node2")
+        );
+
+        branchService.updateBranchHeads(repository, newBranches, oldBranchHeads);
+
+        verify(branchDao).removeBranchHead(eq(repository.getId()), removeBranchHeadArgumentCaptor.capture());
+        verify(branchDao).createBranchHead(eq(repository.getId()), branchHeadArgumentCaptor.capture());
+
+        assertEquals(removeBranchHeadArgumentCaptor.getValue().getName(), "branch");
+        assertEquals(removeBranchHeadArgumentCaptor.getValue().getHead(), "node2");
+        assertEquals(branchHeadArgumentCaptor.getValue().getName(), "branch");
+        assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node3");
+    }
+
+
+    private Branch createBranchWithHead(String name, String... nodes)
     {
         Branch branch = new Branch(0, "branch", repository.getId());
-        branch.setHeads(Lists.newArrayList(new BranchHead(name, node)));
+        List<BranchHead> branchHeads = new ArrayList<BranchHead>();
+        for (String node : nodes)
+        {
+            branchHeads.add(new BranchHead(name, node));
+        }
+        branch.setHeads(branchHeads);
         return branch;
     }
 }
