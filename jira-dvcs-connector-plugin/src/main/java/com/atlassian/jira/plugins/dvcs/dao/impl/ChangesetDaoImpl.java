@@ -17,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
-import com.atlassian.jira.plugins.dvcs.model.FileData;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -43,7 +42,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;
-        this.transformer = new ChangesetTransformer(activeObjects);
+        this.transformer = new ChangesetTransformer(activeObjects, this);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -227,7 +226,9 @@ public class ChangesetDaoImpl implements ChangesetDao
         }
         chm.setParentsData(parentsData);
 
-        chm.setFilesData(FileData.toJSON(changeset));
+        // cleaning up deprecated files data
+        chm.setFilesData(null);
+        chm.setFileCount(changeset.getAllFileCount());
         chm.setFileDetailsJson(ChangesetFileDetails.toJSON(changeset.getFileDetails()));
         chm.setVersion(ChangesetMapping.LATEST_VERSION);
         chm.save();

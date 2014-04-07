@@ -8,7 +8,7 @@ import java.util.Set;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -37,10 +37,10 @@ public interface DvcsCommunicator
      *
      * @param repository the Repository
      * @param changeset the Changeset
-     * @return a list of ChangesetFileDetail
+     * @return ChangesetFileDetailsEnvelope
      * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
      */
-    List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
+    ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset);
 
 	void ensureHookPresent(Repository repository, String postCommitUrl);
 

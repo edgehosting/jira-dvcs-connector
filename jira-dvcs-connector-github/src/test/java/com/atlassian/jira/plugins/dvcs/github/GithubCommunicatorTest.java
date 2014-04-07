@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
@@ -293,10 +294,13 @@ public class GithubCommunicatorTest
 
         when(commitServiceMock.getCommit(repositoryId, cs.getNode())).thenReturn(ghCommit);
 
-        List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repositoryMock, cs);
+        ChangesetFileDetailsEnvelope changesetFileDetailsEnvelope = communicator.getFileDetails(repositoryMock, cs);
+
+        List<ChangesetFileDetail> fileDetails = changesetFileDetailsEnvelope.getFileDetails();
         assertEquals(fileDetails, ImmutableList.of(
                 new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(file.getStatus()), file.getFilename(), file.getAdditions(), file.getDeletions())
         ));
+        assertEquals(changesetFileDetailsEnvelope.getCount(), 1);
     }
 }
 

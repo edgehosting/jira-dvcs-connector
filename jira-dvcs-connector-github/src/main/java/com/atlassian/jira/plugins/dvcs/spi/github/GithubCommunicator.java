@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -286,7 +286,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
     
     @Override
-    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
+    public ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset)
     {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
@@ -297,7 +297,7 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
 
-            return GithubChangesetFactory.transformToFileDetails(commit.getFiles());
+            return new ChangesetFileDetailsEnvelope(GithubChangesetFactory.transformToFileDetails(commit.getFiles()), commit.getFiles().size());
         }
         catch (IOException e)
         {
