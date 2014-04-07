@@ -7,10 +7,13 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.google.common.base.Function;
+import com.google.common.collect.Multimaps;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 public class BranchServiceImpl implements BranchService
@@ -42,9 +45,12 @@ public class BranchServiceImpl implements BranchService
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
         removeDuplicatesIfNeeded(repository, oldBranches);
 
+        // creating set to optimize contains method
+        Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
+
         for (Branch branch : newBranchSet)
         {
-            if (oldBranches == null || !oldBranches.contains(branch))
+            if (!oldBranchesSet.contains(branch))
             {
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
@@ -52,19 +58,11 @@ public class BranchServiceImpl implements BranchService
         }
 
         // Removing closed branches
-        if (oldBranches != null)
+        for (Branch oldBranch : oldBranches)
         {
-            for (Branch oldBranch : oldBranches)
+            if (!newBranchSet.contains(oldBranch))
             {
-                if (!newBranchSet.contains(oldBranch))
-                {
-                    branchDao.removeBranch(repository.getId(), oldBranch);
-                }
-                else
-                {
-                    // removing existing branch to remove all subsequent duplicate branches
-                    newBranchSet.remove(oldBranch);
-                }
+                branchDao.removeBranch(repository.getId(), oldBranch);
             }
         }
     }
@@ -74,6 +72,7 @@ public class BranchServiceImpl implements BranchService
         Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
         if (oldBranches.size() != oldBranchesSet.size())
         {
+            // findDuplicates will remove all elements from oldBranchesSet
             Set<Branch> duplicates = findDuplicates(oldBranches, oldBranchesSet);
 
             for (Branch branch : duplicates)
@@ -90,6 +89,7 @@ public class BranchServiceImpl implements BranchService
         Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
         if (oldBranchHeads.size() != oldBranchHeadsSet.size())
         {
+            // findDuplicates will remove all elements from oldBranchHeadsSet
             Set<BranchHead> duplicates = findDuplicates(oldBranchHeads, oldBranchHeadsSet);
 
             for (BranchHead branchHead : duplicates)
@@ -102,6 +102,9 @@ public class BranchServiceImpl implements BranchService
 
     private <T> Set<T> findDuplicates(List<T> list, Set<T> set)
     {
+        // the set in arguments is created from the list in arguments,
+        // the algorithm will remove the elements from the set when proceeding and
+        // any next element will be marked as duplicate
         Set<T> duplicates = new HashSet<T>();
 
         // removing duplicates
@@ -136,12 +139,15 @@ public class BranchServiceImpl implements BranchService
         {
             removeDuplicateBranchHeadIfNeeded(repository, oldBranchHeads);
 
+            // creating set to optimize contains method
+            Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
+
             Set<BranchHead> headAlreadyThere = new HashSet<BranchHead>();
             for (Branch branch : new HashSet<Branch>(newBranches))
             {
                 for (BranchHead branchHead : branch.getHeads())
                 {
-                    if (oldBranchHeads == null || !oldBranchHeads.contains(branchHead))
+                    if (oldBranchHeads == null || !oldBranchHeadsSet.contains(branchHead))
                     {
                         branchDao.createBranchHead(repository.getId(), branchHead);
                     } else
@@ -153,7 +159,7 @@ public class BranchServiceImpl implements BranchService
             // Removing old branch heads
             if (oldBranchHeads != null)
             {
-                for (BranchHead oldBranchHead : oldBranchHeads)
+                for (BranchHead oldBranchHead : oldBranchHeadsSet)
                 {
                     if (!headAlreadyThere.contains(oldBranchHead))
                     {
