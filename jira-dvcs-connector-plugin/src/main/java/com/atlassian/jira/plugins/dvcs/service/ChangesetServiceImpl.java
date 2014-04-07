@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.Changesets;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -102,17 +103,18 @@ public class ChangesetServiceImpl implements ChangesetService
             final Repository repository = repositoryDao.get(repoChangesets.getKey());
             final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            for (Changeset changeset : changesets)
+            for (Changeset changeset : repoChangesets.getValue())
             {
                 if (changeset.getFileDetails() == null)
                 {
                     try
                     {
-                        List<ChangesetFileDetail> fileDetails = communicator.getFileDetails(repository, changeset);
+                        ChangesetFileDetailsEnvelope changesetFileDetailsEnvelope = communicator.getFileDetails(repository, changeset);
+                        List<ChangesetFileDetail> fileDetails = changesetFileDetailsEnvelope.getFileDetails();
                         logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
 
-                        // update the changeset count and file details with the first few file details
-                        changeset.setAllFileCount(Math.max(changeset.getAllFileCount(), fileDetails.size()));
+                        changeset.setAllFileCount(changesetFileDetailsEnvelope.getCount());
+
                         fileDetails = fileDetails.subList(0, Math.min(fileDetails.size(), Changeset.MAX_VISIBLE_FILES));
 
                         // keep these two in sync
@@ -158,16 +160,18 @@ public class ChangesetServiceImpl implements ChangesetService
     public Map<ChangesetFile, String> getFileCommitUrls(Repository repository, Changeset changeset)
     {
         HashMap<ChangesetFile, String> fileCommitUrls = new HashMap<ChangesetFile, String>();
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
-
-        for (int i = 0;  i < changeset.getFiles().size(); i++)
+        if (changeset.getFiles() != null)
         {
-            ChangesetFile changesetFile = changeset.getFiles().get(i);
-            String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+            DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            fileCommitUrls.put(changesetFile, fileCommitUrl);
+            for (int i = 0;  i < changeset.getFiles().size(); i++)
+            {
+                ChangesetFile changesetFile = changeset.getFiles().get(i);
+                String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
+
+                fileCommitUrls.put(changesetFile, fileCommitUrl);
+            }
         }
-
         return fileCommitUrls;
     }
 
