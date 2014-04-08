@@ -7,13 +7,11 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
-import com.google.common.base.Function;
-import com.google.common.collect.Multimaps;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 public class BranchServiceImpl implements BranchService
@@ -43,10 +41,7 @@ public class BranchServiceImpl implements BranchService
         Set<Branch> newBranchSet = new HashSet<Branch>(newBranches);
 
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
-        removeDuplicatesIfNeeded(repository, oldBranches);
-
-        // creating set to optimize contains method
-        Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
+        Set<Branch> oldBranchesSet = removeDuplicatesIfNeeded(repository, oldBranches);
 
         for (Branch branch : newBranchSet)
         {
@@ -58,7 +53,7 @@ public class BranchServiceImpl implements BranchService
         }
 
         // Removing closed branches
-        for (Branch oldBranch : oldBranches)
+        for (Branch oldBranch : oldBranchesSet)
         {
             if (!newBranchSet.contains(oldBranch))
             {
@@ -67,45 +62,45 @@ public class BranchServiceImpl implements BranchService
         }
     }
 
-    private void removeDuplicatesIfNeeded(final Repository repository, final List<Branch> oldBranches)
+    private Set<Branch> removeDuplicatesIfNeeded(final Repository repository, final List<Branch> oldBranches)
     {
         Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
+
         if (oldBranches.size() != oldBranchesSet.size())
         {
-            // findDuplicates will remove all elements from oldBranchesSet
-            Set<Branch> duplicates = findDuplicates(oldBranches, oldBranchesSet);
+            Set<Branch> duplicates = findDuplicates(oldBranches);
 
             for (Branch branch : duplicates)
             {
                 branchDao.removeBranch(repository.getId(), branch);
             }
-            oldBranches.removeAll(duplicates);
+            oldBranchesSet.removeAll(duplicates);
         }
 
+        return oldBranchesSet;
     }
 
-    private void removeDuplicateBranchHeadIfNeeded(final Repository repository, final List<BranchHead> oldBranchHeads)
+    private Set<BranchHead> removeDuplicateBranchHeadIfNeeded(final Repository repository, final List<BranchHead> oldBranchHeads)
     {
         Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
         if (oldBranchHeads.size() != oldBranchHeadsSet.size())
         {
-            // findDuplicates will remove all elements from oldBranchHeadsSet
-            Set<BranchHead> duplicates = findDuplicates(oldBranchHeads, oldBranchHeadsSet);
+            Set<BranchHead> duplicates = findDuplicates(oldBranchHeads);
 
             for (BranchHead branchHead : duplicates)
             {
                 branchDao.removeBranchHead(repository.getId(), branchHead);
             }
-            oldBranchHeads.removeAll(duplicates);
+            oldBranchHeadsSet.removeAll(duplicates);
         }
+
+        return oldBranchHeadsSet;
     }
 
-    private <T> Set<T> findDuplicates(List<T> list, Set<T> set)
+    private <T> Set<T> findDuplicates(List<T> list)
     {
-        // the set in arguments is created from the list in arguments,
-        // the algorithm will remove the elements from the set when proceeding and
-        // any next element will be marked as duplicate
         Set<T> duplicates = new HashSet<T>();
+        Set<T> set = new HashSet<T>(list);
 
         // removing duplicates
         for (T element : list)
@@ -137,10 +132,7 @@ public class BranchServiceImpl implements BranchService
     {
         if (newBranches != null)
         {
-            removeDuplicateBranchHeadIfNeeded(repository, oldBranchHeads);
-
-            // creating set to optimize contains method
-            Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
+            Set<BranchHead> oldBranchHeadsSet = removeDuplicateBranchHeadIfNeeded(repository, oldBranchHeads);
 
             Set<BranchHead> headAlreadyThere = new HashSet<BranchHead>();
             for (Branch branch : new HashSet<Branch>(newBranches))

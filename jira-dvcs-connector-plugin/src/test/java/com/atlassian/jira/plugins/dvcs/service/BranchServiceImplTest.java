@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 public class BranchServiceImplTest
 {
@@ -146,6 +147,28 @@ public class BranchServiceImplTest
     }
 
     @Test
+    public void testUpdateBranchesWithNullName()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                new Branch(0, "branch1", repository.getId())
+        );
+
+        List<Branch> oldBranches = Lists.newArrayList(
+                new Branch(1, null, repository.getId())
+        );
+
+        when(branchDao.getBranches(repository.getId())).thenReturn(oldBranches);
+
+        branchService.updateBranches(repository, newBranches);
+
+        verify(branchDao).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
+        verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
+
+        assertNull(removeBranchArgumentCaptor.getValue().getName());
+        assertEquals(branchArgumentCaptor.getValue().getName(), "branch1");
+    }
+
+    @Test
     public void testDuplicateNewBranchHeads()
     {
         List<Branch> newBranches = Lists.newArrayList(
@@ -229,6 +252,27 @@ public class BranchServiceImplTest
         assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node3");
     }
 
+    @Test
+    public void testUpdateBranchHeadWithNullHead()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                createBranchWithHead("branch", "node1")
+        );
+
+        List<BranchHead> oldBranchHeads = Lists.newArrayList(
+                new BranchHead("branch", null)
+        );
+
+        branchService.updateBranchHeads(repository, newBranches, oldBranchHeads);
+
+        verify(branchDao).removeBranchHead(eq(repository.getId()), removeBranchHeadArgumentCaptor.capture());
+        verify(branchDao).createBranchHead(eq(repository.getId()), branchHeadArgumentCaptor.capture());
+
+        assertEquals(removeBranchHeadArgumentCaptor.getValue().getName(), "branch");
+        assertNull(removeBranchHeadArgumentCaptor.getValue().getHead());
+        assertEquals(branchHeadArgumentCaptor.getValue().getName(), "branch");
+        assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node1");
+    }
 
     private Branch createBranchWithHead(String name, String... nodes)
     {
