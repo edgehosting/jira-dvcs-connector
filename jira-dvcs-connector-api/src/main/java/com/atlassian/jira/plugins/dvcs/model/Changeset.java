@@ -12,7 +12,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-    
+
     private int id;
     
     private Date synchronizedAt;

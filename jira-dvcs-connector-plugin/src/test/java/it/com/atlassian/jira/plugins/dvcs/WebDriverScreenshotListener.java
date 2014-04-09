@@ -65,12 +65,20 @@ public class WebDriverScreenshotListener extends TestListenerAdapter
     {
         super.onTestFailure(tr);
 
-        // create the dir if not exists
-        File dir = getTargetDir(tr);
-        if (!dir.exists())
-        {
-            checkState(dir.mkdirs(), "Unable to create screenshot output directory " + dir.getAbsolutePath());
-        }
+        captureScreenshotAndSource(tr);
+    }
+
+    @Override
+    public void onConfigurationFailure(final ITestResult tr)
+    {
+        super.onConfigurationFailure(tr);
+
+        captureScreenshotAndSource(tr);
+    }
+
+    private void captureScreenshotAndSource(final ITestResult tr)
+    {
+        createTargetDirIfNotExists(tr);
 
         // capture screenshot and html source
         final AtlassianWebDriver driver = webDriverSupport.getDriver();
@@ -82,6 +90,16 @@ public class WebDriverScreenshotListener extends TestListenerAdapter
                 screenShotFile.getAbsolutePath());
         driver.dumpSourceTo(dumpFile);
         driver.takeScreenshotTo(screenShotFile);
+    }
+
+    private void createTargetDirIfNotExists(final ITestResult tr)
+    {
+        // create the dir if not exists
+        File dir = getTargetDir(tr);
+        if (!dir.exists())
+        {
+            checkState(dir.mkdirs(), "Unable to create screenshot output directory " + dir.getAbsolutePath());
+        }
     }
 
     private File getTargetDir(ITestResult tr)
