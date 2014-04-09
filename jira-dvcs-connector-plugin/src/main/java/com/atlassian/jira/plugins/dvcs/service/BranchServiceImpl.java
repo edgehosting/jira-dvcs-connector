@@ -7,11 +7,15 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 public class BranchServiceImpl implements BranchService
@@ -99,24 +103,15 @@ public class BranchServiceImpl implements BranchService
 
     private <T> Set<T> findDuplicates(List<T> list)
     {
-        Set<T> duplicates = new HashSet<T>();
-        Set<T> set = new HashSet<T>(list);
-
-        // removing duplicates
-        for (T element : list)
+        final Multiset<T> ms = HashMultiset.create(list);
+        return Sets.filter(ms.elementSet(), new Predicate<T>()
         {
-            if (set.contains(element))
+            @Override
+            public boolean apply(@Nullable final T input)
             {
-                set.remove(element);
+                return ms.count(input) > 1;
             }
-            else
-            {
-                // we found duplicate
-                duplicates.add(element);
-            }
-        }
-
-        return duplicates;
+        });
     }
 
     @Override
