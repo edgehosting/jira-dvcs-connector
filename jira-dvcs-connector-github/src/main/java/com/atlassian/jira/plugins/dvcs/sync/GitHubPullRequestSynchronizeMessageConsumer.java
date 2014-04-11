@@ -305,12 +305,21 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
 
-        target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
+        if (source.getUser() != null)
+        {
+            target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
+        }
         target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
         target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
+        if (source.getHead() != null)
+        {
+            target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
+            target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
+        }
+        if (source.getBase() != null)
+        {
+            target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
+        }
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
         target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
