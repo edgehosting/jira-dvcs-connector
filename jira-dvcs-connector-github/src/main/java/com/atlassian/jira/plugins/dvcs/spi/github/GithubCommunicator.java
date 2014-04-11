@@ -357,13 +357,13 @@ public class GithubCommunicator implements DvcsCommunicator
             String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
             boolean isPullRequestHook = isPullRequestHook(hook);
 
-            if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
+            if (!foundChangesetHook && hookUrl.equals(url) && !isPullRequestHook)
             {
                 foundChangesetHook = true;
                 continue;
             }
 
-            if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
+            if (!foundPullRequesttHook && hookUrl.equals(url) && isPullRequestHook(hook))
             {
                 foundPullRequesttHook = true;
                 continue;
@@ -374,7 +374,7 @@ public class GithubCommunicator implements DvcsCommunicator
             if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
             {
                 String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                if (postCommitHookUrl.startsWith(thisHostAndRest))
+                if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest))
                 {
                     gitHubRESTClient.deleteHook(repository, hook);
                 }
