@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import com.sun.jersey.api.client.UniformInterfaceException;
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -140,12 +141,20 @@ public class AbstractGitHubRESTClientImpl
         do
         {
             ClientResponse clientResponse = cursor.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-            result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
 
-            LinkHeaders linkHeaders = getLinks(clientResponse);
-            LinkHeader nextLink = linkHeaders.getLink("next");
-            URI nextPage = nextLink != null ? nextLink.getUri() : null;
-            cursor = nextPage != null ? client.resource(nextPage) : null;
+            if (clientResponse.getStatus() < 300)
+            {
+                result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
+
+                LinkHeaders linkHeaders = getLinks(clientResponse);
+                LinkHeader nextLink = linkHeaders.getLink("next");
+                URI nextPage = nextLink != null ? nextLink.getUri() : null;
+                cursor = nextPage != null ? client.resource(nextPage) : null;
+            }
+            else
+            {
+                throw new UniformInterfaceException(clientResponse);
+            }
         } while (cursor != null);
         return result;
     }

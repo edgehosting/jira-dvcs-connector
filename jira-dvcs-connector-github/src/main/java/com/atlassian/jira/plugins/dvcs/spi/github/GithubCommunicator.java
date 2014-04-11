@@ -18,6 +18,8 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
+import com.sun.jersey.api.client.UniformInterfaceException;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -347,50 +349,64 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void ensureHookPresent(Repository repository, String hookUrl)
     {
-        List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
+        try
+        {
+            List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
 
-	    //Cleanup orphan this instance related hooks.
-        boolean foundChangesetHook = false;
-        boolean foundPullRequesttHook = false;
-        for (GitHubRepositoryHook hook : hooks)
-	    {
-            String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-            boolean isPullRequestHook = isPullRequestHook(hook);
-
-            if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
+            //Cleanup orphan this instance related hooks.
+            boolean foundChangesetHook = false;
+            boolean foundPullRequesttHook = false;
+            for (GitHubRepositoryHook hook : hooks)
             {
-                foundChangesetHook = true;
-                continue;
-            }
+                String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+                boolean isPullRequestHook = isPullRequestHook(hook);
 
-            if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
-            {
-                foundPullRequesttHook = true;
-                continue;
-            }
-
-            String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
-
-            if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
-            {
-                String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                if (postCommitHookUrl.startsWith(thisHostAndRest))
+                if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
                 {
-                    gitHubRESTClient.deleteHook(repository, hook);
+                    foundChangesetHook = true;
+                    continue;
+                }
+
+                if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
+                {
+                    foundPullRequesttHook = true;
+                    continue;
+                }
+
+                String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
+
+                if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
+                {
+                    String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+                    if (postCommitHookUrl.startsWith(thisHostAndRest))
+                    {
+                        gitHubRESTClient.deleteHook(repository, hook);
+                    }
                 }
             }
-        }
 
-        if (!foundChangesetHook)
-        {
-            // create hook if needed
-            createChangesetsHook(repository, hookUrl);
-        }
+            if (!foundChangesetHook)
+            {
+                // create hook if needed
+                createChangesetsHook(repository, hookUrl);
+            }
 
-        if (!foundPullRequesttHook)
+            if (!foundPullRequesttHook)
+            {
+                // adds pull requests hook, if it does not exist
+                createPullRequestsHook(repository, hookUrl);
+            }
+        } catch (UniformInterfaceException e)
         {
-            // adds pull requests hook, if it does not exist
-            createPullRequestsHook(repository, hookUrl);
+            if (e.getResponse().getStatus() == HttpStatus.SC_NOT_FOUND)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
+            } else
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook.", e);
+            }
         }
     }
 
