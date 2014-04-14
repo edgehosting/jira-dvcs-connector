@@ -11,6 +11,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +27,8 @@ public class BranchServiceImpl implements BranchService
 
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    private static final Logger log = LoggerFactory.getLogger(BranchServiceImpl.class);
 
     @Override
     public void removeAllBranchesInRepository(int repositoryId)
@@ -72,12 +76,14 @@ public class BranchServiceImpl implements BranchService
 
         if (oldBranches.size() != oldBranchesSet.size())
         {
+            log.info("Duplicate branches detected on repository '{}' [{}]", repository.getName(), repository.getId());
             Set<Branch> duplicates = findDuplicates(oldBranches);
 
             for (Branch branch : duplicates)
             {
                 branchDao.removeBranch(repository.getId(), branch);
             }
+            log.info("Removing duplicate branches ({}) on repository '{}'", duplicates.toString(), repository.getName());
             oldBranchesSet.removeAll(duplicates);
         }
 
@@ -89,12 +95,14 @@ public class BranchServiceImpl implements BranchService
         Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
         if (oldBranchHeads.size() != oldBranchHeadsSet.size())
         {
+            log.info("Duplicate branch heads detected on repository '{}' [{}]", repository.getName(), repository.getId());
             Set<BranchHead> duplicates = findDuplicates(oldBranchHeads);
 
             for (BranchHead branchHead : duplicates)
             {
                 branchDao.removeBranchHead(repository.getId(), branchHead);
             }
+            log.info("Removing duplicate branch heads ({}) on repository '{}'", duplicates.toString(), repository.getName());
             oldBranchHeadsSet.removeAll(duplicates);
         }
 
