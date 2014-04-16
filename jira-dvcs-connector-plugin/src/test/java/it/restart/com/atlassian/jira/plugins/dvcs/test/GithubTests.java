@@ -139,6 +139,14 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
         jira.getTester().gotoUrl(hooksURL);
         String hooksPage = jira.getTester().getDriver().getPageSource();
+
+        if (!hooksPage.contains(githubServiceConfigUrlPath))
+        {
+            // let's retry once more
+            jira.getTester().gotoUrl(hooksURL);
+            hooksPage = jira.getTester().getDriver().getPageSource();
+        }
+
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
