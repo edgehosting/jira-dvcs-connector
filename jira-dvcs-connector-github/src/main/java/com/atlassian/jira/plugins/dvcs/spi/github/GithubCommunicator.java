@@ -365,7 +365,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     continue;
                 }
 
-                if (!foundPullRequesttHook && hookUrl.equals(url) && isPullRequestHook(hook))
+                if (!foundPullRequesttHook && hookUrl.equals(url) && isPullRequestHook)
                 {
                     foundPullRequesttHook = true;
                     continue;
