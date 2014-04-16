@@ -130,7 +130,7 @@ public class DefaultSynchronizer implements Synchronizer
                 lock.unlock();
             }
 
-            boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
+            boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC) && !branchService.getListOfBranchHeads(repo).isEmpty();
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
             
