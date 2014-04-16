@@ -79,11 +79,12 @@ public class BranchServiceImpl implements BranchService
             log.info("Duplicate branches detected on repository '{}' [{}]", repository.getName(), repository.getId());
             Set<Branch> duplicates = findDuplicates(oldBranches);
 
+            log.info("Removing duplicate branches ({}) on repository '{}'", duplicates.toString(), repository.getName());
             for (Branch branch : duplicates)
             {
                 branchDao.removeBranch(repository.getId(), branch);
+                log.info("Branch {} removed", branch);
             }
-            log.info("Removing duplicate branches ({}) on repository '{}'", duplicates.toString(), repository.getName());
             oldBranchesSet.removeAll(duplicates);
         }
 
@@ -98,11 +99,13 @@ public class BranchServiceImpl implements BranchService
             log.info("Duplicate branch heads detected on repository '{}' [{}]", repository.getName(), repository.getId());
             Set<BranchHead> duplicates = findDuplicates(oldBranchHeads);
 
+            log.info("Removing duplicate branch heads ({}) on repository '{}'", duplicates.toString(), repository.getName());
             for (BranchHead branchHead : duplicates)
             {
                 branchDao.removeBranchHead(repository.getId(), branchHead);
+                log.info("Branch head {} removed", branchHead);
             }
-            log.info("Removing duplicate branch heads ({}) on repository '{}'", duplicates.toString(), repository.getName());
+
             oldBranchHeadsSet.removeAll(duplicates);
         }
 
