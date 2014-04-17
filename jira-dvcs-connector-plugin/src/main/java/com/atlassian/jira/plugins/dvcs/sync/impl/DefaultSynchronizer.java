@@ -103,8 +103,11 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     @Override
-    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flags)
+    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
+        // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
+        EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
+
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
             LOG.info("The synchronization is disabled.");
