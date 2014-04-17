@@ -401,11 +401,11 @@ public class GithubCommunicator implements DvcsCommunicator
             if (e.getResponse().getStatus() == HttpStatus.SC_NOT_FOUND)
             {
                 throw new SourceControlException.PostCommitHookRegistrationException(
-                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
+                        "Could not add webhook. Possibly due to lack of admin permissions.", e);
             } else
             {
                 throw new SourceControlException.PostCommitHookRegistrationException(
-                        "Could not add request hook.", e);
+                        "Could not add webhook.", e);
             }
         }
     }
@@ -463,7 +463,13 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             if (postCommitUrl.equals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL)))
             {
-                gitHubRESTClient.deleteHook(repository, hook);
+                try
+                {
+                    gitHubRESTClient.deleteHook(repository, hook);
+                } catch (UniformInterfaceException e)
+                {
+                    throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
+                }
             }
         }
     }
