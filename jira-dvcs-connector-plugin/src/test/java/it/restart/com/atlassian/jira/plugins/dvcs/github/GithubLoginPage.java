@@ -1,9 +1,13 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Poller;
+
+import javax.inject.Inject;
 
 public class GithubLoginPage implements Page
 {
@@ -18,6 +22,12 @@ public class GithubLoginPage implements Page
 
     @ElementBy(name = "commit")
     private PageElement githubWebSubmitButton;
+
+    @ElementBy(xpath = "//input[@value='Sign out']")
+    private PageElement getGithubWebLogoutConfirm;
+
+    @Inject
+    private JiraTestedProduct jiraTestedProduct;
 
     private final String hostUrl;
 
@@ -45,6 +55,13 @@ public class GithubLoginPage implements Page
     
     public void doLogin(String username, String password)
     {
+        // if login field is not present, we can consider that other user remained logged in
+        if (!githubWebLoginField.isPresent())
+        {
+            doLogout();
+            jiraTestedProduct.getTester().gotoUrl(getUrl());
+        }
+
         githubWebLoginField.type(username);
         githubWebPasswordField.type(password);
         githubWebSubmitButton.click();
@@ -57,5 +74,15 @@ public class GithubLoginPage implements Page
     public void doLogout()
     {
         githubWebLogoutLink.click();
+        try
+        {
+            // GitHub sometimes requires logout confirm
+            Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
+            getGithubWebLogoutConfirm.click();
+        }
+        catch (AssertionError e)
+        {
+            // GitHub doesn't requires logout confirm
+        }
     }
 }
