@@ -86,19 +86,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         Date lastSync = repo.getActivityLastSync();
 
         BitbucketClientBuilder bitbucketClientBuilder = bitbucketClientBuilderFactory.forRepository(repo);
-        if (payload.getPageNum() == 1)
-        {
-            bitbucketClientBuilder.cached();
-        }
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilder.apiVersion(2).build();
+        PullRequestRemoteRestpoint pullRestpoint = bitbucketClientBuilder.apiVersion(2).build().getPullRequestAndCommentsRemoteRestpoint();
 
-        final PullRequestRemoteRestpoint pullRestpoint = remoteClient.getPullRequestAndCommentsRemoteRestpoint();
+        // if this is the first page, use cached client
+        final PullRequestRemoteRestpoint pullRestpointForActivities = payload.getPageNum() == 1 ? bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).cached().build().getPullRequestAndCommentsRemoteRestpoint() : pullRestpoint;
         activityPage = FlightTimeInterceptor.execute(progress, new FlightTimeInterceptor.Callable<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
         {
             @Override
             public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> call() throws RuntimeException
             {
-                return pullRestpoint.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
+                return pullRestpointForActivities.getRepositoryActivityPage(payload.getPageNum(), repo.getOrgName(), repo.getSlug(),
                         payload.getLastSyncDate());
             }
         });
