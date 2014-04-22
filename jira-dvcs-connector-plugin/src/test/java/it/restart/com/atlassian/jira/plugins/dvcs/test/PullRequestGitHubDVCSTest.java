@@ -73,4 +73,11 @@ public class PullRequestGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
         return AccountType.GIT_HUB;
     }
 
+    @Override
+    protected void logoutFromGitHub()
+    {
+        // log out from github
+        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogout();
+    }
+
 }

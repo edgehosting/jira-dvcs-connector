@@ -57,8 +57,6 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GIT_HUB_BASE_URL);
         repositoriesPageController.addOrganization(accountType, GitHubTestResource.USER, oAuthCredentials, false);
         repositoriesPageController.addOrganization(accountType, GitHubTestResource.ORGANIZATION, oAuthCredentials, false);
-        
-        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class, GIT_HUB_BASE_URL).doLogout();
     }
 
     /**
@@ -80,6 +78,12 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
     protected AccountType getAccountType()
     {
         return AccountType.GIT_HUB_ENTERPRISE;
+    }
+
+    @Override
+    protected void logoutFromGitHub()
+    {
+        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class, GIT_HUB_BASE_URL).doLogout();
     }
 
 }

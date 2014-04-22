@@ -130,6 +130,11 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
     protected abstract AccountType getAccountType();
 
     /**
+     * Logout from GitHub
+     */
+    protected abstract void logoutFromGitHub();
+
+    /**
      * Cleans test environment.
      */
     @AfterClass(alwaysRun = true)
@@ -137,6 +142,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
         repositoriesPageController.getPage().deleteAllOrganizations();
+
+        logoutFromGitHub();
     }
 
     /**
