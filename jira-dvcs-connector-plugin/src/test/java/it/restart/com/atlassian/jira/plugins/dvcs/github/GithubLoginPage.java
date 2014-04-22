@@ -13,8 +13,8 @@ public class GithubLoginPage implements Page
 {
     @ElementBy(id = "login_field")
     private PageElement githubWebLoginField;
-    
-    @ElementBy(id = "logout")
+
+    @ElementBy(xpath = "//*[@aria-label='Sign out']")
     private PageElement githubWebLogoutLink;
 
     @ElementBy(id = "password")
