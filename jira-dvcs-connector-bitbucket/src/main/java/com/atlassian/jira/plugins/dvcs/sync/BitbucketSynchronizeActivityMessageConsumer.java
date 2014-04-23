@@ -89,7 +89,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         PullRequestRemoteRestpoint pullRestpoint = bitbucketClientBuilder.apiVersion(2).build().getPullRequestAndCommentsRemoteRestpoint();
 
         // if this is the first page, use cached client
-        final PullRequestRemoteRestpoint pullRestpointForActivities = payload.getPageNum() == 1 ? bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).cached().build().getPullRequestAndCommentsRemoteRestpoint() : pullRestpoint;
+        final PullRequestRemoteRestpoint pullRestpointForActivities =
+                payload.getPageNum() == 1 ?
+                        bitbucketClientBuilderFactory.forRepository(repo).apiVersion(2).cached().build().getPullRequestAndCommentsRemoteRestpoint() : pullRestpoint;
         activityPage = FlightTimeInterceptor.execute(progress, new FlightTimeInterceptor.Callable<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
         {
             @Override
