@@ -358,27 +358,25 @@ public class GithubCommunicator implements DvcsCommunicator
             boolean foundPullRequesttHook = false;
             for (GitHubRepositoryHook hook : hooks)
             {
-                String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                boolean isPullRequestHook = isPullRequestHook(hook);
-
-                if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
-                {
-                    foundChangesetHook = true;
-                    continue;
-                }
-
-                if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
-                {
-                    foundPullRequesttHook = true;
-                    continue;
-                }
-
-                String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
-
                 if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
                 {
+                    String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+                    boolean isPullRequestHook = isPullRequestHook(hook);
+
+                    if (!foundChangesetHook && hookUrl.equals(url) && !isPullRequestHook)
+                    {
+                        foundChangesetHook = true;
+                        continue;
+                    }
+
+                    if (!foundPullRequesttHook && hookUrl.equals(url) && isPullRequestHook)
+                    {
+                        foundPullRequesttHook = true;
+                        continue;
+                    }
+                    String thisHostAndRest = applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
                     String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                    if (postCommitHookUrl.startsWith(thisHostAndRest))
+                    if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest))
                     {
                         gitHubRESTClient.deleteHook(repository, hook);
                     }

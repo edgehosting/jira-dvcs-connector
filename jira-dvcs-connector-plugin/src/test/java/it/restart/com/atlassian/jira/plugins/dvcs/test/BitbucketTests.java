@@ -82,7 +82,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
 
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
@@ -97,8 +97,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
-        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -128,7 +128,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test
