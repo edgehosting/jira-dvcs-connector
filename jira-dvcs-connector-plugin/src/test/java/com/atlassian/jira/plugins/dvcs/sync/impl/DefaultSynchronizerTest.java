@@ -7,6 +7,7 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -1053,7 +1054,7 @@ public class DefaultSynchronizerTest
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
 
         BitbucketCommunicator communicatorMock = mock(BitbucketCommunicator.class);
-        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
+        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator();
         bitbucketCachingCommunicator.setDelegate(communicatorMock);
         when(dvcsCommunicatorProvider.getCommunicator(eq(BitbucketCommunicator.BITBUCKET))).thenReturn(bitbucketCachingCommunicator);
 
