@@ -341,10 +341,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
     {
-        if (gitHubRepository == null)
+        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
         {
             return null;
         }
+
         return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 
