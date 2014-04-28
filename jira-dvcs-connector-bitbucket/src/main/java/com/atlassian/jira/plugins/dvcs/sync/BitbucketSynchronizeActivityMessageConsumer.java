@@ -249,6 +249,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(BitbucketPullRequestRepository repository)
     {
+        // in case that fork has been deleted, the source repository is null
         if (repository != null)
         {
             return repository.getFullName();
@@ -438,12 +439,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.LAST_STATUS, resolveBitbucketStatus(request.getState()).name());
-        // in case that fork has been deleted, the source repository is null
-        if (request.getSource().getRepository() != null)
-        {
-            ret.put(RepositoryPullRequestMapping.SOURCE_REPO, request.getSource().getRepository().getFullName());
-        }
-
+        ret.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(request.getSource().getRepository()));
         ret.put(RepositoryPullRequestMapping.COMMENT_COUNT, commentCount);
 
         return ret;
