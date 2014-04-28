@@ -1047,6 +1047,23 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, false);
     }
 
+    @Test
+    public void shouldFallBackToFullSyncWhenNoBranchHeads()
+    {
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+
+        BitbucketCommunicator communicatorMock = mock(BitbucketCommunicator.class);
+        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
+        bitbucketCachingCommunicator.setDelegate(communicatorMock);
+        when(dvcsCommunicatorProvider.getCommunicator(eq(BitbucketCommunicator.BITBUCKET))).thenReturn(bitbucketCachingCommunicator);
+
+        branchDao.removeAllBranchesInRepository(repositoryMock.getId());
+
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SOFT_SYNC);
+        defaultSynchronizer.doSync(repositoryMock, flags);
+
+        verify(communicatorMock).startSynchronisation(repositoryMock, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS), syncAuditLogMock.getID());
+    }
 
     private void checkSynchronization(Graph graph, boolean softSync)
     {
