@@ -97,6 +97,11 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
         configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false);
         AccountsPageAccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
+        // if synchronization fails, let's try again
+        if (repository.getMessage().contains("Sync Failed"))
+        {
+            repository.synchronize();
+        }
         assertThat(repository.getMessage()).doesNotContain("Sync Failed");
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
