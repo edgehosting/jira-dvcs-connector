@@ -7,10 +7,17 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 public class BranchServiceImpl implements BranchService
@@ -20,6 +27,8 @@ public class BranchServiceImpl implements BranchService
 
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    private static final Logger log = LoggerFactory.getLogger(BranchServiceImpl.class);
 
     @Override
     public void removeAllBranchesInRepository(int repositoryId)
@@ -36,10 +45,15 @@ public class BranchServiceImpl implements BranchService
     @Override
     public void updateBranches(final Repository repository, final List<Branch> newBranches)
     {
+        // to remove possible branch duplicates
+        Set<Branch> newBranchSet = new HashSet<Branch>(newBranches);
+
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
-        for (Branch branch : newBranches)
+        Set<Branch> oldBranchesSet = removeDuplicatesIfNeeded(repository, oldBranches);
+
+        for (Branch branch : newBranchSet)
         {
-            if (oldBranches == null || !oldBranches.contains(branch))
+            if (!oldBranchesSet.contains(branch))
             {
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
@@ -47,16 +61,68 @@ public class BranchServiceImpl implements BranchService
         }
 
         // Removing closed branches
-        if (oldBranches != null)
+        for (Branch oldBranch : oldBranchesSet)
         {
-            for (Branch oldBranch : oldBranches)
+            if (!newBranchSet.contains(oldBranch))
             {
-                if (!newBranches.contains(oldBranch))
-                {
-                    branchDao.removeBranch(repository.getId(), oldBranch);
-                }
+                branchDao.removeBranch(repository.getId(), oldBranch);
             }
         }
+    }
+
+    private Set<Branch> removeDuplicatesIfNeeded(final Repository repository, final List<Branch> oldBranches)
+    {
+        Set<Branch> oldBranchesSet = new HashSet<Branch>(oldBranches);
+
+        if (oldBranches.size() != oldBranchesSet.size())
+        {
+            log.info("Duplicate branches detected on repository '{}' [{}]", repository.getName(), repository.getId());
+            Set<Branch> duplicates = findDuplicates(oldBranches);
+
+            log.info("Removing duplicate branches ({}) on repository '{}'", duplicates.toString(), repository.getName());
+            for (Branch branch : duplicates)
+            {
+                branchDao.removeBranch(repository.getId(), branch);
+                log.info("Branch {} removed", branch);
+            }
+            oldBranchesSet.removeAll(duplicates);
+        }
+
+        return oldBranchesSet;
+    }
+
+    private Set<BranchHead> removeDuplicateBranchHeadIfNeeded(final Repository repository, final List<BranchHead> oldBranchHeads)
+    {
+        Set<BranchHead> oldBranchHeadsSet = new HashSet<BranchHead>(oldBranchHeads);
+        if (oldBranchHeads.size() != oldBranchHeadsSet.size())
+        {
+            log.info("Duplicate branch heads detected on repository '{}' [{}]", repository.getName(), repository.getId());
+            Set<BranchHead> duplicates = findDuplicates(oldBranchHeads);
+
+            log.info("Removing duplicate branch heads ({}) on repository '{}'", duplicates.toString(), repository.getName());
+            for (BranchHead branchHead : duplicates)
+            {
+                branchDao.removeBranchHead(repository.getId(), branchHead);
+                log.info("Branch head {} removed", branchHead);
+            }
+
+            oldBranchHeadsSet.removeAll(duplicates);
+        }
+
+        return oldBranchHeadsSet;
+    }
+
+    private <T> Set<T> findDuplicates(List<T> list)
+    {
+        final Multiset<T> ms = HashMultiset.create(list);
+        return Sets.filter(ms.elementSet(), new Predicate<T>()
+        {
+            @Override
+            public boolean apply(@Nullable final T input)
+            {
+                return ms.count(input) > 1;
+            }
+        });
     }
 
     @Override
@@ -72,12 +138,14 @@ public class BranchServiceImpl implements BranchService
     {
         if (newBranches != null)
         {
-            List<BranchHead> headAlreadyThere = new ArrayList<BranchHead>();
-            for (Branch branch : newBranches)
+            Set<BranchHead> oldBranchHeadsSet = removeDuplicateBranchHeadIfNeeded(repository, oldBranchHeads);
+
+            Set<BranchHead> headAlreadyThere = new HashSet<BranchHead>();
+            for (Branch branch : new HashSet<Branch>(newBranches))
             {
                 for (BranchHead branchHead : branch.getHeads())
                 {
-                    if (oldBranchHeads == null || !oldBranchHeads.contains(branchHead))
+                    if (oldBranchHeads == null || !oldBranchHeadsSet.contains(branchHead))
                     {
                         branchDao.createBranchHead(repository.getId(), branchHead);
                     } else
@@ -89,7 +157,7 @@ public class BranchServiceImpl implements BranchService
             // Removing old branch heads
             if (oldBranchHeads != null)
             {
-                for (BranchHead oldBranchHead : oldBranchHeads)
+                for (BranchHead oldBranchHead : oldBranchHeadsSet)
                 {
                     if (!headAlreadyThere.contains(oldBranchHead))
                     {

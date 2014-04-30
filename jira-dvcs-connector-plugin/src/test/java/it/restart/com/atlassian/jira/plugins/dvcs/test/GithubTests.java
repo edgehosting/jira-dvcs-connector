@@ -75,7 +75,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Override
@@ -86,8 +86,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(),true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
-        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
 
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -119,7 +119,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 new OAuthCredentials("xxx", "yyy"), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test

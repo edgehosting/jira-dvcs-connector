@@ -7,6 +7,9 @@ import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 
 /**
  * @author Martin Skurla
@@ -51,25 +54,23 @@ public class JiraPageUtils
         createIssueDialog.submit(DashboardPage.class);
     }
     
-    public static void checkSyncProcessSuccess(JiraTestedProduct jira)
+    public static void checkSyncProcessSuccess()
     {
-        String currentUrl =  jira.getTester().getDriver().getCurrentUrl();
-        // maybe we should do the rest call to server
-        // to find out the status of syncing
-        do { 
+        do
+        {
             sleep(1000);
-        } while (!isSyncFinished(jira));
-        // syncing is now finished. TODO check for errors
-        
-        jira.getTester().gotoUrl(currentUrl);
+        } while (!isSyncFinished());
     }
 
-    private static boolean isSyncFinished(JiraTestedProduct jira)
+    private static boolean isSyncFinished()
     {
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repositories");
-        String pageSource = jira.getTester().getDriver().getPageSource();
-
-        return !pageSource.contains("finished=\"false\"");
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && !repository.getSync().isFinished()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void sleep(long milis)

@@ -5,7 +5,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -37,7 +36,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.Assert;
@@ -143,6 +141,7 @@ public class GithubCommunicatorTest
         List<GitHubRepositoryHook> hooks = Lists.newArrayList();
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/55/sync", 111L));
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/45/sync", 101L));
+        hooks.add(sampleNonWebHook(222L));
         return hooks;
     }
 
@@ -171,7 +170,27 @@ public class GithubCommunicatorTest
         return hook;
     }
 
-	@BeforeMethod
+    protected GitHubRepositoryHook sampleNonWebHook(long id)
+    {
+        GitHubRepositoryHook hook = new GitHubRepositoryHook();
+        hook.setId(id);
+        hook.setName("zendesk");
+        hook.setConfig(ImmutableMap.of(
+                "subdomain", "domain",
+                "username", "username",
+                "password", "password"
+        ));
+        hook.setEvents(ImmutableList.of(
+                "commit_comment",
+                "issues",
+                "issue_comment",
+                "pull_request",
+                "push"));
+        return hook;
+    }
+
+
+    @BeforeMethod
 	public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);

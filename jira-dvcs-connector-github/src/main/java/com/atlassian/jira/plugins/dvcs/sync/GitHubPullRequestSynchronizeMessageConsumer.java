@@ -135,8 +135,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             String sourceBranch = remotePullRequest.getHead() == null ? null : remotePullRequest.getHead().getRef();
             String dstBranch = remotePullRequest.getBase() == null ? null: remotePullRequest.getBase().getRef();
 
-            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), sourceBranch,
-                    dstBranch, resolveStatus(remotePullRequest), remotePullRequest
+            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
+                    sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
 
@@ -353,6 +353,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
     {
+        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
+        {
+            return null;
+        }
+
         return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 
