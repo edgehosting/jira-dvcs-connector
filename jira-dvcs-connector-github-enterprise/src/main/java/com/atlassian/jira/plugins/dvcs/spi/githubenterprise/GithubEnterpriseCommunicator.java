@@ -20,7 +20,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubEnterpriseCommunicator.class);
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    private final String DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.githube";
+    public static final String DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.githube";
 
     private GithubEnterpriseCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)

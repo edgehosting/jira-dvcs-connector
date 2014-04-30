@@ -8,6 +8,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -963,6 +964,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_Bitbucket_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(BitbucketCommunicator.DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void getChangesets_GitHub_softSync()
     {
 //       B3   D  B1   B2
@@ -1051,6 +1068,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_GitHub_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(GithubCommunicator.DISABLE_GITHUB_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void shouldFallBackToFullSyncWhenNoBranchHeads()
     {
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
@@ -1071,6 +1104,25 @@ public class DefaultSynchronizerTest
     private void checkSynchronization(Graph graph, boolean softSync)
     {
         checkSynchronization(graph, new ArrayList<String>(), softSync);
+    }
+
+    private void checkNoSynchronization(boolean softSync)
+    {
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
+        if (softSync)
+        {
+            // soft sync
+            flags.add(SynchronizationFlag.SOFT_SYNC);
+        }
+
+        defaultSynchronizer.doSync(repositoryMock, flags);
+
+        verifyNoMoreInteractions(changesetService);
+        verifyNoMoreInteractions(branchesAndTagsRemoteRestpoint);
+        verifyNoMoreInteractions(changesetRestpoint);
+        verifyNoMoreInteractions(githubClientProvider);
+        verifyNoMoreInteractions(commitService);
+        verifyNoMoreInteractions(egitRepositoryService);
     }
 
     private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)

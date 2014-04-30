@@ -78,7 +78,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     public static final String BITBUCKET = "bitbucket";
 
-    private final String DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.bitbucket";
+    public static final String DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.bitbucket";
 
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;

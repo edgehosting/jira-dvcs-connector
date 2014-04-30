@@ -68,7 +68,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
 
-    private final String DISABLE_GITHUB_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.github";
+    public static final String DISABLE_GITHUB_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.github";
 
     @Resource
     private  MessagingService messagingService;
