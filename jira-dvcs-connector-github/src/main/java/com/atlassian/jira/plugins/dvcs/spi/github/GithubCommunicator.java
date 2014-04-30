@@ -68,6 +68,8 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
 
+    private final String DISABLE_GITHUB_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.github";
+
     @Resource
     private  MessagingService messagingService;
 
@@ -87,7 +89,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private GitHubRESTClient gitHubRESTClient;
 
     @Resource
-    private FeatureManager featureManager;
+    protected FeatureManager featureManager;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -577,9 +579,20 @@ public class GithubCommunicator implements DvcsCommunicator
                 );
     }
 
+    protected boolean isSyncDisabled()
+    {
+        return featureManager.isEnabled(DISABLE_GITHUB_SYNCHRONIZATION_FEATURE);
+    }
+
     @Override
     public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
+        if (isSyncDisabled())
+        {
+            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+            return;
+        }
+
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);

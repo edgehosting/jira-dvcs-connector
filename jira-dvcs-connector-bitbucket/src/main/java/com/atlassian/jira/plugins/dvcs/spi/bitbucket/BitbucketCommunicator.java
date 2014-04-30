@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -77,6 +78,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     public static final String BITBUCKET = "bitbucket";
 
+    private final String DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.bitbucket";
+
     private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
@@ -90,6 +93,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
     
     @Resource
     private ChangesetDao changesetDao;
+
+    @Resource
+    private FeatureManager featureManager;
 
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
             BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
@@ -667,6 +673,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId)
     {
+        if (featureManager.isEnabled(DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE))
+        {
+            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+            return;
+        }
+
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);

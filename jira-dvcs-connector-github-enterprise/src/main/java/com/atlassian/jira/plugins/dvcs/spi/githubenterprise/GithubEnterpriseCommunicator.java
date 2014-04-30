@@ -17,6 +17,8 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubEnterpriseCommunicator.class);
     public static final String GITHUB_ENTERPRISE = "githube";
 
+    private final String DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.githube";
+
     private GithubEnterpriseCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
     {
@@ -54,6 +56,11 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     public String getDvcsType()
     {
         return GITHUB_ENTERPRISE;
+    }
+
+    protected boolean isSyncDisabled()
+    {
+        return featureManager.isEnabled(DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE);
     }
 }
 

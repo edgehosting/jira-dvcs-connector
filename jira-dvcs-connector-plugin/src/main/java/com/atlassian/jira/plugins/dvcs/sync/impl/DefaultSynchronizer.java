@@ -97,7 +97,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
-            log.info("The synchronization is disabled.");
+            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
             return;
         }
 
