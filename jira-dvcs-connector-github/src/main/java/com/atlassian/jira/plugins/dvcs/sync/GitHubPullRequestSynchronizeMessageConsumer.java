@@ -132,8 +132,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
         } else
         {
-            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
-                    .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
+            String sourceBranch = remotePullRequest.getHead() == null ? null : remotePullRequest.getHead().getRef();
+            String dstBranch = remotePullRequest.getBase() == null ? null: remotePullRequest.getBase().getRef();
+
+            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), sourceBranch,
+                    dstBranch, resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
 
