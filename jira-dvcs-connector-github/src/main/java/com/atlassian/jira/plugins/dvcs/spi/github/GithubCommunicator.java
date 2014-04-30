@@ -579,20 +579,9 @@ public class GithubCommunicator implements DvcsCommunicator
                 );
     }
 
-    protected boolean isSyncDisabled()
-    {
-        return featureManager.isEnabled(DISABLE_GITHUB_SYNCHRONIZATION_FEATURE);
-    }
-
     @Override
     public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
-        if (isSyncDisabled())
-        {
-            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
-            return;
-        }
-
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
@@ -625,6 +614,12 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             gitHubEventService.synchronize(repo, softSync, synchronizationTags);
         }
+    }
+
+    @Override
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    {
+        return featureManager.isEnabled(DISABLE_GITHUB_SYNCHRONIZATION_FEATURE);
     }
 
     private String getRef(String slug, String branch)

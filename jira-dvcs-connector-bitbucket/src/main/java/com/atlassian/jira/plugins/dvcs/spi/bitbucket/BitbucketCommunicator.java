@@ -673,12 +673,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId)
     {
-        if (featureManager.isEnabled(DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE))
-        {
-            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
-            return;
-        }
-
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
@@ -697,6 +691,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             processBitbucketPrSync(repo, softSync, auditId);
         }
+    }
+
+    @Override
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    {
+        return featureManager.isEnabled(DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE);
     }
 
     protected BranchFilterInfo getFilterNodes(Repository repository)

@@ -92,10 +92,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
+        CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
+                .getCommunicator(repo.getDvcsType());
+
         // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
-        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
+        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || communicator.isSyncDisabled(repo, flags))
         {
             log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
             return;
@@ -170,9 +173,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
-
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                        .getCommunicator(repo.getDvcsType());
 
                 communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)

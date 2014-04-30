@@ -1,7 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
 import java.io.IOException;
+import java.util.EnumSet;
 
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
@@ -58,7 +61,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
         return GITHUB_ENTERPRISE;
     }
 
-    protected boolean isSyncDisabled()
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
         return featureManager.isEnabled(DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE);
     }
