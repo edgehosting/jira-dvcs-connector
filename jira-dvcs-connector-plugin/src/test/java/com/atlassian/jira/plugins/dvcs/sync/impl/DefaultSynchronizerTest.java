@@ -371,10 +371,12 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "featureManager", featureManager);
 
         githubCommunicator = new GithubCommunicator(oAuthStore, githubClientProvider);
         ReflectionTestUtils.setField(githubCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(githubCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(githubCommunicator, "featureManager", featureManager);
 
         bitbucketCachingCommunicator.setDelegate(bitbucketCommunicator);
         githubCachingCommunicator.setDelegate(githubCommunicator);
