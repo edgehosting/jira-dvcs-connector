@@ -66,7 +66,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         if (autoSync)
         {
-            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
+            JiraPageUtils.checkSyncProcessSuccess();
         }
 
         return this;

@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 
 import org.openqa.selenium.By;
@@ -48,8 +49,10 @@ public class BitbucketOAuthPage implements Page
 
     public OAuth addConsumer()
     {
-        addConsumerButton.click();
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(addConsumerButton);
 
+        addConsumerButton.click();
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
         String consumerName = "Test_OAuth_" + System.currentTimeMillis();
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
@@ -74,6 +77,10 @@ public class BitbucketOAuthPage implements Page
     {
         PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
         PageElement deleteButton = oauthConsumer.find(By.linkText("Delete"));
+
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(deleteButton);
+
         deleteButton.click();
     }
 }

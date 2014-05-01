@@ -31,7 +31,10 @@ public class BitbucketGrandOAuthAccessPage implements Page
         // </div>
         
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
-        
+
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(buttonsDiv);
+
         PageElement grandAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv,
                                                                                    "button",
                                                                                    "type",

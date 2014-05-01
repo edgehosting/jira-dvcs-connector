@@ -243,6 +243,7 @@
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
                         <ondemand.properties>${basedir}/target/jira/home/ondemand.properties</ondemand.properties>
+                        <atlassian.plugins.enable.wait>300</atlassian.plugins.enable.wait>
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>

@@ -132,7 +132,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
         } else
         {
-            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
+            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
                     .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
@@ -341,6 +341,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
     {
+        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
+        {
+            return null;
+        }
+
         return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 

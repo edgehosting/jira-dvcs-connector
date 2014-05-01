@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.Links;
@@ -23,7 +22,6 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.util.concurrent.ThreadFactories;
-import com.google.common.collect.Sets;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
@@ -46,7 +44,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
     private static final String BITBUCKET_URL = "https://bitbucket.org";
     private static final String APP_SWITCHER_LINK_MODULE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app-switcher-nav-link";
-    private static final String DEFAULT_INVITATION_GROUP = "developers";
 
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
@@ -417,7 +414,6 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     {
         Organization newOrganization = new Organization();
         copyValues(info, newOrganization);
-        newOrganization.setDefaultGroups(Sets.newHashSet(new Group(DEFAULT_INVITATION_GROUP)));
         return newOrganization;
     }
 
