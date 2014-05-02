@@ -270,7 +270,7 @@ public class MessageExecutor
 
             } catch (Throwable t)
             {
-                LOGGER.error(t.getMessage(), t);
+                LOGGER.error("Synchronization failed: " + t.getMessage(), t);
                 messagingService.fail(consumer, message, t);
 
                 if (message.getRetriesCount() >= 3)
