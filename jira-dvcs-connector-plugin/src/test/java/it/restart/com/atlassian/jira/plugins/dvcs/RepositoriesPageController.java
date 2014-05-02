@@ -56,6 +56,12 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         if (autosync)
         {
             waitForSyncToFinish();
+            if (!getSyncErrors().isEmpty())
+            {
+                // refreshing account to retry synchronization
+                organization.refresh();
+                waitForSyncToFinish();
+            }
             assertThat(getSyncErrors()).describedAs("Synchronization failed").isEmpty();
         } else
         {
