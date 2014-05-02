@@ -11,7 +11,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageCo
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import org.fest.assertions.description.Description;
 
 import java.util.ArrayList;
 import java.util.List;
