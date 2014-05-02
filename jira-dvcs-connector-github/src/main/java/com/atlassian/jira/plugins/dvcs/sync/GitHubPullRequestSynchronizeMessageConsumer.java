@@ -127,9 +127,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         if (localPullRequest == null)
         {
-            Map<String, Object> activity = new HashMap<String, Object>();
-            map(activity, repository, remotePullRequest);
-            localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
+            localPullRequest = repositoryPullRequestDao.savePullRequest(toDaoModelPullRequest(repository, remotePullRequest));
         } else
         {
             repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
@@ -297,22 +295,26 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 localPullRequest.getSourceRepo(), commentsCount);
     }
 
-    private void map(Map<String, Object> target, Repository repository, PullRequest source)
+    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source)
     {
-        target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
-        target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
+        target.setDomainId(repository.getId());
+        target.setRemoteId((long) source.getNumber());
+        target.setName(source.getTitle());
 
-        target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
-        target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
+        target.setUrl(source.getHtmlUrl());
+        target.setToRepoId(repository.getId());
 
-        target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
-        target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
-        target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
-        target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
-        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
+        target.setAuthor(source.getUser().getLogin());
+        target.setCreatedOn(source.getCreatedAt());
+        target.setUpdatedOn(source.getUpdatedAt());
+        target.setSourceRepo(getRepositoryFullName(source.getHead().getRepo()));
+        target.setSourceBranch(source.getHead().getRef());
+        target.setDestinationBranch(source.getBase().getRef());
+        target.setLastStatus(resolveStatus(source).name());
+        target.setCommentCount(source.getComments());
+
+        return target;
     }
 
     private void map(Map<String, Object> target, RepositoryCommit source)

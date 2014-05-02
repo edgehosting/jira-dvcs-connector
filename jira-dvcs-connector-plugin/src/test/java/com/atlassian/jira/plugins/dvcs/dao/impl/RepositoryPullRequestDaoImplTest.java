@@ -33,6 +33,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,11 +46,14 @@ public class RepositoryPullRequestDaoImplTest
     @Mock
     ThreadEvents threadEvents;
 
-    @InjectMocks
-    RepositoryPullRequestDaoImpl repositoryPullRequestDao;
-
     @Mock
     Repository repository;
+
+    @Mock
+    RepositoryPullRequestMapping repositoryPullRequestMapping;
+
+    @InjectMocks
+    RepositoryPullRequestDaoImpl repositoryPullRequestDao;
 
     @Test
     public void savePullRequestRaisesEvent() throws Exception
@@ -57,7 +61,9 @@ public class RepositoryPullRequestDaoImplTest
         when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(mock(RepositoryPullRequestMapping.class));
 
         repositoryPullRequestDao.savePullRequest(repository, Maps.<String, Object>newHashMap());
-        verify(threadEvents).broadcast(argThat(instanceOf(RepositoryPullRequestMappingCreated.class)));
+        repositoryPullRequestDao.savePullRequest(repositoryPullRequestMapping);
+
+        verify(threadEvents, times(2)).broadcast(argThat(instanceOf(RepositoryPullRequestMappingCreated.class)));
     }
 
     @Test
