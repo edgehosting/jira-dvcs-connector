@@ -103,8 +103,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
         localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
-        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
         processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
