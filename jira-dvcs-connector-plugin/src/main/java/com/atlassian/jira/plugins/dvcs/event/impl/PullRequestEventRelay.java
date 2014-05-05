@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.event.impl;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SyncEventListener;
@@ -35,5 +36,11 @@ public class PullRequestEventRelay implements SyncEventListener
     {
         PullRequest createdPR = pullRequestTransformer.transform(pullRequestMappingCreated.getPullRequestMapping());
         eventPublisher.publish(new PullRequestCreatedEvent(createdPR));
+    }
+
+    @Subscribe
+    public void onPullRequestUpdated(PullRequestUpdatedEvent pullRequestUpdatedEvent)
+    {
+        eventPublisher.publish(pullRequestUpdatedEvent);
     }
 }

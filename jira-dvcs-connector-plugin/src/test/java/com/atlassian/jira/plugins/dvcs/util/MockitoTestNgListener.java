@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
+import com.beust.jcommander.internal.Sets;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -11,6 +12,8 @@ import org.testng.IInvokedMethodListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestResult;
 import org.testng.annotations.Listeners;
+
+import java.util.Set;
 
 import static org.mockito.internal.util.reflection.Fields.annotatedBy;
 
@@ -28,17 +31,29 @@ import static org.mockito.internal.util.reflection.Fields.annotatedBy;
  */
 public class MockitoTestNgListener implements IInvokedMethodListener
 {
+    private final Set<Class> mocksInitialised = Sets.newHashSet();
+
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult)
     {
-        if (isAnnotated(testResult.getTestClass().getRealClass()))
+        Class testClass = testResult.getTestClass().getRealClass();
+
+        // TestNG will call this listener for set up and test methods alike so we need to keep track
+        // of whether we've called initMocks for a given class to avoid multiple calls per test.
+        if (!mocksInitialised.contains(testClass) && isAnnotated(testClass))
         {
             resetMocks(testResult.getInstance());
             MockitoAnnotations.initMocks(testResult.getInstance());
+            mocksInitialised.add(testClass);
         }
     }
 
     public void afterInvocation(IInvokedMethod method, ITestResult testResult)
     {
+        if (method.isTestMethod())
+        {
+            // after a test method just wipe the slate clean
+            mocksInitialised.clear();
+        }
     }
 
     private boolean isAnnotated(Class<?> realClass)

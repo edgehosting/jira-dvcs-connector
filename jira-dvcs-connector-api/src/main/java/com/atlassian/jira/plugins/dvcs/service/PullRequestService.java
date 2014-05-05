@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -37,4 +38,18 @@ public interface PullRequestService
 
     void updatePullRequestParticipants(int pullRequestId, int repositoryId, Map<String, Participant> participantIndex);
 
+    /**
+     * Updates a {@link RepositoryPullRequestMapping} in the database and raises a change event. This should really a
+     * {@link PullRequest} as its parameter but there's currently no straightforward way to convert one of those into a
+     * RepositoryPullRequestMapping.
+     * <p/>
+     * Note that this method does not attempt to compare the previous and current state of the pull request mapping: it
+     * always performs the update and always raises an event.
+     *
+     *
+     * @param pullRequestId
+     * @param repositoryPullRequestMapping a RepositoryPullRequestMapping
+     * @since 2.1.5
+     */
+    PullRequest updatePullRequest(final int pullRequestId, RepositoryPullRequestMapping repositoryPullRequestMapping);
 }

@@ -130,9 +130,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             localPullRequest = repositoryPullRequestDao.savePullRequest(toDaoModelPullRequest(repository, remotePullRequest));
         } else
         {
-            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
-                    .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
-                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
+            pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest));
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
@@ -287,12 +285,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void updateCommentsCount(PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
     {
-        int commentsCount = remotePullRequest.getComments() + remotePullRequest.getReviewComments();
+        localPullRequest.setCommentCount(remotePullRequest.getComments() + remotePullRequest.getReviewComments());
+
         // updates count
-        repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), localPullRequest.getName(),
-                localPullRequest.getSourceBranch(), localPullRequest.getDestinationBranch(),
-                RepositoryPullRequestMapping.Status.valueOf(localPullRequest.getLastStatus()), localPullRequest.getUpdatedOn(),
-                localPullRequest.getSourceRepo(), commentsCount);
+        pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
     private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source)
