@@ -474,7 +474,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         Map<String, Object> attributes = Maps.newHashMap();
 
         //noinspection UnnecessaryBoxing
-        attributes.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(mapping.getID()));
+        attributes.put(RepositoryPullRequestMapping.REMOTE_ID, mapping.getRemoteId());
         attributes.put(RepositoryPullRequestMapping.NAME, mapping.getName());
         attributes.put(RepositoryPullRequestMapping.URL, mapping.getUrl());
         attributes.put(RepositoryPullRequestMapping.TO_REPO_ID, mapping.getToRepositoryId());
