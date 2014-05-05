@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status;
+import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -59,17 +60,37 @@ public class PullRequestServiceImplTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-//        MockitoAnnotations.initMocks(this);
-
         when(repository.getOrgHostUrl()).thenReturn("https://bitbucket.org/fusiontestaccount");
         when(repositoryService.get(REPO_ID)).thenReturn(repository);
 
         when(dao.findRequestById(PR_ID)).thenReturn(origPr);
+        when(dao.savePullRequest(origPr)).thenReturn(origPr);
 
         trainPullRequestMock(origPr);
         trainPullRequestMock(updatePr, origPr.getName() + "-UPDATED");
 
         when(dao.updatePullRequestInfo(PR_ID, updatePr.getName(), SRC_BRANCH, DST_BRANCH, STATUS, UPDATED_ON, SOURCE_REPO, COMMENT_COUNT)).thenReturn(updatePr);
+    }
+
+    @Test
+    public void createPullRequestShouldSavePullRequestInDatabase() throws Exception
+    {
+        service.createPullRequest(origPr);
+        verify(dao).savePullRequest(origPr);
+    }
+
+    @Test
+    public void createPullRequestShouldPublishEvent() throws Exception
+    {
+        service.createPullRequest(origPr);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(threadEvents).broadcast(eventCaptor.capture());
+
+        assertThat(eventCaptor.getValue(), instanceOf(PullRequestCreatedEvent.class));
+
+        PullRequestCreatedEvent event = (PullRequestCreatedEvent) eventCaptor.getValue();
+        assertThat(event.getPullRequest().getName(), equalTo(NAME));
     }
 
     @Test

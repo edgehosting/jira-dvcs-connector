@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
+import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -67,6 +68,15 @@ public class PullRequestServiceImpl implements PullRequestService
     public Set<String> getIssueKeys(int repositoryId, int pullRequestId)
     {
         return pullRequestDao.getIssueKeys(repositoryId, pullRequestId);
+    }
+
+    @Override
+    public RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping)
+    {
+        RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
+
+        threadEvents.broadcast(new PullRequestCreatedEvent(transformer.transform(createdMapping)));
+        return createdMapping;
     }
 
     @Override

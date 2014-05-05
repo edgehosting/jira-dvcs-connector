@@ -11,8 +11,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMap
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
@@ -66,20 +64,14 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     private final ActiveObjects activeObjects;
 
     /**
-     * Used to publish CRUD events.
-     */
-    private final ThreadEvents threadEvents;
-
-    /**
      * Used to create RepositoryPullRequestMapping instances.
      */
     private final EntityBeanGenerator beanGenerator;
 
-    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, ThreadEvents threadEvents, EntityBeanGenerator beanGenerator)
+    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
         super();
         this.activeObjects = activeObjects;
-        this.threadEvents = threadEvents;
         this.beanGenerator = beanGenerator;
     }
 
@@ -127,7 +119,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 
     private RepositoryPullRequestMapping doSavePullRequest(final int repositoryId, final Map<String, Object> request)
     {
-        RepositoryPullRequestMapping repositoryPullRequestMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
         {
             @Override
             public RepositoryPullRequestMapping doInTransaction()
@@ -137,13 +129,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             }
 
         });
-
-        // broadcast a "PR created" event. this would normally be done in the PR service with a model class rather than
-        // an AO entity but the PR synchronisation code for BB and GH is using the DAO directly so this is the right
-        // place to do it for the moment.
-        threadEvents.broadcast(new RepositoryPullRequestMappingCreated(repositoryPullRequestMapping));
-
-        return repositoryPullRequestMapping;
     }
 
     @Override

@@ -227,7 +227,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // don't have this pull request, let's save it
         if (local == null)
         {
-            local = dao.savePullRequest(toDaoModelPullRequest(remote, repo, commentCount));
+            local = pullRequestService.createPullRequest(toDaoModelPullRequest(remote, repo, commentCount));
         }
         // maybe update
         if (remote != null && hasChanged(local, remote, commentCount))

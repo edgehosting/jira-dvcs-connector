@@ -24,8 +24,8 @@ public interface PullRequestService
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource);
 
     /**
-     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or
-     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
+     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or {@code
+     * pullRequestId} point to non-existing entities, an empty set will be returned.
      *
      * @param repositoryId id of the repository to query
      * @param pullRequestId id of the pull request to query
@@ -39,15 +39,25 @@ public interface PullRequestService
     void updatePullRequestParticipants(int pullRequestId, int repositoryId, Map<String, Participant> participantIndex);
 
     /**
-     * Updates a {@link RepositoryPullRequestMapping} in the database and raises a change event. This should really a
-     * {@link PullRequest} as its parameter but there's currently no straightforward way to convert one of those into a
-     * RepositoryPullRequestMapping.
+     * Creates a {@link RepositoryPullRequestMapping} in the database and raises a {@link com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent}.
+     * <p/>
+     * This should really work with {@link PullRequest} but there's currently no straightforward way to convert one of
+     * those into a RepositoryPullRequestMapping.
+     *
+     * @param repositoryPullRequestMapping the RepositoryPullRequestMapping to create
+     * @since 2.1.5
+     */
+    RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping);
+
+    /**
+     * Updates a {@link RepositoryPullRequestMapping} in the database and raises {@link com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent}.
+     * <p/>
+     * This should really take a {@link PullRequest} as its parameter but there's currently no straightforward way to
+     * convert one of those into a RepositoryPullRequestMapping.
      * <p/>
      * Note that this method does not attempt to compare the previous and current state of the pull request mapping: it
      * always performs the update and always raises an event.
      *
-     *
-     * @param pullRequestId
      * @param repositoryPullRequestMapping a RepositoryPullRequestMapping
      * @since 2.1.5
      */

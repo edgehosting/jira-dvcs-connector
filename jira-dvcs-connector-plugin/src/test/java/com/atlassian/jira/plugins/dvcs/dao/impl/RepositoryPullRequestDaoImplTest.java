@@ -4,11 +4,8 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.beust.jcommander.internal.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.java.ao.Query;
@@ -25,7 +22,6 @@ import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWherePa
 import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereThat;
 import static com.google.common.collect.Iterables.toArray;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +29,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,17 +49,6 @@ public class RepositoryPullRequestDaoImplTest
 
     @InjectMocks
     RepositoryPullRequestDaoImpl repositoryPullRequestDao;
-
-    @Test
-    public void savePullRequestRaisesEvent() throws Exception
-    {
-        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(mock(RepositoryPullRequestMapping.class));
-
-        repositoryPullRequestDao.savePullRequest(repository, Maps.<String, Object>newHashMap());
-        repositoryPullRequestDao.savePullRequest(repositoryPullRequestMapping);
-
-        verify(threadEvents, times(2)).broadcast(argThat(instanceOf(RepositoryPullRequestMappingCreated.class)));
-    }
 
     @Test
     public void testGetIssueKeysWithExistingPullRequestIssueMappings()

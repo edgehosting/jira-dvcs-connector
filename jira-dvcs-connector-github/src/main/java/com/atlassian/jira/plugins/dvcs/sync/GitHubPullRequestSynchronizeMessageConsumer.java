@@ -127,7 +127,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         if (localPullRequest == null)
         {
-            localPullRequest = repositoryPullRequestDao.savePullRequest(toDaoModelPullRequest(repository, remotePullRequest));
+            localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest));
         } else
         {
             pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest));
