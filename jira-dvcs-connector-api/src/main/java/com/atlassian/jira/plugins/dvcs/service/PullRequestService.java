@@ -58,8 +58,8 @@ public interface PullRequestService
      * Note that this method does not attempt to compare the previous and current state of the pull request mapping: it
      * always performs the update and always raises an event.
      *
-     * @param repositoryPullRequestMapping a RepositoryPullRequestMapping
+     * @param updatedPullRequestMapping a RepositoryPullRequestMapping
      * @since 2.1.5
      */
-    PullRequest updatePullRequest(final int pullRequestId, RepositoryPullRequestMapping repositoryPullRequestMapping);
+    RepositoryPullRequestMapping updatePullRequest(final int pullRequestId, RepositoryPullRequestMapping updatedPullRequestMapping);
 }

@@ -13,16 +13,6 @@ public class RepositoryDiv
         this.rootElement = rootElement;
     }
 
-    public boolean isSyncing()
-    {
-        PageElement syncRepoIcon = rootElement.find(By.xpath("td[4]/div/a/span"));
-        if (syncRepoIcon!=null)
-        {
-            return syncRepoIcon.getAttribute("class").contains("running");
-        }
-        return false;
-    }
-
     public String getMessage()
     {
         return rootElement.find(By.xpath("td[3]/div")).getText();

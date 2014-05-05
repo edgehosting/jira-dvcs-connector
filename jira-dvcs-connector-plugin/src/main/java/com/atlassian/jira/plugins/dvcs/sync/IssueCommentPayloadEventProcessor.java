@@ -10,8 +10,8 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.IssueCommentPayload;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
-import java.io.IOException;
 import javax.annotation.Resource;
+import java.io.IOException;
 
 /**
  * The {@link IssueCommentPayload} event processor.

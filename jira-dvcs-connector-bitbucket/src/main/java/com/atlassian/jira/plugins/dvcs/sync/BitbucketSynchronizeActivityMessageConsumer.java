@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -243,6 +244,17 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return local;
     }
 
+    private String getRepositoryFullName(BitbucketPullRequestRepository repository)
+    {
+        // in case that fork has been deleted, the source repository is null
+        if (repository != null)
+        {
+            return repository.getFullName();
+        }
+
+        return null;
+    }
+
     private RepositoryPullRequestMapping.Status resolveBitbucketStatus(String string)
     {
         for (RepositoryPullRequestMapping.Status status : RepositoryPullRequestMapping.Status.values())
@@ -419,8 +431,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         mapping.setDestinationBranch(request.getDestination().getBranch().getName());
         mapping.setSourceBranch(request.getSource().getBranch().getName());
         mapping.setLastStatus(resolveBitbucketStatus(request.getState()).name());
-        // in case that fork has been deleted, the source repository is null
-        mapping.setSourceRepo(request.getSource().getRepository() != null ? request.getSource().getRepository().getFullName() : null);
+        mapping.setSourceRepo(getRepositoryFullName(request.getSource().getRepository()));
         mapping.setCommentCount(commentCount);
 
         return mapping;

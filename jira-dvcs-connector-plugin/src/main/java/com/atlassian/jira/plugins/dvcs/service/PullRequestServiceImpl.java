@@ -80,7 +80,7 @@ public class PullRequestServiceImpl implements PullRequestService
     }
 
     @Override
-    public PullRequest updatePullRequest(int pullRequestId, RepositoryPullRequestMapping updatedPullRequestMapping)
+    public RepositoryPullRequestMapping updatePullRequest(int pullRequestId, RepositoryPullRequestMapping updatedPullRequestMapping)
     {
         final RepositoryPullRequestMapping mappingBeforeUpdate = pullRequestDao.findRequestById(pullRequestId);
         if (mappingBeforeUpdate == null)
@@ -104,7 +104,7 @@ public class PullRequestServiceImpl implements PullRequestService
         PullRequest prBefore = transformer.transform(mappingBeforeUpdate);
         threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
 
-        return prAfter;
+        return mappingAfterUpdate;
     }
 
     @Override

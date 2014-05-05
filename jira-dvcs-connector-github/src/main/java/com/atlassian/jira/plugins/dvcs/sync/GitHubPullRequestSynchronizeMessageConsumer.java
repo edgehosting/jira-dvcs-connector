@@ -130,7 +130,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest));
         } else
         {
-            pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest));
+            localPullRequest = pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest));
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
@@ -339,6 +339,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
     {
+        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
+        {
+            return null;
+        }
+
         return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 
