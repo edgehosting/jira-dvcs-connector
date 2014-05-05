@@ -415,7 +415,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         mapping.setRemoteId(request.getId());
         mapping.setName(request.getTitle());
         mapping.setUrl(request.getLinks().getHtml().getHref());
-        mapping.setToRepoId(repository.getId());
+        mapping.setToRepositoryId(repository.getId());
         mapping.setAuthor(request.getAuthor() != null ? request.getAuthor().getUsername() : null);
         mapping.setCreatedOn(request.getCreatedOn());
         mapping.setUpdatedOn(request.getUpdatedOn());

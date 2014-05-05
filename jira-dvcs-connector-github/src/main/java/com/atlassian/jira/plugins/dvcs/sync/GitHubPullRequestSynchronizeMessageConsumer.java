@@ -303,7 +303,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.setName(source.getTitle());
 
         target.setUrl(source.getHtmlUrl());
-        target.setToRepoId(repository.getId());
+        target.setToRepositoryId(repository.getId());
 
         target.setAuthor(source.getUser().getLogin());
         target.setCreatedOn(source.getCreatedAt());

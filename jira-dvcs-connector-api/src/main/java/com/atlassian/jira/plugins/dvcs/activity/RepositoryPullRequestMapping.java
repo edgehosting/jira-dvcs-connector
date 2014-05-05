@@ -74,7 +74,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     //
     void setRemoteId(Long id);
 
-    void setToRepoId(int repoId);
+    void setToRepositoryId(int repoId);
 
     void setName(String name);
 
