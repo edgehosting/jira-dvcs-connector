@@ -39,13 +39,13 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.3-20140307.112500</jira.compile.version>
-        <jira.version>6.3-20140307.112500</jira.version>
-        <jira.data.version>6.3-20140307.112500</jira.data.version>
+        <jira.compile.version>6.2.4</jira.compile.version>
+        <jira.version>6.2.4</jira.version>
+        <jira.data.version>6.2.4</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.3.7</greenhopper.version>
+        <greenhopper.version>6.3.13</greenhopper.version>
         <analytics.version>2.25</analytics.version>
         <testkit.version>6.0.41</testkit.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
@@ -234,8 +234,8 @@
         <profile>
             <id>jira62</id>
             <properties>
-                <jira.version>6.2-beta1</jira.version>
-                <jira.data.version>6.2-beta1</jira.data.version>
+                <jira.version>6.2.1</jira.version>
+                <jira.data.version>6.2.1</jira.data.version>
                 <testkit.version>6.0.41</testkit.version>
             </properties>
         </profile>

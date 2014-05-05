@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -50,6 +51,9 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     @ElementBy(xpath = "td[contains(concat(' ', @class, ' '), ' dvcs-sync-repo ')]//a")
     private PageElement synchronizationButton;
+
+    @ElementBy(xpath = "td[3]/div")
+    private PageElement message;
 
     /**
      * Constructor.
@@ -168,6 +172,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
             }
 
         });
+    }
+
+    public String getMessage()
+    {
+        return message.getText();
     }
 
     public static class ForceSyncDialog extends WebDriverElement
