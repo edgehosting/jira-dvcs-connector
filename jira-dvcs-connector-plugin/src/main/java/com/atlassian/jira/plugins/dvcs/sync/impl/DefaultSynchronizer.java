@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
 import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -119,41 +120,23 @@ public class DefaultSynchronizer implements Synchronizer
             return;
         }
 
-        if (branchService.getListOfBranchHeads(repo).isEmpty())
-        {
-            flags.remove(SynchronizationFlag.SOFT_SYNC);
-        }
+        removeFlagForCondition(flags, branchService.getListOfBranchHeads(repo).isEmpty(), SynchronizationFlag.SOFT_SYNC);
 
         if (repo.isLinked())
         {
 
-            Progress progress;
-
-            final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
-            lock.lock();
-            try
-            {
-                if (skipSync(repo, flags))
-                {
-                    return;
-                }
-                progress = startProgress(repo, flags);
-            }
-            finally
-            {
-                lock.unlock();
+            Progress progress= startProgressSafely(repo, flags);
+            if (progress==null) {
+                return;
             }
 
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            if (softSync) {
-                syncThreadEvents.startCapturing();
-            }
+            SyncEvents syncEvents = startCapturingSyncEvents(softSync);
 
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
-
             int auditId = 0;
             try
             {
@@ -163,56 +146,161 @@ public class DefaultSynchronizer implements Synchronizer
 
                 if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
-                    stopSynchronization(repo);
-                    if (changesetsSync)
-                    {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                        changesetService.removeAllInRepository(repo.getId());
-                        branchService.removeAllBranchHeadsInRepository(repo.getId());
-                        branchService.removeAllBranchesInRepository(repo.getId());
-
-                        repo.setLastCommitDate(null);
-                    }
-                    if (pullRequestSync)
-                    {
-                        gitHubEventService.removeAll(repo);
-                        repositoryPullRequestDao.removeAll(repo);
-                        repo.setActivityLastSync(null);
-                    }
-                    repositoryDao.save(repo);
+                    removeDataFromRepoForFullSync(repo, pullRequestSync, changesetsSync);
                 }
 
                 // first retry all failed messages
-                try
-                {
-                    messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
-                } catch (Exception e)
-                {
-                    LOG.warn("Could not resume failed messages.", e);
-                }
+                retryAllFailedMessages(repo, auditId);
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
-                {
-                    flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
-                }
+                removeFlagForCondition( flags,
+                                        !postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE),
+                                        SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                        .getCommunicator(repo.getDvcsType());
-
+                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider.getCommunicator(repo.getDvcsType());
                 communicator.startSynchronisation(repo, flags, auditId);
-            } catch (Throwable t)
+            }
+            catch (Throwable t)
             {
                 LOG.error(t.getMessage(), t);
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
-            } finally
+            }
+            finally
             {
                 messagingService.tryEndProgress(repo, progress, null, auditId);
+                stopCapturingAndPublishEvents(syncEvents);
             }
+        }
+    }
+
+    @Override
+    public void stopSynchronization(Repository repository)
+    {
+        messagingService.cancel(messagingService.getTagForSynchronization(repository));
+    }
+
+    @Override
+    public void pauseSynchronization(Repository repository, boolean pause)
+    {
+        if (pause)
+        {
+            messagingService.pause(messagingService.getTagForSynchronization(repository));
+        }
+        else
+        {
+            messagingService.resume(messagingService.getTagForSynchronization(repository));
+        }
+    }
+
+    @Override
+    public Progress getProgress(int repositoryId)
+    {
+        return progressMap.get(repositoryId);
+    }
+
+    @Override
+    @SuppressWarnings ("deprecation")    // put is un-deprecated in a later version of atlassian-cache
+    public void putProgress(Repository repository, Progress progress)
+    {
+        progressMap.put(repository.getId(), progress);
+    }
+
+    @Override
+    public void removeProgress(Repository repository)
+    {
+        progressMap.remove(repository.getId());
+    }
+
+    @Override
+    public void removeAllProgress()
+    {
+        progressMap.removeAll();
+    }
+
+    private Progress startProgressSafely(Repository repo, EnumSet<SynchronizationFlag> flags)
+    {
+        final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
+        lock.lock();
+        try
+        {
+            if (skipSync(repo, flags))
+            {
+                return null;
+            }
+
+            return startProgress(repo, flags);
+        }
+        finally
+        {
+            lock.unlock();
+        }
+
+    }
+
+    private void removeDataFromRepoForFullSync(Repository repo, boolean pullRequestSync, boolean changesetsSync)
+    {
+        //TODO This will deleted both changeset and PR messages, we should distinguish between them
+        // Stopping synchronization to delete failed messages for repository
+        stopSynchronization(repo);
+        if (changesetsSync)
+        {
+            // we are doing full sync, lets delete all existing changesets
+            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+            changesetService.removeAllInRepository(repo.getId());
+            branchService.removeAllBranchHeadsInRepository(repo.getId());
+            branchService.removeAllBranchesInRepository(repo.getId());
+
+            repo.setLastCommitDate(null);
+        }
+        if (pullRequestSync)
+        {
+            gitHubEventService.removeAll(repo);
+            repositoryPullRequestDao.removeAll(repo);
+            repo.setActivityLastSync(null);
+        }
+        repositoryDao.save(repo);
+    }
+
+    private boolean retryAllFailedMessages(Repository repo, int auditId)
+    {
+        try
+        {
+            messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
+            return true;
+        }
+        catch (Exception e)
+        {
+            LOG.warn("Could not resume failed messages.", e);
+            return false;
+        }
+    }
+
+    private boolean removeFlagForCondition(EnumSet<SynchronizationFlag> flags, boolean condition, SynchronizationFlag flag)
+    {
+        if (condition) {
+            flags.remove(flag);
+        }
+
+        return condition;
+    }
+
+    private SyncEvents startCapturingSyncEvents(boolean softSync)
+    {
+        if (softSync)
+        {
+            return syncThreadEvents.startCapturing();
+        }
+
+        return null;
+    }
+
+    private void stopCapturingAndPublishEvents(SyncEvents syncEvents)
+    {
+        if (syncEvents != null)
+        {
+            syncEvents.stopCapturing();
+            syncEvents.publish();
         }
     }
 
@@ -273,52 +361,12 @@ public class DefaultSynchronizer implements Synchronizer
             if (currentFlags == null)
             {
                 progress.setRunAgainFlags(flags);
-            } else
+            }
+            else
             {
                 currentFlags.addAll(flags);
             }
         }
         return true;
-    }
-
-    @Override
-    public void stopSynchronization(Repository repository)
-    {
-        messagingService.cancel(messagingService.getTagForSynchronization(repository));
-    }
-
-    @Override
-    public void pauseSynchronization(Repository repository, boolean pause)
-    {
-        if (pause) {
-            messagingService.pause(messagingService.getTagForSynchronization(repository));
-        } else {
-            messagingService.resume(messagingService.getTagForSynchronization(repository));
-        }
-    }
-
-    @Override
-    public Progress getProgress(int repositoryId)
-    {
-        return progressMap.get(repositoryId);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")    // put is un-deprecated in a later version of atlassian-cache
-    public void putProgress(Repository repository, Progress progress)
-    {
-        progressMap.put(repository.getId(), progress);
-    }
-
-    @Override
-    public void removeProgress(Repository repository)
-    {
-        progressMap.remove(repository.getId());
-    }
-
-    @Override
-    public void removeAllProgress()
-    {
-        progressMap.removeAll();
     }
 }
