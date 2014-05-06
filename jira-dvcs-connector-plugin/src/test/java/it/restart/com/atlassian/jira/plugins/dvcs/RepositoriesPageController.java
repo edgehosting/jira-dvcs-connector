@@ -12,6 +12,9 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageCo
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
 
@@ -53,6 +56,13 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         if (autosync)
         {
             waitForSyncToFinish();
+            if (!getSyncErrors().isEmpty())
+            {
+                // refreshing account to retry synchronization
+                organization.refresh();
+                waitForSyncToFinish();
+            }
+            assertThat(getSyncErrors()).describedAs("Synchronization failed").isEmpty();
         } else
         {
             assertThat(isSyncFinished());
@@ -87,6 +97,18 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
         }
         return true;
+    }
+
+    private List<String> getSyncErrors()
+    {
+        List<String> errors = new ArrayList<String>();
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && repository.getSync().getError() != null) {
+                errors.add(repository.getSync().getError());
+            }
+        }
+        return errors;
     }
 
     private boolean requiresGrantAccess()

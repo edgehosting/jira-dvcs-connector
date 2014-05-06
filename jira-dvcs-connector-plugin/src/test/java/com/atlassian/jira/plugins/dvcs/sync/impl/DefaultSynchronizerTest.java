@@ -112,6 +112,7 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -986,8 +987,14 @@ public class DefaultSynchronizerTest
         when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
 
         graph.commit("node1", null).mock();
-
         checkSynchronization(graph, processedNodes, true);
+        // Should not capture events on first sync - it's a full sync
+        verify(syncEvents, never()).stopCapturing();
+        verify(syncEvents, never()).publish();
+
+        graph.commit("node2", "node1").mock();
+        checkSynchronization(graph, processedNodes, true);
+
         verify(syncEvents).stopCapturing();
         verify(syncEvents).publish();
     }
