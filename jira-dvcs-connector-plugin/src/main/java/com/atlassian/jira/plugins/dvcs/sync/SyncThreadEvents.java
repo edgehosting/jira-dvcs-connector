@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 
 /**
- * Captures sync events <b>that take place on the current thread</b> and dispatches them to all available {@link
- * SyncEventListener} instances.
+ * Captures sync events <b>that take place on the current thread</b> and sends them to the application {@link
+ * com.atlassian.event.api.EventPublisher}.
  */
 public interface SyncThreadEvents
 {

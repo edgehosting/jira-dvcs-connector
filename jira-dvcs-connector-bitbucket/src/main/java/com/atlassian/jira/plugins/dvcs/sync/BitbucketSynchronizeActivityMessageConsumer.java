@@ -228,15 +228,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // don't have this pull request, let's save it
         if (local == null)
         {
-            local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo, commentCount));
+            local = pullRequestService.createPullRequest(toDaoModelPullRequest(remote, repo, commentCount));
         }
         // maybe update
         if (remote != null && hasChanged(local, remote, commentCount))
         {
-            local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                    .getBranch().getName(), remote.getDestination().getBranch().getName(),
-                    resolveBitbucketStatus(remote.getState()),
-                    remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount);
+            pullRequestService.updatePullRequest(local.getID(), toDaoModelPullRequest(remote, repo, commentCount));
         }
 
         if (participantIndex != null)
@@ -419,30 +416,25 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
 
-    private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository, int commentCount)
+    private RepositoryPullRequestMapping toDaoModelPullRequest(BitbucketPullRequest request, Repository repository, int commentCount)
     {
-        HashMap<String, Object> ret = new HashMap<String, Object>();
-        ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
-        ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
-        ret.put(RepositoryPullRequestMapping.URL, request.getLinks().getHtml().getHref());
-        ret.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
+        RepositoryPullRequestMapping mapping = dao.createPullRequest();
 
-        String author = null;
-        if (request.getAuthor() != null)
-        {
-            author = request.getAuthor().getUsername();
-        }
+        mapping.setDomainId(repository.getId());
+        mapping.setRemoteId(request.getId());
+        mapping.setName(request.getTitle());
+        mapping.setUrl(request.getLinks().getHtml().getHref());
+        mapping.setToRepositoryId(repository.getId());
+        mapping.setAuthor(request.getAuthor() != null ? request.getAuthor().getUsername() : null);
+        mapping.setCreatedOn(request.getCreatedOn());
+        mapping.setUpdatedOn(request.getUpdatedOn());
+        mapping.setDestinationBranch(request.getDestination().getBranch().getName());
+        mapping.setSourceBranch(request.getSource().getBranch().getName());
+        mapping.setLastStatus(resolveBitbucketStatus(request.getState()).name());
+        mapping.setSourceRepo(getRepositoryFullName(request.getSource().getRepository()));
+        mapping.setCommentCount(commentCount);
 
-        ret.put(RepositoryPullRequestMapping.AUTHOR, author);
-        ret.put(RepositoryPullRequestMapping.CREATED_ON, request.getCreatedOn());
-        ret.put(RepositoryPullRequestMapping.UPDATED_ON, request.getUpdatedOn());
-        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
-        ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
-        ret.put(RepositoryPullRequestMapping.LAST_STATUS, resolveBitbucketStatus(request.getState()).name());
-        ret.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(request.getSource().getRepository()));
-        ret.put(RepositoryPullRequestMapping.COMMENT_COUNT, commentCount);
-
-        return ret;
+        return mapping;
     }
 
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)

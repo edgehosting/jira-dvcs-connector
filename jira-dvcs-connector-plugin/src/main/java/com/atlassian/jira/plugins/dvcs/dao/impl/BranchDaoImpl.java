@@ -7,8 +7,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryBranchMappingCreated;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
@@ -30,15 +28,9 @@ public class BranchDaoImpl implements BranchDao
 
     private final ActiveObjects activeObjects;
 
-    /**
-     * Used to publish CRUD events.
-     */
-    private final ThreadEvents threadEvents;
-
-    public BranchDaoImpl(ActiveObjects activeObjects, final ThreadEvents threadEvents)
+    public BranchDaoImpl(ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
-        this.threadEvents = threadEvents;
     }
 
     @Override
@@ -89,9 +81,6 @@ public class BranchDaoImpl implements BranchDao
                 return branchMapping;
             }
         });
-
-        // broadcast "Branch created" event
-        threadEvents.broadcast(new RepositoryBranchMappingCreated(branchMapping, issueKeys));
     }
 
     @Override

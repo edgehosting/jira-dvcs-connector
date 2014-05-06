@@ -10,8 +10,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.impl.RepositoryPullRequestMappingCreated;
+import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
@@ -20,12 +19,12 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -34,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -64,15 +64,15 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     private final ActiveObjects activeObjects;
 
     /**
-     * Used to publish CRUD events.
+     * Used to create RepositoryPullRequestMapping instances.
      */
-    private final ThreadEvents threadEvents;
+    private final EntityBeanGenerator beanGenerator;
 
-    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, ThreadEvents threadEvents)
+    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
         super();
         this.activeObjects = activeObjects;
-        this.threadEvents = threadEvents;
+        this.beanGenerator = beanGenerator;
     }
 
     /**
@@ -100,26 +100,35 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestToCommitMapping.class, query);
     }
 
+    public RepositoryPullRequestMapping createPullRequest()
+    {
+        return beanGenerator.createInstanceOf(RepositoryPullRequestMapping.class);
+    }
+
     @Override
     public RepositoryPullRequestMapping savePullRequest(final Repository domain, final Map<String, Object> request)
     {
-        RepositoryPullRequestMapping repositoryPullRequestMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
+        return doSavePullRequest(domain.getId(), request);
+    }
+
+    @Override
+    public RepositoryPullRequestMapping savePullRequest(final RepositoryPullRequestMapping pullRequest)
+    {
+        return doSavePullRequest(pullRequest.getDomainId(), asMap(pullRequest));
+    }
+
+    private RepositoryPullRequestMapping doSavePullRequest(final int repositoryId, final Map<String, Object> request)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
         {
             @Override
             public RepositoryPullRequestMapping doInTransaction()
             {
-                request.put(RepositoryDomainMapping.DOMAIN, domain.getId());
+                request.put(RepositoryDomainMapping.DOMAIN, repositoryId);
                 return activeObjects.create(RepositoryPullRequestMapping.class, request);
             }
 
         });
-
-        // broadcast a "PR created" event. this would normally be done in the PR service with a model class rather than
-        // an AO entity but the PR synchronisation code for BB and GH is using the DAO directly so this is the right
-        // place to do it for the moment.
-        threadEvents.broadcast(new RepositoryPullRequestMappingCreated(repositoryPullRequestMapping));
-
-        return repositoryPullRequestMapping;
     }
 
     @Override
@@ -440,5 +449,29 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         params.put(PullRequestParticipantMapping.PULL_REQUEST_ID, pullRequestId);
         params.put(PullRequestParticipantMapping.DOMAIN, repositoryId);
         activeObjects.create(PullRequestParticipantMapping.class, params);
+    }
+
+    /**
+     * Returns a RepositoryPullRequestMapping as a map of attributes.
+     */
+    private Map<String, Object> asMap(RepositoryPullRequestMapping mapping)
+    {
+        Map<String, Object> attributes = Maps.newHashMap();
+
+        //noinspection UnnecessaryBoxing
+        attributes.put(RepositoryPullRequestMapping.REMOTE_ID, mapping.getRemoteId());
+        attributes.put(RepositoryPullRequestMapping.NAME, mapping.getName());
+        attributes.put(RepositoryPullRequestMapping.URL, mapping.getUrl());
+        attributes.put(RepositoryPullRequestMapping.TO_REPO_ID, mapping.getToRepositoryId());
+        attributes.put(RepositoryPullRequestMapping.AUTHOR, mapping.getAuthor());
+        attributes.put(RepositoryPullRequestMapping.CREATED_ON, mapping.getCreatedOn());
+        attributes.put(RepositoryPullRequestMapping.UPDATED_ON, mapping.getUpdatedOn());
+        attributes.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, mapping.getDestinationBranch());
+        attributes.put(RepositoryPullRequestMapping.SOURCE_BRANCH, mapping.getSourceBranch());
+        attributes.put(RepositoryPullRequestMapping.LAST_STATUS, mapping.getLastStatus());
+        attributes.put(RepositoryPullRequestMapping.SOURCE_REPO, mapping.getSourceRepo());
+        attributes.put(RepositoryPullRequestMapping.COMMENT_COUNT, mapping.getCommentCount());
+
+        return attributes;
     }
 }
