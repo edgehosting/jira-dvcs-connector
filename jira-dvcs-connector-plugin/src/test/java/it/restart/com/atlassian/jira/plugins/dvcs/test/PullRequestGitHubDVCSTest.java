@@ -49,7 +49,6 @@ public class PullRequestGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
                 oAuthCredentials, false);
         repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, GitHubTestResource.ORGANIZATION,
                 oAuthCredentials, false);
-        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogout();
     }
 
     /**
