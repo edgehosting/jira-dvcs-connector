@@ -53,7 +53,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     /**
      * Prefix of repository name used by tests of this class.
      */
-    private static final String REPOSITORY_NAME_PREFIX = PullRequestBitbucketDVCSTest.class.getCanonicalName().toLowerCase();
+    private static final String REPOSITORY_NAME_PREFIX = "it.restart." + PullRequestBitbucketDVCSTest.class.getSimpleName().toLowerCase();
 
     /**
      * Name of author which will be used as committer.
