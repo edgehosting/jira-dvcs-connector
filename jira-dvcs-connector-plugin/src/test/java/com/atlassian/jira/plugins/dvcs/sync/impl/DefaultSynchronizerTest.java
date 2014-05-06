@@ -110,6 +110,7 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -242,6 +243,7 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ThreadEvents threadEvents;
+
 
     @BeforeMethod
     public void setUp() throws Exception
@@ -984,15 +986,22 @@ public class DefaultSynchronizerTest
     {
         Graph graph = new Graph();
         final List<String> processedNodes = Lists.newArrayList();
+
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
         when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
 
-        branchDao.createBranchHead(repositoryMock.getId(), new BranchHead("branch-head-1","1"));
         graph.commit("node1", null).mock();
-
         checkSynchronization(graph, processedNodes, true);
-        verify(syncEvents, times(1)).stopCapturing();
-        verify(syncEvents, times(1)).publish();
+        // Should not capture events on first sync - it's a full sync
+        verify(syncEvents, never()).stopCapturing();
+        verify(syncEvents, never()).publish();
+
+        graph.commit("node2", "node1").mock();
+        checkSynchronization(graph, processedNodes, true);
+
+        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
+        verify(syncEvents, times(2)).stopCapturing();
+        verify(syncEvents, times(2)).publish();
     }
 
     @Test
@@ -1124,7 +1133,7 @@ public class DefaultSynchronizerTest
     @SuppressWarnings("unchecked")
     private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)
     {
-        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SOFT_SYNC);
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
         if (softSync)
         {
             // soft sync
