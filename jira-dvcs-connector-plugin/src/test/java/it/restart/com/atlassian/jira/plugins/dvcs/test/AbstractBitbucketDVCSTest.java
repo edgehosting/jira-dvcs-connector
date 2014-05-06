@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
@@ -40,6 +41,8 @@ import com.google.common.base.Function;
 public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 {
     private final Dvcs dvcs;
+
+    protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
 
     public AbstractBitbucketDVCSTest(Dvcs dvcs)
     {
@@ -147,6 +150,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
     }
 
+
     /**
      * Destroys test environment.
      */
@@ -175,12 +179,30 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     protected void addTestRepository(String owner, String slug, String password)
     {
         RepositoryRemoteRestpoint repositoryService = createRepositoryService(owner, password);
+
+        removeExpiredRepositories(repositoryService, owner);
+
         // removes repository if it was not properly removed during clean up
         if (isRepositoryExists(owner, slug, repositoryService))
         {
             deleteTestRepository(owner, slug, repositoryService);
         }
         createTestRepository(owner, slug, repositoryService);
+    }
+
+    private void removeExpiredRepositories(RepositoryRemoteRestpoint repositoryService, String owner)
+    {
+        for ( BitbucketRepository repository : repositoryService.getAllRepositories(owner))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                try
+                {
+                    repositoryService.removeRepository(repository.getName(), owner);
+                }
+                catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+            }
+        }
     }
 
     /**

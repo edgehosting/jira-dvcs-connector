@@ -1,6 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
@@ -51,9 +52,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     private static final String TEST_ISSUE_SUMMARY = PullRequestBitbucketDVCSTest.class.getCanonicalName();
 
     /**
-     * Name of repository used by tests of this class.
+     * Prefix of repository name used by tests of this class.
      */
-    private static final String REPOSITORY_NAME = PullRequestBitbucketDVCSTest.class.getSimpleName().toLowerCase();
+    private static final String repositoryName_PREFIX = PullRequestBitbucketDVCSTest.class.getSimpleName().toLowerCase();
 
     /**
      * Name of author which will be used as committer.
@@ -70,6 +71,10 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
      */
     private String issueKey;
 
+    private String repositoryName;
+
+    private static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
+
     /**
      * {@inheritDoc}
      */
@@ -77,7 +82,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     public void onTestSetup()
     {
         issueKey = addTestIssue(TEST_PROJECT_KEY, TEST_ISSUE_SUMMARY);
-        addTestRepository(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD);
+        repositoryName = timestampNameTestResource.randomName(repositoryName_PREFIX, EXPIRATION_DURATION_5_MIN);
+        addTestRepository(ACCOUNT_NAME, repositoryName, PASSWORD);
     }
 
     /**
@@ -90,21 +96,21 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -119,7 +125,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -134,7 +140,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
@@ -142,9 +148,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
     /**
@@ -157,35 +163,35 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String[] expectedCommitNodeUpdate = new String[2];
         String[] expectedCommitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", "Stanislav Dvorscak", "sdvorscak@atlassian.com");
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", "Stanislav Dvorscak", "sdvorscak@atlassian.com");
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
         String fixBranchName = issueKey + "_fix";
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
         // Assert PR Opened information
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        expectedCommitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        expectedCommitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest expectedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
+        BitbucketPullRequest expectedPullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
                 getDefaultBranchName());
 
         // Assert PR Updated information
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
-        expectedCommitNodeUpdate[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
+        expectedCommitNodeUpdate[0] = commit(ACCOUNT_NAME, repositoryName, "Fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix_update.txt", "Virtual fix - update \n {\n}".getBytes());
-        expectedCommitNodeUpdate[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix_update.txt", "Virtual fix - update \n {\n}".getBytes());
+        expectedCommitNodeUpdate[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName);
 
-        BitbucketPullRequest updatedPullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
+        BitbucketPullRequest updatedPullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
                 getDefaultBranchName());
 
         // test of synchronization
@@ -193,7 +199,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -208,7 +214,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName);
@@ -216,9 +222,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(updatedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
     /**
@@ -231,21 +237,21 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -256,13 +262,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        declinePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
+        declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -277,7 +283,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
@@ -285,9 +291,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
     /**
@@ -300,21 +306,21 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -325,13 +331,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        approvePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
+        approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -346,7 +352,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
@@ -354,9 +360,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getParticipants().size(), 1);
         Assert.assertEquals(restPullRequest.getParticipants().get(0).getUser().getUsername(), ACCOUNT_NAME);
         Assert.assertTrue(restPullRequest.getParticipants().get(0).isApproved());
@@ -372,21 +378,21 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -397,13 +403,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        mergePullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest);
+        mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -418,7 +424,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
@@ -426,9 +432,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
     /**
@@ -440,11 +446,11 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String pullRequestName = issueKey + ": Open PR";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        BitbucketRepository forkedRepository = fork(ACCOUNT_NAME, REPOSITORY_NAME, FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
+        BitbucketRepository forkedRepository = fork(ACCOUNT_NAME, repositoryName, FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
 
         addFile(forkedRepository.getOwner(), forkedRepository.getSlug(), issueKey + "_fix.txt", "Virtual fix {}".getBytes());
         commitNodeOpen[0] = commit(forkedRepository.getOwner(), forkedRepository.getSlug(), "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
@@ -454,14 +460,14 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         push(forkedRepository.getOwner(), forkedRepository.getSlug(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, getDefaultBranchName());
 
-        BitbucketPullRequest pullRequest = openForkPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, pullRequestName, "Open PR description", getDefaultBranchName(),
+        BitbucketPullRequest pullRequest = openForkPullRequest(ACCOUNT_NAME, repositoryName, pullRequestName, "Open PR description", getDefaultBranchName(),
                 getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -477,7 +483,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(response.getRepositories().size(), 1);
 
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
@@ -485,9 +491,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), FORK_ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), FORK_ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), FORK_ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
     /**
@@ -500,21 +506,21 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         String fixBranchName = issueKey + "_fix";
         String[] commitNodeOpen = new String[2];
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, "README.txt", "Hello World!".getBytes());
-        commit(ACCOUNT_NAME, REPOSITORY_NAME, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD);
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
 
-        createBranch(ACCOUNT_NAME, REPOSITORY_NAME, fixBranchName);
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        addFile(ACCOUNT_NAME, REPOSITORY_NAME, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = commit(ACCOUNT_NAME, REPOSITORY_NAME, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
-        push(ACCOUNT_NAME, REPOSITORY_NAME, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
+        BitbucketPullRequest pullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, getDefaultBranchName());
 
         // Give a time to Bitbucket after creation of pullRequest
         try
@@ -525,14 +531,14 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        commentPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest, "Test comment 1");
-        commentPullRequest(ACCOUNT_NAME, REPOSITORY_NAME, PASSWORD, pullRequest, "Test comment 2");
+        commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest, "Test comment 1");
+        commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest, "Test comment 2");
 
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
 
-        AccountsPageAccountRepository repository = account.getRepository(REPOSITORY_NAME);
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -547,7 +553,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), REPOSITORY_NAME);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getCommentCount(), 2);
@@ -556,9 +562,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + REPOSITORY_NAME);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
     }
 
 }
