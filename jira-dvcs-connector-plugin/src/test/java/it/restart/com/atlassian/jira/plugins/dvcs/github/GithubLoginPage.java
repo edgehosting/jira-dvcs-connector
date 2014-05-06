@@ -13,8 +13,8 @@ public class GithubLoginPage implements Page
 {
     @ElementBy(id = "login_field")
     private PageElement githubWebLoginField;
-    
-    @ElementBy(id = "logout")
+
+    @ElementBy(xpath = "//*[@aria-label='Sign out']")
     private PageElement githubWebLogoutLink;
 
     @ElementBy(id = "password")
@@ -55,8 +55,8 @@ public class GithubLoginPage implements Page
     
     public void doLogin(String username, String password)
     {
-        // if login field is not present, we can consider that other user remained logged in
-        if (!githubWebLoginField.isPresent())
+        // if logout link is present, other user remained logged in
+        if (githubWebLogoutLink.isPresent())
         {
             doLogout();
             jiraTestedProduct.getTester().gotoUrl(getUrl());
