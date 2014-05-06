@@ -108,6 +108,7 @@ public class DefaultSynchronizer implements Synchronizer
         progressMap.removeAll();
     }
 
+
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
@@ -128,32 +129,18 @@ public class DefaultSynchronizer implements Synchronizer
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
             }
 
-            Progress progress;
-
-            final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
-            lock.lock();
-            try
+            Progress progress= startProgressSafely(repo, flags);
+            if (progress==null)
             {
-                if (skipSync(repo, flags))
-                {
-                    return;
-                }
-                progress = startProgress(repo, flags);
+                return;
             }
-            finally
-            {
-                lock.unlock();
-            }
-
 
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-            
+
             SyncEvents syncEvents = startCapturingSyncEvents(softSync);
-
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
-
             int auditId = 0;
             try
             {
@@ -163,36 +150,11 @@ public class DefaultSynchronizer implements Synchronizer
 
                 if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
-                    stopSynchronization(repo);
-                    if (changesetsSync)
-                    {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                        changesetService.removeAllInRepository(repo.getId());
-                        branchService.removeAllBranchHeadsInRepository(repo.getId());
-                        branchService.removeAllBranchesInRepository(repo.getId());
-
-                        repo.setLastCommitDate(null);
-                    }
-                    if (pullRequestSync)
-                    {
-                        gitHubEventService.removeAll(repo);
-                        repositoryPullRequestDao.removeAll(repo);
-                        repo.setActivityLastSync(null);
-                    }
-                    repositoryDao.save(repo);
+                    removeRepoDataForFullSync(repo, flags);
                 }
 
                 // first retry all failed messages
-                try
-                {
-                    messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
-                } catch (Exception e)
-                {
-                    LOG.warn("Could not resume failed messages.", e);
-                }
+                retryFailedMessages(repo, auditId);
 
                 if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
                 {
@@ -215,6 +177,60 @@ public class DefaultSynchronizer implements Synchronizer
                 stopCapturingAndPublishEvents(syncEvents);
             }
         }
+    }
+
+    private Progress startProgressSafely(Repository repo, EnumSet<SynchronizationFlag> flags)
+    {
+        final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
+        lock.lock();
+        try
+        {
+            if (skipSync(repo, flags))
+            {
+                return null;
+            }
+            return startProgress(repo, flags);
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+
+    private void removeRepoDataForFullSync(Repository repo, EnumSet<SynchronizationFlag> flags)
+    {
+        //TODO This will deleted both changeset and PR messages, we should distinguish between them
+        // Stopping synchronization to delete failed messages for repository
+        stopSynchronization(repo);
+        if (flags.contains(SynchronizationFlag.SYNC_CHANGESETS))
+        {
+            // we are doing full sync, lets delete all existing changesets
+            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+            changesetService.removeAllInRepository(repo.getId());
+            branchService.removeAllBranchHeadsInRepository(repo.getId());
+            branchService.removeAllBranchesInRepository(repo.getId());
+
+            repo.setLastCommitDate(null);
+        }
+        if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+        {
+            gitHubEventService.removeAll(repo);
+            repositoryPullRequestDao.removeAll(repo);
+            repo.setActivityLastSync(null);
+        }
+        repositoryDao.save(repo);
+    }
+
+    private void retryFailedMessages(Repository repo, int auditId)
+    {
+        try
+        {
+            messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
+        } catch (Exception e)
+        {
+            LOG.warn("Could not resume failed messages.", e);
+        }
+
     }
 
     private SyncEvents startCapturingSyncEvents(boolean softSync)
