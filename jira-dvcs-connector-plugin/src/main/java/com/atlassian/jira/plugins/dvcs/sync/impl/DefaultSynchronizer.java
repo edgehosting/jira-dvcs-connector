@@ -21,6 +21,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.annotations.VisibleForTesting;
@@ -81,10 +82,14 @@ public class DefaultSynchronizer implements Synchronizer
     @Resource
     private GitHubEventService gitHubEventService;
 
+    @Resource
+    private SyncThreadEvents syncThreadEvents;
+
     private final ClusterLockService clusterLockService;
 
     // Cache of all synchronisation progresses, both running and finished
     private final Cache<Integer, Progress> progressMap;
+
 
     public DefaultSynchronizer(final CacheManager cacheManager, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
@@ -114,8 +119,14 @@ public class DefaultSynchronizer implements Synchronizer
             return;
         }
 
+        if (branchService.getListOfBranchHeads(repo).isEmpty())
+        {
+            flags.remove(SynchronizationFlag.SOFT_SYNC);
+        }
+
         if (repo.isLinked())
         {
+
             Progress progress;
 
             final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
@@ -133,15 +144,14 @@ public class DefaultSynchronizer implements Synchronizer
                 lock.unlock();
             }
 
-            if (branchService.getListOfBranchHeads(repo).isEmpty())
-            {
-                flags.remove(SynchronizationFlag.SOFT_SYNC);
-            }
-
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-            
+
+            if (softSync) {
+                syncThreadEvents.startCapturing();
+            }
+
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
             int auditId = 0;
