@@ -281,7 +281,7 @@ public class MessageExecutor
 
                 // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
                 // subsequently re-added
-                if (progress.isSoftsync())
+                if (progress.isSoftsync() && payload.isSoftSync())
                 {
                     syncEvents = syncThreadEvents.startCapturing();
                 }

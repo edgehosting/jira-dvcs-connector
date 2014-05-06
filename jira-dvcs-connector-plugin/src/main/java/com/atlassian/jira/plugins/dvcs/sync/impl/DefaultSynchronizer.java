@@ -105,7 +105,7 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
-        // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
+        // We take a copy of the flags, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
@@ -116,6 +116,12 @@ public class DefaultSynchronizer implements Synchronizer
 
         if (repo.isLinked())
         {
+            // Remove the soft sync flag if we have no branch heads.
+            if (branchService.getListOfBranchHeads(repo).isEmpty())
+            {
+                flags.remove(SynchronizationFlag.SOFT_SYNC);
+            }
+
             Progress progress;
 
             final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
@@ -133,10 +139,6 @@ public class DefaultSynchronizer implements Synchronizer
                 lock.unlock();
             }
 
-            if (branchService.getListOfBranchHeads(repo).isEmpty())
-            {
-                flags.remove(SynchronizationFlag.SOFT_SYNC);
-            }
 
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
