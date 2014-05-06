@@ -148,6 +148,9 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 
         // log out from bitbucket
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogout();
+
+        removeExpiredRepositories(ACCOUNT_NAME, PASSWORD);
+        removeExpiredRepositories(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
     }
 
 
@@ -180,29 +183,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         RepositoryRemoteRestpoint repositoryService = createRepositoryService(owner, password);
 
-        removeExpiredRepositories(repositoryService, owner);
-
-        // removes repository if it was not properly removed during clean up
-        if (isRepositoryExists(owner, slug, repositoryService))
-        {
-            deleteTestRepository(owner, slug, repositoryService);
-        }
         createTestRepository(owner, slug, repositoryService);
-    }
-
-    private void removeExpiredRepositories(RepositoryRemoteRestpoint repositoryService, String owner)
-    {
-        for ( BitbucketRepository repository : repositoryService.getAllRepositories(owner))
-        {
-            if (timestampNameTestResource.isExpired(repository.getName()))
-            {
-                try
-                {
-                    repositoryService.removeRepository(repository.getName(), owner);
-                }
-                catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
-            }
-        }
     }
 
     /**
@@ -450,6 +431,23 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         credential.setAdminPassword(password);
         BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", null, credential).apiVersion(2).build();
         return bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
+    }
+
+    private void removeExpiredRepositories(String owner, String password)
+    {
+        RepositoryRemoteRestpoint repositoryService = createRepositoryService(owner, password);
+
+        for ( BitbucketRepository repository : repositoryService.getAllRepositories(owner))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                try
+                {
+                    repositoryService.removeRepository(repository.getName(), owner);
+                }
+                catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+            }
+        }
     }
 
     public static class RepositoryInfo

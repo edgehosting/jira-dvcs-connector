@@ -1,7 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
@@ -54,7 +53,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     /**
      * Prefix of repository name used by tests of this class.
      */
-    private static final String repositoryName_PREFIX = PullRequestBitbucketDVCSTest.class.getSimpleName().toLowerCase();
+    private static final String REPOSITORY_NAME_PREFIX = PullRequestBitbucketDVCSTest.class.getCanonicalName().toLowerCase();
 
     /**
      * Name of author which will be used as committer.
@@ -82,7 +81,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     public void onTestSetup()
     {
         issueKey = addTestIssue(TEST_PROJECT_KEY, TEST_ISSUE_SUMMARY);
-        repositoryName = timestampNameTestResource.randomName(repositoryName_PREFIX, EXPIRATION_DURATION_5_MIN);
+        repositoryName = timestampNameTestResource.randomName(REPOSITORY_NAME_PREFIX, EXPIRATION_DURATION_5_MIN);
         addTestRepository(ACCOUNT_NAME, repositoryName, PASSWORD);
     }
 
