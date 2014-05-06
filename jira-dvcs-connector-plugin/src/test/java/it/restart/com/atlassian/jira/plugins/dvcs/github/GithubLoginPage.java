@@ -55,8 +55,8 @@ public class GithubLoginPage implements Page
     
     public void doLogin(String username, String password)
     {
-        // if login field is not present, we can consider that other user remained logged in
-        if (!githubWebLoginField.isPresent())
+        // if logout link is present, other user remained logged in
+        if (githubWebLogoutLink.isPresent())
         {
             doLogout();
             jiraTestedProduct.getTester().gotoUrl(getUrl());

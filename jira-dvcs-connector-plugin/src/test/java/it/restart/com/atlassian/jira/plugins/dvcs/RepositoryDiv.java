@@ -1,5 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
+import com.atlassian.pageobjects.elements.query.Poller;
+import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
 
 import com.atlassian.pageobjects.elements.PageElement;
@@ -21,6 +23,11 @@ public class RepositoryDiv
     public String getRepositoryName()
     {
         return rootElement.find(By.xpath("td[2]/a")).getText();
+    }
+
+    public PageElement getSyncIcon()
+    {
+        return rootElement.find(By.xpath("td[4]//span"));
     }
 
 }

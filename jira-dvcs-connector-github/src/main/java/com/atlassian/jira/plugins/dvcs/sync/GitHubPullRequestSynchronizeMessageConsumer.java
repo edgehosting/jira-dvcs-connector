@@ -142,10 +142,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
         } else
         {
-            repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
-                    remotePullRequest.getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest),
-                    remotePullRequest.getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()),
-                    remotePullRequest.getComments());
+
+            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
+                    .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
+                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser().getLogin(), Participant.ROLE_PARTICIPANT);
@@ -332,6 +332,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private String getRepositoryFullName(GitHubRepository gitHubRepository)
     {
+        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
+        {
+            return null;
+        }
+
         return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 

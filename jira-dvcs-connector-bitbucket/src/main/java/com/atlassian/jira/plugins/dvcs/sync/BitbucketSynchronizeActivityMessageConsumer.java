@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -232,10 +233,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // maybe update
         if (remote != null && hasChanged(local, remote, commentCount))
         {
-            dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
+            local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
                     .getBranch().getName(), remote.getDestination().getBranch().getName(),
                     resolveBitbucketStatus(remote.getState()),
-                    remote.getUpdatedOn(), remote.getSource().getRepository().getFullName(), commentCount);
+                    remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount);
         }
 
         if (participantIndex != null)
@@ -244,6 +245,17 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
 
         return local;
+    }
+
+    private String getRepositoryFullName(BitbucketPullRequestRepository repository)
+    {
+        // in case that fork has been deleted, the source repository is null
+        if (repository != null)
+        {
+            return repository.getFullName();
+        }
+
+        return null;
     }
 
     private RepositoryPullRequestMapping.Status resolveBitbucketStatus(String string)
@@ -427,12 +439,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
         ret.put(RepositoryPullRequestMapping.LAST_STATUS, resolveBitbucketStatus(request.getState()).name());
-        // in case that fork has been deleted, the source repository is null
-        if (request.getSource().getRepository() != null)
-        {
-            ret.put(RepositoryPullRequestMapping.SOURCE_REPO, request.getSource().getRepository().getFullName());
-        }
-
+        ret.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(request.getSource().getRepository()));
         ret.put(RepositoryPullRequestMapping.COMMENT_COUNT, commentCount);
 
         return ret;
