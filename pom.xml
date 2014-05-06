@@ -39,9 +39,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2.4</jira.compile.version>
-        <jira.version>6.2.4</jira.version>
-        <jira.data.version>6.2.4</jira.data.version>
+        <jira.compile.version>6.3-OD-05-006</jira.compile.version>
+        <jira.version>6.3-OD-05-006</jira.version>
+        <jira.data.version>6.3-OD-05-006</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
