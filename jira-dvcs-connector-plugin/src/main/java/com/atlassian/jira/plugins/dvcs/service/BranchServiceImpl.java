@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -31,7 +31,7 @@ public class BranchServiceImpl implements BranchService
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
     @Resource
-    private EventPublisher eventPublisher;
+    private ThreadEvents threadEvents;
 
     private static final Logger log = LoggerFactory.getLogger(BranchServiceImpl.class);
 
@@ -63,7 +63,7 @@ public class BranchServiceImpl implements BranchService
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
 
-                publishBranchCreatedEvent(branch, issueKeys);
+                broadcastBranchCreatedEvent(branch, issueKeys);
             }
         }
 
@@ -155,7 +155,8 @@ public class BranchServiceImpl implements BranchService
                     if (oldBranchHeads == null || !oldBranchHeadsSet.contains(branchHead))
                     {
                         branchDao.createBranchHead(repository.getId(), branchHead);
-                    } else
+                    }
+                    else
                     {
                         headAlreadyThere.add(branchHead);
                     }
@@ -200,8 +201,8 @@ public class BranchServiceImpl implements BranchService
         return communicator.getBranchUrl(repository, branch);
     }
 
-    private void publishBranchCreatedEvent(Branch branch, Set<String> issueKeys)
+    private void broadcastBranchCreatedEvent(Branch branch, Set<String> issueKeys)
     {
-        eventPublisher.publish(new BranchCreatedEvent(branch, issueKeys));
+        threadEvents.broadcast(new BranchCreatedEvent(branch, issueKeys));
     }
 }

@@ -120,57 +120,59 @@ public class DefaultSynchronizer implements Synchronizer
             return;
         }
 
+        if (!repo.isLinked())
+        {
+            return;
+        }
+
         removeFlagForCondition(flags, branchService.getListOfBranchHeads(repo).isEmpty(), SynchronizationFlag.SOFT_SYNC);
 
-        if (repo.isLinked())
+        Progress progress = startProgressSafely(repo, flags);
+        if (progress == null)
         {
+            return;
+        }
 
-            Progress progress= startProgressSafely(repo, flags);
-            if (progress==null) {
-                return;
-            }
+        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-            boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-            boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+        SyncEvents syncEvents = startCapturingSyncEvents(softSync);
 
-            SyncEvents syncEvents = startCapturingSyncEvents(softSync);
+        fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
+        int auditId = 0;
+        try
+        {
+            // audit
+            auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
+            progress.setAuditLogId(auditId);
 
-            fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
-            int auditId = 0;
-            try
+            if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
             {
-                // audit
-                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
-                progress.setAuditLogId(auditId);
-
-                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
-                {
-                    removeDataFromRepoForFullSync(repo, pullRequestSync, changesetsSync);
-                }
-
-                // first retry all failed messages
-                retryAllFailedMessages(repo, auditId);
-
-                removeFlagForCondition( flags,
-                                        !postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE),
-                                        SynchronizationFlag.SYNC_PULL_REQUESTS);
-
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider.getCommunicator(repo.getDvcsType());
-                communicator.startSynchronisation(repo, flags, auditId);
+                removeDataFromRepoForFullSync(repo, pullRequestSync, changesetsSync);
             }
-            catch (Throwable t)
-            {
-                LOG.error(t.getMessage(), t);
-                progress.setError("Error during sync. See server logs.");
-                syncAudit.setException(auditId, t, false);
-                Throwables.propagateIfInstanceOf(t, Error.class);
-            }
-            finally
-            {
-                messagingService.tryEndProgress(repo, progress, null, auditId);
-                stopCapturingAndPublishEvents(syncEvents);
-            }
+
+            // first retry all failed messages
+            retryAllFailedMessages(repo, auditId);
+
+            removeFlagForCondition(flags,
+                    !postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE),
+                    SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+            CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider.getCommunicator(repo.getDvcsType());
+            communicator.startSynchronisation(repo, flags, auditId);
+        }
+        catch (Throwable t)
+        {
+            LOG.error(t.getMessage(), t);
+            progress.setError("Error during sync. See server logs.");
+            syncAudit.setException(auditId, t, false);
+            Throwables.propagateIfInstanceOf(t, Error.class);
+        }
+        finally
+        {
+            messagingService.tryEndProgress(repo, progress, null, auditId);
+            stopCapturingAndPublishEvents(syncEvents);
         }
     }
 
@@ -278,7 +280,8 @@ public class DefaultSynchronizer implements Synchronizer
 
     private boolean removeFlagForCondition(EnumSet<SynchronizationFlag> flags, boolean condition, SynchronizationFlag flag)
     {
-        if (condition) {
+        if (condition)
+        {
             flags.remove(flag);
         }
 

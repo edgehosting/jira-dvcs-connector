@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -19,6 +21,7 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -37,6 +40,9 @@ public class BranchServiceImplTest
 
     @Mock
     private Repository repository;
+
+    @Mock
+    private ThreadEvents threadEvents;
 
     @InjectMocks
     private BranchServiceImpl branchService = new BranchServiceImpl();
@@ -141,6 +147,7 @@ public class BranchServiceImplTest
 
         verify(branchDao).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
         verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
+        verify(threadEvents).broadcast(any(BranchCreatedEvent.class));
 
         assertEquals(removeBranchArgumentCaptor.getValue().getName(), "branch2");
         assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
