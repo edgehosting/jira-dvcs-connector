@@ -216,7 +216,7 @@ public class DefaultSynchronizerTest
 
     @Mock
     private RepositoryDao repositoryDao;
-    
+
     @Mock
     private ChangesetDao changesetDao;
 
@@ -260,7 +260,8 @@ public class DefaultSynchronizerTest
             if (invocation.getMethod().getReturnType().isInstance(builderMock))
             {
                 return builderMock;
-            } else
+            }
+            else
             {
                 return Mockito.RETURNS_DEFAULTS.answer(invocation);
             }
@@ -287,7 +288,8 @@ public class DefaultSynchronizerTest
             if (result == null)
             {
                 return Collections.emptyList();
-            } else
+            }
+            else
             {
                 return Lists.newArrayList(result);
             }
@@ -463,11 +465,12 @@ public class DefaultSynchronizerTest
         private LinkedHashMultimap<String, String> children;
         private LinkedHashMultimap<String, String> parents;
         private HashMap<String, Data> data;
-        private LinkedHashMultimap<String,String> heads;
+        private LinkedHashMultimap<String, String> heads;
         private long fakeDate = System.currentTimeMillis();
 
         private Iterator<BitbucketChangesetPage> pages;
         private int pageNum = 0;
+
         public Graph()
         {
             initGraph();
@@ -504,7 +507,8 @@ public class DefaultSynchronizerTest
             if (parentNode == null)
             {
                 commit(node, "default", null);
-            } else
+            }
+            else
             {
                 commit(node, data.get(parentNode).branch, parentNode);
             }
@@ -526,7 +530,7 @@ public class DefaultSynchronizerTest
             }
 
             data.put(node, new Data(branch, new Date(fakeDate)));
-            fakeDate += 1000*60*60;
+            fakeDate += 1000 * 60 * 60;
 
             heads.put(branch, node);
             return this;
@@ -599,15 +603,15 @@ public class DefaultSynchronizerTest
                 @Override
                 public BitbucketChangesetPage answer(InvocationOnMock invocation) throws Throwable
                 {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     BitbucketChangesetPage currentPage = (BitbucketChangesetPage) invocation.getArguments()[5];
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     List<String> includes = (List<String>) invocation.getArguments()[2];
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     List<String> excludes = (List<String>) invocation.getArguments()[3];
                     if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
                     {
-                        pages =  getPages(includes, excludes, BitbucketCommunicator.CHANGESET_LIMIT);
+                        pages = getPages(includes, excludes, BitbucketCommunicator.CHANGESET_LIMIT);
                         for (int i = 1; currentPage == null || i < currentPage.getPage(); i++)
                         {
                             pages.next();
@@ -623,7 +627,7 @@ public class DefaultSynchronizerTest
                 @Override
                 public BitbucketChangeset answer(InvocationOnMock invocation) throws Throwable
                 {
-                    String node = (String)invocation.getArguments()[2];
+                    String node = (String) invocation.getArguments()[2];
 
                     BitbucketChangeset changeset = new BitbucketChangeset();
                     changeset.setNode(node);
@@ -645,7 +649,7 @@ public class DefaultSynchronizerTest
                     @Override
                     public RepositoryCommit answer(final InvocationOnMock invocation) throws Throwable
                     {
-                        String sha = (String)invocation.getArguments()[1];
+                        String sha = (String) invocation.getArguments()[1];
 
                         RepositoryCommit repositoryCommit = new RepositoryCommit();
                         Commit commit = new Commit();
@@ -708,7 +712,7 @@ public class DefaultSynchronizerTest
 
                     if (changesetIterator.hasNext())
                     {
-                        page.setNext("/?pagelen="+pagelen+"&page="+(pageNum+1)+"&ctx="+(pageNum+1));
+                        page.setNext("/?pagelen=" + pagelen + "&page=" + (pageNum + 1) + "&ctx=" + (pageNum + 1));
                     }
                     page.setValues(values);
                     return page;
@@ -767,7 +771,8 @@ public class DefaultSynchronizerTest
                     if (include == null || include.isEmpty())
                     {
                         includeNodes(heads.values());
-                    } else
+                    }
+                    else
                     {
                         includeNodes(include);
                     }
@@ -1130,7 +1135,7 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, new ArrayList<String>(), softSync);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)
     {
         EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
@@ -1173,7 +1178,7 @@ public class DefaultSynchronizerTest
 
         defaultSynchronizer.doSync(repositoryMock, flags);
 
-        assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
+        assertThat(((BranchDaoMock) branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
 
         int retry = 0;
         while (messagingService.getQueuedCount(null) > 0 && retry < 5)
