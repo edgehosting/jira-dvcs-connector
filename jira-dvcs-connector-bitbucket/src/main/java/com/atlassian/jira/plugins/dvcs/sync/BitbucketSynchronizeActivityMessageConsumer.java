@@ -233,7 +233,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // maybe update
         if (remote != null && hasChanged(local, remote, commentCount))
         {
-            pullRequestService.updatePullRequest(local.getID(), toDaoModelPullRequest(remote, repo, commentCount));
+            local = pullRequestService.updatePullRequest(local.getID(), toDaoModelPullRequest(remote, repo, commentCount));
         }
 
         if (participantIndex != null)
