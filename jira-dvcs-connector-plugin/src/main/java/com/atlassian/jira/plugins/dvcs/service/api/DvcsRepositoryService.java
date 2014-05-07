@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.api;
 
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import java.util.List;
@@ -50,6 +51,15 @@ public interface DvcsRepositoryService
      * @return {@link DvcsUser}
      */
     DvcsUser getDvcsUser(Repository repository, String author, String rawAuthor);
+
+    /**
+     * Retrieve the {@link DvcsEmail}s for a given {@link DvcsUser}.
+     *
+     * @param repository the repository to find
+     * @param dvcsUser the user to find emails for
+     * @return list of {@link DvcsEmail} for this user
+     */
+    List<DvcsEmail> getDvcsUserEmails(Repository repository, DvcsUser dvcsUser);
 
     List<Repository> getRepositories(String dvcsType, boolean includeDeleted);
 }

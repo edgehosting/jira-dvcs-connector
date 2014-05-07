@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -700,6 +701,14 @@ public class RepositoryServiceImpl implements RepositoryService
         }
 
         return user != null ? user : getUnknownUser(repository, author, rawAuthor);
+    }
+
+    @Override
+    public List<DvcsEmail> getEmails(Repository repository, DvcsUser user)
+    {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+
+        return communicator.getEmails(repository, user);
     }
 
     /**
