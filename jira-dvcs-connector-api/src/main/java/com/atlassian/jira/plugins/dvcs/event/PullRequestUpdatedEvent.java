@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 /**
  * A {@link PullRequest} was updated.
  *
- * @since 2.1.5
+ * @since 2.1.6
  */
 @SuppressWarnings ("UnusedDeclaration")
 @EventName ("jira.dvcsconnector.sync.pullrequest.updated")

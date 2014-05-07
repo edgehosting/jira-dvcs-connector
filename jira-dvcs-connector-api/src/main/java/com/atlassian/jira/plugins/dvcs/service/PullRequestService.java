@@ -45,7 +45,7 @@ public interface PullRequestService
      * those into a RepositoryPullRequestMapping.
      *
      * @param repositoryPullRequestMapping the RepositoryPullRequestMapping to create
-     * @since 2.1.5
+     * @since 2.1.6
      */
     RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping);
 
@@ -59,7 +59,7 @@ public interface PullRequestService
      * always performs the update and always raises an event.
      *
      * @param updatedPullRequestMapping a RepositoryPullRequestMapping
-     * @since 2.1.5
+     * @since 2.1.6
      */
     RepositoryPullRequestMapping updatePullRequest(final int pullRequestId, RepositoryPullRequestMapping updatedPullRequestMapping);
 }
