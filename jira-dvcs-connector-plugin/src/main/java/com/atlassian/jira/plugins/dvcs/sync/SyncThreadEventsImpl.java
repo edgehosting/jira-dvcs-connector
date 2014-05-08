@@ -14,20 +14,14 @@ public class SyncThreadEventsImpl implements SyncThreadEvents
     private final ThreadEvents threadEvents;
 
     /**
-     * Provider for sync event listeners.
-     */
-    private final SyncEventListenerProvider listenersProvider;
-
-    /**
      * Creates a new SyncThreadEventsImpl, registering it with the {@code EventPublisher}.
      *
      * @param threadEvents the EntityEvents
      */
     @Autowired
-    public SyncThreadEventsImpl(ThreadEvents threadEvents, SyncEventListenerProvider listenersProvider)
+    public SyncThreadEventsImpl(ThreadEvents threadEvents)
     {
         this.threadEvents = threadEvents;
-        this.listenersProvider = listenersProvider;
     }
 
     @Override
@@ -48,7 +42,7 @@ public class SyncThreadEventsImpl implements SyncThreadEvents
         @Override
         public void publish()
         {
-            threadEventsCapture.publishTo(listenersProvider.getAll());
+            threadEventsCapture.sendToEventPublisher();
         }
 
         @Override

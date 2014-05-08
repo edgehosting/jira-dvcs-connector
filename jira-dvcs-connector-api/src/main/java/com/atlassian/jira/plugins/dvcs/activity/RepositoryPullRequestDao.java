@@ -11,7 +11,30 @@ import java.util.Set;
 public interface RepositoryPullRequestDao
 {
     // C-U-D
+
+    /**
+     * @return a new RepositoryPullRequestMapping
+     * @see #savePullRequest(RepositoryPullRequestMapping)
+     */
+    RepositoryPullRequestMapping createPullRequest();
+
+    /**
+     * Do not use this nasty method.
+     *
+     * @deprecated In favour of {@link #savePullRequest(RepositoryPullRequestMapping)}.
+     */
+    @Deprecated
     RepositoryPullRequestMapping savePullRequest(Repository domain, Map<String, Object> activity);
+
+    /**
+     * Saves a new RepositoryPullRequestMapping.
+     *
+     * @param pullRequest the RepositoryPullRequestMapping to save
+     * @return a saved RepositoryPullRequestMapping
+     * @see #createPullRequest()
+     * @since 2.1.6
+     */
+    RepositoryPullRequestMapping savePullRequest(RepositoryPullRequestMapping pullRequest);
 
     RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, RepositoryPullRequestMapping.Status status,
             Date updatedOn, String sourceRepo, final int commentCount);

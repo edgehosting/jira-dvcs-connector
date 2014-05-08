@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.event.api.EventPublisher;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -23,13 +23,20 @@ public class ThreadEvents
      */
     private final ThreadLocal<EventsCapture> threadEventsCapture = new ThreadLocal<EventsCapture>();
 
-    public ThreadEvents()
+    /**
+     * The <em>real</em> Atlassian event bus. Thread events may be sent here or discarded.
+     */
+    private final EventPublisher eventPublisher;
+
+    @Autowired
+    public ThreadEvents(final EventPublisher eventPublisher)
     {
+        this.eventPublisher = eventPublisher;
     }
 
     /**
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
-     * events can be published using {@link com.atlassian.jira.plugins.dvcs.event.ThreadEvents.EventsCapture#publishTo(java.util.Collection)}.
+     * events can be published using {@link ThreadEventsCapture#sendToEventPublisher()}.
      * <p/>
      * Remember to <b>call {@code EventsCapture.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
@@ -86,23 +93,15 @@ public class ThreadEvents
         }
 
         @Override
-        public void publishTo(Collection<?> listeners)
+        public void sendToEventPublisher()
         {
-            // create a new event bus just for publishing
-            final EventBus eventBus = new EventBus();
-            for (Object listener : listeners)
-            {
-                logger.debug("Registering listener: {}", listener);
-                eventBus.register(listener);
-            }
-
             for (Object event : capturedEvents)
             {
-                logger.debug("Posting event: {}", event);
-                eventBus.post(event);
+                logger.debug("Sending to EventPublisher: {}", event);
+                eventPublisher.publish(event);
             }
 
-            logger.debug("Published {} events to {}", capturedEvents.size(), listeners);
+            logger.debug("Published {} events to {}", capturedEvents.size(), eventPublisher);
             capturedEvents = Lists.newArrayList();
         }
 
