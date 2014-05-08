@@ -111,7 +111,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -244,11 +243,20 @@ public class DefaultSynchronizerTest
     @Mock
     private ThreadEvents threadEvents;
 
+    private SyncThreadEvents syncThreadEventsDefaultSynchronizer;
+    private SyncEvents syncEventsDefaultSynchronizer;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
         when(syncThreadEvents.startCapturing()).thenReturn(syncEvents);
+
+        // note: this second instances of mocks are required to test properly. In real life, MessageExecutor and DefaultSynchronizer run in separate threads.
+        syncThreadEventsDefaultSynchronizer= Mockito.mock(SyncThreadEvents.class);
+        ReflectionTestUtils.setField(defaultSynchronizer, "syncThreadEvents", syncThreadEventsDefaultSynchronizer);
+
+        syncEventsDefaultSynchronizer= Mockito.mock(SyncEvents.class);
+        when(syncThreadEventsDefaultSynchronizer.startCapturing()).thenReturn(syncEventsDefaultSynchronizer);
     }
 
     private static class BuilderAnswer implements Answer<Object>
@@ -1005,8 +1013,29 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, processedNodes, true);
 
         // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
-        verify(syncEvents, times(2)).stopCapturing();
-        verify(syncEvents, times(2)).publish();
+        verify(syncEvents).stopCapturing();
+        verify(syncEvents).publish();
+    }
+
+    @Test
+    public void doSyncEventsShouldBeCaptured()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+        // Should not capture events on first sync - it's a full sync
+        checkSynchronization(graph, processedNodes, true);
+
+        graph.commit("node2", "node1").mock();
+        checkSynchronization(graph, processedNodes, true);
+
+        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
+        verify(syncEventsDefaultSynchronizer).stopCapturing();
+        verify(syncEventsDefaultSynchronizer).publish();
     }
 
     @Test

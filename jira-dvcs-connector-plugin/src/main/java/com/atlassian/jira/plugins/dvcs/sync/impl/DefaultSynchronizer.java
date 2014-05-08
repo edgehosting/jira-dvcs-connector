@@ -173,8 +173,8 @@ public class DefaultSynchronizer implements Synchronizer
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
-                messagingService.tryEndProgress(repo, progress, null, auditId);
                 stopCapturingAndPublishEvents(syncEvents);
+                messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
     }

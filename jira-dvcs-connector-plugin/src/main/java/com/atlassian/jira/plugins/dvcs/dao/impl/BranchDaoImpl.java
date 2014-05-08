@@ -66,10 +66,10 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
     {
-        BranchMapping branchMapping = activeObjects.executeInTransaction(new TransactionCallback<BranchMapping>()
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
-            public BranchMapping doInTransaction()
+            public Void doInTransaction()
             {
                 log.debug("adding branch {} for repository with id = [ {} ]", new Object[] { branch, repositoryId });
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
@@ -78,7 +78,7 @@ public class BranchDaoImpl implements BranchDao
 
                 BranchMapping branchMapping = activeObjects.create(BranchMapping.class, map);
                 associateBranchToIssue(branchMapping, issueKeys);
-                return branchMapping;
+                return null;
             }
         });
     }
