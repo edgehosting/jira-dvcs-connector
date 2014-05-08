@@ -32,7 +32,7 @@ public interface RepositoryPullRequestDao
      * @param pullRequest the RepositoryPullRequestMapping to save
      * @return a saved RepositoryPullRequestMapping
      * @see #createPullRequest()
-     * @since 2.1.5
+     * @since 2.1.6
      */
     RepositoryPullRequestMapping savePullRequest(RepositoryPullRequestMapping pullRequest);
 

@@ -11,7 +11,7 @@ import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 /**
  * Base class for {@code PullRequest} events.
  *
- * @since 2.1.5
+ * @since 2.1.6
  */
 public class PullRequestEvent
 {
