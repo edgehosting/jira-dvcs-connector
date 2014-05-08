@@ -49,6 +49,8 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -90,8 +92,6 @@ import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessage
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
-import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -139,10 +139,10 @@ public class DefaultSynchronizerTest
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
     @Mock
-    private SyncThreadEvents syncThreadEvents;
+    private ThreadEvents syncThreadEvents;
 
     @Mock
-    private SyncEvents syncEvents;
+    private ThreadEventsCaptor eventsCaptor;
 
     @Mock
     private BranchService branchService;
@@ -245,7 +245,7 @@ public class DefaultSynchronizerTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-        when(syncThreadEvents.startCapturing()).thenReturn(syncEvents);
+        when(syncThreadEvents.startCapturing()).thenReturn(eventsCaptor);
     }
 
     private static class BuilderAnswer implements Answer<Object>
@@ -430,7 +430,7 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
-        ReflectionTestUtils.setField(messageExecutor, "syncThreadEvents", syncThreadEvents);
+        ReflectionTestUtils.setField(messageExecutor, "threadEvents", syncThreadEvents);
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
         ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
@@ -989,14 +989,14 @@ public class DefaultSynchronizerTest
         graph.commit("node1", null).mock();
         checkSynchronization(graph, processedNodes, true);
         // Should not capture events on first sync - it's a full sync
-        verify(syncEvents, never()).stopCapturing();
-        verify(syncEvents, never()).publish();
+        verify(eventsCaptor, never()).stopCapturing();
+        verify(eventsCaptor, never()).sendToEventPublisher();
 
         graph.commit("node2", "node1").mock();
         checkSynchronization(graph, processedNodes, true);
 
-        verify(syncEvents).stopCapturing();
-        verify(syncEvents).publish();
+        verify(eventsCaptor).stopCapturing();
+        verify(eventsCaptor).sendToEventPublisher();
     }
 
     @Test
@@ -1011,7 +1011,7 @@ public class DefaultSynchronizerTest
         graph.commit("node1", null).mock();
 
         checkSynchronization(graph, processedNodes, false);
-        verifyZeroInteractions(syncEvents);
+        verifyZeroInteractions(eventsCaptor);
     }
 
     @Test

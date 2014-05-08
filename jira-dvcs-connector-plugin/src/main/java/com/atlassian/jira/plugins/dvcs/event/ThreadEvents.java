@@ -21,7 +21,7 @@ public class ThreadEvents
     /**
      * Captures thread-local events until they are published or discarded.
      */
-    private final ThreadLocal<EventsCapture> threadEventsCapture = new ThreadLocal<EventsCapture>();
+    private final ThreadLocal<ThreadEventsCaptorImpl> threadEventCaptor = new ThreadLocal<ThreadEventsCaptorImpl>();
 
     /**
      * The <em>real</em> Atlassian event bus. Thread events may be sent here or discarded.
@@ -36,22 +36,22 @@ public class ThreadEvents
 
     /**
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
-     * events can be published using {@link ThreadEventsCapture#sendToEventPublisher()}.
+     * events can be published using {@link ThreadEventsCaptor#sendToEventPublisher()}.
      * <p/>
-     * Remember to <b>call {@code EventsCapture.stopCapturing()} to terminate the capture</b> or risk leaking memory.
+     * Remember to <b>call {@code EventCaptor.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
      * @return a new EventsCapture
      * @throws java.lang.IllegalStateException if there is already an active ThreadEventsCapture on the current thread
      */
-    public ThreadEventsCapture startCapturingEvents()
+    public ThreadEventsCaptor startCapturing()
     {
-        if (threadEventsCapture.get() != null)
+        if (threadEventCaptor.get() != null)
         {
             // we could chain these up but YAGNI... just error out for now
             throw new IllegalStateException("There is already an active ThreadEventsCapture");
         }
 
-        return new EventsCapture();
+        return new ThreadEventsCaptorImpl();
     }
 
     /**
@@ -61,16 +61,16 @@ public class ThreadEvents
      */
     public void broadcast(Object event)
     {
-        EventsCapture eventsCapture = threadEventsCapture.get();
+        ThreadEventsCaptorImpl eventCaptorImpl = threadEventCaptor.get();
         logger.debug("There is no active ThreadEventsCapture. Dropping event: {}", event);
 
-        if (eventsCapture != null)
+        if (eventCaptorImpl != null)
         {
-            eventsCapture.capture(event);
+            eventCaptorImpl.capture(event);
         }
     }
 
-    private final class EventsCapture implements ThreadEventsCapture
+    private final class ThreadEventsCaptorImpl implements ThreadEventsCaptor
     {
         /**
          * Where we hold captured events until they are published or discarded.
@@ -81,15 +81,15 @@ public class ThreadEvents
         /**
          * Creates a new ThreadEventsCapture and sets it as the active capture in the enclosing ThreadEvents.
          */
-        EventsCapture()
+        ThreadEventsCaptorImpl()
         {
-            threadEventsCapture.set(this);
+            threadEventCaptor.set(this);
         }
 
         @Override
         public void stopCapturing()
         {
-            threadEventsCapture.remove();
+            threadEventCaptor.remove();
         }
 
         @Override
