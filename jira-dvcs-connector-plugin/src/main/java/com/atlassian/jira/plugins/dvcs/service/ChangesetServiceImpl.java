@@ -5,6 +5,8 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -45,6 +47,9 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private RepositoryDao repositoryDao;
 
+    @Resource
+    private ThreadEvents threadEvents;
+
     public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
@@ -59,12 +64,20 @@ public class ChangesetServiceImpl implements ChangesetService
         createLock.lock();
         try
         {
-            return changesetDao.create(changeset, extractedIssues);
+            Changeset changesetNew = changesetDao.create(changeset, extractedIssues);
+
+            broadcastChangesetCreatedEvent(changesetNew, extractedIssues);
+            return changesetNew;
         }
         finally
         {
             createLock.unlock();
         }
+    }
+
+    private void broadcastChangesetCreatedEvent(Changeset changeset, Set<String> issueKeys)
+    {
+        threadEvents.broadcast(new ChangesetCreatedEvent(changeset, issueKeys));
     }
 
     @Override
@@ -167,7 +180,7 @@ public class ChangesetServiceImpl implements ChangesetService
         {
             DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            for (int i = 0;  i < changeset.getFiles().size(); i++)
+            for (int i = 0; i < changeset.getFiles().size(); i++)
             {
                 ChangesetFile changesetFile = changeset.getFiles().get(i);
                 String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
@@ -186,10 +199,11 @@ public class ChangesetServiceImpl implements ChangesetService
         return Sets.newHashSet(changesets);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private List<Changeset> checkChangesetVersion(List<Changeset> changesets)
     {
-        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer() {
+        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer()
+        {
 
             @Override
             public Object transform(Object input)
@@ -202,8 +216,8 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     /**
-     * Checks if changeset has latest version. If not it will be updated from remote DVCS and stored to DB.
-     * Updated version will return back.
+     * Checks if changeset has latest version. If not it will be updated from remote DVCS and stored to DB. Updated
+     * version will return back.
      *
      * @param changeset changeset on which we check version
      * @return updated changeset
@@ -237,11 +251,11 @@ public class ChangesetServiceImpl implements ChangesetService
         return changeset;
     }
 
-	@Override
-	public void markSmartcommitAvailability(int id, boolean available)
-	{
-		changesetDao.markSmartcommitAvailability(id, available);
-	}
+    @Override
+    public void markSmartcommitAvailability(int id, boolean available)
+    {
+        changesetDao.markSmartcommitAvailability(id, available);
+    }
 
     @Override
     public Set<String> findReferencedProjects(int repositoryId)
