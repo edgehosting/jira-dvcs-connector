@@ -70,7 +70,5 @@ public class ChangesetServiceImplTest
         assertThat(eventCaptor.getValue(), instanceOf(ChangesetCreatedEvent.class));
         ChangesetCreatedEvent event = (ChangesetCreatedEvent) eventCaptor.getValue();
         assertThat(event.getChangeset(), is(changeset));
-
-        // threadEvents.broadcast(new ChangesetCreatedEvent(changeset, issueKeys));
     }
 }
