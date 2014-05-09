@@ -23,7 +23,7 @@ public final class BranchCreatedEvent
 
     public BranchCreatedEvent(final @Nonnull Branch branch, final @Nonnull Set<String> issueKeys)
     {
-        this.issueKeys = issueKeys;
+        this.issueKeys = checkNotNull(issueKeys, "issueKeys");
         this.branch = checkNotNull(branch, "branch");
     }
 
