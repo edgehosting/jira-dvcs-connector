@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser.UnknownUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -24,6 +23,7 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -704,11 +704,9 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @Override
-    public List<DvcsEmail> getEmails(Repository repository, DvcsUser user)
+    public Set<String> getEmails(Repository repository, DvcsUser user)
     {
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-
-        return communicator.getEmails(repository, user);
+        return changesetService.findEmails(repository.getId(), user.getUsername());
     }
 
     /**

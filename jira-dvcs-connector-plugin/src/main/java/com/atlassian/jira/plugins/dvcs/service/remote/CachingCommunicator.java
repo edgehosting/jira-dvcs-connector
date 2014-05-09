@@ -14,7 +14,6 @@ import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.util.concurrent.NotNull;
 import com.google.common.annotations.VisibleForTesting;
@@ -132,12 +131,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         {
             throw unrollException(e);
         }
-    }
-
-    @Override
-    public List<DvcsEmail> getEmails(Repository repository, DvcsUser user)
-    {
-        return delegate.getEmails(repository, user);
     }
 
     private SourceControlException unrollException(final Throwable e)

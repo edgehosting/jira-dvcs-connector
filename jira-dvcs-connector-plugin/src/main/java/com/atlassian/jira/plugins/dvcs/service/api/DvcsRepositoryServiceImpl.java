@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service.api;
 
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 
 import java.util.List;
+import java.util.Set;
 
 public class DvcsRepositoryServiceImpl implements DvcsRepositoryService
 {
@@ -47,7 +47,7 @@ public class DvcsRepositoryServiceImpl implements DvcsRepositoryService
     }
 
     @Override
-    public List<DvcsEmail> getDvcsUserEmails(Repository repository, DvcsUser dvcsUser)
+    public Set<String> getDvcsUserEmails(Repository repository, DvcsUser dvcsUser)
     {
         return repositoryService.getEmails(repository, dvcsUser);
     }

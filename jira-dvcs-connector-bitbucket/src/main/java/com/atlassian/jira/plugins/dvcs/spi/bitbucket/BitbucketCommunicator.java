@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
@@ -28,7 +27,6 @@ import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -46,7 +44,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketEmail;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketServiceEnvelope;
@@ -71,8 +68,6 @@ import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -587,26 +582,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         String fullName = bitbucketAccount.getFirstName() + " " + bitbucketAccount.getLastName();
         String avatar = bitbucketAccount.getAvatar();
         return new DvcsUser(username, fullName, null, avatar, repository.getOrgHostUrl() + "/" + username);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<DvcsEmail> getEmails(Repository repository, DvcsUser user)
-    {
-        BitbucketRemoteClient remoteClient = bitbucketClientBuilderFactory.forRepository(repository).build();
-
-        List<BitbucketEmail> emails = remoteClient.getAccountRest().getEmails(user.getUsername());
-
-        return Lists.transform(emails, new Function<BitbucketEmail, DvcsEmail>()
-        {
-            @Override
-            public DvcsEmail apply(@Nullable BitbucketEmail bitbucketEmail)
-            {
-                return new DvcsEmail(bitbucketEmail.getEmail(), bitbucketEmail.isPrimary(), bitbucketEmail.isActive());
-            }
-        });
     }
 
     /**

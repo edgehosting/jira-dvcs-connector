@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -56,14 +55,6 @@ public interface DvcsCommunicator
 	String getFileCommitUrl(Repository repository, Changeset changeset, String file, int index);
 
     DvcsUser getUser(Repository repository, String author);
-
-    /**
-     * Gets the list of e-mails for a given DvcsUser.
-     *
-     * @param user the DvcsUser to get the e-mails for.
-     * @return a List of Emails registered for that User. Empty list if we cannot resolve any.
-     */
-    List<DvcsEmail> getEmails(Repository repository, DvcsUser user);
 
     /**
      * Returns remote user who is owner of currently used accessToken

@@ -249,5 +249,9 @@ public class ChangesetServiceImpl implements ChangesetService
         return changesetDao.findReferencedProjects(repositoryId);
     }
 
-
+    @Override
+    public Set<String> findEmails(int repositoryId, String author)
+    {
+        return changesetDao.findEmails(repositoryId, author);
+    }
 }

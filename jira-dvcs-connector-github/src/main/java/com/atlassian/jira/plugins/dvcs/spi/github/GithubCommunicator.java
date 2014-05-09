@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
-import com.atlassian.jira.plugins.dvcs.model.DvcsEmail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -474,26 +473,6 @@ public class GithubCommunicator implements DvcsCommunicator
 
             return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl() + "/" + login);
         } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public List<DvcsEmail> getEmails(Repository repository, DvcsUser user)
-    {
-        try
-        {
-            // Trying to get the list of e-mails for an arbitrary account looks difficult
-            // Instead, we'll just return the public e-mail address on the User object
-
-            UserService userService = githubClientProvider.getUserService(repository);
-
-            User ghUser = userService.getUser(user.getFullName());
-
-            return Collections.singletonList(new DvcsEmail(ghUser.getEmail(), true, true));
-        }
-        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

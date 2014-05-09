@@ -444,6 +444,40 @@ public class ChangesetDaoImpl implements ChangesetDao
         return projectKeys;
     }
 
+    @Override
+    public Set<String> findEmails(int repositoryId, String author)
+    {
+        Query query = Query.select(ChangesetMapping.AUTHOR_EMAIL).distinct()
+                .from(ChangesetMapping.class)
+                .alias(ChangesetMapping.class, "chm")
+                .alias(RepositoryToChangesetMapping.class, "rtchm")
+                .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
+                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm." + ChangesetMapping.AUTHOR + " = ? ", repositoryId, author).limit(10);
+
+        final Set<String> emails= new HashSet<String>();
+
+        activeObjects.stream(AuthorEmail.class, query, new EntityStreamCallback<AuthorEmail, String>()
+        {
+            @Override
+            public void onRowRead(AuthorEmail mapping)
+            {
+                emails.add(mapping.getAuthorEmail());
+            }
+        });
+
+        return emails;
+    }
+
+    @Table("ChangesetMapping")
+    static interface AuthorEmail extends RawEntity<String>
+    {
+
+        @PrimaryKey(ChangesetMapping.AUTHOR_EMAIL)
+        String getAuthorEmail();
+
+        void setAuthorEmail();
+    }
+
     @Table("IssueToChangeset")
     static interface ProjectKey extends RawEntity<String>
     {
