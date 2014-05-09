@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 public class ThreadEventsTest
 {
     ThreadEvents threadEvents;
-    ThreadEventsCapture threadEventsCapture;
+    ThreadEventsCaptor threadEventsCaptor;
 
     @Mock
     ChangesetMapping changeset;
@@ -36,13 +36,13 @@ public class ThreadEventsTest
         MockitoAnnotations.initMocks(this);
         threadEvents = new ThreadEvents(eventPublisher);
 
-        threadEventsCapture = threadEvents.startCapturingEvents();
+        threadEventsCaptor = threadEvents.startCapturing();
     }
 
     @AfterMethod
     public void tearDown() throws Exception
     {
-        threadEventsCapture.stopCapturing();
+        threadEventsCaptor.stopCapturing();
     }
 
     @Test
@@ -55,7 +55,7 @@ public class ThreadEventsTest
         verifyZeroInteractions(eventPublisher);
 
         ArgumentCaptor<Object> publishedEvents = ArgumentCaptor.forClass(Object.class);
-        threadEventsCapture.sendToEventPublisher();
+        threadEventsCaptor.sendToEventPublisher();
         verify(eventPublisher, times(2)).publish(publishedEvents.capture());
 
         assertThat(publishedEvents.getAllValues(), Matchers.<Object>hasItems(changeset, pullRequest));
@@ -64,10 +64,10 @@ public class ThreadEventsTest
     @Test
     public void listenersShouldNotReceiveEventsRaisedAfterTheyHaveStoppedListening() throws Exception
     {
-        threadEventsCapture.stopCapturing();
+        threadEventsCaptor.stopCapturing();
         threadEvents.broadcast(pullRequest);
 
-        threadEventsCapture.sendToEventPublisher();
+        threadEventsCaptor.sendToEventPublisher();
         verifyZeroInteractions(eventPublisher);
     }
 
@@ -85,7 +85,7 @@ public class ThreadEventsTest
         thread.start();
         thread.join();
 
-        threadEventsCapture.sendToEventPublisher();
+        threadEventsCaptor.sendToEventPublisher();
         verifyZeroInteractions(eventPublisher);
     }
 }

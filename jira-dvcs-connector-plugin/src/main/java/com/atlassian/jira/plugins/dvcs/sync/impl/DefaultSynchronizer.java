@@ -11,6 +11,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -21,8 +23,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
-import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.annotations.VisibleForTesting;
@@ -84,7 +84,7 @@ public class DefaultSynchronizer implements Synchronizer
     private GitHubEventService gitHubEventService;
 
     @Resource
-    private SyncThreadEvents syncThreadEvents;
+    private ThreadEvents syncThreadEvents;
 
     private final ClusterLockService clusterLockService;
 
@@ -139,7 +139,7 @@ public class DefaultSynchronizer implements Synchronizer
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            SyncEvents syncEvents = startCapturingSyncEvents(softSync);
+            ThreadEventsCaptor syncEvents = startCapturingSyncEvents(softSync);
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
             int auditId = 0;
             try
@@ -233,7 +233,7 @@ public class DefaultSynchronizer implements Synchronizer
 
     }
 
-    private SyncEvents startCapturingSyncEvents(boolean softSync)
+    private ThreadEventsCaptor startCapturingSyncEvents(boolean softSync)
     {
         if (softSync)
         {
@@ -243,12 +243,12 @@ public class DefaultSynchronizer implements Synchronizer
         return null;
     }
 
-    private void stopCapturingAndPublishEvents(SyncEvents syncEvents)
+    private void stopCapturingAndPublishEvents(ThreadEventsCaptor syncEvents)
     {
         if (syncEvents != null)
         {
             syncEvents.stopCapturing();
-            syncEvents.publish();
+            syncEvents.sendToEventPublisher();
         }
     }
 
