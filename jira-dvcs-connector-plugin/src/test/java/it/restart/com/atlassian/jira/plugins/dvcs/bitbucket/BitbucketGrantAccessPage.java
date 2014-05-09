@@ -1,11 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 public class BitbucketGrantAccessPage implements Page
 {    

@@ -1,5 +1,40 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.junit.rules.AvailableInContainer;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
+import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
+import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.xsrf.XsrfTokenGenerator;
+import com.atlassian.jira.util.I18nHelper;
+import com.atlassian.jira.web.action.RedirectSanitiser;
+import com.atlassian.sal.api.ApplicationProperties;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.scribe.exceptions.OAuthException;
+import org.scribe.model.Token;
+import org.scribe.model.Verifier;
+import org.scribe.oauth.OAuthService;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import webwork.action.Action;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
@@ -19,45 +54,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization;
-
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.scribe.exceptions.OAuthException;
-import org.scribe.model.Token;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuthService;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import webwork.action.Action;
-
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.junit.rules.AvailableInContainer;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
-import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
-import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.xsrf.XsrfTokenGenerator;
-import com.atlassian.jira.util.I18nHelper;
-import com.atlassian.jira.web.action.RedirectSanitiser;
-import com.atlassian.sal.api.ApplicationProperties;
 
 public class AddBitbucketOrganizationTest
 {

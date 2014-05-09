@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects;
 
-import net.java.ao.schema.Table;
 import net.java.ao.Entity;
+import net.java.ao.schema.Table;
 
 @Table("BITBUCKET_PR_COMMITS")
 public interface BitbucketPullRequestCommitMapping extends Entity

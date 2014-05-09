@@ -1,19 +1,18 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
-import java.util.List;
-
-import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import org.mockito.Mockito;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.github.impl.GitHubRESTClientImpl;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
+import org.mockito.Mockito;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.List;
 
 /**
  * Unit test over {@link GitHubRESTClientImpl}.

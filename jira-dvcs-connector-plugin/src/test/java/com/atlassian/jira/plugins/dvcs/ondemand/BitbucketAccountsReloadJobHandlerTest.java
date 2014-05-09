@@ -1,15 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import com.atlassian.scheduler.compat.JobHandler;
 import com.atlassian.scheduler.compat.JobInfo;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;

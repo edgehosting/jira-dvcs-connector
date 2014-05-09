@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import org.testng.annotations.Test;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 
 /**

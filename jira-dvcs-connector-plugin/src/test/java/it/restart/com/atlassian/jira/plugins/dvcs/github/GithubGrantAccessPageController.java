@@ -1,9 +1,8 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
 
-import it.restart.com.atlassian.jira.plugins.dvcs.GrantAccessPageController;
-
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import it.restart.com.atlassian.jira.plugins.dvcs.GrantAccessPageController;
 
 public class GithubGrantAccessPageController implements GrantAccessPageController
 {

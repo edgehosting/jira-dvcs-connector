@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import com.atlassian.jira.plugins.dvcs.sync.ExecutorServiceFactoryBean;
 import com.atlassian.util.concurrent.ThreadFactories;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  */

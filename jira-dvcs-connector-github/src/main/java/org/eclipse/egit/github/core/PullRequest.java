@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.egit.github.core;
 
+import org.eclipse.egit.github.core.util.DateUtils;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import org.eclipse.egit.github.core.util.DateUtils;
 
 /**
  * Pull request model class.

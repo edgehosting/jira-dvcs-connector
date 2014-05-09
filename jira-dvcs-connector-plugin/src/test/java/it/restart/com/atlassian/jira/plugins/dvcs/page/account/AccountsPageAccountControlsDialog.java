@@ -1,12 +1,11 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
 
 /**
  * Controls dialog of {@link AccountsPageAccount}.

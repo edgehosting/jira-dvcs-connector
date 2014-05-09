@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang.StringUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
@@ -22,6 +10,17 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.util.concurrent.ThreadFactories;
+import org.apache.commons.lang.StringUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted

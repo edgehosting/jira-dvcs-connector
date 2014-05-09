@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;

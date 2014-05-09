@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 public class UserAddListenerFactoryBean implements InitializingBean, DisposableBean
 {

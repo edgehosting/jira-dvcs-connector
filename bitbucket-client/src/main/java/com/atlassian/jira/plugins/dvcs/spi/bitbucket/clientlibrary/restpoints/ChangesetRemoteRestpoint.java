@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
@@ -17,6 +11,12 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
 import com.atlassian.jira.util.UrlBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ChangesetRemoteRestpoint

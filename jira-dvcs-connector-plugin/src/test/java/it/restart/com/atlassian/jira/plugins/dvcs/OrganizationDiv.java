@@ -1,18 +1,17 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import com.atlassian.pageobjects.elements.query.Poller;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountControlsDialog;
-import org.openqa.selenium.By;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.ConfirmationDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
+import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountControlsDialog;
+import org.openqa.selenium.By;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;

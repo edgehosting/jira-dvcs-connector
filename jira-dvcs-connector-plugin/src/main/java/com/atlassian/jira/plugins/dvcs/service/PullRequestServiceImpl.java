@@ -15,11 +15,11 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.apache.commons.lang.StringUtils;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Implementation of {@link PullRequestService}

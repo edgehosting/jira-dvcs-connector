@@ -1,12 +1,11 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElementFinder;
+import org.openqa.selenium.By;
+
+import javax.inject.Inject;
 
 /**
  * Holds available DVCS accounts.

@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.ws.rs.ext.Provider;
-
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.google.common.base.Preconditions;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ResourceFilter;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
+
+import java.util.Collections;
+import java.util.List;
+import javax.ws.rs.ext.Provider;
 
 /**
  * <p>A {@link ResourceFilterFactory} that checks wether the client is authenticated or not.<p>

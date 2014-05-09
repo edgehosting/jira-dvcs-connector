@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventContext;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Aggregator over all {@link GitHubEventProcessor}s.

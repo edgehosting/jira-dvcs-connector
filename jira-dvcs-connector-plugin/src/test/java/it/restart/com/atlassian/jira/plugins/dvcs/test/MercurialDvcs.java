@@ -1,13 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
-
 import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
 import com.aragost.javahg.RepositoryConfiguration;
@@ -17,6 +9,13 @@ import com.aragost.javahg.commands.CommitCommand;
 import com.aragost.javahg.commands.PushCommand;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract, common implementation for all GitHub tests.

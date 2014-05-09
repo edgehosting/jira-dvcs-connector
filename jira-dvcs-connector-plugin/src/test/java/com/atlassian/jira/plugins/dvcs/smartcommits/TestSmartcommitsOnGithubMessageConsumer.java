@@ -1,24 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -32,6 +13,24 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.util.Date;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public final class TestSmartcommitsOnGithubMessageConsumer
 {

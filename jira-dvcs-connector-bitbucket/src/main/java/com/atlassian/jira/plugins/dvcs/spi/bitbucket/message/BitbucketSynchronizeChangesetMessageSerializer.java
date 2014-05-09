@@ -1,21 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
+import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
+import com.atlassian.jira.util.json.JSONObject;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
-import org.apache.commons.collections.CollectionUtils;
-
-import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
-import com.atlassian.jira.util.json.JSONObject;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * An implementation of {@link MessagePayloadSerializer} over {@link BitbucketSynchronizeChangesetMessage}.

@@ -1,8 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
+import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.StringWriter;
 import java.util.Map;
-
 import javax.annotation.Resource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -11,14 +17,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
-import com.atlassian.jira.util.collect.MapBuilder;
-import com.atlassian.templaterenderer.TemplateRenderer;
 
 @Path("/audit")
 public class AuditRootResource
