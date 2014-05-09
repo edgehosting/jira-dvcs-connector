@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -27,6 +29,9 @@ public class BranchServiceImpl implements BranchService
 
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    @Resource
+    private ThreadEvents threadEvents;
 
     private static final Logger log = LoggerFactory.getLogger(BranchServiceImpl.class);
 
@@ -57,6 +62,8 @@ public class BranchServiceImpl implements BranchService
             {
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
+
+                broadcastBranchCreatedEvent(branch, issueKeys);
             }
         }
 
@@ -148,7 +155,8 @@ public class BranchServiceImpl implements BranchService
                     if (oldBranchHeads == null || !oldBranchHeadsSet.contains(branchHead))
                     {
                         branchDao.createBranchHead(repository.getId(), branchHead);
-                    } else
+                    }
+                    else
                     {
                         headAlreadyThere.add(branchHead);
                     }
@@ -191,5 +199,10 @@ public class BranchServiceImpl implements BranchService
     {
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
         return communicator.getBranchUrl(repository, branch);
+    }
+
+    private void broadcastBranchCreatedEvent(Branch branch, Set<String> issueKeys)
+    {
+        threadEvents.broadcast(new BranchCreatedEvent(branch, issueKeys));
     }
 }

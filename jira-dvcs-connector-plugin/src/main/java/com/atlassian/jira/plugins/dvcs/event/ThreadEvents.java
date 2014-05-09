@@ -62,11 +62,13 @@ public class ThreadEvents
     public void broadcast(Object event)
     {
         EventsCapture eventsCapture = threadEventsCapture.get();
-        logger.debug("There is no active ThreadEventsCapture. Dropping event: {}", event);
 
         if (eventsCapture != null)
         {
             eventsCapture.capture(event);
+        }
+        else {
+            logger.debug("There is no active ThreadEventsCapture. Dropping event: {}", event);
         }
     }
 
