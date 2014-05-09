@@ -38,7 +38,7 @@ public class ThreadEvents
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
      * events can be published using {@link ThreadEventsCaptor#sendToEventPublisher()}.
      * <p/>
-     * Remember to <b>call {@code EventCaptor.stopCapturing()} to terminate the capture</b> or risk leaking memory.
+     * Remember to <b>call {@code ThreadEventsCaptor.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
      * @return a new EventsCapture
      * @throws java.lang.IllegalStateException if there is already an active ThreadEventsCapture on the current thread
@@ -61,12 +61,14 @@ public class ThreadEvents
      */
     public void broadcast(Object event)
     {
-        ThreadEventsCaptorImpl eventCaptorImpl = threadEventCaptor.get();
-        logger.debug("There is no active ThreadEventsCapture. Dropping event: {}", event);
-
-        if (eventCaptorImpl != null)
+        ThreadEventsCaptorImpl eventCaptor = threadEventCaptor.get();
+        if (eventCaptor != null)
         {
-            eventCaptorImpl.capture(event);
+            eventCaptor.capture(event);
+        }
+        else
+        {
+            logger.debug("There is no active ThreadEventsCaptor. Dropping event: {}", event);
         }
     }
 

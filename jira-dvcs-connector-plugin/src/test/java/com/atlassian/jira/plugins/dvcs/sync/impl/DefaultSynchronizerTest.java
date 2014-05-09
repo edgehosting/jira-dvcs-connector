@@ -1,42 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import junit.framework.Assert;
-
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.Commit;
-import org.eclipse.egit.github.core.CommitFile;
-import org.eclipse.egit.github.core.CommitUser;
-import org.eclipse.egit.github.core.IRepositoryIdProvider;
-import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.TypedResource;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import org.testng.collections.Sets;
-
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.cache.CacheManager;
@@ -104,6 +67,40 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
+import junit.framework.Assert;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.CommitFile;
+import org.eclipse.egit.github.core.CommitUser;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.TypedResource;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.collections.Sets;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -242,10 +239,23 @@ public class DefaultSynchronizerTest
     @Mock
     private ClusterLock clusterLock;
 
+    @Mock
+    private ThreadEvents threadEvents;
+
+    private ThreadEvents syncThreadEventsDefaultSynchronizer;
+    private ThreadEventsCaptor syncEventsDefaultSynchronizer;
+
     @BeforeMethod
     public void setUp() throws Exception
     {
         when(syncThreadEvents.startCapturing()).thenReturn(eventsCaptor);
+
+        // note: this second instances of mocks are required to test properly. In real life, MessageExecutor and DefaultSynchronizer run in separate threads.
+        syncThreadEventsDefaultSynchronizer = Mockito.mock(ThreadEvents.class);
+        ReflectionTestUtils.setField(defaultSynchronizer, "syncThreadEvents", syncThreadEventsDefaultSynchronizer);
+
+        syncEventsDefaultSynchronizer = Mockito.mock(ThreadEventsCaptor.class);
+        when(syncThreadEventsDefaultSynchronizer.startCapturing()).thenReturn(syncEventsDefaultSynchronizer);
     }
 
     private static class BuilderAnswer implements Answer<Object>
@@ -257,7 +267,8 @@ public class DefaultSynchronizerTest
             if (invocation.getMethod().getReturnType().isInstance(builderMock))
             {
                 return builderMock;
-            } else
+            }
+            else
             {
                 return Mockito.RETURNS_DEFAULTS.answer(invocation);
             }
@@ -284,7 +295,8 @@ public class DefaultSynchronizerTest
             if (result == null)
             {
                 return Collections.emptyList();
-            } else
+            }
+            else
             {
                 return Lists.newArrayList(result);
             }
@@ -375,6 +387,7 @@ public class DefaultSynchronizerTest
 
         branchDao = new BranchDaoMock();
         final BranchService branchService = new BranchServiceImpl();
+        ReflectionTestUtils.setField(branchService, "threadEvents", threadEvents);
         ReflectionTestUtils.setField(branchService, "branchDao", branchDao);
         ReflectionTestUtils.setField(branchService, "dvcsCommunicatorProvider", dvcsCommunicatorProvider);
 
@@ -459,11 +472,12 @@ public class DefaultSynchronizerTest
         private LinkedHashMultimap<String, String> children;
         private LinkedHashMultimap<String, String> parents;
         private HashMap<String, Data> data;
-        private LinkedHashMultimap<String,String> heads;
+        private LinkedHashMultimap<String, String> heads;
         private long fakeDate = System.currentTimeMillis();
 
         private Iterator<BitbucketChangesetPage> pages;
         private int pageNum = 0;
+
         public Graph()
         {
             initGraph();
@@ -500,7 +514,8 @@ public class DefaultSynchronizerTest
             if (parentNode == null)
             {
                 commit(node, "default", null);
-            } else
+            }
+            else
             {
                 commit(node, data.get(parentNode).branch, parentNode);
             }
@@ -522,7 +537,7 @@ public class DefaultSynchronizerTest
             }
 
             data.put(node, new Data(branch, new Date(fakeDate)));
-            fakeDate += 1000*60*60;
+            fakeDate += 1000 * 60 * 60;
 
             heads.put(branch, node);
             return this;
@@ -595,11 +610,11 @@ public class DefaultSynchronizerTest
                 @Override
                 public BitbucketChangesetPage answer(InvocationOnMock invocation) throws Throwable
                 {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     BitbucketChangesetPage currentPage = (BitbucketChangesetPage) invocation.getArguments()[5];
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     List<String> includes = (List<String>) invocation.getArguments()[2];
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings ("unchecked")
                     List<String> excludes = (List<String>) invocation.getArguments()[3];
                     if (currentPage == null || StringUtils.isBlank(currentPage.getNext()))
                     {
@@ -619,7 +634,7 @@ public class DefaultSynchronizerTest
                 @Override
                 public BitbucketChangeset answer(InvocationOnMock invocation) throws Throwable
                 {
-                    String node = (String)invocation.getArguments()[2];
+                    String node = (String) invocation.getArguments()[2];
 
                     BitbucketChangeset changeset = new BitbucketChangeset();
                     changeset.setNode(node);
@@ -641,7 +656,7 @@ public class DefaultSynchronizerTest
                     @Override
                     public RepositoryCommit answer(final InvocationOnMock invocation) throws Throwable
                     {
-                        String sha = (String)invocation.getArguments()[1];
+                        String sha = (String) invocation.getArguments()[1];
 
                         RepositoryCommit repositoryCommit = new RepositoryCommit();
                         Commit commit = new Commit();
@@ -704,7 +719,7 @@ public class DefaultSynchronizerTest
 
                     if (changesetIterator.hasNext())
                     {
-                        page.setNext("/?pagelen="+pagelen+"&page="+(pageNum+1)+"&ctx="+(pageNum+1));
+                        page.setNext("/?pagelen=" + pagelen + "&page=" + (pageNum + 1) + "&ctx=" + (pageNum + 1));
                     }
                     page.setValues(values);
                     return page;
@@ -763,7 +778,8 @@ public class DefaultSynchronizerTest
                     if (include == null || include.isEmpty())
                     {
                         includeNodes(heads.values());
-                    } else
+                    }
+                    else
                     {
                         includeNodes(include);
                     }
@@ -995,8 +1011,30 @@ public class DefaultSynchronizerTest
         graph.commit("node2", "node1").mock();
         checkSynchronization(graph, processedNodes, true);
 
+        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
         verify(eventsCaptor).stopCapturing();
         verify(eventsCaptor).sendToEventPublisher();
+    }
+
+    @Test
+    public void doSyncEventsShouldBeCaptured()
+    {
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
+
+        graph.commit("node1", null).mock();
+        // Should not capture events on first sync - it's a full sync
+        checkSynchronization(graph, processedNodes, true);
+
+        graph.commit("node2", "node1").mock();
+        checkSynchronization(graph, processedNodes, true);
+
+        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
+        verify(syncEventsDefaultSynchronizer).stopCapturing();
+        verify(syncEventsDefaultSynchronizer).sendToEventPublisher();
     }
 
     @Test
@@ -1125,7 +1163,7 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, new ArrayList<String>(), softSync);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)
     {
         EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
@@ -1168,7 +1206,7 @@ public class DefaultSynchronizerTest
 
         defaultSynchronizer.doSync(repositoryMock, flags);
 
-        assertThat(((BranchDaoMock)branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
+        assertThat(((BranchDaoMock) branchDao).getHeads(repositoryMock.getId())).as("BranchHeads are incorrectly saved").containsAll(graph.getHeads()).doesNotHaveDuplicates().hasSameSizeAs(graph.getHeads());
 
         int retry = 0;
         while (messagingService.getQueuedCount(null) > 0 && retry < 5)
