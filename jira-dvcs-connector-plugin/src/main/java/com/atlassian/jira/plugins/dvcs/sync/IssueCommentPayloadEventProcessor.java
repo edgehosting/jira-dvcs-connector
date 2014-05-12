@@ -36,6 +36,7 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     {
         IssueCommentPayload payload = getPayload(event);
 
+        // if payload doesn't contain information about issue we can stop
         if (payload.getIssue() == null)
         {
             return;
@@ -43,6 +44,8 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
 
         PullRequest pullRequest = payload.getIssue().getPullRequest();
 
+        // it can happen that the issue is not related to pull request (only issue is created)
+        // and the repository is null here
         if (pullRequest == null)
         {
             return;
