@@ -1,26 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.google.common.collect.ImmutableList;
+import org.hamcrest.Matchers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.List;
-
-import static java.util.Collections.EMPTY_LIST;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class ThreadEventsTest
 {
     ThreadEvents threadEvents;
-    ThreadEventsCapture threadEventsCapture;
+    ThreadEventsCaptor threadEventsCaptor;
 
     @Mock
     ChangesetMapping changeset;
@@ -28,29 +27,22 @@ public class ThreadEventsTest
     @Mock
     RepositoryPullRequestMapping pullRequest;
 
-    ChangesetTestListener changesetListener;
-    PullRequestTestListener pullRequestListener;
-    AnythingTestListener anythingListener;
-    ImmutableList<TestListener<?>> listeners;
+    @Mock
+    EventPublisher eventPublisher;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        threadEvents = new ThreadEvents();
+        threadEvents = new ThreadEvents(eventPublisher);
 
-        threadEventsCapture = threadEvents.startCapturingEvents();
-        listeners = ImmutableList.of(
-                anythingListener = new AnythingTestListener(),
-                changesetListener = new ChangesetTestListener(),
-                pullRequestListener = new PullRequestTestListener()
-        );
+        threadEventsCaptor = threadEvents.startCapturing();
     }
 
     @AfterMethod
     public void tearDown() throws Exception
     {
-        threadEventsCapture.stopCapturing();
+        threadEventsCaptor.stopCapturing();
     }
 
     @Test
@@ -60,27 +52,23 @@ public class ThreadEventsTest
         threadEvents.broadcast(pullRequest);
 
         // no events have been published yet
-        assertThat(changesetListener.created, equalTo(EMPTY_LIST));
-        assertThat(pullRequestListener.created, equalTo(EMPTY_LIST));
-        assertThat(anythingListener.created, equalTo(EMPTY_LIST));
+        verifyZeroInteractions(eventPublisher);
 
-        threadEventsCapture.publishTo(listeners);
+        ArgumentCaptor<Object> publishedEvents = ArgumentCaptor.forClass(Object.class);
+        threadEventsCaptor.sendToEventPublisher();
+        verify(eventPublisher, times(2)).publish(publishedEvents.capture());
 
-        assertThat(changesetListener.created, equalTo(singletonList(changeset)));
-        assertThat(pullRequestListener.created, equalTo(singletonList(pullRequest)));
-
-        final List<Object> bothEvents = ImmutableList.<Object>of(changeset, pullRequest);
-        assertThat(anythingListener.created, equalTo(bothEvents));
+        assertThat(publishedEvents.getAllValues(), Matchers.<Object>hasItems(changeset, pullRequest));
     }
 
     @Test
     public void listenersShouldNotReceiveEventsRaisedAfterTheyHaveStoppedListening() throws Exception
     {
-        threadEventsCapture.stopCapturing();
+        threadEventsCaptor.stopCapturing();
         threadEvents.broadcast(pullRequest);
-        threadEventsCapture.publishTo(listeners);
 
-        assertThat(pullRequestListener.created, equalTo(EMPTY_LIST));
+        threadEventsCaptor.sendToEventPublisher();
+        verifyZeroInteractions(eventPublisher);
     }
 
     @Test
@@ -97,9 +85,7 @@ public class ThreadEventsTest
         thread.start();
         thread.join();
 
-        threadEventsCapture.publishTo(listeners);
-        assertThat(changesetListener.created, equalTo(Collections.<ChangesetMapping>emptyList()));
+        threadEventsCaptor.sendToEventPublisher();
+        verifyZeroInteractions(eventPublisher);
     }
-
-
 }

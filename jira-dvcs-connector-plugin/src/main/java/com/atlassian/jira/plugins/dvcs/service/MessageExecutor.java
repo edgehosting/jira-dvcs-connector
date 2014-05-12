@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -11,8 +13,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.sync.SyncThreadEvents;
-import com.atlassian.jira.plugins.dvcs.sync.SyncEvents;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class MessageExecutor
      * Used to capture events raised during synchronisation.
      */
     @Resource
-    private SyncThreadEvents syncThreadEvents;
+    private ThreadEvents threadEvents;
 
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
@@ -263,7 +263,7 @@ public class MessageExecutor
         public void run()
         {
             Progress progress = null;
-            SyncEvents syncEvents = null;
+            ThreadEventsCaptor syncEvents = null;
             try
             {
                 P payload;
@@ -283,7 +283,7 @@ public class MessageExecutor
                 // subsequently re-added
                 if (progress.isSoftsync() && payload.isSoftSync())
                 {
-                    syncEvents = syncThreadEvents.startCapturing();
+                    syncEvents = threadEvents.startCapturing();
                 }
 
                 consumer.onReceive(message, payload);
@@ -311,7 +311,7 @@ public class MessageExecutor
                 if (syncEvents != null)
                 {
                     syncEvents.stopCapturing();
-                    syncEvents.publish();
+                    syncEvents.sendToEventPublisher();
                 }
 
                 tryEndProgress(message, consumer, progress);
