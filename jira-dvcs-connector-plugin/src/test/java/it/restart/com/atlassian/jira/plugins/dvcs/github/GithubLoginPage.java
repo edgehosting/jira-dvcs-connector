@@ -14,6 +14,9 @@ public class GithubLoginPage implements Page
     @ElementBy(id = "login_field")
     private PageElement githubWebLoginField;
 
+    @ElementBy(id = "logout")
+    private PageElement oldGithubWebLogoutLink;
+
     @ElementBy(xpath = "//*[@aria-label='Sign out']")
     private PageElement githubWebLogoutLink;
 
@@ -73,7 +76,13 @@ public class GithubLoginPage implements Page
      */
     public void doLogout()
     {
-        githubWebLogoutLink.click();
+        if (githubWebLogoutLink.isPresent())
+        {
+            githubWebLogoutLink.click();
+        } else
+        {
+            oldGithubWebLogoutLink.click();
+        }
         try
         {
             // GitHub sometimes requires logout confirm
