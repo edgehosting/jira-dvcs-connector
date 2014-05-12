@@ -2,16 +2,11 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketEmail;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoriesEnvelope;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.common.base.Preconditions;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * AccountRemoteRestpoint
@@ -79,19 +74,5 @@ public class AccountRemoteRestpoint
                                                        repositorySlugToInvite);
         
         requestor.put(inviteUserUrl, null, ResponseCallback.EMPTY);
-    }
-
-    public List<BitbucketEmail> getEmails(String username)
-    {
-        String userEmailsUrl = URLPathFormatter.format("/users/%s/emails", username);
-        return requestor.get(userEmailsUrl, null, new ResponseCallback<List<BitbucketEmail>>()
-        {
-            @Override
-            public List<BitbucketEmail> onResponse(RemoteResponse response)
-            {
-                Type emailListType = new TypeToken<List<BitbucketEmail>>() {}.getType();
-                return ClientUtils.fromJson(response.getResponse(), emailListType);
-            }
-        });
     }
 }
