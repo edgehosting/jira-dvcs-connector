@@ -1,8 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com

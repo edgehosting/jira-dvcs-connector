@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 
 /**
  * A {@link LinkedIssueService} implementation.

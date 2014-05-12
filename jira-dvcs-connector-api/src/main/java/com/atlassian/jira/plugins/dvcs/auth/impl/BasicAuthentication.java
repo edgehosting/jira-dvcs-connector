@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.auth.impl;
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.sal.api.net.Request;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.URIException;

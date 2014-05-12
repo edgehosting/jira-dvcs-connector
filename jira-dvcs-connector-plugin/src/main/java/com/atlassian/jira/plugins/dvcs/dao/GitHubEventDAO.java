@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.Map;
 
 /**
  * DAO layer of the {@link GitHubEventMapping}.

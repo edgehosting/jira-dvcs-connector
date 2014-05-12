@@ -1,10 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.project.Project;
-import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.Permissions;
 
 import java.util.Set;

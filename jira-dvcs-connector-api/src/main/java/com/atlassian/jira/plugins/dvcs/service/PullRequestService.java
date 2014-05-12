@@ -5,10 +5,10 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Service for manipulating and querying DVCS pull request data.

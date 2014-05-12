@@ -1,21 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketCreatePullRequestPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -23,7 +7,19 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Abstract, common implementation for all Bitbucket tests

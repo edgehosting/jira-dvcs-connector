@@ -1,32 +1,31 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheException;
 import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.util.concurrent.NotNull;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 

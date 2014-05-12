@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.analytics;
 
-import java.util.Date;
-
 import com.atlassian.analytics.api.annotations.EventName;
+
+import java.util.Date;
 
 public class DvcsSyncEndAnalyticsEvent
 {

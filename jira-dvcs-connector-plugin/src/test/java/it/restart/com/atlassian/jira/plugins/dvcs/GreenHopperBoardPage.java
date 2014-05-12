@@ -1,18 +1,17 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-
-import java.util.List;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
+
+import java.util.List;
+
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Martin Skurla

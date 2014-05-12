@@ -1,10 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import java.net.ProxySelector;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PreDestroy;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.cache.HttpCacheStorage;
@@ -19,7 +15,9 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
+import java.net.ProxySelector;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.PreDestroy;
 
 /**
  * Provides shared HttpClient instance

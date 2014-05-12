@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Miroslav Stencel

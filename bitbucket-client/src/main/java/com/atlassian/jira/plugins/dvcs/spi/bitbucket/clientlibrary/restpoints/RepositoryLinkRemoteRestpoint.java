@@ -1,9 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
@@ -11,6 +7,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * RepositoryLinkRemoteRestpoint
