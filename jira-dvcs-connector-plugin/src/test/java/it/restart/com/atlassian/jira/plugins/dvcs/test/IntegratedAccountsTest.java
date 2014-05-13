@@ -1,5 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.pageobjects.TestedProductFactory;
+import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -12,16 +17,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountOAuthDialog;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Iterator;
-
-import javax.annotation.Nullable;
-
 import junit.framework.Assert;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.json.JSONException;
@@ -34,11 +30,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.pageobjects.TestedProductFactory;
-import com.google.common.base.Predicate;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
+import javax.annotation.Nullable;
 
 /**
  * Tests integrated accounts functionality.

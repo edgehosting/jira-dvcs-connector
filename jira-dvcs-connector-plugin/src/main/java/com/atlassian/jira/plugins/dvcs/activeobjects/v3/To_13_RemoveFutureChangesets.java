@@ -1,21 +1,19 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class To_13_RemoveFutureChangesets implements ActiveObjectsUpgradeTask
 {

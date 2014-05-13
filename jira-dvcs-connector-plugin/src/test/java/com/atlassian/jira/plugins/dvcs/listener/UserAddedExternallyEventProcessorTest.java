@@ -1,24 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.atlassian.core.util.collection.EasyList;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -29,6 +10,24 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.collect.Sets;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
 public class UserAddedExternallyEventProcessorTest

@@ -1,19 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-
-import org.eclipse.egit.github.core.client.IGitHubConstants;
-
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
@@ -25,6 +11,18 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.core.header.LinkHeader;
 import com.sun.jersey.core.header.LinkHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import org.eclipse.egit.github.core.client.IGitHubConstants;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import javax.annotation.Resource;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Support for {@link GitHubRESTClientImpl}.

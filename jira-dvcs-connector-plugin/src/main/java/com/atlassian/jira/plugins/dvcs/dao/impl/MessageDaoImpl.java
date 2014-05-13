@@ -11,14 +11,12 @@ import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 
 import java.util.Collections;
 import java.util.Map;
-
 import javax.annotation.Resource;
 
 /**

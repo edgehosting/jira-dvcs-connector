@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import com.atlassian.pageobjects.elements.query.TimedQuery;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
-import org.hamcrest.Matcher;
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
 import com.atlassian.pageobjects.Page;
@@ -21,6 +9,16 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedQuery;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import org.hamcrest.Matcher;
+import org.openqa.selenium.By;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
 
 /**
  * Represents the page to link repositories to projects

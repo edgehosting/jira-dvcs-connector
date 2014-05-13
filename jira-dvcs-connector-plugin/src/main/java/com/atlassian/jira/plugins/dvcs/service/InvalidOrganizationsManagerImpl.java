@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager {
     

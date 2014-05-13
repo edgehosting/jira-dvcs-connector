@@ -1,15 +1,14 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.issue;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.google.common.base.Predicate;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Represents "Issue" page.

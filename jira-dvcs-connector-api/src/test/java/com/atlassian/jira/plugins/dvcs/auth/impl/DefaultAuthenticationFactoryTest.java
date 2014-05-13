@@ -5,14 +5,13 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Martin Skurla

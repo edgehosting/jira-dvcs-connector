@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe.ThreeLegged10aOauthProvider;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * This test is about getting rid of unnecessary "java.net.ProtocolException: Server redirected too many  times (20)".

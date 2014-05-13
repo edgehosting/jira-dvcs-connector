@@ -1,8 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.apache.commons.lang.StringUtils;
 
 public class DefaultOAuthStore implements OAuthStore
 {
