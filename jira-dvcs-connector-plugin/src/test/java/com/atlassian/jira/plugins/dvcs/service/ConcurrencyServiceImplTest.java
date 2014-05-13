@@ -1,15 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.atlassian.jira.plugins.dvcs.service.ConcurrencyService.SynchronizedBlock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.atlassian.jira.plugins.dvcs.service.ConcurrencyService.SynchronizedBlock;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Unit test over {@link ConcurrencyService}.

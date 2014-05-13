@@ -1,10 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
+import com.atlassian.gzipfilter.org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.atlassian.gzipfilter.org.apache.commons.lang.builder.EqualsBuilder;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Credential

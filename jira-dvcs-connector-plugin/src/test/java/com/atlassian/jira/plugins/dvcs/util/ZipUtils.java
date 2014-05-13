@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
+import com.atlassian.plugin.util.zip.FileUnzipper;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-
-import com.atlassian.plugin.util.zip.FileUnzipper;
 
 /**
  * @author Martin Skurla

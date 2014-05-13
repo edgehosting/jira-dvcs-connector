@@ -175,10 +175,18 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         String baseUrl = jira.getProductInstance().getBaseUrl();
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
+
+        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        if (!servicesConfig.contains(syncUrl))
+        {
+            // retrying once more
+            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        }
+
         assertThat(servicesConfig).contains(syncUrl);
 
         // delete repository

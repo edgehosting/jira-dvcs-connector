@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.config.properties.JiraSystemProperties;
@@ -14,6 +7,12 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvider
 {

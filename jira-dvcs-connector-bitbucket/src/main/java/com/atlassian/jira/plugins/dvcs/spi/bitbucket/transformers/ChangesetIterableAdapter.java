@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
-import java.util.Iterator;
-
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangeset;
+
+import java.util.Iterator;
 
 public class ChangesetIterableAdapter implements Iterable<Changeset>, Iterator<Changeset>
 {

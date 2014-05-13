@@ -1,7 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class To_08_ActiveObjectsV3MigratorTest
 {
