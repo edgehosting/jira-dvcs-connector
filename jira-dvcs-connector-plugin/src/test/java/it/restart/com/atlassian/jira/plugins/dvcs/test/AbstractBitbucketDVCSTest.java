@@ -211,6 +211,15 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
             }
         }, 5000);
 
+        // waiting for fork repository to be available
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+
         dvcs.createTestLocalRepository(forkAccount, repositoryName, forkAccount, forkPassword);
 
         return remoteRepository;
