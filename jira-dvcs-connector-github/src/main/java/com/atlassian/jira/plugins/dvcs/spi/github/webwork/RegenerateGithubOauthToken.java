@@ -1,15 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
 import com.atlassian.event.api.EventPublisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 {

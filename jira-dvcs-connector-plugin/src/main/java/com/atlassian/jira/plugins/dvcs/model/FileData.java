@@ -1,10 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.json.JSONArray;
@@ -16,6 +11,11 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 /**
  * JSON representation of Changeset file data.

@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
+import com.atlassian.sal.api.net.Request;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
-
-import com.atlassian.sal.api.net.Request;
 
 /**
  * Authentication method for accessing repository

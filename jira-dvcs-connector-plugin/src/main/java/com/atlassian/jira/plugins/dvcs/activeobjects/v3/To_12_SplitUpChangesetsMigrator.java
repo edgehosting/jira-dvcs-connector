@@ -1,27 +1,24 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
+import com.atlassian.activeobjects.external.ModelVersion;
+import net.java.ao.DatabaseProvider;
+import net.java.ao.Entity;
+import net.java.ao.EntityManager;
+import net.java.ao.Query;
+import net.java.ao.schema.TableNameConverter;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
-
 import javax.wsdl.Types;
-
-import net.java.ao.DatabaseProvider;
-import net.java.ao.Entity;
-import net.java.ao.EntityManager;
-import net.java.ao.Query;
-import net.java.ao.schema.TableNameConverter;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.external.ModelVersion;
 
 /**
  * Realizes migration of issue key and project key from one table: {@link ChangesetMapping} into the {@link ChangesetMapping} and a

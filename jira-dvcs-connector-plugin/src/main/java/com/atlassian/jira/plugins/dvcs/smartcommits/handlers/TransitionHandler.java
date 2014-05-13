@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.issue.IssueService;
 import com.atlassian.jira.issue.Issue;
@@ -26,6 +16,15 @@ import com.atlassian.jira.workflow.WorkflowManager;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.workflow.loader.ActionDescriptor;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 public class TransitionHandler implements CommandHandler<Issue> {
 

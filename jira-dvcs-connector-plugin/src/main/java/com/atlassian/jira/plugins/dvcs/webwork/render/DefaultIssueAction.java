@@ -1,15 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.webwork.render;
 
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import com.atlassian.templaterenderer.TemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.templaterenderer.TemplateRenderer;
 
 public class DefaultIssueAction implements IssueAction
 {

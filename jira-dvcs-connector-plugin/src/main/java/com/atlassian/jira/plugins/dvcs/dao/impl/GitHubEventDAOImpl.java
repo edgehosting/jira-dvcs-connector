@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import net.java.ao.Query;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper.OrderClause;
@@ -14,6 +8,10 @@ import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.Query;
+
+import java.util.Map;
+import javax.annotation.Resource;
 
 /**
  * AO implementation of the {@link GitHubEventDAO}.

@@ -1,13 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-
-import java.util.Iterator;
 
 /**
  *

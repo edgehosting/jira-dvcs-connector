@@ -1,20 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import static org.mockito.Mockito.*;
-
-import org.mockito.Mock;
-
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfig.BitbucketAccountInfo;
-
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.when;
 
 
 public class JsonFileBasedAccountsConfigProviderTest

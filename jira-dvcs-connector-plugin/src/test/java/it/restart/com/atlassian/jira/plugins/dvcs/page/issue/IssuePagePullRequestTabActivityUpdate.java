@@ -1,13 +1,13 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.issue;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Represents "Update" activity of {@link IssuePagePullRequestTab#getActivities()}.

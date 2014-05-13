@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import java.util.Map;
-
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.OAuthConfig;
 import org.scribe.model.OAuthConstants;
@@ -11,6 +9,8 @@ import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 import org.scribe.utils.MapUtils;
+
+import java.util.Map;
 
 public class TwoLoOAuth10aServiceImpl implements OAuthService
 {

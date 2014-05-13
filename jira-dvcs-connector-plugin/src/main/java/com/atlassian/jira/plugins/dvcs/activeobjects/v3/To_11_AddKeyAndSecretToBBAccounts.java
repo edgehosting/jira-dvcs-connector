@@ -1,17 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import net.java.ao.Query;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.Query;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class To_11_AddKeyAndSecretToBBAccounts implements ActiveObjectsUpgradeTask
 {

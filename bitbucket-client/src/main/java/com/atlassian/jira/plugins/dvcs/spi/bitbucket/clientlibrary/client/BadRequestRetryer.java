@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client;
 
-import java.util.concurrent.Callable;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException.RetryableRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException.RetryableRequestException;
+import java.util.concurrent.Callable;
 
 
 /**
