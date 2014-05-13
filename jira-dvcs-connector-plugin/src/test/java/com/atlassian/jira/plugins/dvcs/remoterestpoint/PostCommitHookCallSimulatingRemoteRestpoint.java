@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
-import java.io.IOException;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
+
+import java.io.IOException;
 
 /**
  * @author Martin Skurla

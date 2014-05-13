@@ -1,29 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import net.java.ao.DBParam;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
@@ -32,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -49,6 +26,27 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import net.java.ao.DBParam;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -298,7 +296,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         List<MessageConsumer<P>> byAddress = (List) addressToMessageConsumer.get(message.getAddress().getId());
         for (MessageConsumer<P> consumer : byAddress)
         {
-            messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state));
+            messageQueueItemDao.create(messageQueueItemToMap(messageMapping.getID(), consumer.getQueue(), state, null));
         }
     }
 
@@ -542,22 +540,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     @Override
-    public <P extends HasProgress> void discard(final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message, final DiscardReason discardReason)
     {
-        MessageMapping messageMapping = messageDao.getById(message.getId());
-
-        if (messageMapping != null)
-        {
-            if (messageMapping.getQueuesItems() != null)
-            {
-                for (MessageQueueItemMapping queueItem : messageMapping.getQueuesItems())
-                {
-                    messageQueueItemDao.delete(queueItem);
-                }
-            }
-
-            messageDao.delete(messageMapping);
-        }
+        MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
+        queueItem.setState(MessageState.DISCARDED.name());
+        queueItem.setStateInfo(discardReason.name());
+        messageQueueItemDao.save(queueItem);
     }
 
     /**
@@ -765,13 +753,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * @param state
      * @return mapped entity
      */
-    private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state)
+    private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state, String stateInfo)
     {
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageQueueItemMapping.MESSAGE, messageId);
         result.put(MessageQueueItemMapping.QUEUE, queue);
         result.put(MessageQueueItemMapping.STATE, state.name());
+        result.put(MessageQueueItemMapping.STATE_INFO, stateInfo);
         result.put(MessageQueueItemMapping.RETRIES_COUNT, 0);
 
         return result;
@@ -782,28 +771,34 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public <P extends HasProgress> void tryEndProgress(Repository repository, Progress progress, MessageConsumer<P> consumer, int auditId)
     {
         boolean finished = endProgress(repository, progress);
-        if (finished && auditId > 0)
+        if (finished)
         {
-            final Date finishDate;
-            final Date firstRequestDate;
-            final int numRequests;
-            final int flightTimeMs;
-            if (progress == null)
-            {
-                finishDate = new Date();
-                firstRequestDate = null;
-                numRequests = 0;
-                flightTimeMs = 0;
-            }
-            else
-            {
-                finishDate = new Date(progress.getFinishTime());
-                firstRequestDate = progress.getFirstMessageTime();
-                numRequests = progress.getNumRequests();
-                flightTimeMs = progress.getFlightTimeMs();
-            }
+            pausedTags.remove(getTagForSynchronization(repository));
 
-            syncAudit.finish(auditId, firstRequestDate, numRequests, flightTimeMs, finishDate);
+            if (auditId > 0)
+            {
+                final Date finishDate;
+                final Date firstRequestDate;
+                final int numRequests;
+                final int flightTimeMs;
+
+                if (progress == null)
+                {
+                    finishDate = new Date();
+                    firstRequestDate = null;
+                    numRequests = 0;
+                    flightTimeMs = 0;
+                }
+                else
+                {
+                    finishDate = new Date(progress.getFinishTime());
+                    firstRequestDate = progress.getFirstMessageTime();
+                    numRequests = progress.getNumRequests();
+                    flightTimeMs = progress.getFlightTimeMs();
+                }
+
+                syncAudit.finish(auditId, firstRequestDate, numRequests, flightTimeMs, finishDate);
+            }
         }
     }
 

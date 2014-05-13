@@ -6,9 +6,10 @@ import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -43,15 +44,30 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     }
 
     @Override
+    void removeOldDvcsRepository()
+    {
+        githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+    }
+
+    @Override
     void removeRemoteDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME, DVCS_REPO_OWNER);
+        githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
+
+        // remove expired repositories
+        for ( Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+            }
+        }
     }
 
     @Override
     void createRemoteDvcsRepository()
     {
-        githubRepositoriesREST.createGithubRepository(MISSING_COMMITS_REPOSITORY_NAME);
+        githubRepositoriesREST.createGithubRepository(getMissingCommitsRepositoryName());
     }
 
     @Override
@@ -69,7 +85,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         File extractedRepoDir = extractRepoZipIntoTempDir(pathToRepoZip);
 
         String gitPushUrl = String.format("https://%1$s:%2$s@github.com/%1$s/%3$s.git", DVCS_REPO_OWNER,
-                DVCS_REPO_PASSWORD, MISSING_COMMITS_REPOSITORY_NAME);
+                DVCS_REPO_PASSWORD, getMissingCommitsRepositoryName());
 
         String gitCommand = getGitCommand();
 
@@ -131,10 +147,24 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOAuth()
     {
-        // remove OAuth in github
-        new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
+        try
+        {
+            if (oAuth != null)
+            {
+                // remove OAuth in github
+                new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+            }
+        }
+        finally
+        {
+            // log out from github
+            new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
+        }
+    }
 
-        // log out from github
-        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
+    @Override
+    protected AccountsPageAccount.AccountType getAccountType()
+    {
+        return AccountsPageAccount.AccountType.GIT_HUB;
     }
 }

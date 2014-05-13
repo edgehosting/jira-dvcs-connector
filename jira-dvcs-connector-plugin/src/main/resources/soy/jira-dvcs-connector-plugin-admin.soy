@@ -12,8 +12,13 @@
             <label>{getText('com.atlassian.jira.plugins.dvcs.adduser.accounts.label')}</label>
             {foreach $organization in $organizations}
                 <div class="checkbox" style="padding-left: 0px; margin-top: 2px; margin-bottom: 5px;">
-                    
-                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent">
+                    <!--[if IE]>
+                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em;">
+                        <img class="aui-icon supported-app-icon" src="{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png" alt="Bitbucket logo" title="Bitbucket" height="20px" width="20px"/>
+                    <![endif]-->
+                    <![if ! IE]>
+                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent; background-size: 20px 20px;">
+                    <![endif]>
                         <span><a href="{$organization.organizationUrl}">{$organization.name}</a></span>
                     </div>
         

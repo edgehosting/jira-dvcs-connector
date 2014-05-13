@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -10,6 +7,9 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 
 public class HttpClient3ProxyConfig {

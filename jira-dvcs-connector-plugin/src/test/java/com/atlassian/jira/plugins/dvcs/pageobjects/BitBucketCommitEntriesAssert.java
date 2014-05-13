@@ -2,8 +2,9 @@ package com.atlassian.jira.plugins.dvcs.pageobjects;
 
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import java.util.List;
 import org.fest.assertions.api.ListAssert;
+
+import java.util.List;
 
 
 /**

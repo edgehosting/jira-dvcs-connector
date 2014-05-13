@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.0.2-SNAPSHOT</version>
+        <version>2.0.5-SNAPSHOT</version>
     </parent>
     <organization>
         <name>Atlassian</name>
@@ -18,7 +18,7 @@
         <url>https://bitbucket.org/atlassian/jira-bitbucket-connector</url>
     </scm>
     <artifactId>jira-dvcs-connector-plugin</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.5-SNAPSHOT</version>
     <name>JIRA DVCS Connector Plugin</name>
     <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
     <packaging>atlassian-plugin</packaging>
@@ -38,19 +38,16 @@
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-bitbucket</artifactId>
             <version>${project.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-github</artifactId>
             <version>${project.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
             <version>${project.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -246,6 +243,7 @@
                         <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
                         <ondemand.properties>${basedir}/target/jira/home/ondemand.properties</ondemand.properties>
+                        <atlassian.plugins.enable.wait>300</atlassian.plugins.enable.wait>
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
@@ -302,6 +300,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Workaround for https://ecosystem.atlassian.net/browse/AMPS-1112 -->
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-amps-plugin</artifactId>
+                <version>${amps.version}</version>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>

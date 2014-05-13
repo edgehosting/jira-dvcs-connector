@@ -1,16 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
@@ -32,6 +21,15 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.google.common.base.Throwables;
 import com.google.common.collect.MapMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Resource;
 
 /**
  * Synchronization service
@@ -90,8 +88,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
-    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flags)
+    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
+        // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
+        EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
+
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
             log.info("The synchronization is disabled.");
@@ -112,7 +113,12 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 progress = startProgress(repo, flags);
             }
 
-            boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
+            if (branchService.getListOfBranchHeads(repo).isEmpty())
+            {
+                flags.remove(SynchronizationFlag.SOFT_SYNC);
+            }
+
+            boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
             

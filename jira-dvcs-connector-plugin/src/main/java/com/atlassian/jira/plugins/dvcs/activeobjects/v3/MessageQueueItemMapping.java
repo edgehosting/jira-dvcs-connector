@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.Preload;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
+
+import java.util.Date;
 
 /**
  * Holds information about message consumer.
@@ -42,6 +42,11 @@ public interface MessageQueueItemMapping extends Entity
      * @see #getRetriesCount()
      */
     String RETRIES_COUNT = "RETRIES_COUNT";
+
+    /**
+     * @see #getStateInfo()
+     */
+    String STATE_INFO = "STATE_INFO";
 
     /**
      * @return Message for consuming.
@@ -95,5 +100,13 @@ public interface MessageQueueItemMapping extends Entity
      *            {@link #getRetriesCount()}
      */
     void setRetriesCount(int retriesCount);
+
+    /**
+     *
+     * @return info about the state, e.g. the reason for discard state
+     */
+    String getStateInfo();
+
+    void setStateInfo(String stateInfo);
 
 }

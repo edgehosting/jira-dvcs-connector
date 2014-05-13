@@ -50,15 +50,9 @@ public class HttpClientOauthRequest extends OAuthRequest
         
         HttpResponse response = null;
 
-        try
-        {
-            response = client.execute(requestMethod);
-        } finally
-        {
-            requestMethod.releaseConnection();
-        }
+        response = client.execute(requestMethod);
 
-        return new HttpClientOauthResponse(response);
+        return new HttpClientOauthResponse(response, requestMethod);
     }
     
     private void setHeaders(HttpRequestBase requestMethod)

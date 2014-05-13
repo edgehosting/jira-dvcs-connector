@@ -1,20 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.google.common.collect.Iterables;
 import net.java.ao.Entity;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.google.common.collect.Iterables;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class ActiveObjectsUtils
 {

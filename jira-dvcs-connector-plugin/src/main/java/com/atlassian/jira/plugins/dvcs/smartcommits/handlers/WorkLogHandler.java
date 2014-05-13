@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import java.util.Date;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
@@ -18,6 +11,12 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.util.lang.Pair;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WorkLogHandler implements CommandHandler<Worklog>
 {
@@ -85,8 +84,12 @@ public class WorkLogHandler implements CommandHandler<Worklog>
         {
             worklogComment = comment.trim();
         }
+        else
+        {
+            worklogComment = "";
+        }
 
-        return Pair.nicePairOf(worklogDuration.trim(), worklogComment.trim());
+        return Pair.of(worklogDuration.trim(), worklogComment.trim());
     }
 
 }

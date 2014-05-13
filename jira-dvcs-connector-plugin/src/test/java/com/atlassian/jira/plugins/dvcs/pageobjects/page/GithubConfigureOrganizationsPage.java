@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import java.util.List;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import java.util.List;
 
 /**
  * Represents the page to link repositories to projects
@@ -66,7 +65,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         if (autoSync)
         {
-            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
+            JiraPageUtils.checkSyncProcessSuccess();
         }
 
         return this;

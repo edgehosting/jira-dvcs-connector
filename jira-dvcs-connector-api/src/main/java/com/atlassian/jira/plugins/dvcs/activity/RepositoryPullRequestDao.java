@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Participant;
 
 public interface RepositoryPullRequestDao
 {
@@ -15,13 +15,6 @@ public interface RepositoryPullRequestDao
 
     RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, RepositoryPullRequestMapping.Status status,
             Date updatedOn, String sourceRepo, final int commentCount);
-
-    /**
-     * Updates issue keys related to commits of provided repository.
-     *
-     * @param domain
-     */
-    void updateCommitIssueKeys(Repository domain);
 
     /**
      * Updates issue keys related to the provided pull request to reflect current state.

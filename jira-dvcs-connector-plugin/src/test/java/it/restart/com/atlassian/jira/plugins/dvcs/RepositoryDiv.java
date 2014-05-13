@@ -1,8 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 public class RepositoryDiv
 {
@@ -13,16 +12,6 @@ public class RepositoryDiv
         this.rootElement = rootElement;
     }
 
-    public boolean isSyncing()
-    {
-        PageElement syncRepoIcon = rootElement.find(By.xpath("td[4]/div/a/span"));
-        if (syncRepoIcon!=null)
-        {
-            return syncRepoIcon.getAttribute("class").contains("running");
-        }
-        return false;
-    }
-
     public String getMessage()
     {
         return rootElement.find(By.xpath("td[3]/div")).getText();
@@ -31,6 +20,11 @@ public class RepositoryDiv
     public String getRepositoryName()
     {
         return rootElement.find(By.xpath("td[2]/a")).getText();
+    }
+
+    public PageElement getSyncIcon()
+    {
+        return rootElement.find(By.xpath("td[4]//span"));
     }
 
 }

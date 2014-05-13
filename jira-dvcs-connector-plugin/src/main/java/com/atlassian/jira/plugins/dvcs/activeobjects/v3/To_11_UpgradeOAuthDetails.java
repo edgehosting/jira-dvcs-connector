@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
 
 /**
  * Migrate OAuth details to new location

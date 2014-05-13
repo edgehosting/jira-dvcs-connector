@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import java.util.Arrays;
-import static org.mockito.Mockito.*;
-
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
@@ -16,11 +8,19 @@ import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
 import com.atlassian.jira.user.MockApplicationUser;
-
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import java.util.Arrays;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 
 public class WorkLogHandlerTest
 {

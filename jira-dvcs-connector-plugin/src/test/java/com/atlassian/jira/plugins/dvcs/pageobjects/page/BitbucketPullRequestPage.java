@@ -1,19 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.hamcrest.core.Is.is;
-
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+import javax.inject.Inject;
+
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.core.Is.is;
 
 /**
  * @author Miroslav Stencel mstencel@atlassian.com

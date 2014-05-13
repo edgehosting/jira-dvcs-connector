@@ -779,7 +779,7 @@ function registerInlineDialogTooltip(element, body) {
     return AJS.InlineDialog(AJS.$(element), "tooltip_" + AJS.$(element).attr('id'),
         function (content, trigger, showPopup) {
             var inlineDialogContent = AJS.$(element).data("inlineDialogContent");
-            content.css({"padding":"10px", "width":"auto"}).html(inlineDialogContent);
+            content.css({"padding":"20px", "width":"auto"}).html(inlineDialogContent);
             showPopup();
             return false;
         }, 

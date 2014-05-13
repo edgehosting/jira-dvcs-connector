@@ -2,10 +2,9 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.google.common.collect.Sets;
-
 import org.testng.annotations.Test;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class OrganizationDaoImplTest
 {

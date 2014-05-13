@@ -1,12 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
-import org.apache.commons.collections.CollectionUtils;
-
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -15,6 +9,11 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class OrganizationServiceImpl implements OrganizationService
 {
@@ -127,6 +126,10 @@ public class OrganizationServiceImpl implements OrganizationService
     public void remove(int organizationId)
     {
         List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
+        for (Repository repository : repositoriesToDelete)
+        {
+            repositoryService.prepareForRemove(repository);
+        }
         organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
         repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);

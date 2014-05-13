@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Collection;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.collect.Lists;
+
+import java.util.Collection;
 
 /**
  *

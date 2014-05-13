@@ -1,14 +1,18 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {
@@ -50,10 +54,17 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
-            waitForSyncToFinish(organization);
+            waitForSyncToFinish();
+            if (!getSyncErrors().isEmpty())
+            {
+                // refreshing account to retry synchronization
+                organization.refresh();
+                waitForSyncToFinish();
+            }
+            assertThat(getSyncErrors()).describedAs("Synchronization failed").isEmpty();
         } else
         {
-            assertThat(isSyncFinished(organization));
+            assertThat(isSyncFinished());
         }
         return organization;
     }
@@ -61,10 +72,8 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     /**
      * Waiting until synchronization is done.
      * 
-     * @param organization
-     *            on which organization we are waiting
      */
-    public void waitForSyncToFinish(OrganizationDiv organization)
+    public void waitForSyncToFinish()
     {
         do
         {
@@ -75,20 +84,30 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             {
                 // ignore
             }
-        } while (!isSyncFinished(organization));
+        } while (!isSyncFinished());
     }
 
-    private boolean isSyncFinished(OrganizationDiv organization)
+    private boolean isSyncFinished()
     {
-        List<RepositoryDiv> repositories = organization.getRepositories();
-        for (RepositoryDiv repositoryDiv : repositories)
-        {
-            if (repositoryDiv.isSyncing())
-            {
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return false;
             }
         }
         return true;
+    }
+
+    private List<String> getSyncErrors()
+    {
+        List<String> errors = new ArrayList<String>();
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && repository.getSync().getError() != null) {
+                errors.add(repository.getSync().getError());
+            }
+        }
+        return errors;
     }
 
     private boolean requiresGrantAccess()

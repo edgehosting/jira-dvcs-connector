@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
+import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
 
 public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMessage implements Serializable
 {

@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Map;
-
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import java.util.Map;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com

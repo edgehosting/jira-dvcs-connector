@@ -1,15 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketGroup;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * GroupTransformer

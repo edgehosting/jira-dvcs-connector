@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
 import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
@@ -30,8 +29,6 @@ public class HttpClientProvider
 
     private static final int DEFAULT_CONNECT_TIMEOUT = Integer.getInteger("bitbucket.client.connection.timeout", 30000);
     private static final int DEFAULT_SOCKET_TIMEOUT = Integer.getInteger("bitbucket.client.socket.timeout", 60000);
-    private static final int DEFAULT_MAX_TOTAL = Integer.getInteger("bitbucket.client.conmanager.maxtotal", 20);
-    private static final int DEFAULT_MAX_PER_ROUTE = Integer.getInteger("bitbucket.client.conmanager.maxperroute", 15);
     private static final long DEFAULT_CONNECTION_KEEP_ALIVE_DURATION = Long.getLong("bitbucket.client.conmanager.keepalive", 120000);
 
     private final AbstractHttpClient httpClient;
@@ -62,11 +59,7 @@ public class HttpClientProvider
 
     public HttpClientProvider()
     {
-        PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
-        connectionManager.setMaxTotal(DEFAULT_MAX_TOTAL);
-        connectionManager.setDefaultMaxPerRoute(DEFAULT_MAX_PER_ROUTE);
-
-        httpClient = new DefaultHttpClient(connectionManager);
+        httpClient = SystemUtils.createHttpClient();
 
         HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), DEFAULT_CONNECT_TIMEOUT);
         HttpConnectionParams.setSoTimeout(httpClient.getParams(), DEFAULT_SOCKET_TIMEOUT);
