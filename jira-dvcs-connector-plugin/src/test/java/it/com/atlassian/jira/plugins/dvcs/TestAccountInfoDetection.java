@@ -1,19 +1,18 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.httpclient.HttpStatus;
-
 import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
-
+import org.apache.commons.httpclient.HttpStatus;
 import org.testng.annotations.Test;
 
-import static org.fest.assertions.api.Assertions.*;
+import javax.ws.rs.core.MediaType;
 
-public class TestAccountInfoDetection
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
+
+public class TestAccountInfoDetection extends DvcsWebDriverTestCase
 {
 
     @Test

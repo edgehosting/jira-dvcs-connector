@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -25,7 +26,7 @@ import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntries
 import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.getGHEAccountType;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class GithubEnterpriseTests implements BasicTests
+public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
@@ -85,7 +86,7 @@ public class GithubEnterpriseTests implements BasicTests
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(5);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
     }
 
     @Test
@@ -97,7 +98,7 @@ public class GithubEnterpriseTests implements BasicTests
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
         
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(5);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
 
         assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3",1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -131,7 +132,7 @@ public class GithubEnterpriseTests implements BasicTests
                 new OAuthCredentials("xxx", "yyy"), true);
         
         assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories().size()).isEqualTo(4);  
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test

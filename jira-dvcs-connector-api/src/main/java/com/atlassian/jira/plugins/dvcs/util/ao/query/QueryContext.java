@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.util.ao.query;
 
-import java.util.Map;
-
+import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
+import java.util.Map;
 
 /**
  * Holds context, used during {@link Query} building.

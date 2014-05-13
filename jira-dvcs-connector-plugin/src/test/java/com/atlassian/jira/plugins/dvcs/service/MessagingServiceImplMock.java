@@ -1,13 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
@@ -15,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Resource;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.message.MessagingService} mock implementation.
@@ -79,9 +75,9 @@ public class MessagingServiceImplMock extends MessagingServiceImpl
     }
 
     @Override
-    public <P extends HasProgress> void discard(final Message<P> message)
+    public <P extends HasProgress> void discard(final MessageConsumer<P> consumer, final Message<P> message, final DiscardReason discardReason)
     {
-        ok(null, message);
+        ok(consumer, message);
     }
 
     /**

@@ -1,25 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Starting point for remote API calls to the bitbucket remote API
  */
 public interface DvcsCommunicator
 {
+    String POST_HOOK_SUFFIX = String.valueOf("/rest/bitbucket/1.0/repository/");
+
     String getDvcsType();
 
 	AccountInfo getAccountInfo(String hostUrl, String accountName);
@@ -35,12 +37,12 @@ public interface DvcsCommunicator
      *
      * @param repository the Repository
      * @param changeset the Changeset
-     * @return a list of ChangesetFileDetail
+     * @return ChangesetFileDetailsEnvelope
      * @throws com.atlassian.jira.plugins.dvcs.exception.SourceControlException
      */
-    List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset);
+    ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset);
 
-	void setupPostcommitHook(Repository repository, String postCommitUrl);
+	void ensureHookPresent(Repository repository, String postCommitUrl);
 
     void linkRepository(Repository repository, Set<String> withProjectkeys);
 

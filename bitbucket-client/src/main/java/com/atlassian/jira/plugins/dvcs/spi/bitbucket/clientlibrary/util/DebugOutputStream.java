@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.io.OutputStream;
-
-import org.slf4j.Logger;
 
 public class DebugOutputStream extends OutputStream
 {

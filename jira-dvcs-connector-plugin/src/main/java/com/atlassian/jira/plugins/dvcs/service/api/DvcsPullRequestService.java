@@ -1,14 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service.api;
 
 import com.atlassian.annotations.PublicApi;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Gets the pull requests for one or more issue keys or repository from connected dvcs account

@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -31,7 +30,10 @@ public class BitbucketGrandOAuthAccessPage implements Page
         // </div>
         
         PageElement buttonsDiv = bodyElement.find(By.className("buttons"));
-        
+
+        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
+        PageElementUtils.permissionDeniedWorkAround(buttonsDiv);
+
         PageElement grandAccessButton = PageElementUtils.findTagWithAttributeValue(buttonsDiv,
                                                                                    "button",
                                                                                    "type",

@@ -1,25 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
@@ -33,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
@@ -41,6 +22,22 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Resource;
 
 /**
  * The Class RepositoryServiceImpl.
@@ -88,9 +85,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
     @Resource
     private PluginSettingsFactory pluginSettingsFactory;
-
-    @Resource
-    private ChangesetCache changesetCache;
 
     @Resource
     private SyncAuditLogDao syncAuditDao;
@@ -536,7 +530,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (repository.isLinked())
         {
-            communicator.setupPostcommitHook(repository, postCommitCallbackUrl);
+            communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
         } else
@@ -554,7 +548,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
      */
     private String getPostCommitUrl(Repository repo)
     {
-        return applicationProperties.getBaseUrl() + "/rest/bitbucket/1.0/repository/" + repo.getId() + "/sync";
+        return applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX + repo.getId() + "/sync";
     }
 
     /**
@@ -565,7 +559,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     {
         for (Repository repository : repositories)
         {
-            markForRemove(repository);
+            prepareForRemove(repository);
             // try remove postcommit hook
             if (repository.isLinked())
             {
@@ -575,12 +569,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
             repositoryDao.save(repository);
         }
-        }
+    }
 
-    private void markForRemove(Repository repository)
+    @Override
+    public void prepareForRemove(Repository repository)
     {
-    	synchronizer.pauseSynchronization(repository, true);
-        repository.setDeleted(true);
+        if (!repository.isDeleted())
+        {
+    	    synchronizer.pauseSynchronization(repository, true);
+            repository.setDeleted(true);
+            repositoryDao.save(repository);
+        }
     }
 
     /**

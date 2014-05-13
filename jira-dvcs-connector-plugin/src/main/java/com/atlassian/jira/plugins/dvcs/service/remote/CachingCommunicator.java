@@ -1,28 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.base.Function;
+import com.google.common.collect.ComputationException;
+import com.google.common.collect.MapMaker;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.google.common.base.Function;
-import com.google.common.collect.ComputationException;
-import com.google.common.collect.MapMaker;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent
@@ -178,7 +177,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     @Override
     public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
     {
-        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
+        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
     }
 
     @Override
@@ -221,15 +220,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
+    public ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset)
     {
         return delegate.getFileDetails(repository, changeset);
     }
 
     @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
+    public void ensureHookPresent(Repository repository, String postCommitUrl)
     {
-        delegate.setupPostcommitHook(repository, postCommitUrl);
+        delegate.ensureHookPresent(repository, postCommitUrl);
     }
 
     @Override

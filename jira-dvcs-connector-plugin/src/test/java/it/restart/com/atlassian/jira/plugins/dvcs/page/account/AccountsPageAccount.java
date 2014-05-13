@@ -1,12 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.hamcrest.Matchers.is;
-
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -14,6 +7,12 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
+
+import javax.inject.Inject;
+
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Container of single account of {@link AccountsPage}.

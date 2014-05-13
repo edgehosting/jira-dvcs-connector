@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
-
 import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
 
 /**
  * @author Martin Skurla

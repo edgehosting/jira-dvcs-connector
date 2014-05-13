@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
@@ -34,7 +35,7 @@ import java.util.List;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class BitbucketTests implements BasicTests, MissingCommitsTests, ActivityStreamsTest
+public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
@@ -81,7 +82,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
 
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
@@ -96,8 +97,8 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
-        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -127,7 +128,7 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test
@@ -174,10 +175,18 @@ public class BitbucketTests implements BasicTests, MissingCommitsTests, Activity
         rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         String baseUrl = jira.getProductInstance().getBaseUrl();
         String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
+
+        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        if (!servicesConfig.contains(syncUrl))
+        {
+            // retrying once more
+            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        }
+
         assertThat(servicesConfig).contains(syncUrl);
 
         // delete repository

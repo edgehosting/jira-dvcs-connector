@@ -1,16 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.util.Arrays;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.atlassian.jira.project.ProjectManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.project.ProjectManager;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * PasswordReEncryptor decrypts the password using old key (projectId + repositoryUrl) 

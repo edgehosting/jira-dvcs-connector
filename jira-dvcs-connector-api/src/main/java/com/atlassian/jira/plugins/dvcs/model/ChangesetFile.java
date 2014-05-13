@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 public class ChangesetFile
 {

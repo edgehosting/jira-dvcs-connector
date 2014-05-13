@@ -1,9 +1,8 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
 
-import it.restart.com.atlassian.jira.plugins.dvcs.GrantAccessPageController;
-
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import it.restart.com.atlassian.jira.plugins.dvcs.GrantAccessPageController;
 
 public class BitbucketGrantAccessPageController implements GrantAccessPageController
 {

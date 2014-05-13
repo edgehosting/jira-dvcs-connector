@@ -14,8 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
 
 /**

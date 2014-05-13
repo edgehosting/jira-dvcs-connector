@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs;
 
+import com.google.common.collect.Maps;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.google.common.collect.Maps;
 
 public class RestUrlBuilder
 {

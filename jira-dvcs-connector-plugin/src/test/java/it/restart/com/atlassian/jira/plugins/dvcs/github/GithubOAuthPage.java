@@ -1,15 +1,15 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-
-import java.util.List;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+import java.util.List;
+import javax.inject.Inject;
 
 /**
  *
@@ -33,12 +33,15 @@ public class GithubOAuthPage implements Page
     
     @ElementBy(linkText = "Delete application")
     private PageElement deleteApplication;
-    
+
     @ElementBy(xpath = "//div[@id='facebox']//button")
     private PageElement deleteApplicationConfirm;
-    
+
     @ElementBy(tagName = "body")
     private PageElement body;
+
+    @Inject
+    private WebDriver webDriver;
 
     private final String hostUrl;
 
@@ -79,8 +82,44 @@ public class GithubOAuthPage implements Page
     public void removeConsumer()
     {
         deleteApplication.click();
-//        Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+
+        try
+        {
+            Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+        }
+        catch(AssertionError e)
+        {
+            // retryning the delete after page refresh, sometimes it's not working
+            retry(5, new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    webDriver.navigate().refresh();
+                    deleteApplication.click();
+                    Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+                }
+            });
+        }
         deleteApplicationConfirm.click();
+    }
+
+    private void retry(int times, Runnable runnable)
+    {
+        for (int count = 1 ; count < times; count++)
+        {
+            try
+            {
+                runnable.run();
+                return;
+            }
+            catch (AssertionError e)
+            {
+                // ignoring
+            }
+        }
+
+        runnable.run();
     }
 
 }

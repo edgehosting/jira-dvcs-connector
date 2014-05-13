@@ -1,18 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 public class Changeset
 {
     public static final int MAX_VISIBLE_FILES = 5;
-    
+
     private int id;
     
     private Date synchronizedAt;
