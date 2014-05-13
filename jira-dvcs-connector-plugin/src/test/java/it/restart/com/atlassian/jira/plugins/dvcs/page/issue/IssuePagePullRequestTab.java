@@ -1,18 +1,16 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.issue;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverElementMappings;
 import com.atlassian.pageobjects.elements.WebDriverLocators;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import java.util.LinkedList;
+import java.util.List;
+import javax.inject.Inject;
 
 /**
  * Represents Selenium abstraction of a "Pull Request" tab of an {@link IssuePage}.

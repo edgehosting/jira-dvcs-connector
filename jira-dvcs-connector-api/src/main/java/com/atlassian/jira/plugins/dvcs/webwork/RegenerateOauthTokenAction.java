@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -10,6 +7,8 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class RegenerateOauthTokenAction extends CommonDvcsConfigurationAction
 {

@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork.render;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -14,6 +11,9 @@ import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChangesetIssueActionFactory implements IssueActionFactory
 {

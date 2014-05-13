@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Uses a plugin Settings Factory to store the state of the plugin

@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import java.util.Date;
-import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.CoreFeatures;
@@ -15,6 +7,13 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Date;
+import java.util.Random;
 
 public class PostponeOndemandPrSyncListener implements InitializingBean, DisposableBean
 {

@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
-import java.io.IOException;
-
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import java.io.IOException;
 
 public class GithubEnterpriseCommunicator extends GithubCommunicator
 {

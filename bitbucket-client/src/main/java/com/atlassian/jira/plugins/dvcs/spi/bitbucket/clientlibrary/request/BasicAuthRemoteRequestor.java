@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-import java.io.IOException;
-import java.util.Map;
-
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.client.HttpClient;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * BasicAuthRemoteRequestor

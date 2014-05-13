@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v1.ProjectMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("deprecation")
 public class Uri2UrlMigrator implements ActiveObjectsUpgradeTask

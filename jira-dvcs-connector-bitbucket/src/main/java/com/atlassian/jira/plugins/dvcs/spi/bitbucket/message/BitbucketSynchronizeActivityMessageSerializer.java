@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeActivityMessage>
 {

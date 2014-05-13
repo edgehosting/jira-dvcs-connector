@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+
+import java.util.Map;
 
 /**
  * DAO layer for {@link MessageMapping}.

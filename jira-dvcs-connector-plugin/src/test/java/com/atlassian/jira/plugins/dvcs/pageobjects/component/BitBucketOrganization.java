@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
+
+import javax.inject.Inject;
 
 public class BitBucketOrganization
 {
