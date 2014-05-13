@@ -1,19 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Random;
-
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.sal.api.lifecycle.LifecycleAware;
+import com.atlassian.sal.api.scheduling.PluginScheduler;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
-import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
-import com.atlassian.sal.api.lifecycle.LifecycleAware;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
-import com.google.common.collect.Maps;
+import java.util.Date;
+import java.util.Map;
+import java.util.Random;
 
 public class DvcsScheduler implements LifecycleAware, DisposableBean
 {

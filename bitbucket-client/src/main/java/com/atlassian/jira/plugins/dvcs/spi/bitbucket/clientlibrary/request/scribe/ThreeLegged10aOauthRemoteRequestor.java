@@ -1,12 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.scribe.extractors.HeaderExtractorImpl;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;
@@ -14,7 +12,8 @@ import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * ThreeLegged10aOauthRemoteRequestor

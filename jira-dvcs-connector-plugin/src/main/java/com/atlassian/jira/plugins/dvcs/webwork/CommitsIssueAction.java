@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Date;
-
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+
+import java.util.Date;
 
 public class CommitsIssueAction implements IssueAction
 {

@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
-import javax.ws.rs.core.MediaType;
-
 import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
@@ -9,6 +7,8 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  * {@link Repository} related resit point.

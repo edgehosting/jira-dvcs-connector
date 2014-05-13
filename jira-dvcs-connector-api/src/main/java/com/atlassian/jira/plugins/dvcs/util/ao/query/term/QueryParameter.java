@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.util.ao.query.term;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
-
 import com.atlassian.jira.plugins.dvcs.util.ao.query.DefaultQueryNode;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryContext;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryNode;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
  * {@link QueryNode} implementation over aliased/named parameter

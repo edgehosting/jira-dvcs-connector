@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.rest.api.issue.IssueCreateResponse;
@@ -8,21 +9,18 @@ import com.atlassian.jira.testkit.client.restclient.Issue;
 import com.atlassian.jira.testkit.client.restclient.SearchRequest;
 import com.atlassian.jira.testkit.client.restclient.SearchResult;
 import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
+import com.atlassian.pageobjects.TestedProductFactory;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.CreateIssueDialog;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.DashboardPage;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.pageobjects.TestedProductFactory;
 
 /**
  * Abstract test for all DVCS tests.

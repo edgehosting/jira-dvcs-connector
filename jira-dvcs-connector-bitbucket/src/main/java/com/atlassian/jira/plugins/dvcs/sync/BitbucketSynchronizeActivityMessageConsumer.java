@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -234,9 +234,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (remote != null && hasChanged(local, remote, commentCount))
         {
             local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                    .getBranch().getName(), remote.getDestination().getBranch().getName(),
+                            .getBranch().getName(), remote.getDestination().getBranch().getName(),
                     resolveBitbucketStatus(remote.getState()),
-                    remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount);
+                    remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount
+            );
         }
 
         if (participantIndex != null)

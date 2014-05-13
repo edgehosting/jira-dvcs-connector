@@ -1,13 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
@@ -19,6 +11,12 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Represents repository table row of {@link AccountsPageAccountRepository}.

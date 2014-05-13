@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+
 import java.util.Collection;
 import java.util.List;
-
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 
 public interface OrganizationDao
 {

@@ -8,7 +8,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthP
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
@@ -19,7 +18,6 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * @author Martin Skurla

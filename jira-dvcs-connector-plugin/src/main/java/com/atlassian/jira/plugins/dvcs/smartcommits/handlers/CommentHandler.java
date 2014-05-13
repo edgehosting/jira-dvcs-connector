@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import java.util.Date;
-import java.util.List;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.issue.comment.CommentService;
@@ -11,6 +8,9 @@ import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
+
+import java.util.Date;
+import java.util.List;
 
 public class CommentHandler implements CommandHandler<Comment> {
 

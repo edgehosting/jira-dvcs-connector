@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static org.hamcrest.Matchers.is;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
+
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Represents the confirmation dialog

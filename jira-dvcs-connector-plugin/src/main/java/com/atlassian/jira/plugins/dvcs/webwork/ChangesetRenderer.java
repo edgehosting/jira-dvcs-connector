@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.List;
-
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+
+import java.util.List;
 
 
 public interface ChangesetRenderer {

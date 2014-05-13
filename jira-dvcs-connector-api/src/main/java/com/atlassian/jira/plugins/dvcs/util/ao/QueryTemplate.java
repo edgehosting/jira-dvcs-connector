@@ -1,19 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.util.ao;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryContext;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.QueryJoin;
@@ -28,6 +14,18 @@ import com.atlassian.jira.plugins.dvcs.util.ao.query.criteria.QueryCriterion;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.term.QueryColumn;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.term.QueryParameter;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.term.QueryTerm;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Template for queries.
