@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -149,4 +150,6 @@ public interface RepositoryService
     DvcsUser getUser(Repository repository, String author, String raw_author);
 
     List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted);
+
+    Set<String> getEmails(Repository repository, DvcsUser user);
 }
