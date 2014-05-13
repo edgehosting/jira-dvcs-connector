@@ -1,24 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Arrays;
-
-import javax.annotation.Resource;
-
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
+import javax.annotation.Resource;
 
 import static com.atlassian.activeobjects.spi.DatabaseType.ORACLE;
 

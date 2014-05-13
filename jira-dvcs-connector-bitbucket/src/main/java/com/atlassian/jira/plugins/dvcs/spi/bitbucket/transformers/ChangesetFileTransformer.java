@@ -1,18 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers;
 
-import java.util.List;
-
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetFile;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetWithDiffstat;
+import java.util.List;
 
 /**
  * ChangesetFileTransformer

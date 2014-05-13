@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.junit.Test;
 

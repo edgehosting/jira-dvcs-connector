@@ -1,18 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.components.ActivatedComponent;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
 
 /**
  * Represents the BitBucket panel in the view issue page

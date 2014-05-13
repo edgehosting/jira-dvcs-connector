@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
+
+import java.util.Map;
 
 /**
  * DAO layer related to {@link MessageQueueItemMapping}.

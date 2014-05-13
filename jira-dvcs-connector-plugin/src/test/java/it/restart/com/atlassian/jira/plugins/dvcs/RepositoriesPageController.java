@@ -1,19 +1,18 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class RepositoriesPageController implements PageController<RepositoriesPage>
 {

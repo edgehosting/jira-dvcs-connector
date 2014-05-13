@@ -2,9 +2,6 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import org.testng.annotations.Test;
 
-import java.io.Serializable;
-import java.util.Collections;
-
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.SerializationUtils.deserialize;
 import static org.apache.commons.lang3.SerializationUtils.serialize;

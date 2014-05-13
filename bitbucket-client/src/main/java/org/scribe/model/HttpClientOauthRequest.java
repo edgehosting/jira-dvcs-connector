@@ -1,8 +1,6 @@
 package org.scribe.model;
 
-import java.io.IOException;
-import java.net.URI;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -11,7 +9,8 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.scribe.exceptions.OAuthConnectionException;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import java.io.IOException;
+import java.net.URI;
 
 public class HttpClientOauthRequest extends OAuthRequest
 {

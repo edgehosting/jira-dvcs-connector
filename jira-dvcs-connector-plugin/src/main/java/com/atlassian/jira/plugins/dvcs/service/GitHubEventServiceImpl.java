@@ -1,27 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
+import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
-import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import javax.annotation.Resource;
 
 /**
  * Implementation of the {@link GitHubEventService}.

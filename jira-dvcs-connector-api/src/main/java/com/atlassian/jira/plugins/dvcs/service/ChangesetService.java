@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface ChangesetService
 {
