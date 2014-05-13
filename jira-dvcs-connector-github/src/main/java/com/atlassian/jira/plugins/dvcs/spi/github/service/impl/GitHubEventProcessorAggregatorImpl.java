@@ -22,7 +22,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
     /**
      * Cache of the already resolved processors. The synchronization is done via direct object locking.
      */
-    private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> resolvedProcessorCache = new ConcurrentHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
+    private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> eventProcessorsMapping = new ConcurrentHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
 
     /**
      * Constructor.
@@ -34,7 +34,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
     {
         for (GitHubEventProcessor<? extends EventPayload> eventProcessor : eventProcessors)
         {
-            resolvedProcessorCache.put(eventProcessor.getEventPayloadType(), eventProcessor);
+            eventProcessorsMapping.put(eventProcessor.getEventPayloadType(), eventProcessor);
         }
     }
 
@@ -49,7 +49,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
             Class<? extends T_EventPayload> eventPayloadType)
     {
         // try resolve the event processor from cache
-        GitHubEventProcessor<T_EventPayload> result = (GitHubEventProcessor<T_EventPayload>) resolvedProcessorCache.get(eventPayloadType);
+        GitHubEventProcessor<T_EventPayload> result = (GitHubEventProcessor<T_EventPayload>) eventProcessorsMapping.get(eventPayloadType);
         if (result != null)
         {
             return result;
@@ -59,7 +59,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
         if (EventPayload.class.isAssignableFrom(eventPayloadType.getSuperclass()))
         {
             result = resolveEventProcessor((Class<? extends T_EventPayload>) eventPayloadType.getSuperclass());
-            resolvedProcessorCache.put(eventPayloadType, result);
+            eventProcessorsMapping.put(eventPayloadType, result);
             return result;
         }
 
