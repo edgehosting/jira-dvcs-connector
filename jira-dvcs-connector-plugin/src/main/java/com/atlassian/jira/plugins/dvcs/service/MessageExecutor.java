@@ -13,19 +13,23 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -44,16 +48,7 @@ public class MessageExecutor
     /**
      * Executor that is used for consumer execution.
      */
-    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<Runnable>())
-    {
-        protected void afterExecute(Runnable r, Throwable t)
-        {
-            MessageRunnable<?> messageRunnable = (MessageRunnable<?>) r;
-            releaseToken(messageRunnable.getConsumer());
-            tryToProcessNextMessage(messageRunnable.getConsumer());
-        }
-    };
+    private final ExecutorService executor;
 
     private ClusterLockService clusterLockService;
 
@@ -87,6 +82,26 @@ public class MessageExecutor
      * Is messaging stopped?
      */
     private boolean stop;
+
+    /**
+     * Creates a new MessageExecutor backed by a thread pool.
+     */
+    @Autowired
+    public MessageExecutor()
+    {
+        this(null);
+    }
+
+    /**
+     * Creates a new MessageExecutor backed by the given ExecutorService.
+     *
+     * @param executor    an ExecutorService (null to use the default ThreadPoolExecutor)
+     */
+    @VisibleForTesting
+    public MessageExecutor(@Nullable ExecutorService executor)
+    {
+        this.executor = executor == null ? createThreadPoolExecutor() : executor;
+    }
 
     /**
      * Initializes this bean.
@@ -216,6 +231,50 @@ public class MessageExecutor
     }
 
     /**
+     * @return a new ThreadPoolExecutor
+     */
+    private ThreadPoolExecutor createThreadPoolExecutor()
+    {
+        return new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+    }
+
+    /**
+     * Template class for {@code Runnable}s that should release the token after they run and enqueue the next message.
+     */
+    private abstract class ReleaseTokenAndEnqueueNextMessage implements Runnable
+    {
+        /**
+         * Delegate to subclass then release token.
+         */
+        @Override
+        public final void run()
+        {
+            try
+            {
+                doRun();
+            }
+            finally
+            {
+                final MessageConsumer<?> consumer = getConsumer();
+
+                // release the token, then enqueue the next message
+                releaseToken(consumer);
+                tryToProcessNextMessage(consumer);
+            }
+        }
+
+        /**
+         * Run whatever.
+         */
+        protected abstract void doRun();
+
+        /**
+         * @return the MessageConsumer.
+         */
+        protected abstract MessageConsumer<?> getConsumer();
+    }
+
+    /**
      * Runnable for single message processing.
      *
      * @author Stanislav Dvorscak
@@ -223,7 +282,7 @@ public class MessageExecutor
      * @param <P>
      *            type of message payload
      */
-    private final class MessageRunnable<P extends HasProgress> implements Runnable
+    private final class MessageRunnable<P extends HasProgress> extends ReleaseTokenAndEnqueueNextMessage
     {
 
         /**
@@ -256,11 +315,8 @@ public class MessageExecutor
             return consumer;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void run()
+        protected void doRun()
         {
             Progress progress = null;
             ThreadEventsCaptor syncEvents = null;
@@ -308,13 +364,12 @@ public class MessageExecutor
             }
             finally
             {
+                tryEndProgress(message, consumer, progress);
                 if (syncEvents != null)
                 {
                     syncEvents.stopCapturing();
                     syncEvents.sendToEventPublisher();
                 }
-
-                tryEndProgress(message, consumer, progress);
             }
         }
 

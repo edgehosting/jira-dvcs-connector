@@ -129,7 +129,7 @@ public class DefaultSynchronizer implements Synchronizer
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
             }
 
-            Progress progress= startProgressSafely(repo, flags);
+            Progress progress = startProgressSafely(repo, flags);
             if (progress==null)
             {
                 return;
@@ -173,8 +173,8 @@ public class DefaultSynchronizer implements Synchronizer
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
-                stopCapturingAndPublishEvents(syncEvents);
                 messagingService.tryEndProgress(repo, progress, null, auditId);
+                stopCapturingAndPublishEvents(syncEvents);
             }
         }
     }
