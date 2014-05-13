@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
-import java.util.Set;
-
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import static org.fest.assertions.api.Assertions.*;
+
+import java.util.Set;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * @author Martin Skurla

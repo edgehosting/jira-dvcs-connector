@@ -1,11 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import org.openqa.selenium.By;
 
 /**
  *

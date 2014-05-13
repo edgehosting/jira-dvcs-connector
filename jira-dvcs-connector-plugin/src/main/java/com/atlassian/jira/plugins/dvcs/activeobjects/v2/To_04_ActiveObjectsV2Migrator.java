@@ -1,12 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
@@ -15,6 +8,12 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v1.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v1.ProjectMapping;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class To_04_ActiveObjectsV2Migrator implements ActiveObjectsUpgradeTask

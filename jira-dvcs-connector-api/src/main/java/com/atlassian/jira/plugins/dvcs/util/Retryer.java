@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import java.util.concurrent.Callable;
-
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import java.util.concurrent.Callable;
 
 
 /**

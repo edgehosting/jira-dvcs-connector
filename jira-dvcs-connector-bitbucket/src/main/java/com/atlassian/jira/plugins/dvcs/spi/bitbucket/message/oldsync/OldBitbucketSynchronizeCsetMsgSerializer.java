@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 
-import java.util.Date;
-
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONObject;
+
+import java.util.Date;
 
 /**
  * An implementation of {@link MessagePayloadSerializer} over

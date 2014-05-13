@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import static org.hamcrest.Matchers.is;
-
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
+import org.openqa.selenium.By;
+
+import static org.hamcrest.Matchers.is;
 
 /**
  * Represents the page to link repositories to projects.
@@ -57,7 +56,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         if (autoSync)
         {
-            JiraPageUtils.checkSyncProcessSuccess(jiraTestedProduct);
+            JiraPageUtils.checkSyncProcessSuccess();
         }
 
         return this;

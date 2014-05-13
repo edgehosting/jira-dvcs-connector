@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
-import javax.ws.rs.ext.Provider;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
@@ -15,6 +13,8 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import com.sun.jersey.spi.container.ResourceFilter;
+
+import javax.ws.rs.ext.Provider;
 
 /**
  * <p>This is a Jersey resource filter that, if the resource is marked by {@link AdminOnly} annotation,

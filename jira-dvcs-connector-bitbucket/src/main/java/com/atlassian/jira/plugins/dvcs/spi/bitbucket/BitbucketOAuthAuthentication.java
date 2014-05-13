@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.sal.api.net.Request;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.model.Token;
-
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
-import com.atlassian.sal.api.net.Request;
 
 public class BitbucketOAuthAuthentication implements Authentication
 {

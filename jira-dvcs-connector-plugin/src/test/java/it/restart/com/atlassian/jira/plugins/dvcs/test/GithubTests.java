@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Poller;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
@@ -19,6 +20,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import org.hamcrest.Matchers;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -75,7 +77,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Override
@@ -86,8 +88,11 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(),true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
-        assertThat(organization.getRepositories().get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+
+        Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
+
+        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
 
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -119,7 +124,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 new OAuthCredentials("xxx", "yyy"), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories().size()).isEqualTo(4);
+        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
     }
 
     @Test
@@ -139,6 +144,14 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
         jira.getTester().gotoUrl(hooksURL);
         String hooksPage = jira.getTester().getDriver().getPageSource();
+
+        if (!hooksPage.contains(githubServiceConfigUrlPath))
+        {
+            // let's retry once more
+            jira.getTester().gotoUrl(hooksURL);
+            hooksPage = jira.getTester().getDriver().getPageSource();
+        }
+
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();

@@ -1,8 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 /**
  * @author Martin Skurla mskurla@atlassian.com
@@ -52,5 +51,25 @@ public final class PageElementUtils
         }
 
         return null;
+    }
+
+    /**
+     * This is workaround for Permission denied to access property 'nr@context' issue.
+     * Accessing page element e.g. reading it's tag name, before any action on the page.
+     *
+     * This must be removed after the issue is fixed in Selenium
+     *
+     * @param pageElement any page element to be used
+     */
+    public static void permissionDeniedWorkAround(PageElement pageElement)
+    {
+        try
+        {
+            pageElement.getTagName();
+        }
+        catch (Throwable t)
+        {
+            // ignoring any errors
+        }
     }
 }
