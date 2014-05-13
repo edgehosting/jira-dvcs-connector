@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.upgrade;
 
-import java.util.Collection;
-
 import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 import com.google.common.collect.Lists;
+
+import java.util.Collection;
 
 /**
  * For Bitbucket.

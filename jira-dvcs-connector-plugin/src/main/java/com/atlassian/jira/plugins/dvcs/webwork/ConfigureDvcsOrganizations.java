@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
@@ -21,6 +13,13 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Webwork action used to configure the bitbucket organizations

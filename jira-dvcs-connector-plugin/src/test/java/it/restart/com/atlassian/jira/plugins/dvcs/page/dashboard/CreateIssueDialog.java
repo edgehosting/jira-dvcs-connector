@@ -1,11 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard;
 
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import org.openqa.selenium.By;
 
 /**
  * Create issue dialog, which is displayed on dashboard.

@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.Set;
-
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.Set;
 
 
 public interface BitbucketLinker

@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddOrganizationProgressAction extends JiraWebActionSupport
 {

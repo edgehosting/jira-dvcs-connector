@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import java.util.UUID;
-
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.OAuthConfig;
 import org.scribe.model.Token;
 import org.scribe.oauth.OAuthService;
 import org.scribe.services.TimestampService;
 import org.scribe.services.TimestampServiceImpl;
+
+import java.util.UUID;
 
 /**
  * OAuthBitbucket10aApi

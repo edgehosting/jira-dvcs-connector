@@ -1,17 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.adduser;
 
-import java.io.StringWriter;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.web.model.AbstractWebPanel;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.StringWriter;
+import java.util.Map;
 
 /**
  * This panel extends user-add form in JIRA. It appends configured bitbucket

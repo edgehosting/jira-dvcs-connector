@@ -1,10 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -14,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.util.concurrent.ThreadFactories;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
 {
@@ -75,7 +74,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
             @Override
             public void run()
             {
-			    bitbucketLinker.unlinkRepository(repository);
+                bitbucketLinker.unlinkRepository(repository);
             }
         });
 	}

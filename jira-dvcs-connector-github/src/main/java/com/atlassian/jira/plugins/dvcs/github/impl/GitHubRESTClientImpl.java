@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.WebResource;
+
+import java.util.List;
+import javax.ws.rs.core.MediaType;
 
 /**
  * An implementation of {@link GitHubRESTClient}.

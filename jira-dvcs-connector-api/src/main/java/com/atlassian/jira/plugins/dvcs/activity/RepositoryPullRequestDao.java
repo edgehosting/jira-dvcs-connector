@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.Participant;
 
 public interface RepositoryPullRequestDao
 {

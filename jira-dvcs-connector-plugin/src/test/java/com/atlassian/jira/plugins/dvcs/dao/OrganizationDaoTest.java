@@ -1,17 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.dao;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.entry;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Map;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -21,14 +17,17 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
-import com.atlassian.jira.plugins.dvcs.dao.impl.OrganizationDaoImpl;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.Map;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.entry;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class OrganizationDaoTest
 {

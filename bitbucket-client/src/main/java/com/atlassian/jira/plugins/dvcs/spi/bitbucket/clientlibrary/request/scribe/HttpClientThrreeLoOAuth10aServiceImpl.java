@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import java.util.Map;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.HttpClientOauthRequest;
@@ -13,6 +11,8 @@ import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 import org.scribe.utils.MapUtils;
+
+import java.util.Map;
 
 public class HttpClientThrreeLoOAuth10aServiceImpl implements OAuthService
 {

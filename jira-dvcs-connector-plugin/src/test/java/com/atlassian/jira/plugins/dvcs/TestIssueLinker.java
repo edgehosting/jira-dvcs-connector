@@ -1,18 +1,15 @@
 package com.atlassian.jira.plugins.dvcs;
 
-import static org.mockito.Mockito.when;
-
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinkerImpl;
 import com.atlassian.sal.api.ApplicationProperties;
-
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 public class TestIssueLinker
 {

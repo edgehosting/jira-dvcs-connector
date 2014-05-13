@@ -1,17 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
@@ -27,6 +15,17 @@ import com.atlassian.jira.security.Permissions;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
