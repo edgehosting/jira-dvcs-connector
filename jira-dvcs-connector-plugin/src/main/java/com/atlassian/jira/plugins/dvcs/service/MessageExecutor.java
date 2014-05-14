@@ -17,7 +17,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,7 +85,6 @@ public class MessageExecutor
     /**
      * Creates a new MessageExecutor backed by a thread pool.
      */
-    @Autowired
     public MessageExecutor()
     {
         this(null);
