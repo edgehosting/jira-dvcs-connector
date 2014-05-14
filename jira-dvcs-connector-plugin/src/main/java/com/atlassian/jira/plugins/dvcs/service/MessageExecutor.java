@@ -28,10 +28,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Is responsible for message execution.
@@ -87,18 +89,18 @@ public class MessageExecutor
      */
     public MessageExecutor()
     {
-        this(null);
+        this(createThreadPoolExecutor());
     }
 
     /**
      * Creates a new MessageExecutor backed by the given ExecutorService.
      *
-     * @param executor    an ExecutorService (null to use the default ThreadPoolExecutor)
+     * @param executor    an ExecutorService
      */
     @VisibleForTesting
-    public MessageExecutor(@Nullable ExecutorService executor)
+    public MessageExecutor(@Nonnull ExecutorService executor)
     {
-        this.executor = executor == null ? createThreadPoolExecutor() : executor;
+        this.executor = checkNotNull(executor, "executor");
     }
 
     /**
@@ -231,7 +233,7 @@ public class MessageExecutor
     /**
      * @return a new ThreadPoolExecutor
      */
-    private ThreadPoolExecutor createThreadPoolExecutor()
+    private static ThreadPoolExecutor createThreadPoolExecutor()
     {
         return new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
     }
