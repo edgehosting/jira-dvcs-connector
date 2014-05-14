@@ -103,6 +103,8 @@ public interface ChangesetDao
      */
     public int getChangesetCount(final int repositoryId);
 
+    Set<String> findEmails(int repositoryId, String author);
+
     /**
      *
      */

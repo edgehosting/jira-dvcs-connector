@@ -23,6 +23,7 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -700,6 +701,12 @@ public class RepositoryServiceImpl implements RepositoryService
         }
 
         return user != null ? user : getUnknownUser(repository, author, rawAuthor);
+    }
+
+    @Override
+    public Set<String> getEmails(Repository repository, DvcsUser user)
+    {
+        return changesetService.findEmails(repository.getId(), user.getUsername());
     }
 
     /**
