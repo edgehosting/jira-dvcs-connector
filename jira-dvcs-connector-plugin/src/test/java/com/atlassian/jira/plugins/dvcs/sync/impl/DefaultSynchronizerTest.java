@@ -146,13 +146,13 @@ public class DefaultSynchronizerTest
      * The captor given to the DefaultSynchronizer.
      */
     @Mock
-    private ThreadEventsCaptor threadEventsCaptor1;
+    private ThreadEventsCaptor threadEventsCaptorForDefaultSync;
 
     /**
      * The captor given to the MessageExecutor.
      */
     @Mock
-    private ThreadEventsCaptor threadEventsCaptor2;
+    private ThreadEventsCaptor threadEventsCaptorForMessageExecutor;
 
     @Mock
     private BranchService branchService;
@@ -255,7 +255,7 @@ public class DefaultSynchronizerTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-        when(threadEvents.startCapturing()).thenReturn(threadEventsCaptor1, threadEventsCaptor2);
+        when(threadEvents.startCapturing()).thenReturn(threadEventsCaptorForDefaultSync, threadEventsCaptorForMessageExecutor);
 
         // wire up the DefaultSynchronizer with our mock ThreadEvents
         ReflectionTestUtils.setField(defaultSynchronizer, "syncThreadEvents", threadEvents);
@@ -1009,8 +1009,8 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, processedNodes, true);
 
         // Should not capture events on first sync - it's a full sync
-        verifyZeroInteractions(threadEventsCaptor1);
-        verifyZeroInteractions(threadEventsCaptor2);
+        verifyZeroInteractions(threadEventsCaptorForDefaultSync);
+        verifyZeroInteractions(threadEventsCaptorForMessageExecutor);
 
         Mockito.reset(smartCommitsProcessor);
 
@@ -1020,10 +1020,10 @@ public class DefaultSynchronizerTest
         // this is not a true unit test so the smartCommitsProcessor ends up getting called twice: once from
         // DefaultSynchronizer and another time from MessageExecutor. we only test the DefaultSynchronizer events
         // here since the MessageExecutor has its own test. order is important here!
-        InOrder order = inOrder(smartCommitsProcessor, threadEventsCaptor1);
+        InOrder order = inOrder(smartCommitsProcessor, threadEventsCaptorForDefaultSync);
         order.verify(smartCommitsProcessor, times(2)).startProcess(any(Progress.class), eq(repositoryMock), eq(changesetService));
-        order.verify(threadEventsCaptor1).stopCapturing();
-        order.verify(threadEventsCaptor1).sendToEventPublisher();
+        order.verify(threadEventsCaptorForDefaultSync).stopCapturing();
+        order.verify(threadEventsCaptorForDefaultSync).sendToEventPublisher();
     }
 
     @Test
@@ -1038,7 +1038,7 @@ public class DefaultSynchronizerTest
         graph.commit("node1", null).mock();
 
         checkSynchronization(graph, processedNodes, false);
-        verifyZeroInteractions(threadEventsCaptor1);
+        verifyZeroInteractions(threadEventsCaptorForDefaultSync);
     }
 
     @Test
