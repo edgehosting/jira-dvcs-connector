@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.concurrent.locks.Lock;
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 /**
@@ -139,7 +140,7 @@ public class DefaultSynchronizer implements Synchronizer
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            ThreadEventsCaptor syncEvents = startCapturingSyncEvents(softSync);
+            final ThreadEventsCaptor syncEvents = startCapturingSyncEvents(softSync);
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
             int auditId = 0;
             try
@@ -233,6 +234,7 @@ public class DefaultSynchronizer implements Synchronizer
 
     }
 
+    @Nonnull
     private ThreadEventsCaptor startCapturingSyncEvents(boolean softSync)
     {
         if (softSync)
@@ -240,16 +242,13 @@ public class DefaultSynchronizer implements Synchronizer
             return syncThreadEvents.startCapturing();
         }
 
-        return null;
+        return ThreadEvents.NULL_CAPTOR;
     }
 
-    private void stopCapturingAndPublishEvents(ThreadEventsCaptor syncEvents)
+    private void stopCapturingAndPublishEvents(@Nonnull ThreadEventsCaptor syncEvents)
     {
-        if (syncEvents != null)
-        {
-            syncEvents.stopCapturing();
-            syncEvents.sendToEventPublisher();
-        }
+        syncEvents.stopCapturing();
+        syncEvents.sendToEventPublisher();
     }
 
     private void fireAnalyticsStart(boolean softSync, boolean changesetsSync, boolean pullRequestSync, boolean webhook)

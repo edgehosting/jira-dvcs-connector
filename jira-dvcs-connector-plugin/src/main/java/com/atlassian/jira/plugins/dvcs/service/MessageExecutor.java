@@ -33,6 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.event.ThreadEvents.NULL_CAPTOR;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -318,33 +319,26 @@ public class MessageExecutor
         @Override
         protected void doRun()
         {
-            Progress progress = null;
-            ThreadEventsCaptor syncEvents = null;
+            final Progress progress;
+            final P payload;
             try
             {
-                P payload;
-                try
-                {
-                    payload = messagingService.deserializePayload(message);
-                    progress = payload.getProgress();
-                }
-                catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
-                {
-                    progress = e.getProgressOrNull();
-                    messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
-                    throw e;
-                }
+                payload = messagingService.deserializePayload(message);
+                progress = payload.getProgress();
+            }
+            catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
+            {
+                messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
+                throw e;
+            }
 
-                // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
-                // subsequently re-added
-                if (progress.isSoftsync() && payload.isSoftSync())
-                {
-                    syncEvents = threadEvents.startCapturing();
-                }
-
+            // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
+            // subsequently re-added
+            final ThreadEventsCaptor syncEvents = progress.isSoftsync() && payload.isSoftSync() ? threadEvents.startCapturing() : NULL_CAPTOR;
+            try
+            {
                 consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
-
             }
             catch (Throwable t)
             {
@@ -356,20 +350,14 @@ public class MessageExecutor
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
 
-                if (progress != null)
-                {
-                    progress.setError("Error during sync. See server logs.");
-                }
+                progress.setError("Error during sync. See server logs.");
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }
             finally
             {
                 tryEndProgress(message, consumer, progress);
-                if (syncEvents != null)
-                {
-                    syncEvents.stopCapturing();
-                    syncEvents.sendToEventPublisher();
-                }
+                syncEvents.stopCapturing();
+                syncEvents.sendToEventPublisher();
             }
         }
 

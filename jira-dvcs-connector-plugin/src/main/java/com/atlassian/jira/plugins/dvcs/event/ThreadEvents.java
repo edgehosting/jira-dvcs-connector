@@ -16,6 +16,11 @@ import javax.annotation.Nonnull;
 @Component
 public class ThreadEvents
 {
+    /**
+     * Null ThreadEventsCaptor that neither captures nor publishes events.
+     */
+    public static final ThreadEventsCaptor NULL_CAPTOR = new NullEventCaptor();
+
     private static final Logger logger = LoggerFactory.getLogger(ThreadEvents.class);
 
     /**
@@ -43,6 +48,7 @@ public class ThreadEvents
      * @return a new EventsCapture
      * @throws java.lang.IllegalStateException if there is already an active ThreadEventsCapture on the current thread
      */
+    @Nonnull
     public ThreadEventsCaptor startCapturing()
     {
         if (threadEventCaptor.get() != null)
@@ -116,6 +122,21 @@ public class ThreadEvents
         {
             logger.debug("Capturing event: {}", event);
             capturedEvents.add(event);
+        }
+    }
+
+    private static class NullEventCaptor implements ThreadEventsCaptor
+    {
+        @Override
+        public void stopCapturing()
+        {
+            // do nothing
+        }
+
+        @Override
+        public void sendToEventPublisher()
+        {
+            // do nothing
         }
     }
 }
