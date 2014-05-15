@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestApprovalActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestHead;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
@@ -228,24 +229,75 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         // don't have this pull request, let's save it
         if (local == null)
         {
-            local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo, commentCount));
-        }
-        // maybe update
-        if (remote != null && hasChanged(local, remote, commentCount))
-        {
-            local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
-                            .getBranch().getName(), remote.getDestination().getBranch().getName(),
-                    resolveBitbucketStatus(remote.getState()),
-                    remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount
-            );
-        }
-
-        if (participantIndex != null)
-        {
-            pullRequestService.updatePullRequestParticipants(local.getID(), repo.getId(), participantIndex);
+            try
+            {
+                local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo, commentCount));
+            }
+            catch (IllegalStateException e)
+            {
+                // This should not happen as GitHub always returns source and destination branch for pull request
+                LOGGER.warn("Pull request ({}) has null source or destination branch", remote.getId());
+            }
         }
 
+        if (local == null)
+        {
+            // maybe update
+            if (remote != null && hasChanged(local, remote, commentCount))
+            {
+                String sourceBranch = getBranchName(remote.getSource());
+                String dstBranch = getBranchName(remote.getDestination());
+                if (sourceBranch == null)
+                {
+                    // source branch is null, let's use the old one
+                    sourceBranch = local.getSourceBranch();
+                }
+
+                if (dstBranch == null)
+                {
+                    // destination branch is null, let's use the old one
+                    dstBranch = local.getDestinationBranch();
+                }
+
+                checkNotNullBranches(sourceBranch, dstBranch);
+
+                local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(), remote.getSource()
+                                .getBranch().getName(), remote.getDestination().getBranch().getName(),
+                        resolveBitbucketStatus(remote.getState()),
+                        remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount
+                );
+            }
+
+            if (participantIndex != null)
+            {
+                pullRequestService.updatePullRequestParticipants(local.getID(), repo.getId(), participantIndex);
+            }
+        }
         return local;
+    }
+
+    private void checkNotNullBranches(String source, String destination)
+    {
+        //
+        if (source == null || destination == null)
+        {
+            throw new IllegalStateException("Source and destination branches must be null");
+        }
+    }
+
+    private String getBranchName(BitbucketPullRequestHead ref)
+    {
+        if (ref == null)
+        {
+            return null;
+        }
+
+        if (ref.getBranch() == null)
+        {
+            return null;
+        }
+
+        return ref.getBranch().getName();
     }
 
     private String getRepositoryFullName(BitbucketPullRequestRepository repository)
@@ -422,6 +474,11 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private Map<String, Object> toDaoModelPullRequest(BitbucketPullRequest request, Repository repository, int commentCount)
     {
+        String sourceBranch = getBranchName(request.getSource());
+        String dstBranch = getBranchName(request.getDestination());
+
+        checkNotNullBranches(sourceBranch, dstBranch);
+
         HashMap<String, Object> ret = new HashMap<String, Object>();
         ret.put(RepositoryPullRequestMapping.REMOTE_ID, request.getId());
         ret.put(RepositoryPullRequestMapping.NAME, request.getTitle());
@@ -437,10 +494,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryPullRequestMapping.AUTHOR, author);
         ret.put(RepositoryPullRequestMapping.CREATED_ON, request.getCreatedOn());
         ret.put(RepositoryPullRequestMapping.UPDATED_ON, request.getUpdatedOn());
-        ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
-        ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
+        if (request.getDestination() != null)
+        {
+            ret.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, request.getDestination().getBranch().getName());
+        }
+        if (request.getSource() != null)
+        {
+            ret.put(RepositoryPullRequestMapping.SOURCE_BRANCH, request.getSource().getBranch().getName());
+            ret.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(request.getSource().getRepository()));
+        }
         ret.put(RepositoryPullRequestMapping.LAST_STATUS, resolveBitbucketStatus(request.getState()).name());
-        ret.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(request.getSource().getRepository()));
         ret.put(RepositoryPullRequestMapping.COMMENT_COUNT, commentCount);
 
         return ret;

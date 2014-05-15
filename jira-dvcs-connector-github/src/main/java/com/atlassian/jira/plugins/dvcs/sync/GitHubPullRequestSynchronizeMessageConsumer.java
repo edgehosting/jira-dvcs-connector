@@ -102,14 +102,26 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
-        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
-        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        try
+        {
+            localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
+        }
+        catch (IllegalStateException e)
+        {
+            // This should not happen as GitHub always returns source and destination branch for pull request
+            LOGGER.warn("Pull request ({}) has null source or destination branch", remotePullRequest.getId());
+        }
 
-        processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
-        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
+        if (localPullRequest != null)
+        {
+            repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
-        pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
+            processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
+            processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
+
+            pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
+        }
     }
 
     /**
@@ -130,10 +142,24 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             Map<String, Object> activity = new HashMap<String, Object>();
             map(activity, repository, remotePullRequest);
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
-        } else
+        }
+        else
         {
             String sourceBranch = remotePullRequest.getHead() == null ? null : remotePullRequest.getHead().getRef();
             String dstBranch = remotePullRequest.getBase() == null ? null: remotePullRequest.getBase().getRef();
+            if (sourceBranch == null)
+            {
+                // source branch is null, let's use the old one
+                sourceBranch = localPullRequest.getSourceBranch();
+            }
+
+            if (dstBranch == null)
+            {
+                // destination branch is null, let's use the old one
+                dstBranch = localPullRequest.getDestinationBranch();
+            }
+
+            checkNotNullBranches(sourceBranch, dstBranch);
 
             localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
                     sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
@@ -145,6 +171,14 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
         return localPullRequest;
+    }
+
+    private void checkNotNullBranches(String source, String destination)
+    {
+        if (source == null || destination == null)
+        {
+            throw new IllegalStateException("Source and destination branches must be null");
+        }
     }
 
     private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
@@ -302,6 +336,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void map(Map<String, Object> target, Repository repository, PullRequest source)
     {
+        String sourceBranch = source.getHead() == null ? null : source.getHead().getRef();
+        String dstBranch = source.getBase() == null ? null: source.getBase().getRef();
+
+        checkNotNullBranches(sourceBranch, dstBranch);
+
         target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
 
