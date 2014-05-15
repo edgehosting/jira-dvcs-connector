@@ -538,6 +538,30 @@ public class GitHubTestResource
     }
 
     /**
+     * Returns comment with a given id
+     *
+     * @param owner of repository
+     * @param repositoryName repository name
+     * @param commentId comment id
+     * @return remote comment
+     */
+    public Comment getPullRequestComment(String owner, String repositoryName, long commentId)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+
+        IssueService issueService = new IssueService(getGitHubClient(owner));
+        try
+        {
+            return issueService.getComment(owner, bySlug.repository.getName(), commentId);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+    }
+
+    /**
      * Resolves GitHub client.
      * 
      * @param owner

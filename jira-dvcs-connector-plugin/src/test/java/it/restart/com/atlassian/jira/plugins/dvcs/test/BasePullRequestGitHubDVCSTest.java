@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.google.common.base.Function;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -8,7 +9,9 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccou
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 
+import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
+import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,6 +30,8 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
+
+import javax.annotation.Nullable;
 
 /**
  * Pull request GitHub related tests.
@@ -188,6 +193,15 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
+        // let's wait before opening pull request
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
@@ -241,6 +255,15 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
+        // let's wait before opening pull request
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
@@ -253,7 +276,24 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             // nothing to do
         }
 
-        gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment");
+        final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment");
+
+        jiraTestedProduct.getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
+        {
+            @Override
+            public Boolean apply(@Nullable final WebDriver input)
+            {
+                try
+                {
+                    gitHubResource.getPullRequestComment(GitHubTestResource.USER, repositoryName, comment.getId());
+                    return true;
+                }
+                catch (RuntimeException e)
+                {
+                    return false;
+                }
+            }
+        }, 5000);
 
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
