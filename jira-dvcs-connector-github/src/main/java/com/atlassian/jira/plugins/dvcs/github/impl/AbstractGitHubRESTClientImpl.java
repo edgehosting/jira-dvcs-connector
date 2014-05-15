@@ -32,7 +32,7 @@ import javax.ws.rs.core.UriBuilder;
  * @author Stanislav Dvorscak
  * 
  */
-public class AbstractGitHubRESTClientImpl
+public abstract class AbstractGitHubRESTClientImpl
 {
 
     /**

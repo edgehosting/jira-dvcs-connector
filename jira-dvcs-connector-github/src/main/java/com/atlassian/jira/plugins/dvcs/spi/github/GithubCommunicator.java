@@ -69,17 +69,17 @@ public class GithubCommunicator implements DvcsCommunicator
     public static final String GITHUB = "github";
 
     @Resource
-    private  MessagingService messagingService;
+    private MessagingService messagingService;
 
     @Resource
-    private  BranchService branchService;
+    private BranchService branchService;
 
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
      */
     @Resource
     private GitHubEventService gitHubEventService;
-    
+
     /**
      * Injected {@link GitHubRESTClient} dependency.
      */
@@ -96,12 +96,12 @@ public class GithubCommunicator implements DvcsCommunicator
     protected final OAuthStore oAuthStore;
 
     public GithubCommunicator(OAuthStore oAuthStore,
-            @Qualifier("githubClientProvider") GithubClientProvider githubClientProvider)
+            @Qualifier ("githubClientProvider") GithubClientProvider githubClientProvider)
     {
         this.oAuthStore = oAuthStore;
         this.githubClientProvider = githubClientProvider;
     }
-    
+
     public void setGitHubRESTClient(GitHubRESTClient gitHubRESTClient)
     {
         this.gitHubRESTClient = gitHubRESTClient;
@@ -116,14 +116,15 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-        
+
         UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
             userService.getUser(accountName);
             return new AccountInfo(GithubCommunicator.GITHUB);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
                     accountName);
@@ -146,7 +147,8 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             repositoriesFromOrganization = repositoryService.getOrgRepositories(organization.getName());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             // looks like this is not a team account but standard account
             repositoriesFromOrganization = Collections.emptyList();
@@ -185,7 +187,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     {
                         continue;
                     }
-                    
+
                     processed.add(repoName);
 
                     Repository repository = new Repository();
@@ -195,7 +197,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     if (ghRepository.isFork() && ghRepository.getParent() != null)
                     {
                         setForkOfInfo(ghRepository.getParent(), repository);
-                    } 
+                    }
                     else if (ghRepository.isFork() && /*is new repo*/ !storedReposMap.containsKey(repoName))
                     {
                         tryFindAndSetForkOf(repositoryService, ghRepository, repository);
@@ -206,9 +208,10 @@ public class GithubCommunicator implements DvcsCommunicator
 
             log.debug("Found repositories: " + repositories.size());
             return new ArrayList<Repository>(repositories);
-        } catch ( RequestException e)
+        }
+        catch (RequestException e)
         {
-            if ( e.getStatus() == 401 )
+            if (e.getStatus() == 401)
             {
                 throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
             }
@@ -246,7 +249,7 @@ public class GithubCommunicator implements DvcsCommunicator
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
-            
+
             //TODO Workaround for BBC-455, we need more sophisticated solution that prevents connector to hit GitHub too often when downloading changesets
             checkRequestRateLimit(commitService.getClient());
 
@@ -254,43 +257,45 @@ public class GithubCommunicator implements DvcsCommunicator
             changeset.setFileDetails(GithubChangesetFactory.transformToFileDetails(commit.getFiles()));
 
             return changeset;
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new SourceControlException("could not get result", e);
         }
     }
-    
+
     private void checkRequestRateLimit(GitHubClient gitHubClient)
     {
         if (gitHubClient == null)
         {
             return;
         }
-        
+
         int requestLimit = gitHubClient.getRequestLimit();
         int remainingRequests = gitHubClient.getRemainingRequests();
-        
+
         if (requestLimit == -1 || remainingRequests == -1)
         {
             return;
         }
-        
+
         double threshold = Math.ceil(0.01f * requestLimit);
-        if (remainingRequests<threshold)
+        if (remainingRequests < threshold)
         {
-            long sleepTime = (long) (Math.pow( (remainingRequests / threshold) - 1, 2) * 60 * 60);
+            long sleepTime = (long) (Math.pow((remainingRequests / threshold) - 1, 2) * 60 * 60);
             log.info("Sleeping for " + sleepTime + " s to avoid request rate limit overrun");
             try
             {
                 //TODO when sleeping the synchronization cannot be cancelled
                 Thread.sleep(sleepTime * 1000);
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                 //nop
             }
         }
     }
-    
+
     @Override
     public ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset)
     {
@@ -321,11 +326,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it
-     * and encode UTF-8 instead
-     * 
-     * @param branch
-     * @return
+     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
      */
     private String doTheUtfEncoding(String branch)
     {
@@ -334,7 +335,8 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             String utfEncoded = URLEncoder.encode(branch, "UTF-8");
             isoDecoded = URLDecoder.decode(utfEncoded, "ISO-8859-1");
-        } catch (UnsupportedEncodingException e)
+        }
+        catch (UnsupportedEncodingException e)
         {
             log.warn("Error encoding branch name: " + branch + e.getMessage());
         }
@@ -392,13 +394,15 @@ public class GithubCommunicator implements DvcsCommunicator
                 // adds pull requests hook, if it does not exist
                 createPullRequestsHook(repository, hookUrl);
             }
-        } catch (UniformInterfaceException e)
+        }
+        catch (UniformInterfaceException e)
         {
             if (e.getResponse().getStatus() == HttpStatus.SC_NOT_FOUND)
             {
                 throw new SourceControlException.PostCommitHookRegistrationException(
                         "Could not add webhook. Possibly due to lack of admin permissions.", e);
-            } else
+            }
+            else
             {
                 throw new SourceControlException.PostCommitHookRegistrationException(
                         "Could not add webhook.", e);
@@ -414,10 +418,8 @@ public class GithubCommunicator implements DvcsCommunicator
     /**
      * Creates new hook for events related to changesets.
      *
-     * @param repository
-     *            on which repository
-     * @param hookUrl
-     *            on which URL
+     * @param repository on which repository
+     * @param hookUrl on which URL
      */
     private void createChangesetsHook(Repository repository, String hookUrl)
     {
@@ -428,14 +430,12 @@ public class GithubCommunicator implements DvcsCommunicator
         hook.getConfig().put(GitHubRepositoryHook.CONFIG_URL, hookUrl);
         gitHubRESTClient.addHook(repository, hook);
     }
-    
+
     /**
      * Creates new hook for events related to pull requests.
-     * 
-     * @param repository
-     *            on which repository
-     * @param hookUrl
-     *            on which URL
+     *
+     * @param repository on which repository
+     * @param hookUrl on which URL
      */
     private void createPullRequestsHook(Repository repository, String hookUrl)
     {
@@ -462,7 +462,8 @@ public class GithubCommunicator implements DvcsCommunicator
                 try
                 {
                     gitHubRESTClient.deleteHook(repository, hook);
-                } catch (UniformInterfaceException e)
+                }
+                catch (UniformInterfaceException e)
                 {
                     throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
                 }
@@ -496,7 +497,8 @@ public class GithubCommunicator implements DvcsCommunicator
             String gravatarUrl = ghUser.getAvatarUrl();
 
             return new DvcsUser(login, displayName, null, gravatarUrl, repository.getOrgHostUrl() + "/" + login);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -515,7 +517,8 @@ public class GithubCommunicator implements DvcsCommunicator
             String gravatarUrl = ghUser.getAvatarUrl();
 
             return new DvcsUser(login, displayName, null, gravatarUrl, organization.getHostUrl() + "/" + login);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -545,14 +548,16 @@ public class GithubCommunicator implements DvcsCommunicator
                 if ("master".equalsIgnoreCase(ghBranch.getName()))
                 {
                     branches.add(0, branch);
-                } else
+                }
+                else
                 {
                     branches.add(branch);
                 }
             }
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
-            log.info("Can not obtain branches list from repository [ "+repository.getSlug()+" ]", e);
+            log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
             // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
@@ -593,7 +598,7 @@ public class GithubCommunicator implements DvcsCommunicator
                 repository.getSlug(),
                 getRef(sourceSlug, sourceBranch),
                 getRef(destinationSlug, destinationBranch)
-                );
+        );
     }
 
     @Override
@@ -603,7 +608,7 @@ public class GithubCommunicator implements DvcsCommunicator
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-        String[] synchronizationTags = new String[] {messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId)};
+        String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
         if (changestesSync)
         {
             Date synchronizationStartedAt = new Date();
@@ -620,7 +625,7 @@ public class GithubCommunicator implements DvcsCommunicator
                             SynchronizeChangesetMessage.class, //
                             GithubSynchronizeChangesetMessageConsumer.ADDRESS //
                     );
-                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                 }
             }
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
@@ -639,7 +644,8 @@ public class GithubCommunicator implements DvcsCommunicator
         if (slug != null)
         {
             ref = slug + ":" + branch;
-        } else
+        }
+        else
         {
             ref = branch;
         }
