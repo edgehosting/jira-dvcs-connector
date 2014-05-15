@@ -1,16 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.base.resource;
 
+import com.atlassian.jira.plugins.dvcs.base.AbstractTestListener;
+import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -25,8 +20,11 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugins.dvcs.base.AbstractTestListener;
-import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides GitHub test resource related functionality.
@@ -453,6 +451,34 @@ public class GitHubTestResource
     public String getSlug(String owner, String repositoryName)
     {
         return owner + "/" + repositoryName;
+    }
+
+    /**
+     * Merges provided pull request.
+     *
+     * @param owner
+     *            of repository
+     * @param repositoryName
+     *            pull request owner
+     * @param pullRequest
+     *            to close
+     * @param commitMessage the message that will be used got the merge commit
+     *
+     */
+    public void mergePullRequest(String owner, String repositoryName, PullRequest pullRequest, String commitMessage)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        try
+        {
+            pullRequestService.merge(bySlug.repository, pullRequest.getNumber(), commitMessage);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+
     }
 
     /**

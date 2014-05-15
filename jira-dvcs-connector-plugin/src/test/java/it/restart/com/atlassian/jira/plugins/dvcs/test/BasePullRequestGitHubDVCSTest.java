@@ -329,6 +329,63 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
     }
 
     /**
+     * Tests that "Merge Pull Request" is working.
+     */
+    @Test
+    public void testMerge()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String fixBranchName = issueKey + "_fix";
+        String[] commitNodeOpen = new String[2];
+
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
+
+        gitResource.createBranch(repositoryName, fixBranchName);
+        gitResource.checkout(repositoryName, fixBranchName);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
+
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", fixBranchName, "master");
+
+        // gives such time for pull request creation
+        try
+        {
+            Thread.sleep(5000);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+
+        gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest, null);
+        gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
+
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
+        account.refresh();
+
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
+        repository.enable();
+        repository.synchronize();
+
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
+
+        assertPullRequestInfo(actualPullRequest, "MERGED", pullRequest.getTitle(), pullRequest.getHtmlUrl());
+    }
+
+    /**
      * Test that "Open Pull Request" is working.
      */
     @Test
