@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynch
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
@@ -108,20 +109,19 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
         catch (IllegalStateException e)
         {
-            // This should not happen as GitHub always returns source and destination branch for pull request
-            LOGGER.warn("Pull request ({}) has null source or destination branch", remotePullRequest.getId());
+            // This should not happen
+            LOGGER.warn("Pull request " + remotePullRequest.getId() + " from repository with id " + repository.getId() + " could not be processed", e);
+            // let's return prematurely
+            return;
         }
 
-        if (localPullRequest != null)
-        {
-            repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
-            processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
-            processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
+        processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
+        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
 
-            pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
-        }
+        pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
     }
 
     /**
@@ -145,21 +145,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
         else
         {
-            String sourceBranch = remotePullRequest.getHead() == null ? null : remotePullRequest.getHead().getRef();
-            String dstBranch = remotePullRequest.getBase() == null ? null: remotePullRequest.getBase().getRef();
-            if (sourceBranch == null)
-            {
-                // source branch is null, let's use the old one
-                sourceBranch = localPullRequest.getSourceBranch();
-            }
-
-            if (dstBranch == null)
-            {
-                // destination branch is null, let's use the old one
-                dstBranch = localPullRequest.getDestinationBranch();
-            }
-
-            checkNotNullBranches(sourceBranch, dstBranch);
+            String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
+            String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
 
             localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
                     sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
@@ -173,12 +160,24 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         return localPullRequest;
     }
 
-    private void checkNotNullBranches(String source, String destination)
+    private String checkNotNull(String branch, String object)
     {
-        if (source == null || destination == null)
+        if (branch == null)
         {
-            throw new IllegalStateException("Source and destination branches must be null");
+            throw new IllegalStateException(object + " must not be null");
         }
+
+        return branch;
+    }
+
+    private String getBranchName(PullRequestMarker ref, String oldBranchName)
+    {
+        if (ref == null || ref.getRef() == null)
+        {
+            return oldBranchName;
+        }
+
+        return ref.getRef();
     }
 
     private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
@@ -336,10 +335,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void map(Map<String, Object> target, Repository repository, PullRequest source)
     {
-        String sourceBranch = source.getHead() == null ? null : source.getHead().getRef();
-        String dstBranch = source.getBase() == null ? null: source.getBase().getRef();
-
-        checkNotNullBranches(sourceBranch, dstBranch);
+        String sourceBranch = checkNotNull(getBranchName(source.getHead(), null), "Source branch");
+        String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
 
         target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
@@ -353,15 +350,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
         target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
         target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        if (source.getHead() != null)
-        {
-            target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-            target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
-        }
-        if (source.getBase() != null)
-        {
-            target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
-        }
+        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
+        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, sourceBranch);
+        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, dstBranch);
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
         target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
