@@ -1,14 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
-import it.com.atlassian.jira.plugins.dvcs.missingCommits.AbstractMissingCommitsTest;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
@@ -20,11 +11,12 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.fest.assertions.api.Assertions.assertThat;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Represents repository table row of {@link AccountsPageAccountRepository}.
@@ -123,18 +115,6 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public void synchronize()
     {
-        synchronizeInternal();
-
-        // if synchronization fails, let's try again
-        if (getMessage().contains(AbstractMissingCommitsTest.SYNC_FAILED_MESSAGE))
-        {
-            synchronizeInternal();
-        }
-        assertThat(getMessage()).doesNotContain(AbstractMissingCommitsTest.SYNC_FAILED_MESSAGE);
-    }
-
-    private void synchronizeInternal()
-    {
         synchronizationButton.click();
         try
         {
@@ -143,7 +123,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
         {
             // ignore
         }
-        new WebDriverWait(driver, 3600).until(new Predicate<WebDriver>()
+        new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 
             @Override
@@ -159,18 +139,6 @@ public class AccountsPageAccountRepository extends WebDriverElement
      * Fires full synchronization
      */
     public void fullSynchronize()
-    {
-        fullSynchronizeInternal();
-
-        // if synchronization fails, let's try again
-        if (getMessage().contains(AbstractMissingCommitsTest.SYNC_FAILED_MESSAGE))
-        {
-            fullSynchronizeInternal();
-        }
-        assertThat(getMessage()).doesNotContain(AbstractMissingCommitsTest.SYNC_FAILED_MESSAGE);
-    }
-
-    private void fullSynchronizeInternal()
     {
         try
         {

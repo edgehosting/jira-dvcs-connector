@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Used for writing file details to/from JSON.

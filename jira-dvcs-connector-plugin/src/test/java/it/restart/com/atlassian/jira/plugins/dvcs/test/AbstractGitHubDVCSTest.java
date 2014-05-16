@@ -1,18 +1,8 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.google.common.io.Files;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -50,21 +40,23 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.junit.Ignore;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Abstract, common implementation for all GitHub tests.
  * 
  * @author Stanislav Dvorscak
- * @deprecated {@link PullRequestGitHubDVCSTest} - new version of github dvcs test
+ * 
  */
-@Ignore
-@Deprecated
 public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
 {
 
@@ -128,7 +120,6 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
     /**
      * Prepares common test environment.
      */
-    @Override
     @BeforeClass
     public void onTestsEnvironmentSetup()
     {
@@ -184,7 +175,6 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
      * Destroys test environment.
      */
     @AfterMethod(alwaysRun = true)
-    @Override
     public void onTestCleanUp()
     {
         super.onTestCleanUp();
@@ -817,10 +807,6 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
                 throw new RuntimeException(e);
             }
         }
-        
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.GIT_HUB, getUsername());
-        account.refresh();
     }
 
 }

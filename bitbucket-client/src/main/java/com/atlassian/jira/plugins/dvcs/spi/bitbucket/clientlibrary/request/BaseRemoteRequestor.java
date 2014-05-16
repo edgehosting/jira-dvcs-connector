@@ -1,5 +1,29 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -17,35 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-
 import javax.annotation.Nullable;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicNameValuePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BadRequestRetryer;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.SystemUtils;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 /**
  * BaseRemoteRequestor
@@ -105,13 +101,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
     public <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
-    }
-    
-    @Override
-    public <T> T post(final String uri, final String body, final ContentType contentType, final ResponseCallback<T> callback)
-    {
-        HttpPost method = new HttpPost();
-        return requestWithBody(method, uri, body, contentType, callback);
     }
 
     @Override
@@ -275,40 +264,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             }
         }
     }
-    
-    private <T> T requestWithBody(HttpEntityEnclosingRequestBase method, String uri, String body, ContentType contentType,
-            ResponseCallback<T> callback)
-    {
-        HttpClient client = httpClientProvider.getHttpClient();
-        RemoteResponse response = null;
 
-        try
-        {
-            createConnection(client, method, uri, null);
-            setBody(method, body, contentType);
-
-            HttpResponse httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(method, client, httpResponse);
-
-            return callback.onResponse(response);
-
-        } catch (BitbucketRequestException e)
-        {
-            throw e; // Unauthorized or NotFound exceptions will be rethrown
-        } catch (IOException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } catch (URISyntaxException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
-        {
-            closeResponse(response);
-        }
-    }
-    
     private void closeResponse(RemoteResponse response)
     {
         if (response != null)
@@ -551,16 +507,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
             method.setEntity(entity);
         }
     }
-    
-    private void setBody(HttpEntityEnclosingRequestBase method, String body, ContentType contentType)
-    {
-        if (body != null)
-        {
-            StringEntity entity = new StringEntity(body, contentType);
-            method.setEntity(entity);
-        }
-    }
-    
+
     protected void processParams(Map<String, ? extends Object> params, ParameterProcessor processParameter)
     {
         if (params == null)

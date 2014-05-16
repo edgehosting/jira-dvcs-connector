@@ -1,10 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
-import com.atlassian.pageobjects.elements.query.Poller;
-import org.hamcrest.Matchers;
-import org.openqa.selenium.By;
-
 import com.atlassian.pageobjects.elements.PageElement;
+import org.openqa.selenium.By;
 
 public class RepositoryDiv
 {

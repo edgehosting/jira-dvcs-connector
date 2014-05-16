@@ -1,11 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.httpclient.HttpStatus;
-
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPullRequest;
@@ -13,6 +7,10 @@ import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
+import org.apache.commons.httpclient.HttpStatus;
+
+import java.util.List;
+import javax.ws.rs.core.MediaType;
 
 /**
  * An implementation of {@link GitHubRESTClient}.

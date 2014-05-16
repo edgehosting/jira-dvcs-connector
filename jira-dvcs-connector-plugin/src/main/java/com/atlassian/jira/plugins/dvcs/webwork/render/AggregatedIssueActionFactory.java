@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.webwork.render;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AggregatedIssueActionFactory<E> implements IssueActionFactory
 {

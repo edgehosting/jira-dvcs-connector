@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
 
 public class UserInviteCommonEventProcessor
 {

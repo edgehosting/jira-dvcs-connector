@@ -1,13 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
-import java.util.Arrays;
-
+import com.atlassian.activeobjects.external.ActiveObjects;
 import net.java.ao.Query;
-
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
+import java.util.Arrays;
 
 /**
  * Mock's support for {@link ActiveObjects}.
