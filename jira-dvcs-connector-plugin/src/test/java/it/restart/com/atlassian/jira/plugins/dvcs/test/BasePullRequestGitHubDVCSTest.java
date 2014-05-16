@@ -407,14 +407,6 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         }
 
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest, null);
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
-        gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
