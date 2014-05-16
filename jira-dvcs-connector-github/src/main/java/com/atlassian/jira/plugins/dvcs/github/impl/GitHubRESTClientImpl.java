@@ -72,14 +72,4 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
         WebResource hooksWebResource = resource(repository, "/hooks");
         return getAll(hooksWebResource, GitHubRepositoryHook[].class);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GitHubPullRequest getPullRequest(Repository repository, int number)
-    {
-        return resource(repository, "/pulls/" + number).get(GitHubPullRequest.class);
-    }
-
 }

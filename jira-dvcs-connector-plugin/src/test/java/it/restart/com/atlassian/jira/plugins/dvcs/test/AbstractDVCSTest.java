@@ -2,7 +2,10 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.jira.rest.api.issue.IssueCreateResponse;
 import com.atlassian.jira.testkit.client.Backdoor;
 import com.atlassian.jira.testkit.client.restclient.Issue;
@@ -160,4 +163,9 @@ public abstract class AbstractDVCSTest
         return new OAuthCredentials(oAuth.key, oAuth.secret);
     }
 
+    protected RestDevResponse<RestPrRepository> getPullRequestResponse(String issueKey)
+    {
+        PullRequestLocalRestpoint pullRequestLocalRest = new PullRequestLocalRestpoint();
+        return pullRequestLocalRest.getPullRequest(issueKey);
+    }
 }

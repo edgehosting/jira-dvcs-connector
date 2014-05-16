@@ -20,6 +20,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
     public <T> T post(String uri, Map<String, ? extends Object> parameters, ResponseCallback<T> callback)
     {
         return postWithRetry(uri, parameters, callback);
+    }
+
+    @Override
+    public <T> T post(final String uri, final String body, final ContentType contentType, final ResponseCallback<T> callback)
+    {
+        HttpPost method = new HttpPost();
+        return requestWithBody(method, uri, body, contentType, callback);
     }
 
     @Override
@@ -262,6 +271,39 @@ public class BaseRemoteRequestor implements RemoteRequestor
             {
                 httpClientProvider.closeIdleConnections();
             }
+        }
+    }
+
+    private <T> T requestWithBody(HttpEntityEnclosingRequestBase method, String uri, String body, ContentType contentType,
+            ResponseCallback<T> callback)
+    {
+        HttpClient client = httpClientProvider.getHttpClient();
+        RemoteResponse response = null;
+
+        try
+        {
+            createConnection(client, method, uri, null);
+            setBody(method, body, contentType);
+
+            HttpResponse httpResponse = client.execute(method);
+            response = checkAndCreateRemoteResponse(method, client, httpResponse);
+
+            return callback.onResponse(response);
+
+        } catch (BitbucketRequestException e)
+        {
+            throw e; // Unauthorized or NotFound exceptions will be rethrown
+        } catch (IOException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } catch (URISyntaxException e)
+        {
+            log.debug("Failed to execute request: " + method.getURI(), e);
+            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
+        } finally
+        {
+            closeResponse(response);
         }
     }
 
@@ -504,6 +546,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
             });
 
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            method.setEntity(entity);
+        }
+    }
+
+    private void setBody(HttpEntityEnclosingRequestBase method, String body, ContentType contentType)
+    {
+        if (body != null)
+        {
+            StringEntity entity = new StringEntity(body, contentType);
             method.setEntity(entity);
         }
     }

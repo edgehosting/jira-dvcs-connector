@@ -1,52 +1,43 @@
 package com.atlassian.jira.plugins.dvcs.remoterestpoint;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import javax.ws.rs.core.MediaType;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
 
 /**
- * @author Martin Skurla
+ * @author Miroslav Stencel <mstencel@atlassian.com>
  */
-public class BitbucketRepositoriesRemoteRestpoint extends RepositoryRemoteRestpoint
+public class PullRequestLocalRestpoint
 {
-    private final RemoteRequestor requestor;
 
-    public BitbucketRepositoriesRemoteRestpoint(RemoteRequestor requestor)
+    /**
+     * Hack for generic de-serialization.
+     *
+     * @author Stanislav Dvorscak
+     *
+     */
+    public static class RestDevResponseForPrRepository extends RestDevResponse<RestPrRepository>
     {
-        super(requestor);
-        this.requestor = requestor;
     }
 
-    public void createHgRepository(String repositoryName)
+    /**
+     * REST point for "/rest/bitbucket/1.0/jira-dev/pr-detail?issue=" + issueKey
+     *
+     * @param issueKey
+     * @return RestDevResponse<RestPrRepository>
+     */
+    public RestDevResponse<RestPrRepository> getPullRequest(String issueKey)
     {
-        createRepository(repositoryName, "hg");
-    }
-
-    public void createGitRepository(String repositoryName)
-    {
-        createRepository(repositoryName, "git");    
-    }
-
-    private void createRepository(String repositoryName, String scm)
-    {
-        Map<String, String> createRepoPostData = new HashMap<String, String>();
-        createRepoPostData.put("name", repositoryName);
-        createRepoPostData.put("scm",  scm);
-
-        requestor.post("/repositories", createRepoPostData, ResponseCallback.EMPTY);
-    }
-
-    public void removeExistingRepository(String repositoryName, String owner)
-    {
-        Map<String, String> removeRepoPostData = new HashMap<String, String>();
-        removeRepoPostData.put("repo_slug",   repositoryName);
-        removeRepoPostData.put("accountname", owner);
-
-        String removeRepositoryUrl = String.format("/repositories/%s/%s", owner, repositoryName);
-
-        requestor.delete(removeRepositoryUrl, removeRepoPostData, ResponseCallback.EMPTY);
+        RestUrlBuilder url = new RestUrlBuilder("/rest/bitbucket/1.0/jira-dev/pr-detail?issue=" + issueKey);
+        ClientConfig clientConfig = new DefaultClientConfig();
+        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        Client client = Client.create(clientConfig);
+        return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(RestDevResponseForPrRepository.class);
     }
 }
