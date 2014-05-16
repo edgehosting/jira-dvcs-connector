@@ -36,7 +36,20 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     {
         IssueCommentPayload payload = getPayload(event);
 
+        // if payload doesn't contain information about issue we can stop
+        if (payload.getIssue() == null)
+        {
+            return;
+        }
+
         PullRequest pullRequest = payload.getIssue().getPullRequest();
+
+        // it can happen that the issue is not related to pull request (only issue is created)
+        // and the repository is null here
+        if (pullRequest == null)
+        {
+            return;
+        }
 
         // reloads PR-s by HTML URL because PR of issue's comment does not contains any other PR informations
         pullRequest = getPullRequestByHtmlUrl(repository, pullRequest.getHtmlUrl());
