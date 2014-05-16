@@ -44,7 +44,7 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
             return;
         }
 
-        context.savePullRequest(pullRequest.getId(), pullRequest.getNumber());
+        context.savePullRequest(pullRequest);
     }
 
     /**

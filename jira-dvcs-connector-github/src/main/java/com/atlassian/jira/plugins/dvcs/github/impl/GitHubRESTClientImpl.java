@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.github.impl;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
-import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPullRequest;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.UniformInterfaceException;

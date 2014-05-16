@@ -24,7 +24,7 @@ public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventP
         PullRequestPayload payload = getPayload(event);
         PullRequest pullRequest = payload.getPullRequest();
 
-        context.savePullRequest(pullRequest.getId(), pullRequest.getNumber());
+        context.savePullRequest(pullRequest);
     }
 
     /**

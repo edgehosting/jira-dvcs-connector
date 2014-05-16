@@ -4,12 +4,12 @@ import java.util.Random;
 
 /**
  * Provides timestamp name based strategy, useful for random name generating, which can be clean up, when it expires.
- * 
+ *
  * @see #randomName(String, int)
  * @see #isExpired(String)
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public class TimestampNameTestResource
 {
