@@ -129,7 +129,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             {
                 // This should not happen
                 LOGGER.warn("Pull request " + info.getPullRequest().getId() + " from repository with " + repo.getId() + " could not be processed", e);
-                // let's return prematurely
             }
 
             markProcessed(payload, info);
