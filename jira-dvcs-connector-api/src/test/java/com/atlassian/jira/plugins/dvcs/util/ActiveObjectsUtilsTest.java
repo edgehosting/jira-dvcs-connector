@@ -67,7 +67,6 @@ public class ActiveObjectsUtilsTest
                 for (String id : Splitter.on(",").split(criteria.replaceAll("ID IN \\((.+)\\)", "$1")))
                 {
                     result.add(entities.get(Integer.valueOf(id.trim())).getEntity());
-                    System.out.println(id + " " + entities.get(Integer.valueOf(id.trim())).getEntity().getID());
                 }
 
                 return result.toArray(new Entity[result.size()]);
