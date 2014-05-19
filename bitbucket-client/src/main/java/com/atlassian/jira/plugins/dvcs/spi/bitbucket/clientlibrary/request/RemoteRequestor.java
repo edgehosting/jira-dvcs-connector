@@ -60,6 +60,18 @@ public interface RemoteRequestor
     <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
 
     /**
+     * Executes put request with the provided parameters.
+     * After successful request, {@link ResponseCallback#onResponse(RemoteResponse)} is called on the provided callback.
+     *
+     * @param uri correctly encoded uri required
+     * @param body  e.g.: json body
+     * @param contentType content type of body
+     * @param callback
+     *
+     */
+    <T> T put(String uri, String body, ContentType contentType, ResponseCallback<T> callback);
+
+    /**
      * Executes delete request with the provided parameters.
      * After successful request, {@link ResponseCallback#onResponse(RemoteResponse)} is called on the provided callback.
      *

@@ -2,6 +2,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrCommit;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -9,12 +10,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 /**
  * Pull request Bitbucket related tests.
@@ -120,20 +122,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             // nop
         }
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -153,7 +143,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     }
 
     /**
-     * Test that "Update Pull Request" is working.
+     * Test that "Update Pull Request" is working. Adding new commits.
      */
     @Test
     public void testUpdateBranch()
@@ -194,20 +184,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
                 getDefaultBranchName());
 
         // test of synchronization
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -224,6 +202,11 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+        List<RestPrCommit> restCommits = restPullRequest.getCommits();
+        Assert.assertEquals(restCommits.get(0).getNode(), expectedCommitNodeUpdate[1]);
+        Assert.assertEquals(restCommits.get(1).getNode(), expectedCommitNodeUpdate[0]);
+        Assert.assertEquals(restCommits.get(2).getNode(), expectedCommitNodeOpen[1]);
+        Assert.assertEquals(restCommits.get(3).getNode(), expectedCommitNodeOpen[0]);
     }
 
     /**
@@ -263,20 +246,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -332,20 +303,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -404,20 +363,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest);
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -462,20 +409,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         BitbucketPullRequest pullRequest = openForkPullRequest(ACCOUNT_NAME, repositoryName, pullRequestName, "Open PR description", getDefaultBranchName(),
                 getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -533,20 +468,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest, "Test comment 1");
         commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequest, "Test comment 2");
 
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        account.refresh();
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
-        }
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
@@ -564,6 +487,115 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+    }
+
+    /**
+     * Test that "Update Pull Request" is working.
+     */
+    @Test
+    public void testUpdatePullRequest()
+    {
+        String expectedPullRequestName = issueKey + ": Open PR";
+        String[] expectedCommitNodeUpdate = new String[2];
+        String[] expectedCommitNodeOpen = new String[2];
+
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", "Stanislav Dvorscak", "sdvorscak@atlassian.com");
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
+
+        String stableBranch = "stable";
+        createBranch(ACCOUNT_NAME, repositoryName, stableBranch);
+        String stableCommit = commit(ACCOUNT_NAME, repositoryName, "Commit in stable", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, stableBranch, true);
+
+
+        String fixBranchName = issueKey + "_fix";
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
+
+        // Assert PR Opened information
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodeOpen[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodeOpen[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
+
+        BitbucketPullRequest expectedPullRequest = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName, "Open PR description", fixBranchName,
+                stableBranch);
+
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
+
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
+        Assert.assertEquals(response.getRepositories().size(), 1);
+        RestPrRepository restPrRepository = response.getRepositories().get(0);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
+        RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
+        Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName);
+        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertTrue(expectedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
+        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+        Assert.assertEquals(restPullRequest.getDestination().getBranch(), stableBranch);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+        List<RestPrCommit> restCommits = restPullRequest.getCommits();
+        Assert.assertEquals(restCommits.get(0).getNode(), expectedCommitNodeOpen[1]);
+        Assert.assertEquals(restCommits.get(1).getNode(), expectedCommitNodeOpen[0]);
+
+        // Assert PR Updated information
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
+        expectedCommitNodeUpdate[0] = commit(ACCOUNT_NAME, repositoryName, "Fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix_update.txt", "Virtual fix - update \n {\n}".getBytes());
+        expectedCommitNodeUpdate[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName);
+
+        BitbucketPullRequest updatedPullRequest = updatePullRequest(
+                ACCOUNT_NAME,
+                repositoryName,
+                PASSWORD,
+                expectedPullRequest,
+                expectedPullRequestName + " updated",
+                "Open PR description",
+                getDefaultBranchName());
+
+        // test of synchronization
+        account.synchronizeRepository(repositoryName);
+
+        response = getPullRequestResponse(issueKey);
+
+        Assert.assertEquals(response.getRepositories().size(), 1);
+        restPrRepository = response.getRepositories().get(0);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
+        restPullRequest = restPrRepository.getPullRequests().get(0);
+        Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName + " updated");
+        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertTrue(updatedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
+        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
+        Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+        Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+        restCommits = restPullRequest.getCommits();
+        Assert.assertEquals(restCommits.get(0).getNode(), expectedCommitNodeUpdate[1]);
+        Assert.assertEquals(restCommits.get(1).getNode(), expectedCommitNodeUpdate[0]);
+        Assert.assertEquals(restCommits.get(2).getNode(), expectedCommitNodeOpen[1]);
+        Assert.assertEquals(restCommits.get(3).getNode(), expectedCommitNodeOpen[0]);
+        Assert.assertEquals(restCommits.get(4).getNode(), stableCommit);
+   }
+
+    private AccountsPageAccount refreshAccount(final String accountName)
+    {
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, accountName);
+        account.refresh();
+
+        return account;
     }
 
 }

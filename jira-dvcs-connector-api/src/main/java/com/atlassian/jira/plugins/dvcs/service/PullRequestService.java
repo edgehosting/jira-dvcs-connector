@@ -14,7 +14,9 @@ import java.util.Map;
  */
 public interface PullRequestService
 {
-    public List<PullRequest> getByIssueKeys(Iterable<String> issueKeys);
+    List<PullRequest> getByIssueKeys(Iterable<String> issueKeys);
+
+    List<PullRequest> getByIssueKeys(Iterable<String> issueKeys, boolean withCommits);
 
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, String sourceBranch, String destinationSlug, String destinationBranch, String eventSource);
 

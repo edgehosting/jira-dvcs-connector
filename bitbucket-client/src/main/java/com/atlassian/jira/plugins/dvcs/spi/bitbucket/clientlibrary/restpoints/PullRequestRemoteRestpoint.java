@@ -173,6 +173,11 @@ public class PullRequestRemoteRestpoint
         return createBitbucketPullRequest(owner, repoSlug, title, description, bitbucketPullRequestRepository, sourceBranch, destinationBranch);
     }
 
+    public BitbucketPullRequest updatePullRequest(String owner, String repoSlug, BitbucketPullRequest pullRequest, String title, String description, String destinationBranch)
+    {
+        return updateBitbucketPullRequest(owner, repoSlug, pullRequest, title, description, destinationBranch);
+    }
+
     public void declinePullRequest(String owner, String repoSlug, long pullRequestId, String message)
     {
         String url = String.format("/repositories/%s/%s/pullrequests/%s/decline", owner, repoSlug, pullRequestId);
@@ -233,6 +238,33 @@ public class PullRequestRemoteRestpoint
         String url = String.format("/repositories/%s/%s/pullrequests", owner, repoSlug);
 
         return requestor.post(url, ClientUtils.toJson(bitbucketPullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
+        {
+
+            @Override
+            public BitbucketPullRequest onResponse(RemoteResponse response)
+            {
+                return ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketPullRequest>()
+                {
+                }.getType());
+            }
+
+        });
+    }
+
+    private BitbucketPullRequest updateBitbucketPullRequest(String owner, String repoSlug, BitbucketPullRequest pullRequest, String title, String description, String destinationBranch)
+    {
+        pullRequest.setTitle(title);
+        pullRequest.setDescription(description);
+
+        pullRequest.setSource(null);
+
+        BitbucketPullRequestHead destination = new BitbucketPullRequestHead();
+        destination.setBranch(new BitbucketBranch(destinationBranch));
+        pullRequest.setDestination(destination);
+
+        String url = String.format("/repositories/%s/%s/pullrequests/%s", owner, repoSlug, pullRequest.getId());
+
+        return requestor.put(url, ClientUtils.toJson(pullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
         {
 
             @Override

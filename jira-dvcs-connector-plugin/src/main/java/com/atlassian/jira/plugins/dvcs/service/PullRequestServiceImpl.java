@@ -38,22 +38,28 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys));
+        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys), false);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
+        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType), false);
     }
 
-    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
+    @Override
+    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final boolean withCommits)
+    {
+        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys), withCommits);
+    }
+
+    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings, boolean withCommits)
     {
         List<PullRequest> pullRequests = new ArrayList<PullRequest>();
 
         for (RepositoryPullRequestMapping pullRequestMapping : pullRequestsMappings)
         {
-            PullRequest pullRequest = transformer.transform(pullRequestMapping);
+            PullRequest pullRequest = transformer.transform(pullRequestMapping, withCommits);
             if (pullRequest != null)
             {
                 pullRequests.add(pullRequest);

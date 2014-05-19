@@ -118,6 +118,13 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return putWithRetry(uri, parameters, callback);
     }
 
+    @Override
+    public <T> T put(String uri, String body, ContentType contentType, ResponseCallback<T> callback)
+    {
+        HttpPut method = new HttpPut();
+        return requestWithBody(method, uri, body, contentType, callback);
+    }
+
     // --------------------------------------------------------------------------------------------------
     // Retryers...
     // --------------------------------------------------------------------------------------------------

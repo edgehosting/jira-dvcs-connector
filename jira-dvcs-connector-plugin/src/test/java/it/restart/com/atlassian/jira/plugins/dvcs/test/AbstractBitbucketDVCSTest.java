@@ -249,6 +249,15 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         return pullRequest;
     }
 
+    protected BitbucketPullRequest updatePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String title, String description, String base)
+    {
+        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
+
+        BitbucketPullRequest updatedPullRequest = pullRequestRemoteRestpoint.updatePullRequest(owner, repositoryName, pullRequest, title, description, base);
+
+        return updatedPullRequest;
+    }
+
     protected BitbucketPullRequest openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner, String forkPassword)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, forkPassword);

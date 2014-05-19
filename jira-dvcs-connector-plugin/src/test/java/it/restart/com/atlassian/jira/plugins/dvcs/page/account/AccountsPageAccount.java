@@ -169,5 +169,28 @@ public class AccountsPageAccount extends WebDriverElement
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
         return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
     }
+
+    /**
+     * Synchronizes the repository with the given name
+     *
+     * @param repositoryName name of the repository to be synchronized
+     * @return page object of the repository
+     */
+    public AccountsPageAccountRepository synchronizeRepository(String repositoryName)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+            repository.synchronize();
+        } else
+        {
+            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
+            repository.fullSynchronize();
+        }
+
+        return repository;
+    }
     
 }

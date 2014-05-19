@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -11,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestChangeset;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestChangesetRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestParticipant;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrCommit;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
@@ -169,7 +171,7 @@ public class DevToolsResource
             @Override
             protected Set<Integer> getRepositories(final Set<String> issueKeys)
             {
-                List<PullRequest> pullRequests = pullRequestService.getByIssueKeys(issueKeys);
+                List<PullRequest> pullRequests = pullRequestService.getByIssueKeys(issueKeys, true);
 
                 prTorepositoryMapping = Multimaps.index(pullRequests, new Function<PullRequest, Integer>()
                 {
@@ -217,6 +219,7 @@ public class DevToolsResource
             restPullRequests.add(restPullRequest);
             restPullRequest.setParticipants(createParticipants(repository, pullRequest.getParticipants()));
             restPullRequest.setCommentCount(pullRequest.getCommentCount());
+            restPullRequest.setCommits(createPrCommits(pullRequest.getCommits()));
         }
 
         return restPullRequests;
@@ -247,6 +250,30 @@ public class DevToolsResource
         restRef.setUrl(ref.getRepositoryUrl());
 
         return restRef;
+    }
+
+    private List<RestPrCommit> createPrCommits(final List<Changeset> prCommits)
+    {
+        if (prCommits == null)
+        {
+            return null;
+        }
+
+        List<RestPrCommit> restPrCommits = new ArrayList<RestPrCommit>();
+
+        for (Changeset prCommit : prCommits)
+        {
+            RestPrCommit restPrCommit = new RestPrCommit();
+            restPrCommit.setRawAuthor(prCommit.getRawAuthor());
+            restPrCommit.setAuthor(prCommit.getAuthor());
+            restPrCommit.setDate(prCommit.getDate());
+            restPrCommit.setMessage(prCommit.getMessage());
+            restPrCommit.setNode(prCommit.getNode());
+
+            restPrCommits.add(restPrCommit);
+        }
+
+        return restPrCommits;
     }
 
     private abstract class RestTransformer<T extends RestRepository>

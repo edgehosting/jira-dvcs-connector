@@ -30,6 +30,7 @@ public class RestPullRequest
     private List<RestParticipant> participants;
     @SerializedName("commentCount")
     private int commentCount;
+    private List<RestPrCommit> commits;
 
     public RestUser getAuthor()
     {
@@ -139,6 +140,16 @@ public class RestPullRequest
     public void setCommentCount(final int commentCount)
     {
         this.commentCount = commentCount;
+    }
+
+    public List<RestPrCommit> getCommits()
+    {
+        return commits;
+    }
+
+    public void setCommits(final List<RestPrCommit> commits)
+    {
+        this.commits = commits;
     }
 }
 
