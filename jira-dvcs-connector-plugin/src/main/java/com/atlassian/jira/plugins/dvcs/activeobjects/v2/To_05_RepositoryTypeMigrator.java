@@ -1,11 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v2;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class To_05_RepositoryTypeMigrator implements ActiveObjectsUpgradeTask
 {

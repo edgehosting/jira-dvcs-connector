@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.activeobjects;
 
-import java.util.Date;
-
 import net.java.ao.Entity;
 import net.java.ao.schema.Table;
+
+import java.util.Date;
 
 @Table("BITBUCKET_PR_CONTEXT")
 public interface BitbucketPullRequestContextMapping extends Entity

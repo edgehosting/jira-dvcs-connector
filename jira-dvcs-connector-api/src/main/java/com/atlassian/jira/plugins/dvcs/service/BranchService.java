@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.List;
 
 public interface BranchService
 {

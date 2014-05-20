@@ -1,13 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.auth.impl;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.atlassian.jira.plugins.dvcs.auth.Authentication;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import org.apache.commons.lang.StringUtils;
 
 public class DefaultAuthenticationFactory implements AuthenticationFactory
 {

@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe;
 
-import java.util.Map;
-
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ApiProvider;
+import java.util.Map;
 
 /**
  * TwoLegged10aOauthRemoteRequestor

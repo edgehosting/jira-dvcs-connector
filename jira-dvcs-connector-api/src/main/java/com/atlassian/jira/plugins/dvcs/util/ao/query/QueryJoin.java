@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.util.ao.query;
 
-import net.java.ao.RawEntity;
-
 import com.atlassian.jira.plugins.dvcs.util.ao.query.term.QueryColumn;
 import com.atlassian.jira.plugins.dvcs.util.ao.query.term.QueryTerm;
+import net.java.ao.RawEntity;
 
 /**
  * {@link QueryTerm} implementation of join clause.
