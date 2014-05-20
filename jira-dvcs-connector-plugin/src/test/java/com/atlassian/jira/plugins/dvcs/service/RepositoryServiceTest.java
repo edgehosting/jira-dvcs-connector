@@ -16,6 +16,8 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -201,9 +203,10 @@ public class RepositoryServiceTest
 		Mockito.when(repositoryDao.getAllByOrganization(5, true)).thenReturn(storedRepos);
 		Mockito.when(repositoryDao.save(sampleRepository3)).thenReturn(sampleRepository3);
 		Mockito.when(repositoryDao.save(sampleRepository4)).thenReturn(sampleRepository4);
-		Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
+        Mockito.when(repositoryDao.getAllByOrganization(5, false)).thenReturn(Lists.<Repository>newArrayList(Iterables.concat(storedRepos, remoteRepos)));
+        Mockito.when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
-		repositoryService.syncRepositoryList(sampleOrganization);
+        repositoryService.syncRepositoryList(sampleOrganization);
 
 		// 2 has been updated
 		Mockito.verify(repositoryDao, Mockito.times(1)).save(sampleRepository2);
