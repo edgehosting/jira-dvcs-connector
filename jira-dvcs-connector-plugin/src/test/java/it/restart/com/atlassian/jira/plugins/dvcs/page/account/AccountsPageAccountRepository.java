@@ -9,6 +9,7 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
+import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
@@ -80,9 +81,22 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public void enable()
     {
+        enable(false);
+    }
+
+    public void enable(boolean noAdminPermission)
+    {
         if (!isEnabled())
         {
             enableCheckbox.check();
+
+            if (noAdminPermission)
+            {
+                // check that dialog appears
+                LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
+                linkingRepositoryDialog.clickOk();
+            }
+
             new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
             {
 
@@ -210,6 +224,46 @@ public class AccountsPageAccountRepository extends WebDriverElement
         public void fullSync()
         {
             fullSyncButton.click();
+        }
+    }
+
+    /**
+     * Page class for linking repository dialog
+     *
+     */
+    public static class LinkingRepositoryDialog extends WebDriverElement
+    {
+        @ElementBy (xpath = "//div[@class='dialog-button-panel']/button")
+        private PageElement okButton;
+
+        public LinkingRepositoryDialog(final By locator)
+        {
+            super(locator);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final TimeoutType timeoutType)
+        {
+            super(locator, timeoutType);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final WebDriverLocatable parent)
+        {
+            super(locator, parent);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final WebDriverLocatable parent, final TimeoutType timeoutType)
+        {
+            super(locator, parent, timeoutType);
+        }
+
+        public LinkingRepositoryDialog(final WebDriverLocatable locatable, final TimeoutType timeoutType)
+        {
+            super(locatable, timeoutType);
+        }
+
+        public void clickOk()
+        {
+            okButton.click();
         }
     }
 }

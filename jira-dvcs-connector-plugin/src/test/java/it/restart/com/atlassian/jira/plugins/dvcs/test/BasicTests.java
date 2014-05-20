@@ -17,5 +17,4 @@ public interface BasicTests
     void testPostCommitHookAdded();
     
     void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount();
-
 }

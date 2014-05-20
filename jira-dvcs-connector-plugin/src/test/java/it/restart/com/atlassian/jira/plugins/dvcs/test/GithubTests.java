@@ -2,6 +2,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
@@ -20,7 +21,10 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matchers;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -35,6 +39,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
+
     private OAuth oAuth;
 
     @BeforeClass
@@ -198,6 +204,19 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 getOAuthCredentials(), false);
 
         assertThat(organization.containsRepository("private-dvcs-connector-test"));
+    }
+
+    @Test
+    public void linkingRepositoryWithoutAdminPermission()
+    {
+        GithubConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(GithubConfigureOrganizationsPage.class);
+        configureOrganizations.setJiraTestedProduct(jira);
+
+        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+        AccountsPageAccountRepository repository = configureOrganizations.enableRepository(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME, "testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
     }
 
     //-------------------------------------------------------------------

@@ -3,6 +3,8 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
@@ -22,9 +24,12 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -39,6 +44,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
 
 
@@ -306,6 +312,19 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
         assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+    }
+
+    @Test
+    public void linkingRepositoryWithoutAdminPermission()
+    {
+        BitBucketConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
+        configureOrganizations.setJiraTestedProduct(jira);
+
+        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+        AccountsPageAccountRepository repository = configureOrganizations.enableRepository(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, "testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
     }
 
     //-------------------------------------------------------------------
