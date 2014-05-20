@@ -254,32 +254,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             Repository savedRepository = repositoryDao.save(repository);
             newRepoSlugs.add(savedRepository.getSlug());
             log.debug("Adding new repository with name " + savedRepository.getName());
-
-            // if linked install post commit hook
-            if (savedRepository.isLinked())
-            {
-                try
-                {
-                    addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
-                }
-                catch (SourceControlException.PostCommitHookRegistrationException e)
-                {
-                    log.warn("Adding postcommit hook for repository "
-                            + savedRepository.getRepositoryUrl() + " failed. Probably insufficient permission", e);
-                    updateAdminPermission(savedRepository, false);
-                    // if the user didn't have rights to add post commit hook, just unlink the repository
-                    savedRepository.setLinked(false);
-                    repositoryDao.save(savedRepository);
-                }
-                catch (Exception e)
-                {
-                    log.warn("Adding postcommit hook for repository "
-                            + savedRepository.getRepositoryUrl() + " failed: ", e);
-                    // we could not add hooks for some reason, let's leave the repository unlinked
-                    savedRepository.setLinked(false);
-                    repositoryDao.save(savedRepository);
-                }
-            }
         }
         return newRepoSlugs;
     }
@@ -416,6 +390,29 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
                 newFlags.remove(SynchronizationFlag.SOFT_SYNC);
                 doSync(repository, newFlags);
+
+                if (repository.isLinked())
+                {
+                    try
+                    {
+                        addOrRemovePostcommitHook(repository, getPostCommitUrl(repository));
+                    }
+                    catch (SourceControlException.PostCommitHookRegistrationException e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed. Probably insufficient permission", e);
+                        updateAdminPermission(repository, false);
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        repositoryDao.save(repository);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed: ", e);
+                        // we could not add hooks for some reason, let's leave the repository unlinked
+                        repositoryDao.save(repository);
+                    }
+                }
             }
         }
     }
