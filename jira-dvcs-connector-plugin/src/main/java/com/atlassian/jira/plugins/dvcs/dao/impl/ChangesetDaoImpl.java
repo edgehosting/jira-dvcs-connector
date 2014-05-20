@@ -84,7 +84,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public void removeAllInRepository(final int repositoryId)
     {
-
+        long startTime = System.currentTimeMillis();
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             @Override
@@ -123,6 +123,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 return null;
             }
         });
+        log.debug("Changesets in repository {} were deleted in {} ms", repositoryId, System.currentTimeMillis() - startTime);
     }
 
     @Override

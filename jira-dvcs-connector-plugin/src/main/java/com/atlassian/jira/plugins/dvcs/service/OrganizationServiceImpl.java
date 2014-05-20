@@ -14,9 +14,13 @@ import org.apache.commons.collections.CollectionUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class OrganizationServiceImpl implements OrganizationService
 {
+    private static final Logger log = LoggerFactory.getLogger(OrganizationServiceImpl.class);
 
     private final OrganizationDao organizationDao;
 
@@ -125,6 +129,7 @@ public class OrganizationServiceImpl implements OrganizationService
     @Override
     public void remove(int organizationId)
     {
+        long startTime = System.currentTimeMillis();
         List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
         for (Repository repository : repositoriesToDelete)
         {
@@ -133,6 +138,7 @@ public class OrganizationServiceImpl implements OrganizationService
         organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
         repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);
+        log.debug("Organization {} was deleted in {} ms", organizationId, System.currentTimeMillis() - startTime);
     }
 
     @Override
