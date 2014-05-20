@@ -254,23 +254,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             Repository savedRepository = repositoryDao.save(repository);
             newRepoSlugs.add(savedRepository.getSlug());
             log.debug("Adding new repository with name " + savedRepository.getName());
-
-            // if linked install post commit hook
-            if (savedRepository.isLinked())
-            {
-                try
-                {
-                    addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
-                } catch (SourceControlException.PostCommitHookRegistrationException e)
-                {
-                    log.warn("Adding postcommit hook for repository "
-                            + savedRepository.getRepositoryUrl() + " failed: ", e);
-                    updateAdminPermission(savedRepository, false);
-                    // if the user didn't have rights to add post commit hook, just unlink the repository
-                    savedRepository.setLinked(false);
-                    repositoryDao.save(savedRepository);
-                }
-            }
         }
         return newRepoSlugs;
     }
@@ -407,6 +390,19 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
                 newFlags.remove(SynchronizationFlag.SOFT_SYNC);
                 doSync(repository, newFlags);
+
+                if (repository.isLinked())
+                {
+                    try
+                    {
+                        addOrRemovePostcommitHook(repository, getPostCommitUrl(repository));
+                    } catch (SourceControlException.PostCommitHookRegistrationException e)
+                    {
+                        log.warn("Adding postcommit hook for repository " + repository.getRepositoryUrl() + " failed: ", e);
+                        updateAdminPermission(repository, false);
+                        repositoryDao.save(repository);
+                    }
+                }
             }
         }
     }
