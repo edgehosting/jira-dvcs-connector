@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
@@ -30,8 +31,12 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.NotNull;
+import com.atlassian.util.concurrent.Promise;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.FutureCallback;
 import net.java.ao.DBParam;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -52,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
@@ -62,7 +68,8 @@ import javax.annotation.Resource;
  */
 public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
-    private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
+    @VisibleForTesting
+    static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
     private static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
     /**
@@ -129,6 +136,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private HttpClientProvider httpClientProvider;
+
+    @Resource
+    private EventService eventService;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -346,7 +356,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     }
 
                 });
-                
+
                 int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
                 if (syncAuditId != 0)
                 {
@@ -612,7 +622,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     {
         return SYNCHRONIZATION_AUDIT_TAG_PREFIX + id;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -789,18 +799,21 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }
     }
 
-    private boolean endProgress(Repository repository, Progress progress)
+    /**
+     * Ends the progress if there are no more messages currently queued for the given repository.
+     *
+     * @param repository
+     * @param progress
+     * @return a boolean indicating whether sync progress was ended
+     */
+    private boolean endProgress(final Repository repository, Progress progress)
     {
         final int queuedCount = getQueuedCount(getTagForSynchronization(repository));
         if (queuedCount == 0)
         {
             try
             {
-                // TODO error could be in PR synchronization and thus we can process smartcommits
-                if (progress == null || progress.getError() == null)
-                {
-                    smartcCommitsProcessor.startProcess(progress, repository, changesetService);
-                }
+                final Optional<Promise<Void>> smartCommitsPromise = startSmartCommitsProcessor(repository, progress);
                 if (progress != null && !progress.isFinished())
                 {
                     progress.finish();
@@ -813,6 +826,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         flags.add(SynchronizationFlag.SOFT_SYNC);
                         synchronizer.doSync(repository, flags);
                     }
+                }
+
+                // dispatch the repository's events once smart commits processing is done
+                if (smartCommitsPromise.isPresent())
+                {
+                    smartCommitsPromise.get().then(new DispatchAllRepoEvents(repository));
                 }
 
                 return true;
@@ -842,6 +861,28 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             }
 
         }, "WaitForAO").start();
+    }
+
+    /**
+     * Kicks off asynchronous execution of smart commits processing for the given Repository if {@code progress} does
+     * not contain any errors. The returned Optional will contain the smart commits promise if smart commits processing
+     * was attempted.
+     *
+     * @param repository
+     * @param progress
+     * @return an Promise that completes when smart commits processing is done
+     */
+    @Nonnull
+    private Optional<Promise<Void>> startSmartCommitsProcessor(Repository repository, Progress progress)
+    {
+        // TODO error could be in PR synchronization and thus we can process smartcommits
+        if (progress == null || progress.getError() == null)
+        {
+            return Optional.of(smartcCommitsProcessor.startProcess(progress, repository, changesetService));
+        }
+
+        // smart commits did not run
+        return Optional.absent();
     }
 
     private volatile boolean stop = false;
@@ -902,6 +943,36 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     return key.payloadType;
                 }
             };
+        }
+    }
+
+    /**
+     * Dispatches all events for the given repository.
+     */
+    private class DispatchAllRepoEvents implements FutureCallback<Void>
+    {
+        private final Repository repository;
+
+        public DispatchAllRepoEvents(Repository repository)
+        {
+            this.repository = repository;
+        }
+
+        @Override
+        public void onSuccess(@Nonnull Void result)
+        {
+            doFinally();
+        }
+
+        @Override
+        public void onFailure(@Nonnull Throwable t)
+        {
+            doFinally();
+        }
+
+        private void doFinally()
+        {
+            eventService.dispatchEvents(repository);
         }
     }
 }

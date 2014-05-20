@@ -1,14 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
-import com.atlassian.event.api.EventPublisher;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import javax.annotation.Nonnull;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Thread-local event bus.
@@ -16,11 +17,6 @@ import javax.annotation.Nonnull;
 @Component
 public class ThreadEvents
 {
-    /**
-     * Null ThreadEventsCaptor that neither captures nor publishes events.
-     */
-    public static final ThreadEventsCaptor NULL_CAPTOR = new NullEventCaptor();
-
     private static final Logger logger = LoggerFactory.getLogger(ThreadEvents.class);
 
     /**
@@ -28,20 +24,13 @@ public class ThreadEvents
      */
     private final ThreadLocal<ThreadEventsCaptorImpl> threadEventCaptor = new ThreadLocal<ThreadEventsCaptorImpl>();
 
-    /**
-     * The <em>real</em> Atlassian event bus. Thread events may be sent here or discarded.
-     */
-    private final EventPublisher eventPublisher;
-
-    @Autowired
-    public ThreadEvents(final EventPublisher eventPublisher)
+    public ThreadEvents()
     {
-        this.eventPublisher = eventPublisher;
     }
 
     /**
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
-     * events can be published using {@link ThreadEventsCaptor#sendToEventPublisher()}.
+     * events can be processed using {@link ThreadEventsCaptor#processEach(ThreadEventsCaptor.Closure)}.
      * <p/>
      * Remember to <b>call {@code ThreadEventsCaptor.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
@@ -94,22 +83,31 @@ public class ThreadEvents
             threadEventCaptor.set(this);
         }
 
+        @Nonnull
         @Override
-        public void stopCapturing()
+        public ThreadEventsCaptor stopCapturing()
         {
             threadEventCaptor.remove();
+            return this;
         }
 
         @Override
-        public void sendToEventPublisher()
+        public void processEach(@Nonnull Closure closure)
         {
-            for (Object event : capturedEvents)
+            checkNotNull(closure, "closure");
+
+            List<?> events = ImmutableList.copyOf(capturedEvents);
+            for (Object event : events)
             {
-                logger.debug("Sending to EventPublisher: {}", event);
-                eventPublisher.publish(event);
+                logger.debug("Processing event with {}: {}", closure, event);
+                closure.process(event);
+
+                // remove processed events from the list so that in case the
+                // closure above throws an exception we are still in a valid state.
+                capturedEvents.remove(event);
             }
 
-            logger.debug("Published {} events to {}", capturedEvents.size(), eventPublisher);
+            logger.debug("Processed {} events with {}", events.size(), closure);
             capturedEvents = Lists.newArrayList();
         }
 
@@ -122,21 +120,6 @@ public class ThreadEvents
         {
             logger.debug("Capturing event: {}", event);
             capturedEvents.add(event);
-        }
-    }
-
-    private static class NullEventCaptor implements ThreadEventsCaptor
-    {
-        @Override
-        public void stopCapturing()
-        {
-            // do nothing
-        }
-
-        @Override
-        public void sendToEventPublisher()
-        {
-            // do nothing
         }
     }
 }

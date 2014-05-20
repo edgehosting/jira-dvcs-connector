@@ -3,11 +3,11 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.SimpleClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessage;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
@@ -17,14 +17,13 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
@@ -49,7 +48,10 @@ public class MessageExecutorTest
     MessagingService messagingService;
 
     @Mock
-    ThreadEvents threadEvents;
+    private RepositorySyncHelper repoSyncHelper;
+
+    @Mock
+    private RepositorySync repoSync;
 
     @Mock
     ThreadEventsCaptor threadEventsCaptor;
@@ -69,7 +71,8 @@ public class MessageExecutorTest
         when(consumer.getParallelThreads()).thenReturn(1);
 
         when(clusterLockServiceFactory.getClusterLockService()).thenReturn(clusterLockService);
-        when(threadEvents.startCapturing()).thenReturn(threadEventsCaptor);
+        when(repoSync.storeEvents()).thenReturn(repoSync);
+        when(repoSyncHelper.startSync(any(Repository.class), anyBoolean())).thenReturn(repoSync);
 
         messageExecutor.init();
     }
@@ -81,7 +84,7 @@ public class MessageExecutorTest
     }
 
     @Test
-    public void executorShouldPublishEventsAfterProcessingSmartCommits() throws Exception
+    public void executorShouldTryToEndProgressAfterProcessingSmartCommits() throws Exception
     {
         final MockPayload payload = new MockPayload();
         final Message<MockPayload> message = createMessage();
@@ -93,10 +96,11 @@ public class MessageExecutorTest
         // get the consumer to check the queue
         messageExecutor.notify(MSG_ADDRESS.getId());
 
-        // smart commits are processed in the messaging service, which should be called before sending events
-        InOrder inOrder = inOrder(messagingService, threadEventsCaptor);
-        inOrder.verify(messagingService).tryEndProgress(eq(repository), any(Progress.class), eq(consumer), anyInt());
-        inOrder.verify(threadEventsCaptor).sendToEventPublisher();
+        // the executor must store the events before trying to end progress
+        InOrder inOrder = Mockito.inOrder(repoSync, messagingService);
+        inOrder.verify(repoSync).storeEvents();
+        inOrder.verify(repoSync).finishSync();
+        inOrder.verify(messagingService).tryEndProgress(repository, payload.getProgress(), consumer, 0);
     }
 
     private Message<MockPayload> createMessage()

@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import static com.atlassian.jira.plugins.dvcs.event.ThreadEvents.NULL_CAPTOR;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -65,10 +64,10 @@ public class MessageExecutor
     private MessageConsumer<?>[] consumers;
 
     /**
-     * Used to capture events raised during synchronisation.
+     * Used to capture & store events raised during synchronisation.
      */
     @Resource
-    private ThreadEvents threadEvents;
+    private RepositorySyncHelper repoSyncHelper;
 
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
@@ -334,7 +333,8 @@ public class MessageExecutor
 
             // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
             // subsequently re-added
-            final ThreadEventsCaptor syncEvents = progress.isSoftsync() && payload.isSoftSync() ? threadEvents.startCapturing() : NULL_CAPTOR;
+            final Repository repository = messagingService.getRepositoryFromMessage(message);
+            final RepositorySync repoSync = repoSyncHelper.startSync(repository, progress.isSoftsync() && payload.isSoftSync());
             try
             {
                 consumer.onReceive(message, payload);
@@ -355,17 +355,15 @@ public class MessageExecutor
             }
             finally
             {
-                tryEndProgress(message, consumer, progress);
-                syncEvents.stopCapturing();
-                syncEvents.sendToEventPublisher();
+                repoSync.storeEvents().finishSync();
+                tryEndProgress(repository, message, consumer, progress);
             }
         }
 
-        protected void tryEndProgress(Message<P> message, MessageConsumer<P> consumer, Progress progress)
+        protected void tryEndProgress(Repository repository, Message<P> message, MessageConsumer<P> consumer, Progress progress)
         {
             try
             {
-                Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
                     messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSynchronizationAuditIdFromTags(message.getTags()));

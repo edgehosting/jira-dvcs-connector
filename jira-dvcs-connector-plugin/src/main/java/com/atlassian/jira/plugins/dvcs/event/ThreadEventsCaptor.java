@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import javax.annotation.Nonnull;
+
 /**
  * An EventCaptor is used to capture of events on the current thread.
  *
@@ -10,10 +12,20 @@ public interface ThreadEventsCaptor
     /**
      * Stops capturing events.
      */
-    void stopCapturing();
+    @Nonnull
+    ThreadEventsCaptor stopCapturing();
 
     /**
-     * Publishes events to the Atlassian {@code com.atlassian.event.api.EventPublisher}
+     * Calls the given pseudo-closure once for each captured event, removing the event from this captor once it has been
+     * processed.
      */
-    void sendToEventPublisher();
+    void processEach(Closure closure);
+
+    /**
+     * Pseudo-closure for processing events.
+     */
+    public interface Closure
+    {
+        void process(@Nonnull Object event);
+    }
 }
