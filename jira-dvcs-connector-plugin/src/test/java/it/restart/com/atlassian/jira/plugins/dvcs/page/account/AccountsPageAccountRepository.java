@@ -9,7 +9,6 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
-import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
@@ -54,6 +53,9 @@ public class AccountsPageAccountRepository extends WebDriverElement
     @ElementBy(xpath = "td[3]/div")
     private PageElement message;
 
+    @ElementBy(xpath = "td[@class='dvcs-org-reponame']/span[starts-with(@id,'error_status_icon_')]")
+    private PageElement warningIcon;
+
     /**
      * Constructor.
      *
@@ -63,6 +65,28 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public AccountsPageAccountRepository(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param locator
+     * @param timeoutType
+     */
+    public AccountsPageAccountRepository(By locator, TimeoutType timeoutType)
+    {
+        super(locator, timeoutType);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param locatable
+     * @param timeoutType
+     */
+    public AccountsPageAccountRepository(WebDriverLocatable locatable, TimeoutType timeoutType)
+    {
+        super(locatable, timeoutType);
     }
 
     /**
@@ -189,6 +213,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public String getMessage()
     {
         return message.getText();
+    }
+
+    public boolean hasWarning()
+    {
+        return warningIcon.isVisible();
     }
 
     public static class ForceSyncDialog extends WebDriverElement
