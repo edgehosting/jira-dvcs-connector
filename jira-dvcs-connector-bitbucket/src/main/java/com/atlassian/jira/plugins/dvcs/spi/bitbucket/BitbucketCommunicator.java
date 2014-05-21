@@ -694,7 +694,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
-        return featureManager.isEnabled(DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE);
+        return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || featureManager.isEnabled(DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE);
     }
 
     protected BranchFilterInfo getFilterNodes(Repository repository)

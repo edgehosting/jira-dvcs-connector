@@ -62,7 +62,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
 
     public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
-        return featureManager.isEnabled(DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE);
+        return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || featureManager.isEnabled(DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE);
     }
 }
 

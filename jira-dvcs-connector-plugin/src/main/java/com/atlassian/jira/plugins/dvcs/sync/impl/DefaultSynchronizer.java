@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
@@ -38,7 +39,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
-    private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
     private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
     private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
@@ -90,13 +90,12 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
-        CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                .getCommunicator(repo.getDvcsType());
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
 
         // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
-        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || communicator.isSyncDisabled(repo, flags))
+        if (communicator.isSyncDisabled(repo, flags))
         {
             log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
             return;
