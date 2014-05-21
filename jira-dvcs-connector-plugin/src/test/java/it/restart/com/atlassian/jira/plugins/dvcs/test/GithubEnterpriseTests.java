@@ -239,7 +239,6 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
-            Assert.assertTrue(repository.hasWarning());
         }
     }
 

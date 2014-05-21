@@ -248,7 +248,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
-            Assert.assertTrue(repository.hasWarning());
         }
     }
 
