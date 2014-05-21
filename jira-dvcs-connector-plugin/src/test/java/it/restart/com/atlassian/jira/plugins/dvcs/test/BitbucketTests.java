@@ -23,6 +23,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -313,20 +314,23 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
     }
 
+    @Override
     @Test
     public void linkingRepositoryWithoutAdminPermission()
     {
-        BitBucketConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        configureOrganizations.setJiraTestedProduct(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
-        AccountsPageAccountRepository repository = configureOrganizations.enableRepository(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, "testemptyrepo", true);
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
         Assert.assertTrue(repository.hasWarning());
     }
 
+    @Override
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {

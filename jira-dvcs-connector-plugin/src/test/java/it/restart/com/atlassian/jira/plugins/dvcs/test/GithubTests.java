@@ -2,8 +2,6 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
@@ -22,6 +20,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matchers;
@@ -210,11 +209,12 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void linkingRepositoryWithoutAdminPermission()
     {
-        GithubConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(GithubConfigureOrganizationsPage.class);
-        configureOrganizations.setJiraTestedProduct(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.GITHUB, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
-        AccountsPageAccountRepository repository = configureOrganizations.enableRepository(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME, "testemptyrepo", true);
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -224,11 +224,12 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        BitBucketConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        configureOrganizations.setJiraTestedProduct(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.GITHUB, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
-        AccountsPageAccount account = configureOrganizations.getOrganization(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME);
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME);
+
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());

@@ -15,6 +15,10 @@ public interface BasicTests
     void testCommitStatistics();
 
     void testPostCommitHookAdded();
-    
+
+    void linkingRepositoryWithoutAdminPermission();
+
+    void autoLinkingRepositoryWithoutAdminPermission();
+
     void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount();
 }

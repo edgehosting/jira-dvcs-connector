@@ -15,6 +15,10 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -31,6 +35,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
     
     @BeforeClass
@@ -101,7 +106,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         assertThat(organization.getRepositories(true).size()).isEqualTo(5);
 
         assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3",1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
 
@@ -188,7 +193,39 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         hooksPage = jira.getTester().getDriver().getPageSource();
         assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
-    
+
+    @Test
+    public void linkingRepositoryWithoutAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        rpc.addOrganization(accountType, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, OTHER_ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertTrue(repository.hasWarning());
+    }
+
+    @Test
+    public void autoLinkingRepositoryWithoutAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        rpc.addOrganization(accountType, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, OTHER_ACCOUNT_NAME);
+
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+            Assert.assertTrue(repository.hasWarning());
+        }
+    }
     
     private List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits)
     {

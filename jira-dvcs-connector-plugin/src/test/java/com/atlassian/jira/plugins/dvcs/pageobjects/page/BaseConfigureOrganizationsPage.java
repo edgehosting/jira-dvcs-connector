@@ -212,16 +212,4 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         repository.synchronize();
         return repository;
     }
-
-    public AccountsPageAccountRepository enableRepository(AccountsPageAccount.AccountType accountType, String accountName, String repositoryName, boolean noAdminPermission)
-    {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
-
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
-
-        repository.enable(noAdminPermission);
-
-        return repository;
-    }
 }

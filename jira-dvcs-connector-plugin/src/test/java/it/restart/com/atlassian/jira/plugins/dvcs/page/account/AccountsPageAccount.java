@@ -174,6 +174,15 @@ public class AccountsPageAccount extends WebDriverElement
         findControlDialog().regenerate();
         return oAuthDialog;
     }
+
+    public AccountsPageAccountRepository enableRepository(String repositoryName, boolean noAdminPermission)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+
+        repository.enable(noAdminPermission);
+
+        return repository;
+    }
     
     /**
      * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
