@@ -20,8 +20,6 @@ import java.util.Set;
  */
 public interface DvcsCommunicator
 {
-    String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-
     String POST_HOOK_SUFFIX = String.valueOf("/rest/bitbucket/1.0/repository/");
 
     String getDvcsType();

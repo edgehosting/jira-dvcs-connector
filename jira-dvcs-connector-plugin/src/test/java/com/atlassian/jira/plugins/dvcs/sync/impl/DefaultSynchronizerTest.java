@@ -25,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -365,16 +366,19 @@ public class DefaultSynchronizerTest
         bitbucketCachingCommunicator = new CachingCommunicator();
         githubCachingCommunicator = new CachingCommunicator();
 
+        SyncDisabledHelper syncDisabledHelper = new SyncDisabledHelper();
+        ReflectionTestUtils.setField(syncDisabledHelper, "featureManager", featureManager);
+
         bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, ap);
         ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
-        ReflectionTestUtils.setField(bitbucketCommunicator, "featureManager", featureManager);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         githubCommunicator = new GithubCommunicator(oAuthStore, githubClientProvider);
         ReflectionTestUtils.setField(githubCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(githubCommunicator, "messagingService", messagingService);
-        ReflectionTestUtils.setField(githubCommunicator, "featureManager", featureManager);
+        ReflectionTestUtils.setField(githubCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         bitbucketCachingCommunicator.setDelegate(bitbucketCommunicator);
         githubCachingCommunicator.setDelegate(githubCommunicator);
@@ -963,7 +967,7 @@ public class DefaultSynchronizerTest
     @Test
     public void getChangesets_Bitbucket_disabledSynchronization()
     {
-        when(featureManager.isEnabled(BitbucketCommunicator.DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE)).thenReturn(true);
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
 
         Graph graph = new Graph();
@@ -1067,7 +1071,7 @@ public class DefaultSynchronizerTest
     @Test
     public void getChangesets_GitHub_disabledSynchronization()
     {
-        when(featureManager.isEnabled(GithubCommunicator.DISABLE_GITHUB_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_GITHUB_SYNCHRONIZATION_FEATURE)).thenReturn(true);
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
 
         Graph graph = new Graph();

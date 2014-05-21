@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
@@ -18,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
@@ -66,8 +66,6 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
 
-    public static final String DISABLE_GITHUB_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.github";
-
     @Resource
     private  MessagingService messagingService;
 
@@ -87,7 +85,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private GitHubRESTClient gitHubRESTClient;
 
     @Resource
-    protected FeatureManager featureManager;
+    protected SyncDisabledHelper syncDisabledHelper;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -617,7 +615,7 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
-        return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || featureManager.isEnabled(DISABLE_GITHUB_SYNCHRONIZATION_FEATURE);
+        return syncDisabledHelper.isGithubSyncDisabled();
     }
 
     private String getRef(String slug, String branch)

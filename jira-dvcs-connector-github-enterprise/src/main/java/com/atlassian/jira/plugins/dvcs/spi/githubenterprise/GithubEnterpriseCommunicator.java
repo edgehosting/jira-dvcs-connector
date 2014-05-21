@@ -19,8 +19,6 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubEnterpriseCommunicator.class);
     public static final String GITHUB_ENTERPRISE = "githube";
 
-    public static final String DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.githube";
-
     private GithubEnterpriseCommunicator(OAuthStore oAuthStore,
             @Qualifier("githubEnterpriseClientProvider") GithubEnterpriseClientProvider githubClientProvider)
     {
@@ -62,7 +60,7 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
 
     public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
-        return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE) || featureManager.isEnabled(DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE);
+        return syncDisabledHelper.isGithubEnterpriseSyncDisabled();
     }
 }
 

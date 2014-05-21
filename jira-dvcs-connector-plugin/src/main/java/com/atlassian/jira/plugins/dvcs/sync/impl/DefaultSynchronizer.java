@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
@@ -14,9 +13,9 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -38,9 +37,6 @@ import javax.annotation.Resource;
 public class DefaultSynchronizer implements Synchronizer, DisposableBean, InitializingBean
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-
-    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -67,9 +63,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private SyncAuditLogDao syncAudit;
 
     @Resource
-    private FeatureManager featureManager;
-
-    @Resource
     private EventPublisher eventPublisher;
 
     /**
@@ -78,6 +71,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private GitHubEventService gitHubEventService;
 
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
@@ -101,6 +96,16 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             return;
         }
 
+        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+        if (!softSync && syncDisabledHelper.isFullSychronizationDisabled())
+        {
+            log.info("Full synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+            return;
+        }
+
         if (repo.isLinked())
         {
             Progress progress = null;
@@ -120,10 +125,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
             }
 
-            boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-            boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-            boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-            
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
             int auditId = 0;
@@ -133,7 +134,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
-                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
+                if (!softSync)
                 {
                     //TODO This will deleted both changeset and PR messages, we should distinguish between them
                     // Stopping synchronization to delete failed messages for repository
@@ -166,7 +167,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
+                if (!postponePrSyncHelper.isAfterPostponedTime() || syncDisabledHelper.isPullRequestSynchronizationDisabled())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
