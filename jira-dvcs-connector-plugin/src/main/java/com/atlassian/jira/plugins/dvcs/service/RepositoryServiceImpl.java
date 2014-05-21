@@ -396,10 +396,20 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                     try
                     {
                         addOrRemovePostcommitHook(repository, getPostCommitUrl(repository));
-                    } catch (SourceControlException.PostCommitHookRegistrationException e)
+                    }
+                    catch (SourceControlException.PostCommitHookRegistrationException e)
                     {
-                        log.warn("Adding postcommit hook for repository " + repository.getRepositoryUrl() + " failed: ", e);
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed. Probably insufficient permission", e);
                         updateAdminPermission(repository, false);
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        repositoryDao.save(repository);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed: ", e);
+                        // we could not add hooks for some reason, let's leave the repository unlinked
                         repositoryDao.save(repository);
                     }
                 }
@@ -479,11 +489,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 addOrRemovePostcommitHook(repository, postCommitUrl);
                 registration.setCallBackUrlInstalled(linked);
                 updateAdminPermission(repository, true);
-            } catch (SourceControlException.PostCommitHookRegistrationException e)
+            }
+            catch (SourceControlException.PostCommitHookRegistrationException e)
             {
-                log.debug("Could not add or remove postcommit hook", e);
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
                 registration.setCallBackUrlInstalled(!linked);
                 updateAdminPermission(repository, false);
+            }
+            catch (Exception e)
+            {
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                registration.setCallBackUrlInstalled(!linked);
             }
 
             log.debug("Enable repository [{}]", repository);
