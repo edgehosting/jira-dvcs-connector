@@ -332,17 +332,49 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     @Override
     @Test
+    public void linkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertFalse(repository.hasWarning());
+    }
+
+    @Override
+    @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        BitBucketConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        configureOrganizations.setJiraTestedProduct(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
-        AccountsPageAccount account = configureOrganizations.getOrganization(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
             Assert.assertTrue(repository.hasWarning());
+        }
+    }
+
+    @Override
+    @Test
+    public void autoLinkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+            Assert.assertFalse(repository.hasWarning());
         }
     }
 

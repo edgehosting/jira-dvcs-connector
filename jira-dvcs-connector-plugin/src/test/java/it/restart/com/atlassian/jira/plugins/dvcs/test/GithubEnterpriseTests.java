@@ -211,6 +211,22 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     }
 
     @Test
+    public void linkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertFalse(repository.hasWarning());
+    }
+
+    @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -224,6 +240,23 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         {
             Assert.assertTrue(repository.isEnabled());
             Assert.assertTrue(repository.hasWarning());
+        }
+    }
+
+    @Test
+    public void autoLinkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
+
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+            Assert.assertFalse(repository.hasWarning());
         }
     }
     

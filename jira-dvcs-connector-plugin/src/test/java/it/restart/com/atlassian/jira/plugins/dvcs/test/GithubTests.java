@@ -222,6 +222,21 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Test
+    public void linkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertFalse(repository.hasWarning());
+    }
+
+    @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -234,6 +249,22 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         {
             Assert.assertTrue(repository.isEnabled());
             Assert.assertTrue(repository.hasWarning());
+        }
+    }
+
+    @Test
+    public void autoLinkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, ACCOUNT_NAME);
+
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+            Assert.assertFalse(repository.hasWarning());
         }
     }
 
