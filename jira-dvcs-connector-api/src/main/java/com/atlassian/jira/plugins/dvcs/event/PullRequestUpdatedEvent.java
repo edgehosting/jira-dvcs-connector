@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 import com.atlassian.analytics.api.annotations.EventName;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 
+import java.util.Date;
 import javax.annotation.Nonnull;
 
 /**
@@ -21,6 +22,13 @@ public class PullRequestUpdatedEvent extends PullRequestEvent
     {
         super(pullRequest);
         this.pullRequestBeforeUpdate = pullRequestBeforeUpdate;
+    }
+
+    @Nonnull
+    @Override
+    public Date getDate()
+    {
+        return getPullRequest().getUpdatedOn();
     }
 
     @Nonnull

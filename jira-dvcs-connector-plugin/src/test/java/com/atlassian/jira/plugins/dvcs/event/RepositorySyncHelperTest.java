@@ -8,6 +8,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.Listeners;
 
+import java.util.Date;
+import javax.annotation.Nonnull;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -55,7 +58,7 @@ public class RepositorySyncHelperTest
         threadEvents.broadcast(new Object());
 
         sync.storeEvents();
-        verify(eventService, never()).storeEvent(any(Repository.class), any());
+        verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class));
     }
 
     @Test
@@ -65,18 +68,30 @@ public class RepositorySyncHelperTest
         threadEvents.broadcast(new Object());
 
         sync.storeEvents();
-        verify(eventService, never()).storeEvent(any(Repository.class), any());
+        verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class));
     }
 
     @Test
     public void returnedSyncCapturesEventsWhenSoftSyncIsTrue() throws Exception
     {
-        final Object event = new Object();
+        final SyncEvent event = new TestEvent();
 
         RepositorySync sync = repoSyncHelper.startSync(repository, true);
         threadEvents.broadcast(event);
 
         sync.storeEvents();
         verify(eventService).storeEvent(repository, event);
+    }
+
+    private class TestEvent implements SyncEvent
+    {
+        private final Date date = new Date();
+
+        @Nonnull
+        @Override
+        public Date getDate()
+        {
+            return date;
+        }
     }
 }

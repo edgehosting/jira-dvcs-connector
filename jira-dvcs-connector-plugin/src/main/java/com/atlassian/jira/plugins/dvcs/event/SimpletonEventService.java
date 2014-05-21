@@ -4,8 +4,11 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Simple HashMap-backed event service. This will not be shipped to customers but is useful so we can keep running the
@@ -14,8 +17,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SimpletonEventService implements EventService
 {
+    private static final OrderByDate BY_DATE = new OrderByDate();
+
     private final EventPublisher eventPublisher;
-    private final Multimap<String, Object> syncEventsByRepo = ArrayListMultimap.create();
+    private final Multimap<String, SyncEvent> syncEventsByRepo = ArrayListMultimap.create();
 
     @Autowired
     public SimpletonEventService(EventPublisher eventPublisher)
@@ -23,16 +28,27 @@ public class SimpletonEventService implements EventService
         this.eventPublisher = eventPublisher;
     }
 
-    public synchronized void storeEvent(Repository repository, Object event) throws IllegalArgumentException
+    public void storeEvent(final Repository repository, final SyncEvent event) throws IllegalArgumentException
     {
         syncEventsByRepo.put(repository.getRepositoryUrl(), event);
     }
 
     public synchronized void dispatchEvents(Repository repository)
     {
-        for (Object event : syncEventsByRepo.get(repository.getRepositoryUrl()))
+        List<SyncEvent> objects = BY_DATE.sortedCopy(syncEventsByRepo.get(repository.getRepositoryUrl()));
+        for (Object event : objects)
         {
             eventPublisher.publish(event);
+        }
+    }
+
+    private static class OrderByDate extends Ordering<SyncEvent>
+    {
+        @Override
+        public int compare(SyncEvent left, SyncEvent right)
+        {
+            // these are non-null
+            return left.getDate().compareTo(right.getDate());
         }
     }
 }

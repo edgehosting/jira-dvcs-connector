@@ -8,14 +8,14 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 public interface EventService
 {
     /**
-     * Stores the given event object against a repository. This method uses Jackson to serialise {@code event} into
+     * Stores the given sync event object against a repository. This method uses Jackson to serialise {@code event} into
      * JSON.
      *
      * @param repository the Repository against which to store the event
      * @param event the event to save
      * @throws java.lang.IllegalArgumentException if Jackson is not able to serialise {@code event}
      */
-    void storeEvent(Repository repository, Object event) throws IllegalArgumentException;
+    void storeEvent(Repository repository, SyncEvent event) throws IllegalArgumentException;
 
     /**
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as

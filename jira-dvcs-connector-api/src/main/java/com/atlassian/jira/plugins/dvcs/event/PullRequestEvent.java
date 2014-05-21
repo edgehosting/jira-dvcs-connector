@@ -13,7 +13,7 @@ import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
  *
  * @since 2.1.6
  */
-public class PullRequestEvent
+public abstract class PullRequestEvent implements SyncEvent
 {
     @Nonnull
     protected final PullRequest pullRequest;
