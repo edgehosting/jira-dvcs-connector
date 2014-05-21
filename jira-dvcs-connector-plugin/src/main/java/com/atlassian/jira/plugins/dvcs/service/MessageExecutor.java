@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +44,15 @@ public class MessageExecutor
 
     /**
      * Executor that is used for consumer execution.
+     * <p/>
+     * For now, there are 6 types of consumers,
+     *  each could have 2 (configurable by dvcs.connector.synchronization.threads_per_consumer, {@link com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer#THREADS_PER_CONSUMER}),
+     *  except for GitHub PR where it's hardcoded to 1.
+     * Setting the max pool size to 16 now.
+     * Need to revisit this limit when we add new types of consumers.
      */
-    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<Runnable>())
+    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 16, 5, TimeUnit.MINUTES,
+            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnector.MessageExecutor"))
     {
         protected void afterExecute(Runnable r, Throwable t)
         {
@@ -86,7 +93,7 @@ public class MessageExecutor
     /**
      * Is messaging stopped?
      */
-    private boolean stop;
+    private volatile boolean stop;
 
     /**
      * Initializes this bean.
@@ -114,7 +121,8 @@ public class MessageExecutor
     public void destroy() throws Exception
     {
         stop = true;
-        executor.shutdown();
+        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        executor.shutdownNow();
         if (!executor.awaitTermination(1, TimeUnit.MINUTES))
         {
             LOGGER.error("Unable properly shutdown message queue.");
