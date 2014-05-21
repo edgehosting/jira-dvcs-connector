@@ -240,7 +240,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+        rpc.addOrganization(AccountType.GITHUB, OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, OTHER_ACCOUNT_NAME);
@@ -256,7 +256,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void autoLinkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
+        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, ACCOUNT_NAME);
