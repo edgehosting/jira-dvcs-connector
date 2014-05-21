@@ -217,7 +217,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     public boolean hasWarning()
     {
-        return warningIcon.isVisible();
+        return warningIcon.hasClass("admin-permission") && warningIcon.hasClass("aui-icon-warning") && warningIcon.isVisible();
     }
 
     public static class ForceSyncDialog extends WebDriverElement

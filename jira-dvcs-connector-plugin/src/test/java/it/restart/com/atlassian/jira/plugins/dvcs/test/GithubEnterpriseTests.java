@@ -219,7 +219,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());

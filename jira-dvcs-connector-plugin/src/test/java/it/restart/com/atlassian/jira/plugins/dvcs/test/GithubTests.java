@@ -229,7 +229,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
