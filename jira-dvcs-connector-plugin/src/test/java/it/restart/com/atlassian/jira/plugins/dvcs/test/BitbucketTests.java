@@ -3,7 +3,6 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
@@ -334,11 +333,12 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        BitBucketConfigureOrganizationsPage configureOrganizations = jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
-        configureOrganizations.setJiraTestedProduct(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        configureOrganizations.addOrganizationSuccessfully(OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
-        AccountsPageAccount account = configureOrganizations.getOrganization(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());

@@ -215,7 +215,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        rpc.addOrganization(accountType, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+        rpc.addOrganization(accountType, OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, OTHER_ACCOUNT_NAME);
