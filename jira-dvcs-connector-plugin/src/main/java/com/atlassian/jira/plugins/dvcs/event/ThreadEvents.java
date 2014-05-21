@@ -92,23 +92,34 @@ public class ThreadEvents
         }
 
         @Override
-        public void processEach(@Nonnull Closure closure)
+        public void processEach(@Nonnull Closure<Object> closure)
         {
+            processEach(Object.class, closure);
+        }
+
+        @Override
+        public <T> void processEach(@Nonnull Class<T> eventClass, @Nonnull Closure<? super T> closure)
+        {
+            checkNotNull(eventClass, "eventClass");
             checkNotNull(closure, "closure");
 
-            List<?> events = ImmutableList.copyOf(capturedEvents);
-            for (Object event : events)
+            final List<?> all = ImmutableList.copyOf(capturedEvents);
+            for (Object object : all)
             {
-                logger.debug("Processing event with {}: {}", closure, event);
-                closure.process(event);
+                if (eventClass.isInstance(object))
+                {
+                    T event = eventClass.cast(object);
 
-                // remove processed events from the list so that in case the
-                // closure above throws an exception we are still in a valid state.
-                capturedEvents.remove(event);
+                    logger.debug("Processing event with {}: {}", closure, event);
+                    closure.process(event);
+
+                    // remove processed events from the list so that in case the
+                    // closure above throws an exception we are still in a valid state.
+                    capturedEvents.remove(event);
+                }
             }
 
-            logger.debug("Processed {} events with {}", events.size(), closure);
-            capturedEvents = Lists.newArrayList();
+            logger.debug("Processed {} events of type {} with {}", new Object[] { all.size() - capturedEvents.size(), eventClass, closure });
         }
 
         /**

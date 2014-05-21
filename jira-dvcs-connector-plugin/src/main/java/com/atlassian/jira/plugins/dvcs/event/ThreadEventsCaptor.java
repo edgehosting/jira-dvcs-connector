@@ -16,16 +16,22 @@ public interface ThreadEventsCaptor
     ThreadEventsCaptor stopCapturing();
 
     /**
-     * Calls the given pseudo-closure once for each captured event, removing the event from this captor once it has been
-     * processed.
+     * Calls the given pseudo-closure once for each captured event, removing the event from this captor's list of
+     * captured event once it has been processed.
      */
-    void processEach(Closure closure);
+    void processEach(@Nonnull Closure<Object> closure);
+
+    /**
+     * Calls the given pseudo-closure once for each captured event that is an instance of {@code eventClass}, removing the
+     * event from this captor's list of captured event once it has been processed.
+     */
+    <T> void processEach(@Nonnull Class<T> eventClass, @Nonnull Closure<? super T> closure);
 
     /**
      * Pseudo-closure for processing events.
      */
-    public interface Closure
+    public interface Closure<T>
     {
-        void process(@Nonnull Object event);
+        void process(@Nonnull T event);
     }
 }

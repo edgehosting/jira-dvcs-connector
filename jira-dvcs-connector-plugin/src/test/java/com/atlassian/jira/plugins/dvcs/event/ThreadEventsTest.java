@@ -45,7 +45,7 @@ public class ThreadEventsTest
     }
 
     @Test
-    public void listenersShouldGetEventsAfterTheyArePublished() throws Exception
+    public void processEachShouldProcessAllPublishedEvents() throws Exception
     {
         threadEvents.broadcast(changeset);
         threadEvents.broadcast(pullRequest);
@@ -55,11 +55,26 @@ public class ThreadEventsTest
     }
 
     @Test
+    public void processEachShouldFilterByClassType() throws Exception
+    {
+        threadEvents.broadcast(changeset);
+        threadEvents.broadcast(pullRequest);
+
+        CollectEventsClosure closure2 = new CollectEventsClosure();
+        threadEventsCaptor.processEach(RepositoryPullRequestMapping.class, closure);
+        threadEventsCaptor.processEach(closure2);
+
+        assertThat("1st call to processEach should process PR event only", closure.events, Matchers.<Object>hasItems(pullRequest));
+        assertThat("2nd call to processEach should process remaining events", closure2.events, Matchers.<Object>hasItems(changeset));
+    }
+
+    @Test
     public void listenersShouldNotReceiveEventsRaisedAfterTheyHaveStoppedListening() throws Exception
     {
         threadEventsCaptor.stopCapturing();
         threadEvents.broadcast(pullRequest);
 
+        threadEventsCaptor.processEach(closure);
         assertThat(closure.events.size(), equalTo(0));
     }
 
@@ -77,6 +92,7 @@ public class ThreadEventsTest
         thread.start();
         thread.join();
 
+        threadEventsCaptor.processEach(closure);
         assertThat(closure.events.size(), equalTo(0));
     }
 
@@ -86,7 +102,7 @@ public class ThreadEventsTest
         threadEvents.startCapturing();
     }
 
-    private static class CollectEventsClosure implements ThreadEventsCaptor.Closure
+    private static class CollectEventsClosure implements ThreadEventsCaptor.Closure<Object>
     {
         final List<Object> events = Lists.newArrayList();
 
