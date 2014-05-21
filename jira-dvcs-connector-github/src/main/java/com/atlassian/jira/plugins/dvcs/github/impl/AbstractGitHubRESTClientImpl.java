@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
+
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -30,7 +32,7 @@ import javax.ws.rs.core.UriBuilder;
  * @author Stanislav Dvorscak
  * 
  */
-public class AbstractGitHubRESTClientImpl
+public abstract class AbstractGitHubRESTClientImpl
 {
 
     /**
@@ -138,12 +140,20 @@ public class AbstractGitHubRESTClientImpl
         do
         {
             ClientResponse clientResponse = cursor.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-            result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
 
-            LinkHeaders linkHeaders = getLinks(clientResponse);
-            LinkHeader nextLink = linkHeaders.getLink("next");
-            URI nextPage = nextLink != null ? nextLink.getUri() : null;
-            cursor = nextPage != null ? client.resource(nextPage) : null;
+            if (clientResponse.getStatus() < 300)
+            {
+                result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
+
+                LinkHeaders linkHeaders = getLinks(clientResponse);
+                LinkHeader nextLink = linkHeaders.getLink("next");
+                URI nextPage = nextLink != null ? nextLink.getUri() : null;
+                cursor = nextPage != null ? client.resource(nextPage) : null;
+            }
+            else
+            {
+                throw new UniformInterfaceException(clientResponse);
+            }
         } while (cursor != null);
         return result;
     }
