@@ -96,16 +96,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             return;
         }
 
-        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-        boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-
-        if (!softSync && syncDisabledHelper.isFullSychronizationDisabled())
-        {
-            log.info("Full synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
-            return;
-        }
-
         if (repo.isLinked())
         {
             Progress progress = null;
@@ -123,6 +113,16 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             if (branchService.getListOfBranchHeads(repo).isEmpty())
             {
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
+            }
+
+            boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+            boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+            boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+
+            if (!softSync && syncDisabledHelper.isFullSychronizationDisabled())
+            {
+                log.info("Full synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+                return;
             }
 
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
