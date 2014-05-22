@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.1.11-SNAPSHOT</version>
+        <version>2.1.10-close-thread-03</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-bitbucket</artifactId>
