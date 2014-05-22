@@ -178,12 +178,6 @@
         <interface>com.atlassian.jira.plugins.dvcs.net.ExtendedResponseHandlerFactory</interface>
     </component-->
     
-    <component key="executorService" name="Executor Service Factory Component"
-            class="com.atlassian.jira.plugins.dvcs.sync.impl.DefaultExecutorServiceFactoryBean">
-        <description>ExecutorService factory bean for creating executor services</description>
-        <interface>com.atlassian.jira.plugins.dvcs.sync.ExecutorServiceFactoryBean</interface>
-    </component>
-
     <component key="reEncryptor" name="reEncryptor" class="com.atlassian.jira.plugins.dvcs.activeobjects.v3.PasswordReEncryptor" />
 
     <component key="synchronizer" name="Dvcs Synchronization Service"
