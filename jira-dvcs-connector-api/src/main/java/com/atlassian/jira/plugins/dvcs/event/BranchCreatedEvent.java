@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Date;
 import java.util.Set;
@@ -22,12 +24,14 @@ public final class BranchCreatedEvent implements SyncEvent
     @Nonnull
     private final Set<String> issueKeys;
 
-    private final Date date = new Date();
+    @Nonnull
+    private final Date date;
 
-    public BranchCreatedEvent(final @Nonnull Branch branch, final @Nonnull Set<String> issueKeys)
+    public BranchCreatedEvent(final @Nonnull Branch branch, final @Nonnull Set<String> issueKeys, final @Nonnull Date date)
     {
-        this.issueKeys = checkNotNull(issueKeys, "issueKeys");
         this.branch = checkNotNull(branch, "branch");
+        this.issueKeys = checkNotNull(issueKeys, "issueKeys");
+        this.date = checkNotNull(date, "date");
     }
 
     @Nonnull
@@ -53,5 +57,11 @@ public final class BranchCreatedEvent implements SyncEvent
     public Date getDate()
     {
         return date;
+    }
+
+    @JsonCreator
+    private static BranchCreatedEvent fromJSON(@JsonProperty("branch") Branch branch, @JsonProperty("issueKeys") Set<String> issueKeys, @JsonProperty("date") Date date)
+    {
+        return new BranchCreatedEvent(branch, issueKeys, date);
     }
 }

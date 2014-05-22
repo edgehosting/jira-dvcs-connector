@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +20,9 @@ public class PullRequest
     private String author;
     private List<Participant> participants;
     private int commentCount;
+
+    @JsonCreator
+    private PullRequest() {}
 
     public PullRequest(final int id)
     {

@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Date;
 import java.util.Set;
@@ -45,8 +48,15 @@ public final class ChangesetCreatedEvent implements SyncEvent
      */
     @Nonnull
     @Override
+    @JsonIgnore
     public Date getDate()
     {
         return changeset.getSynchronizedAt();
+    }
+
+    @JsonCreator
+    private static ChangesetCreatedEvent fromJSON(@JsonProperty ("changeset") Changeset changeset, @JsonProperty ("issueKeys") Set<String> issueKeys)
+    {
+        return new ChangesetCreatedEvent(changeset, issueKeys);
     }
 }
