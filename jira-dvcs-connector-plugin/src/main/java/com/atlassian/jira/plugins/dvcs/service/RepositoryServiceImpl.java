@@ -21,9 +21,9 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -35,10 +35,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
@@ -89,12 +91,27 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private ClusterLockService clusterLockService;
 
-    private final Executor repositoryDeletionExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService repositoryDeletionExecutor = Executors.newSingleThreadExecutor(
+            ThreadFactories.namedThreadFactory("DVCSConnector.RepositoryDeletion"));
 
     @PostConstruct
     public void init()
     {
         clusterLockService = clusterLockServiceFactory.getClusterLockService();
+    }
+
+    /**
+     * Stops the executor.
+     */
+    @PreDestroy
+    public void destroy() throws Exception
+    {
+        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        repositoryDeletionExecutor.shutdownNow();
+        if (!repositoryDeletionExecutor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown repository deletion executor.");
+        }
     }
 
     /**

@@ -59,7 +59,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         this.bitbucketAccountsReloadJob = bitbucketAccountsReloadJob;
         this.pluginController = pluginController;
         this.pluginAccessor = pluginAccessor;
-        this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
+        this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnector.BitbucketAccountsConfigService"));
     }
     
     /**
