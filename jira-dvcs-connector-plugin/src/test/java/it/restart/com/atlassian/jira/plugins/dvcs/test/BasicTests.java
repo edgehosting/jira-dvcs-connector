@@ -7,7 +7,7 @@ public interface BasicTests
     void addOrganizationWaitForSync();
 
     void addOrganizationInvalidAccount();
-    
+
     void addOrganizationInvalidUrl();
 
     void addOrganizationInvalidOAuth();
@@ -15,7 +15,14 @@ public interface BasicTests
     void testCommitStatistics();
 
     void testPostCommitHookAdded();
-    
-    void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount();
 
+    void linkingRepositoryWithoutAdminPermission();
+
+    void linkingRepositoryWithAdminPermission();
+
+    void autoLinkingRepositoryWithoutAdminPermission();
+
+    void autoLinkingRepositoryWithAdminPermission();
+
+    void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount();
 }

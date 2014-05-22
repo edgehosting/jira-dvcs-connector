@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynch
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
@@ -102,7 +103,18 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
-        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
+        try
+        {
+            localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
+        }
+        catch (IllegalStateException e)
+        {
+            // This should not happen
+            LOGGER.warn("Pull request " + remotePullRequest.getId() + " from repository with id " + repository.getId() + " could not be processed", e);
+            // let's return prematurely
+            return;
+        }
+
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
@@ -127,10 +139,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         if (localPullRequest == null)
         {
-            localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest));
-        } else
+            localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest, null));
+        }
+        else
         {
-            localPullRequest = pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest));
+            localPullRequest = pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest, localPullRequest));
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
@@ -138,6 +151,26 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
         return localPullRequest;
+    }
+
+    private String checkNotNull(String branch, String object)
+    {
+        if (branch == null)
+        {
+            throw new IllegalStateException(object + " must not be null");
+        }
+
+        return branch;
+    }
+
+    private String getBranchName(PullRequestMarker ref, String oldBranchName)
+    {
+        if (ref == null || ref.getRef() == null)
+        {
+            return oldBranchName;
+        }
+
+        return ref.getRef();
     }
 
     private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
@@ -291,8 +324,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
-    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source)
+    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
     {
+        String sourceBranch = checkNotNull(getBranchName(source.getHead(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
+        String dstBranch = checkNotNull(getBranchName(source.getBase(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
+
         RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
         target.setDomainId(repository.getId());
         target.setRemoteId((long) source.getNumber());
@@ -305,8 +341,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.setCreatedOn(source.getCreatedAt());
         target.setUpdatedOn(source.getUpdatedAt());
         target.setSourceRepo(getRepositoryFullName(source.getHead().getRepo()));
-        target.setSourceBranch(source.getHead().getRef());
-        target.setDestinationBranch(source.getBase().getRef());
+        target.setSourceBranch(sourceBranch);
+        target.setDestinationBranch(dstBranch);
         target.setLastStatus(resolveStatus(source).name());
         target.setCommentCount(source.getComments());
 
