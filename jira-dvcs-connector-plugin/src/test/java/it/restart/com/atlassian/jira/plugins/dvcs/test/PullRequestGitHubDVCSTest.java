@@ -61,6 +61,10 @@ public class PullRequestGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
         gitHubClient.setCredentials(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.USER, gitHubClient);
         gitHubTestResource.addOwner(GitHubTestResource.ORGANIZATION, gitHubClient);
+
+        GitHubClient gitHubClient2 = GitHubClient.createClient(GitHubTestResource.URL);
+        gitHubClient2.setCredentials(GitHubTestResource.OTHER_USER, GitHubTestResource.OTHER_USER_PASSWORD);
+        gitHubTestResource.addOwner(GitHubTestResource.OTHER_USER, gitHubClient2);
     }
     
     /**

@@ -69,6 +69,10 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
         gitHubClient.setCredentials(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.USER, gitHubClient);
         gitHubTestResource.addOwner(GitHubTestResource.ORGANIZATION, gitHubClient);
+
+        GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, "jira-dvcs-plugin-test");
+        gitHubClient.setCredentials(GitHubTestResource.OTHER_USER, GitHubTestResource.OTHER_USER_PASSWORD);
+        gitHubTestResource.addOwner(GitHubTestResource.OTHER_USER, gitHubClient2);
     }
     
     /**

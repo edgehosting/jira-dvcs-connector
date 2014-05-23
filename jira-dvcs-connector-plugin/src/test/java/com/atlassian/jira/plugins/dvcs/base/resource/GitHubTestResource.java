@@ -51,9 +51,20 @@ public class GitHubTestResource
     public static final String USER = "jirabitbucketconnector";
 
     /**
+     * Username of user for GitHub related tests.
+     */
+    public static final String OTHER_USER = "dvcsconnectortest";
+
+    /**
      * Appropriate password for {@link #USER}
      */
     public static final String USER_PASSWORD = System.getProperty("jirabitbucketconnector.password");
+
+    /**
+     * Appropriate password for {@link #OTHER_USER}
+     */
+    public static final String OTHER_USER_PASSWORD = System.getProperty("dvcsconnectortest.password");
+
 
     /**
      * Organization for GitHub related tests.
@@ -442,6 +453,47 @@ public class GitHubTestResource
     }
 
     /**
+     * Update pull request over provided repository, head and base information.
+     *
+     * @param owner
+     *            of repository
+     * @param repositoryName
+     *            on which repository
+     * @param title
+     *            title of Pull request
+     * @param description
+     *            description of Pull request
+     * @param base
+     *            to which base
+     * @return created EGit pull request
+     */
+    public PullRequest updatePullRequest(PullRequest pullRequest, String owner, String repositoryName, String title, String description, String base)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+
+        pullRequest.setTitle(title);
+        pullRequest.setBody(description);
+
+        try
+        {
+            PullRequest result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
+
+            try
+            {
+                Thread.sleep(5000);
+            } catch (InterruptedException e)
+            {
+                // nothing to do
+            }
+
+            return result;
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Returns slug for provided representation.
      * 
      * @param owner
@@ -525,6 +577,37 @@ public class GitHubTestResource
         RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
 
         IssueService issueService = new IssueService(getGitHubClient(owner));
+        try
+        {
+            return issueService.createComment(bySlug.repository,
+                    pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+    }
+
+    /**
+     * Adds comment to provided pull request as author.
+     *
+     * @param owner
+     *            of repository
+     * @param repositoryName
+     * @param pullRequest
+     *            pull request owner
+     * @param comment
+     *            message
+     * @param
+     *            author
+     * @return created remote comment
+     */
+    public Comment commentPullRequest(String owner, String repositoryName, PullRequest pullRequest, String comment, String author)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+
+        IssueService issueService = new IssueService(getGitHubClient(author));
         try
         {
             return issueService.createComment(bySlug.repository,

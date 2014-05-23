@@ -490,7 +490,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     }
 
     /**
-     * Test that "Update Pull Request" is working.
+     * Test that "Update Pull Request" works.
      */
     @Test
     public void testUpdatePullRequest()
@@ -507,7 +507,6 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         createBranch(ACCOUNT_NAME, repositoryName, stableBranch);
         String stableCommit = commit(ACCOUNT_NAME, repositoryName, "Commit in stable", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
         push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, stableBranch, true);
-
 
         String fixBranchName = issueKey + "_fix";
         createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
@@ -563,7 +562,6 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
                 "Open PR description",
                 getDefaultBranchName());
 
-        // test of synchronization
         account.synchronizeRepository(repositoryName);
 
         response = getPullRequestResponse(issueKey);
