@@ -27,6 +27,11 @@ public final class BranchCreatedEvent implements SyncEvent
     @Nonnull
     private final Date date;
 
+    public BranchCreatedEvent(final @Nonnull Branch branch, final @Nonnull Set<String> issueKeys)
+    {
+        this(branch, issueKeys, new Date());
+    }
+
     public BranchCreatedEvent(final @Nonnull Branch branch, final @Nonnull Set<String> issueKeys, final @Nonnull Date date)
     {
         this.branch = checkNotNull(branch, "branch");
