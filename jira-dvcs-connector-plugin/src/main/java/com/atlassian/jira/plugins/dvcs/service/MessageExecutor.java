@@ -45,11 +45,11 @@ public class MessageExecutor
     /**
      * Executor that is used for consumer execution.
      * <p/>
-     * For now, there are 6 types of consumers,
-     *  each could have 2 (configurable by dvcs.connector.synchronization.threads_per_consumer, {@link com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer#THREADS_PER_CONSUMER}),
-     *  except for GitHub PR where it's hardcoded to 1.
-     * Setting the max pool size to 16 now.
-     * Need to revisit this limit when we add new types of consumers.
+     * Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed (see the QUEUING section of its javadoc),
+     * when using {@link java.util.concurrent.LinkedBlockingQueue}, the max value has no impact.
+     * We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815 .
+     * <p/>
+     * For now, just set it to non-Integer.MAX_VALUE value.
      */
     private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 16, 5, TimeUnit.MINUTES,
             new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnector.MessageExecutor"))
