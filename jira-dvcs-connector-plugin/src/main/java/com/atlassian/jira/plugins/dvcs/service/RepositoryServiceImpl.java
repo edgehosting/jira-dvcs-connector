@@ -683,7 +683,7 @@ public class RepositoryServiceImpl implements RepositoryService
                     }
                     catch (Exception e)
                     {
-                        log.info("Unexpected exception when removing orphan repository {}", orphanRepository);
+                        log.info("Unexpected exception when removing orphan repository " + orphanRepository, e);
                     }
                 }
             });
