@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync;
+package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -48,13 +48,13 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
     }
 
     /**
-     * Resolves {@link GitHubPullRequest} for the provided comment, currently it is only workaround, because information is not available.
+     * Resolves {@link PullRequest} for the provided comment, currently it is only workaround, because information is not available.
      * 
      * @param domain
      *            repository
      * @param commitComment
      *            for which comment
-     * @return resolved {@link GitHubPullRequest}
+     * @return resolved {@link PullRequest}
      */
     private PullRequest getPullRequestByComment(Repository domain, CommitComment commitComment)
     {
