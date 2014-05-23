@@ -119,12 +119,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            if (!softSync && syncDisabledHelper.isFullSychronizationDisabled())
-            {
-                log.info("Full synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
-                return;
-            }
-
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
             int auditId = 0;
@@ -136,26 +130,33 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
                 if (!softSync)
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
-                    stopSynchronization(repo);
-                    if (changesetsSync)
+                    if (!syncDisabledHelper.isFullSychronizationDisabled())
                     {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                        changesetService.removeAllInRepository(repo.getId());
-                        branchService.removeAllBranchHeadsInRepository(repo.getId());
-                        branchService.removeAllBranchesInRepository(repo.getId());
+                        //TODO This will deleted both changeset and PR messages, we should distinguish between them
+                        // Stopping synchronization to delete failed messages for repository
+                        stopSynchronization(repo);
+                        if (changesetsSync)
+                        {
+                            // we are doing full sync, lets delete all existing changesets
+                            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                            changesetService.removeAllInRepository(repo.getId());
+                            branchService.removeAllBranchHeadsInRepository(repo.getId());
+                            branchService.removeAllBranchesInRepository(repo.getId());
 
-                        repo.setLastCommitDate(null);
+                            repo.setLastCommitDate(null);
+                        }
+                        if (pullRequestSync)
+                        {
+                            gitHubEventService.removeAll(repo);
+                            repositoryPullRequestDao.removeAll(repo);
+                            repo.setActivityLastSync(null);
+                        }
+                        repositoryDao.save(repo);
                     }
-                    if (pullRequestSync)
+                    else
                     {
-                        gitHubEventService.removeAll(repo);
-                        repositoryPullRequestDao.removeAll(repo);
-                        repo.setActivityLastSync(null);
+                        log.info("Full synchronization is disabled for repository {} ({}), not deleting any data", repo.getName(), repo.getId());
                     }
-                    repositoryDao.save(repo);
                 }
 
                 // first retry all failed messages
