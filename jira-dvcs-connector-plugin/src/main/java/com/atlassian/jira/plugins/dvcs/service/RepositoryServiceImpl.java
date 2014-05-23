@@ -25,6 +25,7 @@ import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,11 @@ public class RepositoryServiceImpl implements RepositoryService
     private final ExecutorService repositoryDeletionExecutor = Executors.newSingleThreadExecutor(
             ThreadFactories.namedThreadFactory("DVCSConnector.RepositoryDeletion"));
 
+    /**
+     * true when we are shutting down and want to stop the current repo deletion thread.
+     */
+    private volatile boolean stopRepositoryDeletion = false;
+
     @PostConstruct
     public void init()
     {
@@ -106,7 +112,14 @@ public class RepositoryServiceImpl implements RepositoryService
     @PreDestroy
     public void destroy() throws Exception
     {
+        // stop the current thread
+        stopRepositoryDeletion = true;
         // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        //  removal of orphan repositories could be triggered in two places:
+        //    1) scheduled job to remove any repository whose organization is null
+        //    2) after removing the organization
+        //  2) is actually covered by 1). And 1) could always pick up from where it stopped last time.
+        //  Thus it's safe to cancel the rest of the tasks in the queue.
         repositoryDeletionExecutor.shutdownNow();
         if (!repositoryDeletionExecutor.awaitTermination(1, TimeUnit.MINUTES))
         {
@@ -662,17 +675,37 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeOrphanRepositories(final List<Repository> orphanRepositories)
     {
-        repositoryDeletionExecutor.execute(new Runnable()
+        if (CollectionUtils.isNotEmpty(orphanRepositories))
         {
-            @Override
-            public void run()
+            repositoryDeletionExecutor.execute(new Runnable()
             {
-                for (final Repository repository : orphanRepositories)
+                @Override
+                public void run()
                 {
-                    remove(repository);
+                    log.debug("BEGIN: remove {} orphan repositories", orphanRepositories.size());
+                    try
+                    {
+                        for (final Repository repository : orphanRepositories)
+                        {
+                            if (!stopRepositoryDeletion)
+                            {
+                                remove(repository);
+                            }
+                            else
+                            {
+                                log.info("Removal of orphan repositories has been stopped due to shutdown of the plugin. It will be resumed in the next scheduled job after the plugin is restarted.");
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.info("Removal of orphan repositories has been stopped due to exception. This will be resumed in the next scheduled job.", e);
+                    }
+                    log.debug("END: remove orphan repositories");
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
