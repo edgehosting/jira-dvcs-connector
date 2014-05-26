@@ -11,6 +11,8 @@ import org.testng.annotations.Test;
 
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -80,6 +82,15 @@ public class EntityBeanGeneratorTest
         assertTrue(0.0d == primitive.getDouble());
         assertTrue('\u0000' == primitive.getChar());
         assertTrue(!primitive.isBoolean());
+    }
+
+    @Test
+    public void beanShouldHaveSaneEqualsAndHashCode() throws Exception
+    {
+        PrimitiveBean primitive = generator.createInstanceOf(PrimitiveBean.class);
+
+        assertThat(primitive, equalTo(primitive));
+        assertThat(primitive.hashCode(), equalTo(primitive.hashCode()));
     }
 
     interface Bean extends RawEntity

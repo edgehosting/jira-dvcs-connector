@@ -1,25 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
-import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.beust.jcommander.internal.Lists;
 import org.hamcrest.Matchers;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.List;
+import javax.annotation.Nonnull;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class ThreadEventsTest
 {
     ThreadEvents threadEvents;
     ThreadEventsCaptor threadEventsCaptor;
+    CollectEventsClosure closure;
 
     @Mock
     ChangesetMapping changeset;
@@ -27,16 +28,14 @@ public class ThreadEventsTest
     @Mock
     RepositoryPullRequestMapping pullRequest;
 
-    @Mock
-    EventPublisher eventPublisher;
-
     @BeforeMethod
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        threadEvents = new ThreadEvents(eventPublisher);
+        threadEvents = new ThreadEvents();
 
         threadEventsCaptor = threadEvents.startCapturing();
+        closure = new CollectEventsClosure();
     }
 
     @AfterMethod
@@ -46,19 +45,27 @@ public class ThreadEventsTest
     }
 
     @Test
-    public void listenersShouldGetEventsAfterTheyArePublished() throws Exception
+    public void processEachShouldProcessAllPublishedEvents() throws Exception
     {
         threadEvents.broadcast(changeset);
         threadEvents.broadcast(pullRequest);
 
-        // no events have been published yet
-        verifyZeroInteractions(eventPublisher);
+        threadEventsCaptor.processEach(closure);
+        assertThat(closure.events, Matchers.<Object>hasItems(changeset, pullRequest));
+    }
 
-        ArgumentCaptor<Object> publishedEvents = ArgumentCaptor.forClass(Object.class);
-        threadEventsCaptor.sendToEventPublisher();
-        verify(eventPublisher, times(2)).publish(publishedEvents.capture());
+    @Test
+    public void processEachShouldFilterByClassType() throws Exception
+    {
+        threadEvents.broadcast(changeset);
+        threadEvents.broadcast(pullRequest);
 
-        assertThat(publishedEvents.getAllValues(), Matchers.<Object>hasItems(changeset, pullRequest));
+        CollectEventsClosure closure2 = new CollectEventsClosure();
+        threadEventsCaptor.processEach(RepositoryPullRequestMapping.class, closure);
+        threadEventsCaptor.processEach(closure2);
+
+        assertThat("1st call to processEach should process PR event only", closure.events, Matchers.<Object>hasItems(pullRequest));
+        assertThat("2nd call to processEach should process remaining events", closure2.events, Matchers.<Object>hasItems(changeset));
     }
 
     @Test
@@ -67,8 +74,8 @@ public class ThreadEventsTest
         threadEventsCaptor.stopCapturing();
         threadEvents.broadcast(pullRequest);
 
-        threadEventsCaptor.sendToEventPublisher();
-        verifyZeroInteractions(eventPublisher);
+        threadEventsCaptor.processEach(closure);
+        assertThat(closure.events.size(), equalTo(0));
     }
 
     @Test
@@ -85,7 +92,24 @@ public class ThreadEventsTest
         thread.start();
         thread.join();
 
-        threadEventsCaptor.sendToEventPublisher();
-        verifyZeroInteractions(eventPublisher);
+        threadEventsCaptor.processEach(closure);
+        assertThat(closure.events.size(), equalTo(0));
+    }
+
+    @Test(expectedExceptions = IllegalStateException.class)
+    public void startingTwoCapturesOnTheSameThreadThrowsException() throws Exception
+    {
+        threadEvents.startCapturing();
+    }
+
+    private static class CollectEventsClosure implements ThreadEventsCaptor.Closure<Object>
+    {
+        final List<Object> events = Lists.newArrayList();
+
+        @Override
+        public void process(@Nonnull Object event)
+        {
+            events.add(event);
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+
 /**
  * PullRequest reference
  *
@@ -10,6 +12,9 @@ public class PullRequestRef
     private String branch;
     private String repository;
     private String repositoryUrl;
+
+    @JsonCreator
+    private PullRequestRef() {}
 
     public PullRequestRef(final String branch, final String repository, final String repositoryUrl)
     {

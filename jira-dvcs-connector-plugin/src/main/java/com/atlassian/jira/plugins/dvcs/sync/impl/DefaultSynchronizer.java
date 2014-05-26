@@ -11,8 +11,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -84,7 +84,7 @@ public class DefaultSynchronizer implements Synchronizer
     private GitHubEventService gitHubEventService;
 
     @Resource
-    private ThreadEvents syncThreadEvents;
+    private RepositorySyncHelper repoSyncHelper;
 
     private final ClusterLockService clusterLockService;
 
@@ -129,7 +129,7 @@ public class DefaultSynchronizer implements Synchronizer
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
             }
 
-            Progress progress= startProgressSafely(repo, flags);
+            Progress progress = startProgressSafely(repo, flags);
             if (progress==null)
             {
                 return;
@@ -139,7 +139,7 @@ public class DefaultSynchronizer implements Synchronizer
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            ThreadEventsCaptor syncEvents = startCapturingSyncEvents(softSync);
+            final RepositorySync repoSync = repoSyncHelper.startSync(repo, softSync);
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
             int auditId = 0;
             try
@@ -173,7 +173,7 @@ public class DefaultSynchronizer implements Synchronizer
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
-                stopCapturingAndPublishEvents(syncEvents);
+                repoSync.finish();
                 messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
@@ -231,25 +231,6 @@ public class DefaultSynchronizer implements Synchronizer
             LOG.warn("Could not resume failed messages.", e);
         }
 
-    }
-
-    private ThreadEventsCaptor startCapturingSyncEvents(boolean softSync)
-    {
-        if (softSync)
-        {
-            return syncThreadEvents.startCapturing();
-        }
-
-        return null;
-    }
-
-    private void stopCapturingAndPublishEvents(ThreadEventsCaptor syncEvents)
-    {
-        if (syncEvents != null)
-        {
-            syncEvents.stopCapturing();
-            syncEvents.sendToEventPublisher();
-        }
     }
 
     private void fireAnalyticsStart(boolean softSync, boolean changesetsSync, boolean pullRequestSync, boolean webhook)

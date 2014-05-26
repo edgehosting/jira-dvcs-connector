@@ -2,7 +2,11 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Date;
 import javax.annotation.Nonnull;
 
 /**
@@ -24,8 +28,22 @@ public class PullRequestUpdatedEvent extends PullRequestEvent
     }
 
     @Nonnull
+    @Override
+    @JsonIgnore
+    public Date getDate()
+    {
+        return getPullRequest().getUpdatedOn();
+    }
+
+    @Nonnull
     public PullRequest getPullRequestBeforeUpdate()
     {
         return pullRequestBeforeUpdate;
+    }
+
+    @JsonCreator
+    private static PullRequestUpdatedEvent fromJSON(@JsonProperty("pullRequest") PullRequest pullRequest, @JsonProperty("pullRequestBeforeUpdate") PullRequest pullRequestBeforeUpdate)
+    {
+        return new PullRequestUpdatedEvent(pullRequest, pullRequestBeforeUpdate);
     }
 }

@@ -108,7 +108,10 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping</entity>
-        
+
+        <!-- Sync events-->
+        <entity>com.atlassian.jira.plugins.dvcs.event.SyncEventMapping</entity>
+
         <!-- Audit 
         -->
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping</entity>

@@ -152,14 +152,8 @@ public final class EntityBeanGenerator
 
         private Object equals(final Object thisObj, final Object thatObj)
         {
-            try
-            {
-                return thisObj == Proxy.getInvocationHandler(thatObj);
-            }
-            catch (IllegalArgumentException e)
-            {
-                return false;
-            }
+            // use only reference equality for now
+            return thisObj == thatObj;
         }
 
         private String beanToString()

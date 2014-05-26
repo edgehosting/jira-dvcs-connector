@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +22,18 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Is responsible for message execution.
@@ -44,23 +48,8 @@ public class MessageExecutor
 
     /**
      * Executor that is used for consumer execution.
-     * <p/>
-     * Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed (see the QUEUING section of its javadoc),
-     * when using {@link java.util.concurrent.LinkedBlockingQueue}, the max value has no impact.
-     * We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815 .
-     * <p/>
-     * For now, just set it to non-Integer.MAX_VALUE value.
      */
-    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 16, 5, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<Runnable>(), ThreadFactories.namedThreadFactory("DVCSConnector.MessageExecutor"))
-    {
-        protected void afterExecute(Runnable r, Throwable t)
-        {
-            MessageRunnable<?> messageRunnable = (MessageRunnable<?>) r;
-            releaseToken(messageRunnable.getConsumer());
-            tryToProcessNextMessage(messageRunnable.getConsumer());
-        }
-    };
+    private final ExecutorService executor;
 
     private ClusterLockService clusterLockService;
 
@@ -75,10 +64,10 @@ public class MessageExecutor
     private MessageConsumer<?>[] consumers;
 
     /**
-     * Used to capture events raised during synchronisation.
+     * Used to capture & store events raised during synchronisation.
      */
     @Resource
-    private ThreadEvents threadEvents;
+    private RepositorySyncHelper repoSyncHelper;
 
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
@@ -94,6 +83,25 @@ public class MessageExecutor
      * Is messaging stopped?
      */
     private volatile boolean stop;
+
+    /**
+     * Creates a new MessageExecutor backed by a thread pool.
+     */
+    public MessageExecutor()
+    {
+        this(createThreadPoolExecutor());
+    }
+
+    /**
+     * Creates a new MessageExecutor backed by the given ExecutorService.
+     *
+     * @param executor    an ExecutorService
+     */
+    @VisibleForTesting
+    public MessageExecutor(@Nonnull ExecutorService executor)
+    {
+        this.executor = checkNotNull(executor, "executor");
+    }
 
     /**
      * Initializes this bean.
@@ -224,6 +232,56 @@ public class MessageExecutor
     }
 
     /**
+     * Returns a new ThreadPoolExecutor. Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed
+     * (see the QUEUING section of its javadoc), when using {@link java.util.concurrent.LinkedBlockingQueue}, the 
+     * max value has no impact. We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815.
+     * <p/>
+     * For now, just set it to non-Integer.MAX_VALUE value.
+     *
+     * @return a new ThreadPoolExecutor
+     */
+    private static ThreadPoolExecutor createThreadPoolExecutor()
+    {
+        return new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+    }
+
+    /**
+     * Template class for {@code Runnable}s that should release the token after they run and enqueue the next message.
+     */
+    private abstract class ReleaseTokenAndEnqueueNextMessage implements Runnable
+    {
+        /**
+         * Delegate to subclass then release token.
+         */
+        @Override
+        public final void run()
+        {
+            try
+            {
+                doRun();
+            }
+            finally
+            {
+                final MessageConsumer<?> consumer = getConsumer();
+
+                // release the token, then enqueue the next message
+                releaseToken(consumer);
+                tryToProcessNextMessage(consumer);
+            }
+        }
+
+        /**
+         * Run whatever.
+         */
+        protected abstract void doRun();
+
+        /**
+         * @return the MessageConsumer.
+         */
+        protected abstract MessageConsumer<?> getConsumer();
+    }
+
+    /**
      * Runnable for single message processing.
      *
      * @author Stanislav Dvorscak
@@ -231,7 +289,7 @@ public class MessageExecutor
      * @param <P>
      *            type of message payload
      */
-    private final class MessageRunnable<P extends HasProgress> implements Runnable
+    private final class MessageRunnable<P extends HasProgress> extends ReleaseTokenAndEnqueueNextMessage
     {
 
         /**
@@ -264,39 +322,30 @@ public class MessageExecutor
             return consumer;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void run()
+        protected void doRun()
         {
-            Progress progress = null;
-            ThreadEventsCaptor syncEvents = null;
+            final Progress progress;
+            final P payload;
             try
             {
-                P payload;
-                try
-                {
                     payload = messagingService.deserializePayload(message);
                     progress = payload.getProgress();
                 }
                 catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
                 {
-                    progress = e.getProgressOrNull();
                     messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
                     throw e;
                 }
 
                 // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
                 // subsequently re-added
-                if (progress.isSoftsync() && payload.isSoftSync())
+            final Repository repository = messagingService.getRepositoryFromMessage(message);
+            final RepositorySync repoSync = repoSyncHelper.startSync(repository, progress.isSoftsync() && payload.isSoftSync());
+            try
                 {
-                    syncEvents = threadEvents.startCapturing();
-                }
-
                 consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
-
             }
             catch (Throwable t)
             {
@@ -308,29 +357,20 @@ public class MessageExecutor
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
 
-                if (progress != null)
-                {
                     progress.setError("Error during sync. See server logs.");
-                }
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }
             finally
             {
-                if (syncEvents != null)
-                {
-                    syncEvents.stopCapturing();
-                    syncEvents.sendToEventPublisher();
-                }
-
-                tryEndProgress(message, consumer, progress);
+                repoSync.finish();
+                tryEndProgress(repository, message, consumer, progress);
             }
         }
 
-        protected void tryEndProgress(Message<P> message, MessageConsumer<P> consumer, Progress progress)
+        protected void tryEndProgress(Repository repository, Message<P> message, MessageConsumer<P> consumer, Progress progress)
         {
             try
             {
-                Repository repository = messagingService.getRepositoryFromMessage(message);
                 if (repository != null)
                 {
                     messagingService.tryEndProgress(repository, progress, consumer, messagingService.getSynchronizationAuditIdFromTags(message.getTags()));

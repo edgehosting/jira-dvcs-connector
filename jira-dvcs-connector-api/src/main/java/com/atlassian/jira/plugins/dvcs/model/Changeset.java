@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.codehaus.jackson.annotate.JsonCreator;
 
 import java.util.Collections;
 import java.util.Date;
@@ -38,6 +39,9 @@ public class Changeset
     private ImmutableList<ChangesetFileDetail> fileDetails = null;
 
     private Integer version;
+
+    @JsonCreator
+    private Changeset() {}
 
     public Changeset(int repositoryId, String node, String message, Date timestamp)
     {

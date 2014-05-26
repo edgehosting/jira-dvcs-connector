@@ -12,12 +12,15 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
-import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl;
@@ -59,6 +62,7 @@ import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
@@ -66,6 +70,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.MoreExecutors;
 import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
@@ -78,6 +83,7 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.TypedResource;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -109,7 +115,7 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -136,10 +142,28 @@ public class DefaultSynchronizerTest
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
     @Mock
-    private ThreadEvents syncThreadEvents;
+    private ThreadEvents threadEvents;
 
     @Mock
-    private ThreadEventsCaptor eventsCaptor;
+    private RepositorySyncHelper repoSyncHelper;
+
+    /**
+     * The sync given to the DefaultSynchronizer.
+     */
+    @Mock
+    private RepositorySync repoSyncForDefaultSync;
+
+    /**
+     * The sync given to the MessageExecutor.
+     */
+    @Mock
+    private RepositorySync repoSyncForMessageExecutor;
+
+    @Mock
+    private RepositorySync notCapturingRepoSync;
+
+    @Mock
+    private EventService eventService;
 
     @Mock
     private BranchService branchService;
@@ -189,7 +213,7 @@ public class DefaultSynchronizerTest
     private HttpClientProvider httpClientProvider;
 
     @Mock
-    private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
+    private SmartcommitsChangesetsProcessor smartCommitsProcessor;
 
     @InjectMocks
     private GithubSynchronizeChangesetMessageConsumer githubConsumer;
@@ -239,23 +263,19 @@ public class DefaultSynchronizerTest
     @Mock
     private ClusterLock clusterLock;
 
-    @Mock
-    private ThreadEvents threadEvents;
-
-    private ThreadEvents syncThreadEventsDefaultSynchronizer;
-    private ThreadEventsCaptor syncEventsDefaultSynchronizer;
-
     @BeforeMethod
     public void setUp() throws Exception
     {
-        when(syncThreadEvents.startCapturing()).thenReturn(eventsCaptor);
+        // repo sync that doesn't capture
+        when(repoSyncHelper.startSync(any(Repository.class), eq(false))).thenReturn(notCapturingRepoSync);
 
-        // note: this second instances of mocks are required to test properly. In real life, MessageExecutor and DefaultSynchronizer run in separate threads.
-        syncThreadEventsDefaultSynchronizer = Mockito.mock(ThreadEvents.class);
-        ReflectionTestUtils.setField(defaultSynchronizer, "syncThreadEvents", syncThreadEventsDefaultSynchronizer);
+        // the capturing syncs
+        when(repoSyncHelper.startSync(any(Repository.class), eq(true))).thenReturn(repoSyncForDefaultSync, repoSyncForMessageExecutor);
 
-        syncEventsDefaultSynchronizer = Mockito.mock(ThreadEventsCaptor.class);
-        when(syncThreadEventsDefaultSynchronizer.startCapturing()).thenReturn(syncEventsDefaultSynchronizer);
+        when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
+
+        // wire up the DefaultSynchronizer with our mock ThreadEvents
+        ReflectionTestUtils.setField(defaultSynchronizer, "repoSyncHelper", repoSyncHelper);
     }
 
     private static class BuilderAnswer implements Answer<Object>
@@ -439,11 +459,11 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(oldSerializer, "synchronizer", defaultSynchronizer);
         ReflectionTestUtils.setField(githubSerializer, "synchronizer", defaultSynchronizer);
 
-        final MessageExecutor messageExecutor = new MessageExecutor();
+        final MessageExecutor messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
-        ReflectionTestUtils.setField(messageExecutor, "threadEvents", syncThreadEvents);
+        ReflectionTestUtils.setField(messageExecutor, "repoSyncHelper", repoSyncHelper);
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
         ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
@@ -994,7 +1014,7 @@ public class DefaultSynchronizerTest
     }
 
     @Test
-    public void syncEventsShouldBePublishedDuringSoftSync()
+    public void syncEventsShouldBeStoredDuringSoftSync()
     {
         Graph graph = new Graph();
         final List<String> processedNodes = Lists.newArrayList();
@@ -1004,37 +1024,20 @@ public class DefaultSynchronizerTest
 
         graph.commit("node1", null).mock();
         checkSynchronization(graph, processedNodes, true);
+
         // Should not capture events on first sync - it's a full sync
-        verify(eventsCaptor, never()).stopCapturing();
-        verify(eventsCaptor, never()).sendToEventPublisher();
+        verify(notCapturingRepoSync, times(2)).finish();
 
         graph.commit("node2", "node1").mock();
         checkSynchronization(graph, processedNodes, true);
 
-        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
-        verify(eventsCaptor).stopCapturing();
-        verify(eventsCaptor).sendToEventPublisher();
-    }
+        // Note: this is not a true unit test so we end up testing the responsibilities of both the DefaultSynchronizer
+        // and the MessageExecutor below.
 
-    @Test
-    public void doSyncEventsShouldBeCaptured()
-    {
-        Graph graph = new Graph();
-        final List<String> processedNodes = Lists.newArrayList();
-
-        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
-        when(changesetDao.getChangesetCount(repositoryMock.getId())).thenReturn(1);
-
-        graph.commit("node1", null).mock();
-        // Should not capture events on first sync - it's a full sync
-        checkSynchronization(graph, processedNodes, true);
-
-        graph.commit("node2", "node1").mock();
-        checkSynchronization(graph, processedNodes, true);
-
-        // syncEvents sessions are called in DefaultSynchronizer.doSync() and MessageExecutor.run()
-        verify(syncEventsDefaultSynchronizer).stopCapturing();
-        verify(syncEventsDefaultSynchronizer).sendToEventPublisher();
+        // a this point both the DefaultSynchronizer and MessageExecutor should store events
+        InOrder inOrder = Mockito.inOrder(repoSyncForDefaultSync, repoSyncForMessageExecutor);
+        inOrder.verify(repoSyncForMessageExecutor).finish();
+        inOrder.verify(repoSyncForDefaultSync).finish();
     }
 
     @Test
@@ -1049,7 +1052,7 @@ public class DefaultSynchronizerTest
         graph.commit("node1", null).mock();
 
         checkSynchronization(graph, processedNodes, false);
-        verifyZeroInteractions(eventsCaptor);
+        verifyZeroInteractions(repoSyncForDefaultSync);
     }
 
     @Test

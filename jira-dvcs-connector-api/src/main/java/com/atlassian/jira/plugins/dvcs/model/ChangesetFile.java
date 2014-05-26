@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import static org.apache.commons.lang.builder.ToStringStyle.SHORT_PREFIX_STYLE;
@@ -57,6 +58,12 @@ public class ChangesetFile
     public String toString()
     {
         return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
+    }
+
+    @JsonCreator
+    private static ChangesetFile fromJSON(@JsonProperty("fileAction") ChangesetFileAction fileAction, @JsonProperty("file") String file)
+    {
+        return new ChangesetFile(fileAction, file);
     }
 }
 

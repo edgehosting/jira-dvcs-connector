@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+
 public class Participant
 {
     
@@ -9,6 +11,9 @@ public class Participant
     private String username;
     private boolean approved;
     private String role;
+
+    @JsonCreator
+    private Participant() {}
 
     public Participant(final String username, final boolean approved, final String role)
     {

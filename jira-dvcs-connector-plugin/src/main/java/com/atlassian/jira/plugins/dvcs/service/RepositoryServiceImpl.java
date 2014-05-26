@@ -5,6 +5,7 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -88,6 +89,9 @@ public class RepositoryServiceImpl implements RepositoryService
 
     @Resource
     private ClusterLockServiceFactory clusterLockServiceFactory;
+
+    @Resource
+    private EventService eventService;
 
     private ClusterLockService clusterLockService;
 
@@ -622,6 +626,7 @@ public class RepositoryServiceImpl implements RepositoryService
     public void remove(Repository repository)
     {
         synchronizer.stopSynchronization(repository);
+        eventService.discardEvents(repository);
 
         // try remove postcommit hook
         if (repository.isLinked())
