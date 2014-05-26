@@ -23,8 +23,20 @@ class CapturingRepositorySync implements RepositorySync
     }
 
     @Override
-    @Nonnull
-    public RepositorySync storeEvents()
+    public void finish()
+    {
+        try
+        {
+            storeEvents();
+        }
+        finally
+        {
+            // do this in a finally block to ensure we stop capturing on this thread
+            threadEventCaptor.stopCapturing();
+        }
+    }
+
+    private void storeEvents()
     {
         threadEventCaptor.processEach(SyncEvent.class, new ThreadEventsCaptor.Closure<SyncEvent>()
         {
@@ -34,13 +46,5 @@ class CapturingRepositorySync implements RepositorySync
                 eventService.storeEvent(repository, event);
             }
         });
-
-        return this;
-    }
-
-    @Override
-    public void finishSync()
-    {
-        threadEventCaptor.stopCapturing();
     }
 }

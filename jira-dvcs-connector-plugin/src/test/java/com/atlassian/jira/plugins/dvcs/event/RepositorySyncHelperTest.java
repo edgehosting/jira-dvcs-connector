@@ -44,7 +44,7 @@ public class RepositorySyncHelperTest
         final ThreadEventsCaptor captor = mock(ThreadEventsCaptor.class);
         when(threadEvents.startCapturing()).thenReturn(captor);
 
-        repoSyncHelper.startSync(repository, true).finishSync();
+        repoSyncHelper.startSync(repository, true).finish();
         verify(captor).stopCapturing();
     }
 
@@ -54,7 +54,7 @@ public class RepositorySyncHelperTest
         RepositorySync sync = repoSyncHelper.startSync(null, true);
         threadEvents.broadcast(new Object());
 
-        sync.storeEvents();
+        sync.finish();
         verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class));
     }
 
@@ -64,7 +64,7 @@ public class RepositorySyncHelperTest
         RepositorySync sync = repoSyncHelper.startSync(repository, false);
         threadEvents.broadcast(new Object());
 
-        sync.storeEvents();
+        sync.finish();
         verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class));
     }
 
@@ -76,7 +76,7 @@ public class RepositorySyncHelperTest
         RepositorySync sync = repoSyncHelper.startSync(repository, true);
         threadEvents.broadcast(event);
 
-        sync.storeEvents();
+        sync.finish();
         verify(eventService).storeEvent(repository, event);
     }
 

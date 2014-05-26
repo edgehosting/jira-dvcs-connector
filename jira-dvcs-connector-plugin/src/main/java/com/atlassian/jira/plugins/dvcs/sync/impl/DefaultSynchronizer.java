@@ -173,7 +173,7 @@ public class DefaultSynchronizer implements Synchronizer
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
-                repoSync.storeEvents().finishSync();
+                repoSync.finish();
                 messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }

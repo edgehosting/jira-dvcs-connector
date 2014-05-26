@@ -355,7 +355,7 @@ public class MessageExecutor
             }
             finally
             {
-                repoSync.storeEvents().finishSync();
+                repoSync.finish();
                 tryEndProgress(repository, message, consumer, progress);
             }
         }

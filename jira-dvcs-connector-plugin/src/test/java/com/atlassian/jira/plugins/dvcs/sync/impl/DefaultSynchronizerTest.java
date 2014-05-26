@@ -268,12 +268,9 @@ public class DefaultSynchronizerTest
     {
         // repo sync that doesn't capture
         when(repoSyncHelper.startSync(any(Repository.class), eq(false))).thenReturn(notCapturingRepoSync);
-        when(notCapturingRepoSync.storeEvents()).thenReturn(notCapturingRepoSync);
 
         // the capturing syncs
         when(repoSyncHelper.startSync(any(Repository.class), eq(true))).thenReturn(repoSyncForDefaultSync, repoSyncForMessageExecutor);
-        when(repoSyncForDefaultSync.storeEvents()).thenReturn(repoSyncForDefaultSync);
-        when(repoSyncForMessageExecutor.storeEvents()).thenReturn(repoSyncForMessageExecutor);
 
         when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
 
@@ -1029,8 +1026,7 @@ public class DefaultSynchronizerTest
         checkSynchronization(graph, processedNodes, true);
 
         // Should not capture events on first sync - it's a full sync
-        verify(notCapturingRepoSync, times(2)).storeEvents();
-        verify(notCapturingRepoSync, times(2)).finishSync();
+        verify(notCapturingRepoSync, times(2)).finish();
 
         graph.commit("node2", "node1").mock();
         checkSynchronization(graph, processedNodes, true);
@@ -1040,10 +1036,8 @@ public class DefaultSynchronizerTest
 
         // a this point both the DefaultSynchronizer and MessageExecutor should store events
         InOrder inOrder = Mockito.inOrder(repoSyncForDefaultSync, repoSyncForMessageExecutor);
-        inOrder.verify(repoSyncForMessageExecutor).storeEvents();
-        inOrder.verify(repoSyncForMessageExecutor).finishSync();
-        inOrder.verify(repoSyncForDefaultSync).storeEvents();
-        inOrder.verify(repoSyncForDefaultSync).finishSync();
+        inOrder.verify(repoSyncForMessageExecutor).finish();
+        inOrder.verify(repoSyncForDefaultSync).finish();
     }
 
     @Test

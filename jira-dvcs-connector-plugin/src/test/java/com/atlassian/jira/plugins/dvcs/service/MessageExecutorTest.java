@@ -71,7 +71,6 @@ public class MessageExecutorTest
         when(consumer.getParallelThreads()).thenReturn(1);
 
         when(clusterLockServiceFactory.getClusterLockService()).thenReturn(clusterLockService);
-        when(repoSync.storeEvents()).thenReturn(repoSync);
         when(repoSyncHelper.startSync(any(Repository.class), anyBoolean())).thenReturn(repoSync);
 
         messageExecutor.init();
@@ -98,8 +97,7 @@ public class MessageExecutorTest
 
         // the executor must store the events before trying to end progress
         InOrder inOrder = Mockito.inOrder(repoSync, messagingService);
-        inOrder.verify(repoSync).storeEvents();
-        inOrder.verify(repoSync).finishSync();
+        inOrder.verify(repoSync).finish();
         inOrder.verify(messagingService).tryEndProgress(repository, payload.getProgress(), consumer, 0);
     }
 

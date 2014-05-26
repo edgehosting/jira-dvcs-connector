@@ -1,22 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
-import javax.annotation.Nonnull;
-
 /**
  * Helper object for capturing/storing events produced during repository synchronisation.
  */
 public interface RepositorySync
 {
     /**
-     * Stores all events captured during this sync.
-     *
-     * @return this
+     * Stores all captured events and destroys this RepositorySync instance. Calling this method will guarantee that
+     * the sync stops listening to thread events.
      */
-    @Nonnull
-    RepositorySync storeEvents();
-
-    /**
-     * Destroys this RepositorySync instance.
-     */
-    void finishSync();
+    void finish();
 }
