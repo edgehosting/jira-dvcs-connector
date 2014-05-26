@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync;
+package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -64,13 +64,11 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     /**
      * Resolves {@link PullRequest} for the provided pull request PR HTML URL.
      * 
-     * @param domain
-     *            over which repository
      * @param repository
      *            PR owner
      * @param htmlUrl
      *            of the {@link PullRequest}
-     * @return resolved {@link GitHubPullRequest}
+     * @return resolved {@link PullRequest}
      */
     private PullRequest getPullRequestByHtmlUrl(Repository repository, String htmlUrl)
     {

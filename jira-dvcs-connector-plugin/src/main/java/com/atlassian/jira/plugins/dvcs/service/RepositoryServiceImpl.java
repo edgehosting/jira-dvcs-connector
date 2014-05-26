@@ -147,7 +147,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public synchronized void syncRepositoryList(Organization organization, boolean soft)
     {
-        log.debug("Synchronising list of repositories");
+        log.debug("Synchronizing list of repositories");
 
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
@@ -163,7 +163,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         try
         {
             remoteRepositories = communicator.getRepositories(organization, storedRepositories);
-        } catch (SourceControlException.UnauthorisedException e)
+        }
+        catch (SourceControlException.UnauthorisedException e)
         {
             // we could not load repositories, we can't continue
             // mark the organization as invalid
@@ -254,23 +255,6 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             Repository savedRepository = repositoryDao.save(repository);
             newRepoSlugs.add(savedRepository.getSlug());
             log.debug("Adding new repository with name " + savedRepository.getName());
-
-            // if linked install post commit hook
-            if (savedRepository.isLinked())
-            {
-                try
-                {
-                    addOrRemovePostcommitHook(savedRepository, getPostCommitUrl(savedRepository));
-                } catch (SourceControlException.PostCommitHookRegistrationException e)
-                {
-                    log.warn("Adding postcommit hook for repository "
-                            + savedRepository.getRepositoryUrl() + " failed: ", e);
-                    updateAdminPermission(savedRepository, false);
-                    // if the user didn't have rights to add post commit hook, just unlink the repository
-                    savedRepository.setLinked(false);
-                    repositoryDao.save(savedRepository);
-                }
-            }
         }
         return newRepoSlugs;
     }
@@ -407,6 +391,29 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
                 newFlags.remove(SynchronizationFlag.SOFT_SYNC);
                 doSync(repository, newFlags);
+
+                if (repository.isLinked())
+                {
+                    try
+                    {
+                        addOrRemovePostcommitHook(repository, getPostCommitUrl(repository));
+                    }
+                    catch (SourceControlException.PostCommitHookRegistrationException e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed. Probably insufficient permission", e);
+                        updateAdminPermission(repository, false);
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        repositoryDao.save(repository);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed: ", e);
+                        // we could not add hooks for some reason, let's leave the repository unlinked
+                        repositoryDao.save(repository);
+                    }
+                }
             }
         }
     }
@@ -483,11 +490,17 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
                 addOrRemovePostcommitHook(repository, postCommitUrl);
                 registration.setCallBackUrlInstalled(linked);
                 updateAdminPermission(repository, true);
-            } catch (SourceControlException.PostCommitHookRegistrationException e)
+            }
+            catch (SourceControlException.PostCommitHookRegistrationException e)
             {
-                log.debug("Could not add or remove postcommit hook", e);
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
                 registration.setCallBackUrlInstalled(!linked);
                 updateAdminPermission(repository, false);
+            }
+            catch (Exception e)
+            {
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                registration.setCallBackUrlInstalled(!linked);
             }
 
             log.debug("Enable repository [{}]", repository);
@@ -588,6 +601,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void remove(Repository repository)
     {
+        long startTime = System.currentTimeMillis();
         synchronizer.stopSynchronization(repository);
 
         // try remove postcommit hook
@@ -609,6 +623,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         syncAuditDao.removeAllForRepo(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
+        log.debug("Repository {} was deleted in {} ms", repository.getId(), System.currentTimeMillis() - startTime);
     }
 
     /**
