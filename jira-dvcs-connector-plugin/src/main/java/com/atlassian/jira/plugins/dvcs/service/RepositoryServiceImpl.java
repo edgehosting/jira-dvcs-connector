@@ -147,7 +147,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public synchronized void syncRepositoryList(Organization organization, boolean soft)
     {
-        log.debug("Synchronising list of repositories");
+        log.debug("Synchronizing list of repositories");
 
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
@@ -163,7 +163,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         try
         {
             remoteRepositories = communicator.getRepositories(organization, storedRepositories);
-        } catch (SourceControlException.UnauthorisedException e)
+        }
+        catch (SourceControlException.UnauthorisedException e)
         {
             // we could not load repositories, we can't continue
             // mark the organization as invalid
@@ -600,6 +601,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     @Override
     public void remove(Repository repository)
     {
+        long startTime = System.currentTimeMillis();
         synchronizer.stopSynchronization(repository);
 
         // try remove postcommit hook
@@ -621,6 +623,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         syncAuditDao.removeAllForRepo(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
+        log.debug("Repository {} was deleted in {} ms", repository.getId(), System.currentTimeMillis() - startTime);
     }
 
     /**

@@ -454,8 +454,54 @@
                                             <libArtifacts>
                                                 <libArtifact>
                                                     <groupId>com.oracle</groupId>
-                                                    <artifactId>ojdbc14</artifactId>
-                                                    <version>10.2.0.4</version>
+                                                    <artifactId>ojdbc6</artifactId>
+                                                    <version>11.2.0.2.0</version>
+                                                </libArtifact>
+                                            </libArtifacts>
+                                        </dataSource>
+                                    </dataSources>
+                                </product>
+                            </products>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dev-mssql</id>
+            <properties>
+                <!-- Default: MS SQL properties values feel free to customize it via
+					-Dmssql.xxx=xxx -->
+                <mssql.host>localhost</mssql.host>
+                <mssql.port>1433</mssql.port>
+                <mssql.database>jira</mssql.database>
+                <mssql.username>jira</mssql.username>
+                <mssql.password>jira</mssql.password>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-jira-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <products>
+                                <product>
+                                    <id>jira</id>
+                                    <version>${jira.version}</version>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-mssql-gh-enabled-5.0.1.zip</dataPath>
+                                    <dataSources>
+                                        <dataSource>
+                                            <jndi>jdbc/JiraDS</jndi>
+                                            <url>jdbc:jtds:sqlserver://${mssql.host}:${mssql.port}/${mssql.database}</url>
+                                            <driver>net.sourceforge.jtds.jdbc.Driver</driver>
+                                            <username>${mssql.username}</username>
+                                            <password>${mssql.password}</password>
+                                            <libArtifacts>
+                                                <libArtifact>
+                                                    <groupId>net.sourceforge.jtds</groupId>
+                                                    <artifactId>jtds</artifactId>
+                                                    <version>1.2.4</version>
                                                 </libArtifact>
                                             </libArtifacts>
                                         </dataSource>
