@@ -56,6 +56,7 @@ public class SmartcommitOperation implements Callable<Void>
     {
         try
         {
+            long startTime = System.currentTimeMillis();
             log.debug("Running SmartcommitOperation ... ");
 
             changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(), new ForEachChangesetClosure()
@@ -101,7 +102,9 @@ public class SmartcommitOperation implements Callable<Void>
                 }
             });
 
-        } catch (Exception e)
+            log.debug("Smartcommits for repository {} were processed in {} ms", repository.getId(), System.currentTimeMillis() - startTime);
+        }
+        catch (Exception e)
         {
             log.warn("Failed to process smartcommit operation. Cause = " + e.getClass() + " : " + e.getMessage());
         }

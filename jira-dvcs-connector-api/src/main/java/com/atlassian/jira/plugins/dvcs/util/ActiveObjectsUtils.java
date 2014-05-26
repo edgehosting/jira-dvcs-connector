@@ -9,8 +9,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,9 +23,10 @@ public class ActiveObjectsUtils
 
     public static <T extends Entity> int delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
+        long startTime = System.currentTimeMillis();
         log.debug("Deleting type {}", entityType);
 
-        final Set<Integer> ids = new HashSet<Integer>();
+        final Set<Integer> ids = new LinkedHashSet<Integer>();
         activeObjects.stream(entityType, query, new EntityStreamCallback<T, Integer>()
         {
 
@@ -51,6 +52,8 @@ public class ActiveObjectsUtils
             }
             deleted += window.size();
         }
+
+        log.debug("Type {} deleted in {} ms", entityType, System.currentTimeMillis() - startTime);
 
         return deleted;
     }

@@ -169,7 +169,7 @@ public class RepositoryServiceImpl implements RepositoryService
         lock.lock();
         try
         {
-            log.debug("Synchronising list of repositories");
+            log.debug("Synchronizing list of repositories");
 
             InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
             invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
@@ -625,6 +625,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void remove(Repository repository)
     {
+        long startTime = System.currentTimeMillis();
         synchronizer.stopSynchronization(repository);
         eventService.discardEvents(repository);
 
@@ -647,6 +648,7 @@ public class RepositoryServiceImpl implements RepositoryService
         syncAuditDao.removeAllForRepo(repository.getId());
         // delete repository record itself
         repositoryDao.remove(repository.getId());
+        log.debug("Repository {} was deleted in {} ms", repository.getId(), System.currentTimeMillis() - startTime);
     }
 
     /**
