@@ -26,4 +26,11 @@ public interface EventService
      * @throws java.util.concurrent.RejectedExecutionException if dispatching can not be scheduled for execution
      */
     void dispatchEvents(Repository repository);
+
+    /**
+     * Discards all pending events for the given Repository.
+     *
+     * @param repository a Repository
+     */
+    void discardEvents(Repository repository);
 }

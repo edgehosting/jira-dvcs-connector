@@ -5,6 +5,7 @@ import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -82,6 +83,12 @@ public class RepositoryServiceTest
 
     @Mock
     private ClusterLockService clusterLockService;
+
+    @Mock
+    EventService eventService;
+
+    @Mock
+    Repository repository;
 
 	// tested object
 	@InjectMocks private RepositoryService repositoryService = new RepositoryServiceImpl();
@@ -328,7 +335,14 @@ public class RepositoryServiceTest
         Assert.assertFalse(user instanceof DvcsUser.UnknownUser);
     }
 
-	private Repository createSampleRepository()
+    @Test
+    public void removingRepositoryShouldClearAssociatedEvents() throws Exception
+    {
+        repositoryService.remove(repository);
+        verify(eventService).discardEvents(repository);
+    }
+
+    private Repository createSampleRepository()
 	{
 		Repository repository = new Repository();
 		repository.setName("doesnotmatter_repo");

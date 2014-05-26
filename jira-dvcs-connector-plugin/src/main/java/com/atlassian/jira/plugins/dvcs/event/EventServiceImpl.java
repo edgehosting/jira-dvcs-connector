@@ -52,10 +52,11 @@ public class EventServiceImpl implements EventService
         try
         {
             syncEventDao.save(toSyncEventMapping(repository, event));
+            logger.debug("Saved event for repository {}: {}", repository, event);
         }
         catch (IOException e)
         {
-            throw new IllegalArgumentException("Unable to convert to JSON: " + event, e);
+            throw new IllegalArgumentException("Can't store event (unable to convert to JSON): " + event, e);
         }
     }
 
@@ -114,17 +115,31 @@ public class EventServiceImpl implements EventService
             final SyncEventMapping syncEventMapping = eventMappings.get(i);
             try
             {
-                eventPublisher.publish(fromSyncEventMapping(syncEventMapping));
+                final SyncEvent event = fromSyncEventMapping(syncEventMapping);
+
+                logger.debug("Publishing event for repository {}: {}", dispatch, event);
+                eventPublisher.publish(event);
             }
-            catch (Exception e)
+            catch (ClassNotFoundException e)
             {
-                logger.error("Unable to convert from JSON, skipping event: " + syncEventMapping, e);
+                logger.error("Can't dispatch event (event class not found): " + syncEventMapping.getEventClass(), e);
+            }
+            catch (IOException e)
+            {
+                logger.error("Can't dispatch event (unable to convert from JSON): " + syncEventMapping.getEventJson(), e);
             }
             finally
             {
                 syncEventDao.delete(syncEventMapping);
             }
         }
+    }
+
+    @Override
+    public void discardEvents(Repository repository)
+    {
+        int deleted = syncEventDao.deleteAll(repository.getId());
+        logger.debug("Deleted {} events from repo: {}", deleted, repository);
     }
 
     private SyncEventMapping toSyncEventMapping(Repository repository, SyncEvent event) throws IOException
