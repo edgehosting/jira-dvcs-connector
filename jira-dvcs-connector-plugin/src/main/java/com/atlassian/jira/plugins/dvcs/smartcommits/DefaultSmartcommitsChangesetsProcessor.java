@@ -72,6 +72,6 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     {
         return new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(),
-                ThreadFactories.namedThreadFactory(DefaultSmartcommitsChangesetsProcessor.class.getSimpleName()));
+                ThreadFactories.namedThreadFactory("DVCSConnector.SmartCommitsProcessor"));
     }
 }

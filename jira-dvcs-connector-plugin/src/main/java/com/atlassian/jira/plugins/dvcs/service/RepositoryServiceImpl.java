@@ -22,6 +22,7 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -35,10 +36,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
@@ -92,12 +95,32 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private ClusterLockService clusterLockService;
 
-    private final Executor repositoryDeletionExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService repositoryDeletionExecutor = Executors.newSingleThreadExecutor(
+            ThreadFactories.namedThreadFactory("DVCSConnector.RepositoryDeletion"));
 
     @PostConstruct
     public void init()
     {
         clusterLockService = clusterLockServiceFactory.getClusterLockService();
+    }
+
+    /**
+     * Stops the executor.
+     */
+    @PreDestroy
+    public void destroy() throws Exception
+    {
+        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        //  removal of orphan repositories could be triggered in two places:
+        //    1) scheduled job to remove any repository whose organization is null
+        //    2) after removing the organization
+        //  2) is actually covered by 1). And 1) could always pick up from where it stopped last time.
+        //  Thus it's safe to cancel the rest of the tasks in the queue.
+        repositoryDeletionExecutor.shutdownNow();
+        if (!repositoryDeletionExecutor.awaitTermination(1, TimeUnit.MINUTES))
+        {
+            log.error("Unable properly shutdown repository deletion executor.");
+        }
     }
 
     /**
@@ -400,10 +423,20 @@ public class RepositoryServiceImpl implements RepositoryService
                     try
                     {
                         addOrRemovePostcommitHook(repository, getPostCommitUrl(repository));
-                    } catch (SourceControlException.PostCommitHookRegistrationException e)
+                    }
+                    catch (SourceControlException.PostCommitHookRegistrationException e)
                     {
-                        log.warn("Adding postcommit hook for repository " + repository.getRepositoryUrl() + " failed: ", e);
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed. Probably insufficient permission", e);
                         updateAdminPermission(repository, false);
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        repositoryDao.save(repository);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed: ", e);
+                        // we could not add hooks for some reason, let's leave the repository unlinked
                         repositoryDao.save(repository);
                     }
                 }
@@ -481,11 +514,17 @@ public class RepositoryServiceImpl implements RepositoryService
                 addOrRemovePostcommitHook(repository, postCommitUrl);
                 registration.setCallBackUrlInstalled(linked);
                 updateAdminPermission(repository, true);
-            } catch (SourceControlException.PostCommitHookRegistrationException e)
+            }
+            catch (SourceControlException.PostCommitHookRegistrationException e)
             {
-                log.debug("Could not add or remove postcommit hook", e);
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
                 registration.setCallBackUrlInstalled(!linked);
                 updateAdminPermission(repository, false);
+            }
+            catch (Exception e)
+            {
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                registration.setCallBackUrlInstalled(!linked);
             }
 
             log.debug("Enable repository [{}]", repository);
@@ -633,17 +672,27 @@ public class RepositoryServiceImpl implements RepositoryService
     @Override
     public void removeOrphanRepositories(final List<Repository> orphanRepositories)
     {
-        repositoryDeletionExecutor.execute(new Runnable()
+        // submit as multiple tasks so that we could quickly terminate the executor
+        log.debug("Starting to remove {} orphan repositories", orphanRepositories.size());
+        for (final Repository orphanRepository : orphanRepositories)
         {
-            @Override
-            public void run()
+            repositoryDeletionExecutor.execute(new Runnable()
             {
-                for (final Repository repository : orphanRepositories)
+                @Override
+                public void run()
                 {
-                    remove(repository);
+                    try
+                    {
+                        remove(orphanRepository);
+                        log.debug("Removed orphan repository {}", orphanRepository);
+                    }
+                    catch (Exception e)
+                    {
+                        log.info("Unexpected exception when removing orphan repository " + orphanRepository, e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync;
+package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.AbstractGitHubEventProcessor;

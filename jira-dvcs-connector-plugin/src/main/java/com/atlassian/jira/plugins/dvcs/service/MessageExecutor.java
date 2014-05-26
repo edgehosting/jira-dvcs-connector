@@ -82,7 +82,7 @@ public class MessageExecutor
     /**
      * Is messaging stopped?
      */
-    private boolean stop;
+    private volatile boolean stop;
 
     /**
      * Creates a new MessageExecutor backed by a thread pool.
@@ -129,7 +129,8 @@ public class MessageExecutor
     public void destroy() throws Exception
     {
         stop = true;
-        executor.shutdown();
+        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        executor.shutdownNow();
         if (!executor.awaitTermination(1, TimeUnit.MINUTES))
         {
             LOGGER.error("Unable properly shutdown message queue.");
@@ -231,6 +232,12 @@ public class MessageExecutor
     }
 
     /**
+     * Returns a new ThreadPoolExecutor. Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed
+     * (see the QUEUING section of its javadoc), when using {@link java.util.concurrent.LinkedBlockingQueue}, the 
+     * max value has no impact. We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815.
+     * <p/>
+     * For now, just set it to non-Integer.MAX_VALUE value.
+     *
      * @return a new ThreadPoolExecutor
      */
     private static ThreadPoolExecutor createThreadPoolExecutor()
@@ -322,21 +329,21 @@ public class MessageExecutor
             final P payload;
             try
             {
-                payload = messagingService.deserializePayload(message);
-                progress = payload.getProgress();
-            }
-            catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
-            {
-                messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
-                throw e;
-            }
+                    payload = messagingService.deserializePayload(message);
+                    progress = payload.getProgress();
+                }
+                catch (AbstractMessagePayloadSerializer.MessageDeserializationException e)
+                {
+                    messagingService.discard(consumer, message, DiscardReason.FAILED_DESERIALIZATION);
+                    throw e;
+                }
 
-            // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
-            // subsequently re-added
+                // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
+                // subsequently re-added
             final Repository repository = messagingService.getRepositoryFromMessage(message);
             final RepositorySync repoSync = repoSyncHelper.startSync(repository, progress.isSoftsync() && payload.isSoftSync());
             try
-            {
+                {
                 consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
             }
@@ -350,7 +357,7 @@ public class MessageExecutor
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
 
-                progress.setError("Error during sync. See server logs.");
+                    progress.setError("Error during sync. See server logs.");
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }
             finally
