@@ -54,6 +54,11 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
         dvcs.createBranch(owner, repositoryName, branchName);
     }
 
+    public void switchBranch(String owner, String repositoryName, String branchName)
+    {
+        dvcs.switchBranch(owner, repositoryName, branchName);
+    }
+
     public void addFile(String owner, String repositoryName, String filePath, byte[] content)
     {
         dvcs.addFile(owner, repositoryName, filePath, content);

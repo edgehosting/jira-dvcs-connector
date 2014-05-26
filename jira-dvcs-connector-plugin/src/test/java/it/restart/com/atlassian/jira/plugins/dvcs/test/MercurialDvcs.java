@@ -7,6 +7,7 @@ import com.aragost.javahg.commands.AddCommand;
 import com.aragost.javahg.commands.BranchCommand;
 import com.aragost.javahg.commands.CommitCommand;
 import com.aragost.javahg.commands.PushCommand;
+import com.aragost.javahg.commands.UpdateCommand;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -63,6 +64,19 @@ public class MercurialDvcs implements Dvcs
     public void createBranch(String owner, String repositoryName, String branchName)
     {
         BranchCommand.on(getLocalRepository(owner, repositoryName)).set(branchName);
+    }
+
+    @Override
+    public void switchBranch(String owner, String repositoryName, String branchName)
+    {
+        try
+        {
+            UpdateCommand.on(getLocalRepository(owner, repositoryName)).execute();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /* (non-Javadoc)

@@ -94,7 +94,7 @@ public class GitDvcs implements Dvcs
         }
     }
 
-    
+
     /* (non-Javadoc)
      * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#createBranch(java.lang.String, java.lang.String, java.lang.String)
      */
@@ -125,6 +125,12 @@ public class GitDvcs implements Dvcs
             throw new RuntimeException(e);
 
         }
+    }
+
+    public void switchBranch(String owner, String repositoryName, String branchName)
+    {
+        String repositoryUri = getUriKey(owner, repositoryName);
+        checkout(repositoryUri, branchName);
     }
 
     /* (non-Javadoc)

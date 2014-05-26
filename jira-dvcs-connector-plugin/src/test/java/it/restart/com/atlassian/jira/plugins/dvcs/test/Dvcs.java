@@ -20,12 +20,20 @@ public interface Dvcs
     /**
      * Creates branch on provided repository - git branch name
      * 
-     * @param repositoryUri
-     *            e.g.: owner/name
-     * @param name
-     *            of branch
+     * @param owner
+     * @param repositoryName
+     * @param branchName
      */
     public void createBranch(String owner, String repositoryName, String branchName);
+
+    /**
+     * Switches branch on provided repository - checkout for git, update for Mercurial
+     *
+     * @param owner
+     * @param repositoryName
+     * @param branchName
+     */
+    public void switchBranch(String owner, String repositoryName, String branchName);
 
     /**
      * Creates and adds file to repository - git add.
