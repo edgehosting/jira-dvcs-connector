@@ -142,10 +142,17 @@ public class RootResource
         log.info("Postcommit hook started synchronization for repository [{}].", id);
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
 
-        repositoryService.sync(id,
-                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.WEBHOOK_SYNC));
+        try
+        {
+            repositoryService.sync(id,
+                    EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.WEBHOOK_SYNC));
 
-        return Response.ok().build();
+            return Response.ok().build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     @AnonymousAllowed
@@ -174,10 +181,17 @@ public class RootResource
 
         log.debug("Rest request to soft sync pull requests for repository [{}] with type [{}]", id, key);
 
-        repositoryService.sync(id,
+        try
+        {
+            repositoryService.sync(id,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_PULL_REQUESTS, SynchronizationFlag.WEBHOOK_SYNC));
 
-        return Response.ok().build();
+            return Response.ok().build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     /**
@@ -195,16 +209,22 @@ public class RootResource
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
-        repositoryService.sync(id,
-                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id,
+                    EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
-
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     /**
@@ -222,15 +242,22 @@ public class RootResource
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -241,15 +268,22 @@ public class RootResource
     {
         log.debug("Rest request to changesets fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -260,15 +294,22 @@ public class RootResource
     {
         log.debug("Rest request to pull request fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+        }
     }
 
     /**

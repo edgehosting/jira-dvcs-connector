@@ -57,7 +57,16 @@
         #else
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
-		
+
+        #if ($action.isSyncDisabled())
+        <div class="aui-message warning shadowed">
+            <p class="title">
+                <span class="aui-icon icon-warning"></span>
+                <strong>Warning</strong>
+            </p>
+            <p>$action.syncDisabledWarningMessage</p>
+        </div>
+        #end
 		<div id="aui-message-bar-global"></div>
         #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
@@ -91,6 +100,15 @@
 
 #foreach( $org in $action.loadOrganizations() )
   <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
+      #if ($action.isSyncDisabled($org.getDvcsType()))
+          <div class="aui-message warning shadowed">
+              <p class="title">
+                  <span class="aui-icon icon-warning"></span>
+                  <strong>Warning</strong>
+              </p>
+              <p>$action.getSyncDisabledWarningMessage($org.getDvcsType())</p>
+          </div>
+      #end
     <div id="aui-message-bar-$org.id"></div>        
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
@@ -227,8 +245,13 @@
 
                 <td class="dvcs-sync-repo dvcs-centered">
                     <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
+                        #if ($action.isSyncDisabled($org.getDvcsType()))
+                        <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="return false;">
+                            <span id="syncrepoicon_$repo.id" class="aui-icon aui-icon-small aui-iconfont-devtools-task-disabled" title="Synhronization is disabled" data-title="Synhronization is disabled">&nbsp;</span>
+                        #else
                         <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="forceSync(event, $repo.id); return false;">
                             <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" data-title="Click To Sync Repo $textutils.htmlEncode($repo.name)">&nbsp;</span>
+                        #end
                         </a>
                     </div>
                 </td>

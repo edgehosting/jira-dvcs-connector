@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -93,7 +94,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         if (communicator.isSyncDisabled(repo, flags))
         {
             log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
-            return;
+            throw new SourceControlException.SynchronizationDisabled("Synchronization is disabled for repository " + repo.getName() + " (" + repo.getId() + ")");
         }
 
         if (repo.isLinked())

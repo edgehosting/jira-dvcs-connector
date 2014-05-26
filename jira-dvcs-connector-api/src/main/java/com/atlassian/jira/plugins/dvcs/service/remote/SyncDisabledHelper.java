@@ -45,4 +45,9 @@ public class SyncDisabledHelper
     {
         return featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE);
     }
+
+    public boolean isSyncDisabled()
+    {
+        return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE);
+    }
 }
