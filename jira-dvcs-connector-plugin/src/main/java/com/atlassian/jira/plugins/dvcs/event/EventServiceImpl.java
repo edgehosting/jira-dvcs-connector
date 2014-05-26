@@ -135,6 +135,13 @@ public class EventServiceImpl implements EventService
         }
     }
 
+    @Override
+    public void discardEvents(Repository repository)
+    {
+        int deleted = syncEventDao.deleteAll(repository.getId());
+        logger.debug("Deleted {} events from repo: {}", deleted, repository);
+    }
+
     private SyncEventMapping toSyncEventMapping(Repository repository, SyncEvent event) throws IOException
     {
         SyncEventMapping mapping = syncEventDao.create();

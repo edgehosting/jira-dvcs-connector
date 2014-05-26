@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -83,7 +84,7 @@ public class SyncEventDao
     }
 
     /**
-     * Returns all {code SyncEvent}s associated with the given repository id, sorted by date.
+     * Returns all {code SyncEventMapping}s associated with the given repository id, sorted by date.
      *
      * @param repoId the id of the repository for which to dispatch events
      */
@@ -94,11 +95,38 @@ public class SyncEventDao
             @Override
             public ImmutableList<SyncEventMapping> doInTransaction()
             {
-                Query query = Query.select().where(REPO_ID + " = ?").order(EVENT_DATE + " ASC");
+                Query query = createQueryFor(repoId).order(EVENT_DATE + " ASC");
                 query.setWhereParams(new Object[] { repoId });
 
                 return ImmutableList.copyOf(activeObjects.find(SyncEventMapping.class, query));
             }
         });
+    }
+
+    /**
+     * Deletes all events associated with the given repository id.
+     */
+    public int deleteAll(final int repoId)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<Integer>()
+        {
+            @Override
+            public Integer doInTransaction()
+            {
+                return ActiveObjectsUtils.delete(activeObjects, SyncEventMapping.class, createQueryFor(repoId));
+            }
+        });
+    }
+
+    /**
+     * @param repoId the id of the Repository
+     * @return a new Query to select all events for a repo
+     */
+    private static Query createQueryFor(final int repoId)
+    {
+        Query query = Query.select().where(REPO_ID + " = ?");
+        query.setWhereParams(new Object[] { repoId });
+
+        return query;
     }
 }
