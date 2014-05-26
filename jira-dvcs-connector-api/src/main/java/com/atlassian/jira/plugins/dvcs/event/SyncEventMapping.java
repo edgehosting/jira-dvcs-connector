@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import net.java.ao.Entity;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -24,6 +25,7 @@ public interface SyncEventMapping extends Entity
      * @return the id of the repository that the event is for
      */
     @NotNull
+    @Indexed
     int getRepoId();
     void setRepoId(int repoId);
 

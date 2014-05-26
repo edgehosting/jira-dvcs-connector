@@ -44,14 +44,14 @@ public final class ChangesetCreatedEvent implements SyncEvent
     }
 
     /**
-     * @return the Date when the changeset was synchronised
+     * @return the Date when the changeset was created
      */
     @Nonnull
     @Override
     @JsonIgnore
     public Date getDate()
     {
-        return changeset.getSynchronizedAt();
+        return changeset.getDate();
     }
 
     @JsonCreator

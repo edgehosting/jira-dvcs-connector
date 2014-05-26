@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,6 +54,8 @@ public class EventServiceImplTest
     @BeforeMethod
     public void setUp() throws Exception
     {
+        eventService = new EventServiceImpl(eventPublisher, syncEventDao, MoreExecutors.sameThreadExecutor());
+
         when(syncEventDao.create()).then(new Answer<Object>()
         {
             @Override

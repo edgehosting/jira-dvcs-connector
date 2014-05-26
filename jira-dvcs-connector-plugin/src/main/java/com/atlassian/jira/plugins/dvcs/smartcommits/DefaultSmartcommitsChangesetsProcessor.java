@@ -38,8 +38,8 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
         this.smartcommitService = smartcommitService;
         this.commitParser = commitParser;
 
-        // a listening decorator returns ListenableFuture, which we then wrap in a Promise. if we were to instead create
-        // a Promise out of a JDK future we wouldn't be able to guarantee that its callbacks run in this executor.
+        // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
+        // leads to an extra thread being created for the lifetime of the Promise (see Guava JdkFutureAdapters)
         executor = MoreExecutors.listeningDecorator(createThreadPool());
     }
 

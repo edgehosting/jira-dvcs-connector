@@ -19,11 +19,11 @@ public interface EventService
 
     /**
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as
-     * they are published. Note that <b>this method dispatches events synchronously</b>. Since event listeners will
-     * normally process events synchronously it is recommended to call this method in a dedicated thread for event
-     * dispatching.
+     * they are published. Note that this method <b>schedules dispatching for asynchronously execution</b> and returns
+     * immediately.
      *
      * @param repository a Repository
+     * @throws java.util.concurrent.RejectedExecutionException if dispatching can not be scheduled for execution
      */
     void dispatchEvents(Repository repository);
 }
