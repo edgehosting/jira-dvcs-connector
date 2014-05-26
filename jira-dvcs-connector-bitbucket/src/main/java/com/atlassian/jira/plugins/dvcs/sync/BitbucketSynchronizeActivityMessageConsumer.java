@@ -276,12 +276,16 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         return ref.getBranch().getName();
     }
 
-    private String getRepositoryFullName(BitbucketPullRequestRepository repository)
+    private String getRepositoryFullName(BitbucketPullRequestHead pullRequestHead)
     {
-        // in case that fork has been deleted, the source repository is null
-        if (repository != null)
+        if (pullRequestHead != null)
         {
-            return repository.getFullName();
+            final BitbucketPullRequestRepository repository = pullRequestHead.getRepository();
+            // in case that fork has been deleted, the source repository is null
+            if (repository != null)
+            {
+                return repository.getFullName();
+            }
         }
 
         return null;
@@ -466,7 +470,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         mapping.setDestinationBranch(dstBranch);
         mapping.setSourceBranch(sourceBranch);
         mapping.setLastStatus(resolveBitbucketStatus(request.getState()).name());
-        mapping.setSourceRepo(getRepositoryFullName(request.getSource().getRepository()));
+        mapping.setSourceRepo(getRepositoryFullName(request.getSource()));
         mapping.setCommentCount(commentCount);
 
         return mapping;

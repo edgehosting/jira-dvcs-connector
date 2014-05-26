@@ -260,7 +260,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Processes comments of a Pull Request.
-     * 
+     *
      * @param repository
      * @param remotePullRequest
      * @param localPullRequest
@@ -337,10 +337,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.setUrl(source.getHtmlUrl());
         target.setToRepositoryId(repository.getId());
 
-        target.setAuthor(source.getUser().getLogin());
+        target.setAuthor(source.getUser() != null ? source.getUser().getLogin() : null);
         target.setCreatedOn(source.getCreatedAt());
         target.setUpdatedOn(source.getUpdatedAt());
-        target.setSourceRepo(getRepositoryFullName(source.getHead().getRepo()));
+        target.setSourceRepo(getRepositoryFullName(source.getHead()));
         target.setSourceBranch(sourceBranch);
         target.setDestinationBranch(dstBranch);
         target.setLastStatus(resolveStatus(source).name());
@@ -373,8 +373,14 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
     }
 
-    private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
+    private String getRepositoryFullName(PullRequestMarker pullRequestMarker)
     {
+        if (pullRequestMarker == null)
+        {
+            return null;
+        }
+
+        final org.eclipse.egit.github.core.Repository gitHubRepository = pullRequestMarker.getRepo();
         if (gitHubRepository == null || gitHubRepository.getOwner() == null)
         {
             return null;
