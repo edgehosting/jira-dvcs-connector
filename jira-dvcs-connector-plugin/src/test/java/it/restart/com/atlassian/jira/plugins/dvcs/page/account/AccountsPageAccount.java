@@ -192,5 +192,19 @@ public class AccountsPageAccount extends WebDriverElement
 
         return repository;
     }
-    
+
+    /**
+     * Synchronize the repositories with the given names
+     *
+     * @param repositoryNames names of the repositories to be synchronized
+     */
+    public void synchronizeRepositories(String... repositoryNames)
+    {
+        for (String repositoryName : repositoryNames)
+        {
+            AccountsPageAccountRepository repository = getRepository(repositoryName);
+            repository.enable();
+            repository.synchronizeWithNoWait();
+        }
+    }
 }

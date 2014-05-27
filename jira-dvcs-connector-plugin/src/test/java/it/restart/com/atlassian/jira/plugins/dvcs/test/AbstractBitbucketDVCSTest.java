@@ -188,7 +188,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     {
         RepositoryRemoteRestpoint repositoryService = createRepositoryService(owner, password);
 
-        createTestRepository(owner, slug, repositoryService);
+        createTestRepository(owner, slug, password, repositoryService);
     }
 
     /**
@@ -366,28 +366,23 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      * @param owner
      * @param repositoryName
      */
-    private void createTestRepository(String owner, String repositoryName, RepositoryRemoteRestpoint repositoryService)
+    private void createTestRepository(String owner, String repositoryName, String password, RepositoryRemoteRestpoint repositoryService)
     {
-        BitbucketRepository remoteRepository = createTestRemoteRepository(owner, repositoryName, repositoryService);
-        dvcs.createTestLocalRepository(owner, repositoryName, ACCOUNT_NAME, PASSWORD);
+        BitbucketRepository remoteRepository = createTestRemoteRepository(repositoryName, repositoryService);
+        dvcs.createTestLocalRepository(owner, repositoryName, owner, password);
     }
 
     /**
      * Creates provided test repository - remote side.
      *
-     * @param repositoryUri
+     * @param repositoryName name of the repository to be created
+     * @param repositoryService configured repository service
      */
-    private BitbucketRepository createTestRemoteRepository(String owner, String repositoryName, RepositoryRemoteRestpoint repositoryService)
+    private BitbucketRepository createTestRemoteRepository(String repositoryName, RepositoryRemoteRestpoint repositoryService)
     {
         BitbucketRepository remoteRepository;
 
-        if (ACCOUNT_NAME.equals(owner))
-        {
-            remoteRepository = repositoryService.createRepository(repositoryName, dvcs.getDvcsType(), false);
-        } else
-        {
-            remoteRepository = repositoryService.createRepository(owner, repositoryName, dvcs.getDvcsType(), false);
-        }
+        remoteRepository = repositoryService.createRepository(repositoryName, dvcs.getDvcsType(), false);
 
         uriToRemoteRepository.put(getRepositoriUri(remoteRepository), new RepositoryInfo(remoteRepository, repositoryService));
         return remoteRepository;

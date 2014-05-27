@@ -118,7 +118,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
         synchronizationButton.click();
         try
         {
-            Thread.sleep(5000l);
+            Thread.sleep(200l);
         } catch (InterruptedException e)
         {
             // ignore
@@ -133,6 +133,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
             }
 
         });
+    }
+
+    public void synchronizeWithNoWait()
+    {
+        synchronizationButton.click();
     }
 
     /**
@@ -175,6 +180,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public String getMessage()
     {
         return message.getText();
+    }
+
+    public int getId()
+    {
+        return Integer.parseInt(getAttribute("id").substring("dvcs-repo-row-".length()));
     }
 
     public static class ForceSyncDialog extends WebDriverElement
