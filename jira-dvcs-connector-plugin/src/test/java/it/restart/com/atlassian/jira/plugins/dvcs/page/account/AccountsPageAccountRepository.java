@@ -9,8 +9,10 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
+import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
+import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -108,17 +110,26 @@ public class AccountsPageAccountRepository extends WebDriverElement
         enable(false);
     }
 
-    public void enable(boolean noAdminPermission)
+    public void enable(boolean forceNoAdminPermissionCheck)
     {
         if (!isEnabled())
         {
             enableCheckbox.check();
 
-            if (noAdminPermission)
+            LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
+
+            // check that dialog appears
+            try
             {
-                // check that dialog appears
-                LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
+                Poller.waitUntil(linkingRepositoryDialog.timed().isVisible(), Matchers.is(true), Poller.by(500));
                 linkingRepositoryDialog.clickOk();
+            }
+            catch (AssertionError e)
+            {
+                if (forceNoAdminPermissionCheck)
+                {
+                    throw new AssertionError("DVCS Webhhook registration dialog expected, but not present");
+                }
             }
 
             new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
