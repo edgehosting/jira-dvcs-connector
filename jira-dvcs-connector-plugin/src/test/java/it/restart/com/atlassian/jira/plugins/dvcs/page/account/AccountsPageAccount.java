@@ -9,6 +9,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
+import java.util.List;
 import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
@@ -124,6 +125,19 @@ public class AccountsPageAccount extends WebDriverElement
     }
 
     /**
+     * Resolves repository for provided name.
+     *
+     * @param repositoryName
+     *            name of repository
+     * @return resolved repository
+     */
+    public List<AccountsPageAccountRepository> getRepositories()
+    {
+        return findAll(By.xpath("table/tbody/tr[contains(concat(' ', @class, ' '), ' dvcs-repo-row ')]"),
+                AccountsPageAccountRepository.class);
+    }
+
+    /**
      * @return True if this account is consider to be OnDemand account.
      */
     public boolean isOnDemand()
@@ -159,6 +173,15 @@ public class AccountsPageAccount extends WebDriverElement
         controlsButton.click();
         findControlDialog().regenerate();
         return oAuthDialog;
+    }
+
+    public AccountsPageAccountRepository enableRepository(String repositoryName, boolean noAdminPermission)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+
+        repository.enable(noAdminPermission);
+
+        return repository;
     }
     
     /**

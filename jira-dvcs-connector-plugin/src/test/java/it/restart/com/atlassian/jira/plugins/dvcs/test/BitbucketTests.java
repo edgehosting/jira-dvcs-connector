@@ -22,9 +22,13 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -39,6 +43,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
 
 
@@ -306,6 +311,70 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
         assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+    }
+
+    @Override
+    @Test
+    public void linkingRepositoryWithoutAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertTrue(repository.hasWarning());
+    }
+
+    @Override
+    @Test
+    public void linkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
+        AccountsPageAccountRepository repository = account.enableRepository("private-git-repo", false);
+
+        // check that repository is enabled
+        Assert.assertTrue(repository.isEnabled());
+        Assert.assertFalse(repository.hasWarning());
+    }
+
+    @Override
+    @Test
+    public void autoLinkingRepositoryWithoutAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+        }
+    }
+
+    @Override
+    @Test
+    public void autoLinkingRepositoryWithAdminPermission()
+    {
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
+        for (AccountsPageAccountRepository repository : account.getRepositories())
+        {
+            Assert.assertTrue(repository.isEnabled());
+            Assert.assertFalse(repository.hasWarning());
+        }
     }
 
     //-------------------------------------------------------------------

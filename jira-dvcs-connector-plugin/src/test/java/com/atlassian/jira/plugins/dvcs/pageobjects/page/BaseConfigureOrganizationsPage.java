@@ -81,6 +81,14 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return list;
     }
 
+    public AccountsPageAccount getOrganization(AccountsPageAccount.AccountType accountType, String accountName)
+    {
+        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+
+        return account;
+    }
+
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
     {
         List<BitBucketOrganization> orgs;

@@ -53,6 +53,9 @@ public class AccountsPageAccountRepository extends WebDriverElement
     @ElementBy(xpath = "td[3]/div")
     private PageElement message;
 
+    @ElementBy(xpath = "td[@class='dvcs-org-reponame']/span[starts-with(@id,'error_status_icon_')]")
+    private PageElement warningIcon;
+
     /**
      * Constructor.
      *
@@ -62,6 +65,28 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public AccountsPageAccountRepository(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param locator
+     * @param timeoutType
+     */
+    public AccountsPageAccountRepository(By locator, TimeoutType timeoutType)
+    {
+        super(locator, timeoutType);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param locatable
+     * @param timeoutType
+     */
+    public AccountsPageAccountRepository(WebDriverLocatable locatable, TimeoutType timeoutType)
+    {
+        super(locatable, timeoutType);
     }
 
     /**
@@ -80,9 +105,22 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public void enable()
     {
+        enable(false);
+    }
+
+    public void enable(boolean noAdminPermission)
+    {
         if (!isEnabled())
         {
             enableCheckbox.check();
+
+            if (noAdminPermission)
+            {
+                // check that dialog appears
+                LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
+                linkingRepositoryDialog.clickOk();
+            }
+
             new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
             {
 
@@ -187,6 +225,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
         return Integer.parseInt(getAttribute("id").substring("dvcs-repo-row-".length()));
     }
 
+    public boolean hasWarning()
+    {
+        return warningIcon.hasClass("admin_permission") && warningIcon.hasClass("aui-icon-warning") && warningIcon.isVisible();
+    }
+
     public static class ForceSyncDialog extends WebDriverElement
     {
         @ElementBy(xpath = "//a[@class='aui-button']")
@@ -220,6 +263,46 @@ public class AccountsPageAccountRepository extends WebDriverElement
         public void fullSync()
         {
             fullSyncButton.click();
+        }
+    }
+
+    /**
+     * Page class for linking repository dialog
+     *
+     */
+    public static class LinkingRepositoryDialog extends WebDriverElement
+    {
+        @ElementBy (xpath = "//div[@class='dialog-button-panel']/button")
+        private PageElement okButton;
+
+        public LinkingRepositoryDialog(final By locator)
+        {
+            super(locator);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final TimeoutType timeoutType)
+        {
+            super(locator, timeoutType);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final WebDriverLocatable parent)
+        {
+            super(locator, parent);
+        }
+
+        public LinkingRepositoryDialog(final By locator, final WebDriverLocatable parent, final TimeoutType timeoutType)
+        {
+            super(locator, parent, timeoutType);
+        }
+
+        public LinkingRepositoryDialog(final WebDriverLocatable locatable, final TimeoutType timeoutType)
+        {
+            super(locatable, timeoutType);
+        }
+
+        public void clickOk()
+        {
+            okButton.click();
         }
     }
 }
