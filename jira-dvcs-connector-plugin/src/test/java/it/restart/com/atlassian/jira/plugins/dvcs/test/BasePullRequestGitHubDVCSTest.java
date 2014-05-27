@@ -609,7 +609,6 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             }
         }), Matchers.containsInAnyOrder(GitHubTestResource.USER, GitHubTestResource.OTHER_USER));
 
-        assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), PR_AUTHOR_USERNAME, PR_AUTHOR_NAME, PR_AUTHOR_EMAIL);
         Assert.assertEquals(actualPullRequest.getAuthor().getUsername(), GitHubTestResource.USER);
 
         restCommits = actualPullRequest.getCommits();
@@ -755,8 +754,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
     private void assertRestUser(RestUser author, String userName, String name, String email)
     {
-        Assert.assertEquals(author.getUsername(), PR_AUTHOR_USERNAME);
-        Assert.assertEquals(author.getName(), PR_AUTHOR_NAME);
+        Assert.assertEquals(author.getUsername(), userName);
+        Assert.assertEquals(author.getName(), name);
     }
 
 }
