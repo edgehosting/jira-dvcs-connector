@@ -183,9 +183,9 @@ public class Changeset
         return files;
     }
 
-    public void setFiles(List<ChangesetFile> files)
+    public void setFiles(List<? extends ChangesetFile> files)
     {
-        this.files = files;
+        this.files = files != null ? ImmutableList.copyOf(files) : null;
     }
 
     public int getAllFileCount()
@@ -301,7 +301,7 @@ public class Changeset
      *
      * @param fileDetails a list of ChangesetFileDetail
      */
-    public void setFileDetails(List<ChangesetFileDetail> fileDetails)
+    public void setFileDetails(List<? extends ChangesetFileDetail> fileDetails)
     {
         this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
     }

@@ -60,8 +60,6 @@ public class EvenstJsonMarshallingTest
                 ImmutableList.of(new ChangesetFile(ChangesetFileAction.ADDED, "readme.txt")),
                 1,
                 "author_email");
-
-        changeset.setFileDetails(ImmutableList.of(new ChangesetFileDetail(ChangesetFileAction.ADDED, "readme.txt", 23, 0)));
     }
 
     @BeforeMethod
@@ -91,6 +89,17 @@ public class EvenstJsonMarshallingTest
     @Test
     public void changesetCreated() throws Exception
     {
+        assertThat(convertToJsonThenBackTo(new ChangesetCreatedEvent(changeset, issueKeys)), instanceOf(ChangesetCreatedEvent.class));
+    }
+
+    @Test
+    public void changesetCreatedWithFileDetails() throws Exception
+    {
+        // when there are details both the files and fileDetails properties will return a  list of ChangesetFileDetail
+        ImmutableList<ChangesetFileDetail> filesWithDetails = ImmutableList.of(new ChangesetFileDetail(ChangesetFileAction.ADDED, "readme.txt", 23, 0));
+        changeset.setFiles(filesWithDetails);
+        changeset.setFileDetails(filesWithDetails);
+
         assertThat(convertToJsonThenBackTo(new ChangesetCreatedEvent(changeset, issueKeys)), instanceOf(ChangesetCreatedEvent.class));
     }
 
