@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
@@ -662,9 +663,19 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 3);
-        assertPullRequest(expectedPullRequest1, restPrRepository.getPullRequests().get(2), expectedPullRequestName, branch1Commits, branch1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(expectedPullRequest2, restPrRepository.getPullRequests().get(1), expectedPullRequestName, branch2Commits, branch2, RepositoryPullRequestMapping.Status.MERGED);
-        assertPullRequest(expectedPullRequest3, restPrRepository.getPullRequests().get(0), expectedPullRequestName, branch3Commits, branch3, RepositoryPullRequestMapping.Status.DECLINED);
+
+        List<RestPullRequest> restPullRequests = Ordering.natural().onResultOf(new Function<RestPullRequest, Long>()
+        {
+            @Override
+            public Long apply(@Nullable final RestPullRequest restPullRequest)
+            {
+                return restPullRequest.getId();
+            }
+        }).sortedCopy(restPrRepository.getPullRequests());
+
+        assertPullRequest(expectedPullRequest1, restPullRequests.get(0), expectedPullRequestName, branch1Commits, branch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(expectedPullRequest2, restPullRequests.get(1), expectedPullRequestName, branch2Commits, branch2, RepositoryPullRequestMapping.Status.MERGED);
+        assertPullRequest(expectedPullRequest3, restPullRequests.get(2), expectedPullRequestName, branch3Commits, branch3, RepositoryPullRequestMapping.Status.DECLINED);
     }
 
     private void assertPullRequest(final BitbucketPullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
