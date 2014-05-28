@@ -71,7 +71,7 @@ public class MercurialDvcs implements Dvcs
     {
         try
         {
-            UpdateCommand.on(getLocalRepository(owner, repositoryName)).execute();
+            UpdateCommand.on(getLocalRepository(owner, repositoryName)).rev(branchName).execute();
         }
         catch (IOException e)
         {
