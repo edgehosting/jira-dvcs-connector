@@ -156,7 +156,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     }
                     else
                     {
-                        log.info("Full synchronization is disabled for repository {} ({}), not deleting any data", repo.getName(), repo.getId());
+                        log.info("Full synchronization is disabled. Doing a soft sync for repository {} ({}) instead.", repo.getName(), repo.getId());
                     }
                 }
 
