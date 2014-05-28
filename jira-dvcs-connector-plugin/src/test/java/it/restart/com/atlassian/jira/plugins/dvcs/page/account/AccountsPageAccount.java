@@ -217,6 +217,20 @@ public class AccountsPageAccount extends WebDriverElement
     }
 
     /**
+     * Full synchronizes the repository with the given name
+     *
+     * @param repositoryName name of the repository to be synchronized
+     * @return page object of the repository
+     */
+    public AccountsPageAccountRepository fullSynchronizeRepository(String repositoryName)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+        repository.fullSynchronize();
+
+        return repository;
+    }
+
+    /**
      * Synchronize the repositories with the given names
      *
      * @param repositoryNames names of the repositories to be synchronized

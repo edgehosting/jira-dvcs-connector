@@ -549,7 +549,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(actualPullRequest.getCommentCount(), 0);
 
         Assert.assertEquals(actualPullRequest.getParticipants().size(), 1);
-        assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), GitHubTestResource.USER, GitHubTestResource.USER);
+        assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), GitHubTestResource.USER, GitHubTestResource.NAME);
         Assert.assertEquals(actualPullRequest.getAuthor().getUsername(), GitHubTestResource.USER);
 
         List<RestPrCommit> restCommits = actualPullRequest.getCommits();
@@ -905,6 +905,89 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
         assertPullRequest(GitHubTestResource.ORGANIZATION, GitHubTestResource.USER, GitHubTestResource.NAME, anotherRepositoryName, pullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+    }
+
+    /**
+     * Tests "Fullsync Pull Request"
+     */
+    @Test
+    public void testFullSync()
+    {
+        String expectedPullRequestName = issueKey + ": Open PR";
+        String[] expectedCommitNodes1 = new String[2];
+        String[] expectedCommitNodes2 = new String[2];
+
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
+
+        String fixBranch1 = "fixbranch1";
+        gitResource.createBranch(repositoryName, fixBranch1);
+        gitResource.checkout(repositoryName, fixBranch1);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodes1[0] = gitResource.commit(repositoryName, "Fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodes1[1] = gitResource.commit(repositoryName, "Formatting fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch1);
+
+        PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + fixBranch1,
+                "Open PR description", fixBranch1, "master");
+
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
+        account.refresh();
+        account.synchronizeRepository(repositoryName);
+
+        RestDevResponse<RestPrRepository> response = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(response.getRepositories().size(), 1);
+        RestPrRepository restPrRepository = response.getRepositories().get(0);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
+
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+
+        // another PR
+        String fixBranch2 = "fixbranch2";
+        gitResource.checkout(repositoryName, "master");
+        gitResource.createBranch(repositoryName, fixBranch2);
+        gitResource.checkout(repositoryName, fixBranch2);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodes2[0] = gitResource.commit(repositoryName, "Fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodes2[1] = gitResource.commit(repositoryName, "Formatting fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch2);
+
+        PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + fixBranch2,
+                "Open PR description", fixBranch2, "master");
+
+        account.fullSynchronizeRepository(repositoryName);
+
+        response = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(response.getRepositories().size(), 1);
+
+        restPrRepository = response.getRepositories().get(0);
+
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 2);
+
+        List<RestPullRequest> restPullRequests = Ordering.natural().onResultOf(new Function<RestPullRequest, Long>()
+        {
+            @Override
+            public Long apply(@Nullable final RestPullRequest restPullRequest)
+            {
+                return restPullRequest.getId();
+            }
+        }).sortedCopy(restPrRepository.getPullRequests());
+
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), expectedPullRequestName + fixBranch2, expectedCommitNodes2, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
     }
 
     private void assertPullRequest(final String owner, final String user, final String userName, final String repositoryName, final PullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)

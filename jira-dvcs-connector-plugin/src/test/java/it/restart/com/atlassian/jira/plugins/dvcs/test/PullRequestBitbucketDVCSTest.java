@@ -824,6 +824,75 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         assertPullRequest(FORK_ACCOUNT_NAME, anotherRepositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
     }
 
+    /**
+     * Tests "Fullsync Pull Request"
+     */
+    @Test
+    public void testFullSync()
+    {
+        String expectedPullRequestName = issueKey + ": Open PR";
+        String[] expectedCommitNodes1 = new String[2];
+        String[] expectedCommitNodes2 = new String[2];
+
+        addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
+        commit(ACCOUNT_NAME, repositoryName, "Initial commit!", "Stanislav Dvorscak", "sdvorscak@atlassian.com");
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
+
+        String fixBranchName1 = issueKey + "_fix1";
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName1);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodes1[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodes1[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName1, true);
+
+        BitbucketPullRequest expectedPullRequest1 = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName + fixBranchName1, "Open PR description", fixBranchName1,
+                getDefaultBranchName());
+
+        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
+        account.synchronizeRepository(repositoryName);
+
+        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
+        Assert.assertEquals(response.getRepositories().size(), 1);
+        RestPrRepository restPrRepository = response.getRepositories().get(0);
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
+
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, RepositoryPullRequestMapping.Status.OPEN);
+
+        // another PR
+        switchBranch(ACCOUNT_NAME, repositoryName, getDefaultBranchName());
+        String fixBranchName2 = issueKey + "_fix2";
+        createBranch(ACCOUNT_NAME, repositoryName, fixBranchName2);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        expectedCommitNodes2[0] = commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        expectedCommitNodes2[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName2, true);
+
+        BitbucketPullRequest expectedPullRequest2 = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName + fixBranchName2, "Open PR description", fixBranchName2,
+                getDefaultBranchName());
+
+        account.fullSynchronizeRepository(repositoryName);
+
+        response = getPullRequestResponse(issueKey);
+        Assert.assertEquals(response.getRepositories().size(), 1);
+
+        restPrRepository = response.getRepositories().get(0);
+
+        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
+        Assert.assertEquals(restPrRepository.getPullRequests().size(), 2);
+
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(1), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName2, expectedCommitNodes2, fixBranchName2, RepositoryPullRequestMapping.Status.OPEN);
+    }
+
     private void assertPullRequest(final String account, final String repositoryName, final BitbucketPullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
     {
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestTitle);
