@@ -51,6 +51,12 @@ public class GitHubTestResource
     public static final String USER = "jirabitbucketconnector";
 
     /**
+     * Name of user for GitHub related tests.
+     */
+    public static final String NAME = "Janko Hrasko";
+
+
+    /**
      * Username of user for GitHub related tests.
      */
     public static final String OTHER_USER = "dvcsconnectortest";
