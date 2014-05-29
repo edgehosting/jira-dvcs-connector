@@ -206,10 +206,10 @@
                 
                 <td class="dvcs-org-reponame">
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
-					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-small aui-iconfont-warning aui-color-yellow#end">&nbsp;</span>
 
 
-                    <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-error#end">&nbsp;</span>
+                    <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error aui-color-red#end">&nbsp;</span>
 				</td>
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
