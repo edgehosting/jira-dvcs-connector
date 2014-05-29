@@ -32,6 +32,7 @@ public class BitbucketPullRequest implements Serializable
     private Date createdOn;
     private Date updatedOn;
     private List<BitbucketPullRequestParticipant> participants;
+    private List<BitbucketUser> reviewers;
 
     public BitbucketPullRequest()
     {
@@ -156,5 +157,15 @@ public class BitbucketPullRequest implements Serializable
     public void setAuthor(final BitbucketAccount author)
     {
         this.author = author;
+    }
+
+    public List<BitbucketUser> getReviewers()
+    {
+        return reviewers;
+    }
+
+    public void setReviewers(final List<BitbucketUser> reviewers)
+    {
+        this.reviewers = reviewers;
     }
 }

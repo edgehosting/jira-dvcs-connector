@@ -7,8 +7,10 @@ import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -76,7 +78,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 
     public void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch)
     {
-        dvcs.push(owner, repositoryName, username, password, reference,    newBranch);
+        dvcs.push(owner, repositoryName, username, password, reference, newBranch);
     }
 
     public void push(String owner, String repositoryName, String username, String password, String reference)
@@ -245,11 +247,12 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
      *            to which base
      * @return pull request url
      */
-    protected BitbucketPullRequest openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base)
+    protected BitbucketPullRequest openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
+        List<String> reviewersList = reviewers == null? null : Arrays.asList(reviewers);
 
-        BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base);
+        BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base, reviewersList);
 
         return pullRequest;
     }

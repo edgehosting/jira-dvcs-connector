@@ -7,8 +7,10 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Ordering;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
@@ -43,8 +45,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
     {
         return new Object[][]
                 {
-                        new Object[] { new MercurialDvcs() },
-                        new Object[] { new GitDvcs() }
+                        new Object[] { new MercurialDvcs() }
+//                        new Object[] { new GitDvcs() }
                 };
     }
 
@@ -547,9 +549,14 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), stableBranch);
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         List<RestPrCommit> restCommits = restPullRequest.getCommits();
-        Assert.assertEquals(restCommits.get(0).getNode(), expectedCommitNodeOpen[1]);
-        Assert.assertEquals(restCommits.get(1).getNode(), expectedCommitNodeOpen[0]);
-
+        MatcherAssert.assertThat(Lists.transform(restCommits, new Function<RestPrCommit, String>()
+        {
+            @Override
+            public String apply(@Nullable final RestPrCommit restPrCommit)
+            {
+                return restPrCommit.getNode();
+            }
+        }), Matchers.containsInAnyOrder(expectedCommitNodeOpen));
         // Assert PR Updated information
         addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix_update.txt", "Virtual fix - update {}".getBytes());
         expectedCommitNodeUpdate[0] = commit(ACCOUNT_NAME, repositoryName, "Fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
@@ -558,6 +565,10 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         expectedCommitNodeUpdate[1] = commit(ACCOUNT_NAME, repositoryName, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName);
+
+        BitbucketUser reviewer = new BitbucketUser();
+        reviewer.setUsername(FORK_ACCOUNT_NAME);
+        expectedPullRequest.getReviewers().add(reviewer);
 
         BitbucketPullRequest updatedPullRequest = updatePullRequest(
                 ACCOUNT_NAME,
@@ -586,12 +597,18 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         restCommits = restPullRequest.getCommits();
-        Assert.assertEquals(restCommits.get(0).getNode(), expectedCommitNodeUpdate[1]);
-        Assert.assertEquals(restCommits.get(1).getNode(), expectedCommitNodeUpdate[0]);
-        Assert.assertEquals(restCommits.get(2).getNode(), expectedCommitNodeOpen[1]);
-        Assert.assertEquals(restCommits.get(3).getNode(), expectedCommitNodeOpen[0]);
-        Assert.assertEquals(restCommits.get(4).getNode(), stableCommit);
-   }
+        MatcherAssert.assertThat(Lists.transform(restCommits, new Function<RestPrCommit, String>()
+        {
+            @Override
+            public String apply(@Nullable final RestPrCommit restPrCommit)
+            {
+                return restPrCommit.getNode();
+            }
+        }), Matchers.containsInAnyOrder(ObjectArrays.concat(stableCommit, ObjectArrays.concat(expectedCommitNodeOpen, expectedCommitNodeUpdate, String.class))));
+        Assert.assertEquals(restPullRequest.getParticipants().size(), 1);
+        Assert.assertEquals(restPullRequest.getParticipants().get(0).getUser().getUsername(), FORK_ACCOUNT_NAME);
+        Assert.assertEquals(restPullRequest.getParticipants().get(0).getRole(), "REVIEWER");
+    }
 
     /**
      * Test that "Multiple Pull Request" synchronization works.

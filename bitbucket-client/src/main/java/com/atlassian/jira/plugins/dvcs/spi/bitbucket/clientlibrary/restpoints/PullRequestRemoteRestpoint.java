@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
 import org.apache.http.entity.ContentType;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -161,16 +162,16 @@ public class PullRequestRemoteRestpoint
                 }.getType());
     }
 
-    public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceBranch, String destinationBranch)
+    public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceBranch, String destinationBranch, List<String> reviewers)
     {
-        return createBitbucketPullRequest(owner, repoSlug, title, description, null, sourceBranch, destinationBranch);
+        return createBitbucketPullRequest(owner, repoSlug, title, description, null, sourceBranch, destinationBranch, reviewers);
     }
 
     public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceOwner, String sourceRepository, String sourceBranch, String destinationBranch)
     {
         BitbucketPullRequestRepository bitbucketPullRequestRepository = new BitbucketPullRequestRepository();
         bitbucketPullRequestRepository.setFullName(sourceOwner + "/" + sourceRepository);
-        return createBitbucketPullRequest(owner, repoSlug, title, description, bitbucketPullRequestRepository, sourceBranch, destinationBranch);
+        return createBitbucketPullRequest(owner, repoSlug, title, description, bitbucketPullRequestRepository, sourceBranch, destinationBranch, null);
     }
 
     public BitbucketPullRequest updatePullRequest(String owner, String repoSlug, BitbucketPullRequest pullRequest, String title, String description, String destinationBranch)
@@ -220,7 +221,7 @@ public class PullRequestRemoteRestpoint
         requestor.post(url, parameters, ResponseCallback.EMPTY);
     }
 
-    private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch)
+    private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch, final List<String> reviewers)
     {
         BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
         bitbucketPullRequest.setTitle(title);
@@ -234,6 +235,18 @@ public class PullRequestRemoteRestpoint
         BitbucketPullRequestHead destination = new BitbucketPullRequestHead();
         destination.setBranch(new BitbucketBranch(destinationBranch));
         bitbucketPullRequest.setDestination(destination);
+
+        if (reviewers != null)
+        {
+            List<BitbucketUser> bitbucketReviewers = new ArrayList<BitbucketUser>();
+            for (String reviewer : reviewers)
+            {
+                BitbucketUser bitbucketReviewer = new BitbucketUser();
+                bitbucketReviewer.setUsername(reviewer);
+                bitbucketReviewers.add(bitbucketReviewer);
+            }
+            bitbucketPullRequest.setReviewers(bitbucketReviewers);
+        }
 
         String url = String.format("/repositories/%s/%s/pullrequests", owner, repoSlug);
 
