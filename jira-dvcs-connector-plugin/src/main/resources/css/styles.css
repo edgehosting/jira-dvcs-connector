@@ -404,3 +404,7 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .dialog-button-panel span.button-panel-link {
 	margin: 0 10px 0 0;
 }
+
+.aui-message-empty:before {
+    content: "";
+}
