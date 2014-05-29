@@ -198,13 +198,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
         // let's wait before opening pull request
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(1000);
 
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
@@ -260,25 +254,13 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
         // let's wait before opening pull request
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(1000);
 
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
         // wait until pull request will be established
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(5000);
 
         final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment");
 
@@ -342,17 +324,13 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
+        sleep(1000);
+
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
         // gives such time for pull request creation
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(5000);
 
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
@@ -398,17 +376,13 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
+        sleep(1000);
+
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
         // gives such time for pull request creation
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(5000);
 
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest, null);
 
@@ -461,13 +435,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         // seems that information for pull request are calculated asynchronously,
         // / it is not possible to create PR immediately after push
-        try
-        {
-            Thread.sleep(5000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(5000);
 
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", GitHubTestResource.ORGANIZATION + ":master", "master");
@@ -516,13 +484,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
         // let's wait before opening pull request
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-        }
+        sleep(1000);
 
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
@@ -570,6 +532,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         commitNodeUpdate[1] = gitResource.commit(repositoryName, "Formatting fix - update", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
+
+        sleep(1000);
 
         gitHubResource.updatePullRequest(pullRequest, GitHubTestResource.USER, repositoryName, pullRequestName + " updated",
                 "Open PR description", "master");
@@ -677,6 +641,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, branch3);
 
+        sleep(1000);
+
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch1,
                 "Open PR description", branch1, "master");
 
@@ -749,6 +715,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch1);
 
+        sleep(1000);
+
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + repositoryName,
                 "Open PR description", fixBranch1, "master");
 
@@ -769,6 +737,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         repository2Commits[1] = gitResource.commit(anotherRepositoryName, "Formatting fix repository2", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(anotherRepositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch2);
+
+        sleep(1000);
 
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, anotherRepositoryName, expectedPullRequestName + anotherRepositoryName,
                 "Open PR description", fixBranch2, "master");
@@ -842,6 +812,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         repository1Commits[1] = gitResource.commit(repositoryName, "Formatting fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch1);
+
+        sleep(1000);
 
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + repositoryName,
                 "Open PR description", fixBranch1, "master");
@@ -934,6 +906,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch1);
 
+        sleep(1000);
+
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + fixBranch1,
                 "Open PR description", fixBranch1, "master");
 
@@ -963,6 +937,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         expectedCommitNodes2[1] = gitResource.commit(repositoryName, "Formatting fix repository1", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch2);
+
+        sleep(1000);
 
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + fixBranch2,
                 "Open PR description", fixBranch2, "master");
@@ -1029,4 +1005,14 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(author.getName(), name);
     }
 
+    protected void sleep(final long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
+        }
+    }
 }
