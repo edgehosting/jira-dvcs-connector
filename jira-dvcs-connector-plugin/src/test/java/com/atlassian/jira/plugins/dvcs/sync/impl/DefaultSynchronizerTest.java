@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -222,7 +223,10 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ApplicationProperties ap;
-    
+
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
+
     @InjectMocks
     private DefaultSynchronizer defaultSynchronizer;
 
@@ -358,6 +362,7 @@ public class DefaultSynchronizerTest
 
         ReflectionTestUtils.setField(defaultSynchronizer, "branchService", branchService);
         ReflectionTestUtils.setField(defaultSynchronizer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(defaultSynchronizer, "syncDisabledHelper", syncDisabledHelper);
 
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
@@ -1116,7 +1121,14 @@ public class DefaultSynchronizerTest
             flags.add(SynchronizationFlag.SOFT_SYNC);
         }
 
-        defaultSynchronizer.doSync(repositoryMock, flags);
+        try
+        {
+            defaultSynchronizer.doSync(repositoryMock, flags);
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            // ignoring to proceed verification
+        }
 
         verifyNoMoreInteractions(changesetService);
         verifyNoMoreInteractions(branchesAndTagsRemoteRestpoint);
