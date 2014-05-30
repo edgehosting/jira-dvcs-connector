@@ -281,6 +281,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             }
         }, 5000);
 
+        sleep(1000);
+
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
         account.refresh();
@@ -835,6 +837,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         repository2Commits[1] = gitResource.commit(anotherRepositoryName, "Formatting fix repository2", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(anotherRepositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch2);
+
+        sleep(1000);
 
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.ORGANIZATION, anotherRepositoryName, expectedPullRequestName + anotherRepositoryName,
                 "Open PR description", fixBranch2, "master");
