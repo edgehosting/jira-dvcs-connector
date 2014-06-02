@@ -16,7 +16,10 @@ import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -164,6 +167,17 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public void synchronize()
     {
+        syncAndWaitForFinish();
+        if (!getSyncErrors().isEmpty())
+        {
+            // retrying synchronization once
+            syncAndWaitForFinish();
+        }
+        Assert.assertTrue(getSyncErrors().isEmpty(), "Synchronization failed");
+    }
+
+    private void syncAndWaitForFinish()
+    {
         synchronizationButton.click();
         try
         {
@@ -182,6 +196,18 @@ public class AccountsPageAccountRepository extends WebDriverElement
             }
 
         });
+    }
+
+    private List<String> getSyncErrors()
+    {
+        List<String> errors = new ArrayList<String>();
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        for (Repository repository : repositories.getRepositories()) {
+            if (repository.getSync() != null && repository.getSync().getError() != null) {
+                errors.add(repository.getSync().getError());
+            }
+        }
+        return errors;
     }
 
     public void synchronizeWithNoWait()
