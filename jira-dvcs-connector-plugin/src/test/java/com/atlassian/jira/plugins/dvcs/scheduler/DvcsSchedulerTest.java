@@ -2,11 +2,13 @@ package com.atlassian.jira.plugins.dvcs.scheduler;
 
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
 import com.atlassian.scheduler.compat.JobInfo;
+import org.joda.time.Duration;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -35,6 +37,7 @@ public class DvcsSchedulerTest
     @Mock private Plugin mockPlugin;
     @Mock private PluginEnabledEvent mockPluginEnabledEvent;
     @Mock private Synchronizer synchronizer;
+    @Mock private SyncConfig syncConfig;
 
     @BeforeMethod
     public void setUp() throws Exception
@@ -42,7 +45,8 @@ public class DvcsSchedulerTest
         MockitoAnnotations.initMocks(this);
         when(mockPluginEnabledEvent.getPlugin()).thenReturn(mockPlugin);
         when(mockPlugin.getKey()).thenReturn(PLUGIN_KEY);
-        dvcsScheduler = new DvcsScheduler(mockMessagingService, mockScheduler, mockDvcsSchedulerJob, mockEventPublisher);
+        when(syncConfig.scheduledSyncIntervalMillis()).thenReturn(Duration.standardHours(1).getMillis());
+        dvcsScheduler = new DvcsScheduler(mockMessagingService, mockScheduler, mockDvcsSchedulerJob, mockEventPublisher, syncConfig);
     }
 
     @Test

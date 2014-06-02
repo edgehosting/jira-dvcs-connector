@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.scheduler;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
@@ -27,17 +28,14 @@ import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 public class DvcsScheduler implements LifecycleAware
 {
     @VisibleForTesting
-    static final String PROPERTY_KEY = "dvcs.connector.scheduler.interval";
-
-    @VisibleForTesting
     static final JobHandlerKey JOB_HANDLER_KEY = JobHandlerKey.of(DvcsScheduler.class.getName());
 
     @VisibleForTesting
     static final String JOB_ID = DvcsScheduler.class.getName() + ":job";
 
     private static final Logger log = LoggerFactory.getLogger(DvcsScheduler.class);
-    private static final long DEFAULT_INTERVAL = 1000L * 60 * 60; // default job interval (1 hour)
 
+    private final SyncConfig syncConfig;
     private final CompatibilityPluginScheduler scheduler;
     private final DvcsSchedulerJob dvcsSchedulerJob;
     private final EventPublisher eventPublisher;
@@ -47,12 +45,13 @@ public class DvcsScheduler implements LifecycleAware
     private final Set<LifecycleEvent> lifecycleEvents = EnumSet.noneOf(LifecycleEvent.class);
 
     public DvcsScheduler(final MessagingService messagingService, final CompatibilityPluginScheduler scheduler,
-            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher)
+            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher, final SyncConfig syncConfig)
     {
         this.dvcsSchedulerJob = dvcsSchedulerJob;
         this.eventPublisher = eventPublisher;
         this.messagingService = messagingService;
         this.scheduler = scheduler;
+        this.syncConfig = syncConfig;
     }
 
     @PostConstruct
@@ -98,7 +97,7 @@ public class DvcsScheduler implements LifecycleAware
         if (scheduler.getJobInfo(JOB_ID) == null)
         {
             // only schedule the job when it's not already scheduled
-            final long interval = Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL);
+            final long interval = syncConfig.scheduledSyncIntervalMillis();
             final long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
             final Date startTime = new Date(randomStartTimeWithinInterval);
             scheduler.scheduleClusteredJob(JOB_ID, JOB_HANDLER_KEY, startTime, interval);
