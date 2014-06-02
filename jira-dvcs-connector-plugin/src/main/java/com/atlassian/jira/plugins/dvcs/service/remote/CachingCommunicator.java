@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.util.concurrent.NotNull;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -26,6 +25,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -270,7 +271,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private class UserLoader implements CacheLoader<UserKey, DvcsUser>
     {
         @Override
-        public DvcsUser load(@NotNull final UserKey key)
+        public DvcsUser load(@Nonnull final UserKey key)
         {
             return delegate.getUser(key.repository, key.username);
         }
@@ -279,7 +280,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private class GroupLoader implements CacheLoader<OrganisationKey, List<Group>>
     {
         @Override
-        public List<Group> load(@NotNull final OrganisationKey key)
+        public List<Group> load(@Nonnull final OrganisationKey key)
         {
             return delegate.getGroupsForOrganization(key.organization);
         }

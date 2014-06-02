@@ -39,7 +39,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.3-OD-06-010</jira.compile.version>
+        <jira.compile.version>6.3-20140530.100839</jira.compile.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>

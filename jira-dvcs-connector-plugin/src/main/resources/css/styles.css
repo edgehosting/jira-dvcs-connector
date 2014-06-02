@@ -404,3 +404,15 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .dialog-button-panel span.button-panel-link {
 	margin: 0 10px 0 0;
 }
+
+.dvcs-empty-icon:before {
+    content: "";
+}
+
+.aui-iconfont-warning.dvcs-color-yellow {
+    color: #f6c342;
+}
+
+.aui-iconfont-error.dvcs-color-red {
+    color: #d04437;
+}

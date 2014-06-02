@@ -12,13 +12,12 @@
 	<body>
 		<h2>Linking Account ...</h2>
 		
-		<div class="aui-message">
+		<div class="aui-message dvcs-empty-icon">
 		    <p class="title">
-		        <span class="aui-icon aui-icon-wait"></span>
+                <span class="aui-icon aui-icon-wait"></span>
 		        <strong>Operation In Progress</strong>
 		    </p>
-		    
-    		<p >Linking new account ... </p>
+    		<p>Linking new account ... </p>
 		</div>
 		
 	</body>
