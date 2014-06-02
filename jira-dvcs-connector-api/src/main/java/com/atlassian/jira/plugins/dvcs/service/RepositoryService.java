@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Returning type {@link Repository} is enriched with synchronization status by default.
@@ -133,16 +134,9 @@ public interface RepositoryService
     void remove(Repository repository);
     
     /**
-     * The same as {@link #removeOrphanRepositories()}, but it will run in background.
+     * Removes orphan repositories (asynchronously).
      * 
-     * @param orphanRepositories to removes
-     */
-    public void removeOrphanRepositoriesAsync(List<Repository> orphanRepositories);
-
-    /**
-     * Removes orphan repositories.
-     * 
-     * @param orphanRepositories to removes
+     * @param orphanRepositories the repositories to remove
      */
     void removeOrphanRepositories(List<Repository> orphanRepositories);
 
@@ -156,4 +150,6 @@ public interface RepositoryService
     DvcsUser getUser(Repository repository, String author, String raw_author);
 
     List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted);
+
+    Set<String> getEmails(Repository repository, DvcsUser user);
 }

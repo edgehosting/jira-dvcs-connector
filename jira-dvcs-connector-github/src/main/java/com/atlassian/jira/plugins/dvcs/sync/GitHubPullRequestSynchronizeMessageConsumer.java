@@ -139,18 +139,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         if (localPullRequest == null)
         {
-            Map<String, Object> activity = new HashMap<String, Object>();
-            map(activity, repository, remotePullRequest);
-            localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
+            localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest, null));
         }
         else
         {
-            String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
-            String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
-
-            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
-                    sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
-                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
+            localPullRequest = pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest, localPullRequest));
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
@@ -267,7 +260,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Processes comments of a Pull Request.
-     * 
+     *
      * @param repository
      * @param remotePullRequest
      * @param localPullRequest
@@ -325,36 +318,35 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void updateCommentsCount(PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
     {
-        int commentsCount = remotePullRequest.getComments() + remotePullRequest.getReviewComments();
+        localPullRequest.setCommentCount(remotePullRequest.getComments() + remotePullRequest.getReviewComments());
+
         // updates count
-        repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), localPullRequest.getName(),
-                localPullRequest.getSourceBranch(), localPullRequest.getDestinationBranch(),
-                RepositoryPullRequestMapping.Status.valueOf(localPullRequest.getLastStatus()), localPullRequest.getUpdatedOn(),
-                localPullRequest.getSourceRepo(), commentsCount);
+        pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
-    private void map(Map<String, Object> target, Repository repository, PullRequest source)
+    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
     {
-        String sourceBranch = checkNotNull(getBranchName(source.getHead(), null), "Source branch");
-        String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
+        String sourceBranch = checkNotNull(getBranchName(source.getHead(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
+        String dstBranch = checkNotNull(getBranchName(source.getBase(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
 
-        target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
-        target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
+        target.setDomainId(repository.getId());
+        target.setRemoteId((long) source.getNumber());
+        target.setName(source.getTitle());
 
-        target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
-        target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
+        target.setUrl(source.getHtmlUrl());
+        target.setToRepositoryId(repository.getId());
 
-        if (source.getUser() != null)
-        {
-            target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
-        }
-        target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
-        target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, sourceBranch);
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, dstBranch);
-        target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
-        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
+        target.setAuthor(source.getUser() != null ? source.getUser().getLogin() : null);
+        target.setCreatedOn(source.getCreatedAt());
+        target.setUpdatedOn(source.getUpdatedAt());
+        target.setSourceRepo(getRepositoryFullName(source.getHead()));
+        target.setSourceBranch(sourceBranch);
+        target.setDestinationBranch(dstBranch);
+        target.setLastStatus(resolveStatus(source).name());
+        target.setCommentCount(source.getComments());
+
+        return target;
     }
 
     private void map(Map<String, Object> target, RepositoryCommit source)
@@ -381,8 +373,14 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         }
     }
 
-    private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
+    private String getRepositoryFullName(PullRequestMarker pullRequestMarker)
     {
+        if (pullRequestMarker == null)
+        {
+            return null;
+        }
+
+        final org.eclipse.egit.github.core.Repository gitHubRepository = pullRequestMarker.getRepo();
         if (gitHubRepository == null || gitHubRepository.getOwner() == null)
         {
             return null;

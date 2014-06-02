@@ -1,5 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
@@ -7,6 +11,8 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
+import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -19,28 +25,30 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.MapMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
 /**
  * Synchronization service
  */
-public class DefaultSynchronizer implements Synchronizer, DisposableBean, InitializingBean
+public class DefaultSynchronizer implements Synchronizer
 {
-    private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
+    @VisibleForTesting
+    static final String SYNC_LOCK = DefaultSynchronizer.class.getName() + ".doSync";
 
-    private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultSynchronizer.class);
+
+    private static final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+    private static final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
+    private static final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -72,58 +80,67 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private EventPublisher eventPublisher;
 
-    /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
-     */
     @Resource
     private GitHubEventService gitHubEventService;
 
+    @Resource
+    private RepositorySyncHelper repoSyncHelper;
 
-    // map of ALL Synchronisation Progresses - running and finished ones
-    private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
+    private final ClusterLockService clusterLockService;
 
-    public DefaultSynchronizer()
+    // Cache of all synchronisation progresses, both running and finished
+    private final Cache<Integer, Progress> progressMap;
+
+
+    public DefaultSynchronizer(final CacheManager cacheManager, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
-        super();
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
+        this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
+        // clear the cache as a temp fix for BBC-744
+        if (LOG.isDebugEnabled())
+        {
+            final Collection<Integer> keys = progressMap.getKeys();
+            if (!keys.isEmpty())
+            {
+                LOG.debug("clearing progressMap of size {} ", keys.size());
+            }
+        }
+        progressMap.removeAll();
     }
+
 
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
-        // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
+        // We take a copy of the flags, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
-            log.info("The synchronization is disabled.");
+            LOG.info("The synchronization is disabled.");
             return;
         }
 
         if (repo.isLinked())
         {
-            Progress progress = null;
-
-            synchronized (this)
-            {
-                if (skipSync(repo, flags))
-                {
-                    return;
-                }
-
-                progress = startProgress(repo, flags);
-            }
-
+            // Remove the soft sync flag if we have no branch heads.
             if (branchService.getListOfBranchHeads(repo).isEmpty())
             {
                 flags.remove(SynchronizationFlag.SOFT_SYNC);
             }
 
+            Progress progress = startProgressSafely(repo, flags);
+            if (progress==null)
+            {
+                return;
+            }
+
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-            
-            fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
+            final RepositorySync repoSync = repoSyncHelper.startSync(repo, softSync);
+            fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
             int auditId = 0;
             try
             {
@@ -133,36 +150,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
                 if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
-                    stopSynchronization(repo);
-                    if (changesetsSync)
-                    {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                        changesetService.removeAllInRepository(repo.getId());
-                        branchService.removeAllBranchHeadsInRepository(repo.getId());
-                        branchService.removeAllBranchesInRepository(repo.getId());
-
-                        repo.setLastCommitDate(null);
-                    }
-                    if (pullRequestSync)
-                    {
-                        gitHubEventService.removeAll(repo);
-                        repositoryPullRequestDao.removeAll(repo);
-                        repo.setActivityLastSync(null);
-                    }
-                    repositoryDao.save(repo);
+                    removeRepoDataForFullSync(repo, flags);
                 }
 
                 // first retry all failed messages
-                try
-                {
-                    messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
-                } catch (Exception e)
-                {
-                    log.warn("Could not resume failed messages.", e);
-                }
+                retryFailedMessages(repo, auditId);
 
                 if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
                 {
@@ -175,15 +167,70 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)
             {
-                log.error(t.getMessage(), t);
+                LOG.error(t.getMessage(), t);
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
             } finally
             {
+                repoSync.finish();
                 messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
+    }
+
+    private Progress startProgressSafely(Repository repo, EnumSet<SynchronizationFlag> flags)
+    {
+        final Lock lock = clusterLockService.getLockForName(SYNC_LOCK);
+        lock.lock();
+        try
+        {
+            if (skipSync(repo, flags))
+            {
+                return null;
+            }
+            return startProgress(repo, flags);
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+
+    private void removeRepoDataForFullSync(Repository repo, EnumSet<SynchronizationFlag> flags)
+    {
+        //TODO This will deleted both changeset and PR messages, we should distinguish between them
+        // Stopping synchronization to delete failed messages for repository
+        stopSynchronization(repo);
+        if (flags.contains(SynchronizationFlag.SYNC_CHANGESETS))
+        {
+            // we are doing full sync, lets delete all existing changesets
+            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+            changesetService.removeAllInRepository(repo.getId());
+            branchService.removeAllBranchHeadsInRepository(repo.getId());
+            branchService.removeAllBranchesInRepository(repo.getId());
+
+            repo.setLastCommitDate(null);
+        }
+        if (flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS))
+        {
+            gitHubEventService.removeAll(repo);
+            repositoryPullRequestDao.removeAll(repo);
+            repo.setActivityLastSync(null);
+        }
+        repositoryDao.save(repo);
+    }
+
+    private void retryFailedMessages(Repository repo, int auditId)
+    {
+        try
+        {
+            messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
+        } catch (Exception e)
+        {
+            LOG.warn("Could not resume failed messages.", e);
+        }
+
     }
 
     private void fireAnalyticsStart(boolean softSync, boolean changesetsSync, boolean pullRequestSync, boolean webhook)
@@ -237,7 +284,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
         if (flags.contains(SynchronizationFlag.WEBHOOK_SYNC))
         {
-            log.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
+            LOG.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
 
             EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
             if (currentFlags == null)
@@ -265,7 +312,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         } else {
             messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
-
     }
 
     @Override
@@ -275,6 +321,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
+    @SuppressWarnings("deprecation")    // put is un-deprecated in a later version of atlassian-cache
     public void putProgress(Repository repository, Progress progress)
     {
         progressMap.put(repository.getId(), progress);
@@ -287,12 +334,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
-    public void destroy() throws Exception
+    public void removeAllProgress()
     {
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
+        progressMap.removeAll();
     }
 }

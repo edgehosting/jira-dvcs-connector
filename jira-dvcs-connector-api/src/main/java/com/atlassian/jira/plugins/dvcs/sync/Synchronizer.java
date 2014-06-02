@@ -45,4 +45,9 @@ public interface Synchronizer
      * @param repository
      */
     public void removeProgress(Repository repository);
+
+    /**
+     * Removes all progress objects
+     */
+    void removeAllProgress();
 }

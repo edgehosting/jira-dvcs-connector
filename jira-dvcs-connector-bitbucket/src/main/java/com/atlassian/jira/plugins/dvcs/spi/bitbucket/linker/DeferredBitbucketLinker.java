@@ -1,62 +1,53 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
-public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
+import static org.apache.commons.lang.StringUtils.isBlank;
+
+public class DeferredBitbucketLinker implements BitbucketLinker
 {
+    /**
+     * Returns the name of the cluster-wide lock to acquire before modifying the links
+     * for the given repository.
+     *
+     * @param repository the repository whose links are being modified
+     * @return a globally unique lock name
+     */
+    @VisibleForTesting
+    static String getLockName(final Repository repository)
+    {
+        return DeferredBitbucketLinker.class.getName() + "." + repository.getRepositoryUrl();
+    }
+
     private final Logger log = LoggerFactory.getLogger(DeferredBitbucketLinker.class);
-
-	private final BitbucketLinker bitbucketLinker;
-	private final ThreadPoolExecutor executor;
-
+    private final BitbucketLinker bitbucketLinker;
+    private final ClusterLockService clusterLockService;
     private final PluginSettingsFactory pluginSettingsFactory;
 
-    public DeferredBitbucketLinker(@Qualifier("bitbucketLinker") BitbucketLinker bitbucketLinker,
-            PluginSettingsFactory pluginSettingsFactory)
+    public DeferredBitbucketLinker(@Qualifier ("bitbucketLinker") final BitbucketLinker bitbucketLinker,
+            final ClusterLockServiceFactory clusterLockServiceFactory, final PluginSettingsFactory pluginSettingsFactory)
     {
-
 		this.bitbucketLinker = bitbucketLinker;
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.pluginSettingsFactory = pluginSettingsFactory;
-		// would be nice to have 2-3 threads but that doesn't seem to be trivial task: 
-		// http://stackoverflow.com/questions/3419380/threadpoolexecutor-policy
-		executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-		        ThreadFactories.namedThreadFactory("BitbucketLinkerThread"));
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void destroy() throws Exception
-    {
-        executor.shutdown();
-        if (!executor.awaitTermination(1, TimeUnit.MINUTES))
-        {
-            log.error("Unable properly shutdown queued tasks.");
-        }
     }
 
 	@Override
     public void linkRepository(final Repository repository, final Set<String> projectKeys)
     {
-        addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        configureLinks(repository, new Runnable()
         {
             @Override
             public void run()
@@ -69,7 +60,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
 	@Override
 	public void unlinkRepository(final Repository repository)
 	{
-	    addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        configureLinks(repository, new Runnable()
         {
             @Override
             public void run()
@@ -78,11 +69,11 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
             }
         });
 	}
-	
+
 	@Override
 	public void linkRepositoryIncremental(final Repository repository, final Set<String> projectKeys)
 	{
-        addTaskAtTheEndOfQueue(new BitbucketLinkingTask(repository)
+        configureLinks(repository, new Runnable()
         {
             @Override
             public void run()
@@ -92,67 +83,29 @@ public class DeferredBitbucketLinker implements BitbucketLinker, DisposableBean
         });
 	}
 
-	private void addTaskAtTheEndOfQueue(Runnable task)
+    private void configureLinks(final Repository repository, final Runnable task)
     {
         if (!isLinkersEnabled())
         {
             log.debug("Linkers disabled.");
             return;
         }
-        executor.remove(task);
-        executor.execute(task);
-        log.debug("QUEUED:" + task);
+        final Lock lock = clusterLockService.getLockForName(getLockName(repository));
+        lock.lock();
+        try
+        {
+            task.run();
+            log.debug("Ran: Configuring links on " + repository.getRepositoryUrl());
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
-	
+
     private boolean isLinkersEnabled()
     {
-        String setting = (String) pluginSettingsFactory.createGlobalSettings().get(DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM);
-        if (StringUtils.isNotBlank(setting))
-        {
-            return BooleanUtils.toBoolean(setting);
-        } else
-        {
-            return true;
-        }
-    }
-
-	private abstract class BitbucketLinkingTask implements Runnable
-    {
-	    private final Repository repository;
-		
-		private BitbucketLinkingTask(Repository repository)
-        {
-			this.repository = repository;
-        }
-
-		@Override
-		public abstract void run();
-		
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (obj == null) return false;
-			if (this==obj) return true;
-			if (this.getClass()!=obj.getClass()) return false;
-			BitbucketLinkingTask that = (BitbucketLinkingTask) obj;
-
-			return new EqualsBuilder()
-					.append(repository.getRepositoryUrl(), that.repository.getRepositoryUrl())
-					.isEquals();
-		}
-		
-		@Override
-		public int hashCode()
-		{
-	        return new HashCodeBuilder(17, 37)
-            	.append(repository.getRepositoryUrl())
-            	.toHashCode();
-		}
-		
-		@Override
-		public String toString()
-		{
-			return "Configuring links on " + repository.getRepositoryUrl();
-		}
+        final String setting = (String) pluginSettingsFactory.createGlobalSettings().get(LINKERS_ENABLED_SETTINGS_PARAM);
+        return isBlank(setting) || BooleanUtils.toBoolean(setting);
     }
 }

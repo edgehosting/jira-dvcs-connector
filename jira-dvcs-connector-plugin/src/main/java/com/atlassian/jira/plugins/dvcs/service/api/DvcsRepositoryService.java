@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Gets the repositories for one or more organisations
@@ -52,4 +53,6 @@ public interface DvcsRepositoryService
     DvcsUser getDvcsUser(Repository repository, String author, String rawAuthor);
 
     List<Repository> getRepositories(String dvcsType, boolean includeDeleted);
+
+    Set<String> getDvcsUserEmails(Repository repository, DvcsUser dvcsUser);
 }

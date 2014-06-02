@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -14,6 +16,7 @@ public class Branch
     private List<BranchHead> heads;
     private int repositoryId;
 
+    @JsonCreator
     public Branch()
     {
     }

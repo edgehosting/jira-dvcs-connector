@@ -3,10 +3,11 @@ package com.atlassian.jira.plugins.dvcs.model;
 import com.atlassian.gzipfilter.org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class Credential
+public class Credential implements Serializable
 {
     @Deprecated
     private String adminUsername;

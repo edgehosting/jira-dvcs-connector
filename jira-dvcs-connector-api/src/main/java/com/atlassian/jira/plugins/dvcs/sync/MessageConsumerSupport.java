@@ -17,19 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import javax.annotation.Resource;
 
 public abstract class MessageConsumerSupport<P extends HasProgress> implements MessageConsumer<P>
 {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(MessageConsumerSupport.class);
-
-    /**
-     * Injected {@link ExecutorService} dependency.
-     */
-    @Resource
-    private ExecutorService executorService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumerSupport.class);
 
     @Resource
     protected DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -50,7 +42,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     protected BranchService branchService;
 
     @Override
-    public final void onReceive(final Message<P> message, P payload)
+    public final void onReceive(final Message<P> message, final P payload)
     {
         String[] tags = message.getTags();
 
@@ -120,5 +112,4 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     protected abstract boolean getSoftSync(P payload);
 
     protected abstract P createNextMessage(P payload, String parentChangesetNode);
-
 }

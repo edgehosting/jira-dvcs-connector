@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DefaultProgress implements Progress
+public class DefaultProgress implements Progress, Serializable
 {
 
     @XmlAttribute

@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 
 import java.util.Collection;
 
+import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
+
 /**
  * For Bitbucket.
  * 
@@ -13,6 +15,7 @@ import java.util.Collection;
  * Will be deleted later.
  */
 @Deprecated
+@SuppressWarnings("unused")
 public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
 
@@ -52,7 +55,6 @@ public class RepositoryLinksUpgradeTask implements PluginUpgradeTask
 	@Override
 	public String getPluginKey()
 	{
-		return "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
+		return PLUGIN_KEY;
 	}
-
 }

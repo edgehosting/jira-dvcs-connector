@@ -36,6 +36,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
+import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -395,7 +396,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     private void setupAnonymousAccessAllowed()
     {
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=10");
+        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=" + BROWSE_PROJECTS.permissionKey());
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
         jira.getTester().getDriver().findElement(By.id("type_group")).click();
@@ -405,8 +406,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     private void setupAnonymousAccessForbidden()
     {
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/EditPermissions!default.jspa?schemeId=0");
-        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("del_perm_10_"));
-        jira.getTester().getDriver().findElement(By.id("del_perm_10_")).click();
+        String deleteLinkId = "del_perm_" + BROWSE_PROJECTS.permissionKey() + "_";
+        jira.getTester().getDriver().waitUntilElementIsVisible(By.id(deleteLinkId));
+        jira.getTester().getDriver().findElement(By.id(deleteLinkId)).click();
         jira.getTester().getDriver().waitUntilElementIsVisible(By.id("delete_submit"));
         jira.getTester().getDriver().findElement(By.id("delete_submit")).click();
     }

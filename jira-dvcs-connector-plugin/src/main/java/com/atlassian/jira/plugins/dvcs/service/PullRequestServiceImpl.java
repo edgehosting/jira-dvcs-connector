@@ -3,7 +3,11 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
+import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -14,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Implementation of {@link PullRequestService}
@@ -22,45 +28,32 @@ import java.util.Map;
  */
 public class PullRequestServiceImpl implements PullRequestService
 {
-    private final RepositoryPullRequestDao pulLRequestDao;
-
+    private final RepositoryPullRequestDao pullRequestDao;
     private final PullRequestTransformer transformer;
-
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    private final ThreadEvents threadEvents;
 
-    public PullRequestServiceImpl(final RepositoryPullRequestDao pulLRequestDao, final RepositoryService repositoryService, final DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    public PullRequestServiceImpl(final RepositoryPullRequestDao pullRequestDao,
+            final RepositoryService repositoryService,
+            final DvcsCommunicatorProvider dvcsCommunicatorProvider,
+            final ThreadEvents threadEvents)
     {
-        this.pulLRequestDao = pulLRequestDao;
+        this.pullRequestDao = pullRequestDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        transformer = new PullRequestTransformer(repositoryService);
+        this.threadEvents = threadEvents;
+        this.transformer = new PullRequestTransformer(repositoryService);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys));
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys));
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
-    }
-
-    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
-    {
-        List<PullRequest> pullRequests = new ArrayList<PullRequest>();
-
-        for (RepositoryPullRequestMapping pullRequestMapping : pullRequestsMappings)
-        {
-            PullRequest pullRequest = transformer.transform(pullRequestMapping);
-            if (pullRequest != null)
-            {
-                pullRequests.add(pullRequest);
-            }
-        }
-
-        return pullRequests;
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
     }
 
     @Override
@@ -70,16 +63,60 @@ public class PullRequestServiceImpl implements PullRequestService
         return communicator.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
     }
 
+    @Nonnull
+    @Override
+    public Set<String> getIssueKeys(int repositoryId, int pullRequestId)
+    {
+        return pullRequestDao.getIssueKeys(repositoryId, pullRequestId);
+    }
+
+    @Override
+    public RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping)
+    {
+        RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
+
+        threadEvents.broadcast(new PullRequestCreatedEvent(transformer.transform(createdMapping)));
+        return createdMapping;
+    }
+
+    @Override
+    public RepositoryPullRequestMapping updatePullRequest(int pullRequestId, RepositoryPullRequestMapping updatedPullRequestMapping)
+    {
+        final RepositoryPullRequestMapping mappingBeforeUpdate = pullRequestDao.findRequestById(pullRequestId);
+        if (mappingBeforeUpdate == null)
+        {
+            throw new IllegalArgumentException(String.format("RepositoryPullRequestMapping with id=%s does not exist", updatedPullRequestMapping.getID()));
+        }
+
+        RepositoryPullRequestMapping mappingAfterUpdate = pullRequestDao.updatePullRequestInfo(
+                pullRequestId,
+                updatedPullRequestMapping.getName(),
+                updatedPullRequestMapping.getSourceBranch(),
+                updatedPullRequestMapping.getDestinationBranch(),
+                Status.valueOf(updatedPullRequestMapping.getLastStatus()),
+                updatedPullRequestMapping.getUpdatedOn(),
+                updatedPullRequestMapping.getSourceRepo(),
+                updatedPullRequestMapping.getCommentCount()
+        );
+
+        // send both the before and after state of the PR in the event
+        PullRequest prAfter = transformer.transform(mappingAfterUpdate);
+        PullRequest prBefore = transformer.transform(mappingBeforeUpdate);
+        threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
+
+        return mappingAfterUpdate;
+    }
+
     @Override
     public void updatePullRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
     {
-        PullRequestParticipantMapping[] oldParticipants = pulLRequestDao.getParticipants(pullRequestId);
+        PullRequestParticipantMapping[] oldParticipants = pullRequestDao.getParticipants(pullRequestId);
         for (PullRequestParticipantMapping participantMapping : oldParticipants)
         {
             Participant participant = participantIndex.remove(participantMapping.getUsername());
             if (participant == null)
             {
-                pulLRequestDao.removeParticipant(participantMapping);
+                pullRequestDao.removeParticipant(participantMapping);
             } else
             {
                 boolean markedForSave = false;
@@ -98,7 +135,7 @@ public class PullRequestServiceImpl implements PullRequestService
 
                 if (markedForSave)
                 {
-                    pulLRequestDao.saveParticipant(participantMapping);
+                    pullRequestDao.saveParticipant(participantMapping);
                 }
             }
         }
@@ -106,7 +143,23 @@ public class PullRequestServiceImpl implements PullRequestService
         for (String username : participantIndex.keySet())
         {
             Participant participant = participantIndex.get(username);
-            pulLRequestDao.createParticipant(pullRequestId, repositoryId, participant);
+            pullRequestDao.createParticipant(pullRequestId, repositoryId, participant);
         }
+    }
+
+    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
+    {
+        List<PullRequest> pullRequests = new ArrayList<PullRequest>();
+
+        for (RepositoryPullRequestMapping pullRequestMapping : pullRequestsMappings)
+        {
+            PullRequest pullRequest = transformer.transform(pullRequestMapping);
+            if (pullRequest != null)
+            {
+                pullRequests.add(pullRequest);
+            }
+        }
+
+        return pullRequests;
     }
 }

@@ -4,7 +4,11 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.util.concurrent.Promise;
+import com.atlassian.util.concurrent.Promises;
 import com.atlassian.util.concurrent.ThreadFactories;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.DisposableBean;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor, DisposableBean
 {
@@ -21,7 +26,7 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
      */
     private static final Logger log = LoggerFactory.getLogger(DefaultSmartcommitsChangesetsProcessor.class);
 
-    private final ThreadPoolExecutor executor;
+    private final ListeningExecutorService executor;
     private final SmartcommitsService smartcommitService;
     private final CommitMessageParser commitParser;
     private final ChangesetDao changesetDao;
@@ -33,9 +38,9 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
         this.smartcommitService = smartcommitService;
         this.commitParser = commitParser;
 
-        executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                ThreadFactories.namedThreadFactory(DefaultSmartcommitsChangesetsProcessor.class.getSimpleName()));
+        // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
+        // leads to an extra thread being created for the lifetime of the Promise (see Guava JdkFutureAdapters)
+        executor = MoreExecutors.listeningDecorator(createThreadPool());
     }
 
     /**
@@ -54,10 +59,19 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     /**
      * {@inheritDoc}
      */
+    @Nonnull
     @Override
-    public void startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
+    public Promise<Void> startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
     {
-        executor.execute(new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService));
+        return Promises.forListenableFuture(executor.submit(
+                new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService)
+        ));
     }
 
+    private ThreadPoolExecutor createThreadPool()
+    {
+        return new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                ThreadFactories.namedThreadFactory("DVCSConnector.SmartCommitsProcessor"));
+    }
 }

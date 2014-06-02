@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
@@ -85,9 +84,6 @@ public class GithubCommunicator implements DvcsCommunicator
      */
     @Resource
     private GitHubRESTClient gitHubRESTClient;
-
-    @Resource
-    private FeatureManager featureManager;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -316,6 +312,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @SuppressWarnings("unused")
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
@@ -326,7 +323,11 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
+     * The git library encodes parameters using ISO-8859-1. Let's trick it and
+     * encode using UTF-8 instead.
+     * 
+     * @param branch the branch name to encode as UTF-8
+     * @return the UTF-8 encoded branch name
      */
     private String doTheUtfEncoding(String branch)
     {
@@ -640,17 +641,11 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private String getRef(String slug, String branch)
     {
-        String ref = null;
         if (slug != null)
         {
-            ref = slug + ":" + branch;
+            return slug + ":" + branch;
         }
-        else
-        {
-            ref = branch;
-        }
-
-        return ref;
+        return branch;
     }
 
     @Override
@@ -664,5 +659,4 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
-
 }

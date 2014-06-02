@@ -86,6 +86,7 @@ public class GithubCommunicatorTest
     private GithubCommunicator communicator;
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testSetupPostHookShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
@@ -115,6 +116,7 @@ public class GithubCommunicatorTest
     }
     
     @Test
+    @SuppressWarnings("deprecation")
     public void testSetupPostHookAlreadySetUpShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
@@ -249,7 +251,7 @@ public class GithubCommunicatorTest
         GitHubRepositoryHook prHook = mock(GitHubRepositoryHook.class);
         when(prHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl, "content_type", "json"));
 
-        List<GitHubRepositoryHook> hooks = Arrays.asList(new GitHubRepositoryHook[] { changesetsHook, prHook });
+        List<GitHubRepositoryHook> hooks = Arrays.asList(changesetsHook, prHook);
 
         when(gitHubRESTClient.getHooks(any(Repository.class))).thenReturn(hooks);
 

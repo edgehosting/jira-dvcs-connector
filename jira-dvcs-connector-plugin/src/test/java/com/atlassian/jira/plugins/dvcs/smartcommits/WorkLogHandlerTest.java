@@ -11,7 +11,6 @@ import com.atlassian.jira.user.MockApplicationUser;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -20,23 +19,18 @@ import java.util.Arrays;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class WorkLogHandlerTest
 {
-
     @Mock
-    WorklogService worklogService;
+    private WorklogService worklogService;
 
     @Captor
-    ArgumentCaptor<WorklogInputParametersImpl> worklogParamsCaptor;
+    private ArgumentCaptor<WorklogInputParametersImpl> worklogParamsCaptor;
 
-    WorkLogHandler handler;
-
-    public WorkLogHandlerTest()
-    {
-        super();
-    }
+    private WorkLogHandler handler;
 
     @BeforeMethod
     public void setUp()
@@ -49,7 +43,6 @@ public class WorkLogHandlerTest
     @Test
     public void testHandleCommand_ShouldLogWithSuccess()
     {
-
         MutableIssue sampleIssue = sampleIssue();
        
         handler.handle(sampleUser(), sampleIssue, "time", Arrays.asList("1h 44m"), null);
@@ -81,14 +74,11 @@ public class WorkLogHandlerTest
 
     private MutableIssue sampleIssue()
     {
-        MutableIssue issue = Mockito.mock(MutableIssue.class);
-        return issue;
+        return mock(MutableIssue.class);
     }
 
     private User sampleUser()
     {
-        User user = new MockApplicationUser("user").getDirectoryUser();
-        return user;
+        return new MockApplicationUser("user").getDirectoryUser();
     }
-
 }
