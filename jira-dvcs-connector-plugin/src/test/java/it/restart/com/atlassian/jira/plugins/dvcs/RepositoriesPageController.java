@@ -34,6 +34,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
+        return addOrganization(accountType, accountName, oAuthCredentials, autosync, false);
+    }
+
+    public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
+    {
         page.addOrganisation(accountType.index, accountName, accountType.hostUrl, oAuthCredentials, autosync);
         assertThat(page.getErrorStatusMessage()).isNull();
 
@@ -50,6 +55,12 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         }
 
         assertThat(page.getErrorStatusMessage()).isNull();
+
+        if (expectError)
+        {
+            // no need to repeat the rest of the steps if we expect error but do not see it
+            return null;
+        }
 
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
