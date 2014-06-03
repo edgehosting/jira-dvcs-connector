@@ -21,6 +21,8 @@ public interface EventService
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as
      * they are published. Note that this method <b>schedules dispatching for asynchronously execution</b> and returns
      * immediately.
+     * <p/>
+     * Synchronisation events may be subjected to limits. See {@link com.atlassian.jira.plugins.dvcs.event.EventLimit}.
      *
      * @param repository a Repository
      * @throws java.util.concurrent.RejectedExecutionException if dispatching can not be scheduled for execution

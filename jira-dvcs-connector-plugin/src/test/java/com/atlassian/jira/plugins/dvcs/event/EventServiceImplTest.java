@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -48,14 +49,21 @@ public class EventServiceImplTest
     @Mock
     SyncEventDao syncEventDao;
 
+    @Mock
+    EventLimiterFactory eventLimiterFactory;
+
+    @Mock
+    EventLimiter eventLimiter;
+
     @InjectMocks
     EventServiceImpl eventService;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
-        eventService = new EventServiceImpl(eventPublisher, syncEventDao, MoreExecutors.sameThreadExecutor());
+        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory, MoreExecutors.sameThreadExecutor());
 
+        when(eventLimiterFactory.create()).thenReturn(eventLimiter);
         when(syncEventDao.create()).then(new Answer<Object>()
         {
             @Override
@@ -139,6 +147,29 @@ public class EventServiceImplTest
         Object published = captor.getValue();
         assertThat(published, instanceOf(TestEvent.class));
         assertThat((TestEvent) published, equalTo(new TestEvent(new Date(repo2.getId()), "repo2-mapping")));
+        verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void dispatchShouldTakeEventLimitsIntoAccount() throws Exception
+    {
+        final SyncEventMapping repo1Mapping2 = createMapping(repo1, "repo1-mapping2");
+
+        // let the first event through and limit the 2nd
+        when(syncEventDao.findAllByRepoId(repo1.getId())).thenReturn(ImmutableList.of(repo1Mapping, repo1Mapping2));
+        when(eventLimiter.isLimitExceeded(any(SyncEvent.class))).thenReturn(false, true);
+        when(eventLimiter.getLimitExceededCount()).thenReturn(1);
+
+        eventService.dispatchEvents(repo1);
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, times(2)).publish(captor.capture());
+
+        List<Object> published = captor.getAllValues();
+        assertThat(published.size(), equalTo(2));
+        assertThat("first event should be published", published.get(0), instanceOf(TestEvent.class));
+        assertThat("limit exceeded event should be raised", published.get(1), instanceOf(LimitExceededEvent.class));
+        assertThat("event should contain dropped event count", ((LimitExceededEvent) published.get(1)).getDroppedEventCount(), equalTo(1));
         verifyNoMoreInteractions(eventPublisher);
     }
 

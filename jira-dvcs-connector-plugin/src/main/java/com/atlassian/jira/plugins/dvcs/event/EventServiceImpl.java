@@ -28,22 +28,24 @@ public class EventServiceImpl implements EventService
     private static final Logger logger = LoggerFactory.getLogger(EventServiceImpl.class);
     private static final int DESTROY_TIMEOUT_SECS = 10;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final EventPublisher eventPublisher;
     private final SyncEventDao syncEventDao;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final EventLimiterFactory eventLimiterFactory;
     private final ExecutorService eventDispatcher;
 
     @Autowired
-    public EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao)
+    public EventServiceImpl(EventPublisher eventPublisher, EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
     {
-        this(eventPublisher, syncEventDao, createEventDispatcher());
+        this(eventPublisher, syncEventDao, eventLimiterFactory, createEventDispatcher());
     }
 
     @VisibleForTesting
-    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, ExecutorService executorService)
+    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
     {
         this.eventPublisher = eventPublisher;
         this.syncEventDao = syncEventDao;
+        this.eventLimiterFactory = eventLimiterFactory;
         this.eventDispatcher = executorService;
     }
 
@@ -102,7 +104,8 @@ public class EventServiceImpl implements EventService
      */
     private void doDispatchEvents(DispatchRequest dispatch)
     {
-        List<SyncEventMapping> eventMappings = syncEventDao.findAllByRepoId(dispatch.repoId());
+        final EventLimiter limiter = eventLimiterFactory.create();
+        final List<SyncEventMapping> eventMappings = syncEventDao.findAllByRepoId(dispatch.repoId());
         for (int i = 0, size = eventMappings.size(); i < size; i++)
         {
             if (Thread.interrupted())
@@ -116,6 +119,11 @@ public class EventServiceImpl implements EventService
             try
             {
                 final SyncEvent event = fromSyncEventMapping(syncEventMapping);
+                if (limiter.isLimitExceeded(event))
+                {
+                    logger.debug("Limit exceeded, dropping event for repository {}: {}", dispatch, event);
+                    continue;
+                }
 
                 logger.debug("Publishing event for repository {}: {}", dispatch, event);
                 eventPublisher.publish(event);
@@ -132,6 +140,12 @@ public class EventServiceImpl implements EventService
             {
                 syncEventDao.delete(syncEventMapping);
             }
+        }
+
+        int dropped = limiter.getLimitExceededCount();
+        if (dropped > 0)
+        {
+            eventPublisher.publish(new LimitExceededEvent(dropped));
         }
     }
 
