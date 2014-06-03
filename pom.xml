@@ -39,9 +39,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2.4</jira.compile.version>
-        <jira.version>6.2.4</jira.version>
-        <jira.data.version>6.2.4</jira.data.version>
+        <jira.compile.version>6.2.6</jira.compile.version>
+        <jira.version>${jira.compile.version}</jira.version>
+        <jira.data.version>${jira.compile.version}</jira.data.version>
 
         <ao.version>0.23.1-m1</ao.version>
         <streams.version>5.3.14</streams.version>
@@ -133,6 +133,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.atlassian.jira</groupId>
+                <artifactId>jira-api</artifactId>
+                <version>${jira.compile.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>${org.codehaus.jackson.version}</version>
@@ -150,14 +156,18 @@
                 <version>10.0.1</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.5</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-api</artifactId>
-            <version>${jira.compile.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
