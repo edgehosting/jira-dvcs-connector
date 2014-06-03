@@ -65,8 +65,8 @@ public class BitbucketOAuthPage implements Page
     private OAuth parseOAuthCredentials()
     {
         String applicationId = consumersTable.find(By.xpath("tr[@class='revealed']")).getAttribute("data-id");
-        String key = consumersTable.find(By.xpath("tr[last()]//li[3]/span")).getText();
-        String secret = consumersTable.find(By.xpath("tr[last()]//li[4]/span")).getText();
+        String key = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-key']")).getText();
+        String secret = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-secret']")).getText();
         
         return new OAuth(key, secret, applicationId);
     }
