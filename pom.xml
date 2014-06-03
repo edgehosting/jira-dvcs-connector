@@ -148,6 +148,12 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.jira</groupId>
+                <artifactId>jira-api</artifactId>
+                <version>${jira.compile.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira</groupId>
                 <artifactId>jira-core</artifactId>
                 <version>${jira.compile.version}</version>
                 <scope>provided</scope>
@@ -193,6 +199,11 @@
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.5</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
@@ -201,8 +212,6 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-api</artifactId>
-            <version>${jira.compile.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
