@@ -80,11 +80,13 @@ public class BitbucketOAuthPage implements Page
     public void removeConsumer(String applicationId)
     {
         PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
-        PageElement deleteButton = oauthConsumer.find(By.linkText("Delete"));
 
-        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
-        PageElementUtils.permissionDeniedWorkAround(deleteButton);
+        // click to show the actions inline dialog
+        oauthConsumer.find(By.className("actions")).find(By.tagName("button")).click();
 
+        // click on the Delete button
+        final PageElement inlineDialog = body.find(By.id("consumer-actions-" + applicationId));
+        final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
         deleteButton.click();
     }
 }
