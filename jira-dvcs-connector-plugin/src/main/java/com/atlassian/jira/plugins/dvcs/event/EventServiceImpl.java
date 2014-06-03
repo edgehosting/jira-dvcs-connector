@@ -19,6 +19,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.Immutable;
 
+import static com.atlassian.fugue.Option.option;
 import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -124,7 +125,7 @@ public class EventServiceImpl implements EventService
             try
             {
                 final SyncEvent event = fromSyncEventMapping(syncEventMapping);
-                if (limiter.isLimitExceeded(event, syncEventMapping.getScheduledSync()))
+                if (limiter.isLimitExceeded(event, option(syncEventMapping.getScheduledSync()).getOrElse(false)))
                 {
                     logger.debug("Limit exceeded, dropping event for repository {}: {}", dispatch, event);
                     continue;

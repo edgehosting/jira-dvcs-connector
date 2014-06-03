@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+import static com.atlassian.jira.plugins.dvcs.event.EventLimit.COMMIT;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -17,7 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @SuppressWarnings ("UnusedDeclaration")
 @EventName ("jira.dvcsconnector.sync.changeset.created")
-public final class ChangesetCreatedEvent implements SyncEvent
+public final class ChangesetCreatedEvent implements SyncEvent, LimitedEvent
 {
     @Nonnull
     private final Changeset changeset;
@@ -52,6 +53,14 @@ public final class ChangesetCreatedEvent implements SyncEvent
     public Date getDate()
     {
         return changeset.getDate();
+    }
+
+    @Nonnull
+    @Override
+    @JsonIgnore
+    public EventLimit getEventLimit()
+    {
+        return COMMIT;
     }
 
     @JsonCreator

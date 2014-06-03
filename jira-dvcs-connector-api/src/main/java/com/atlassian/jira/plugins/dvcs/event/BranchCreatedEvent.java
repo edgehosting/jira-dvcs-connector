@@ -3,12 +3,14 @@ package com.atlassian.jira.plugins.dvcs.event;
 import com.atlassian.analytics.api.annotations.EventName;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Date;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+import static com.atlassian.jira.plugins.dvcs.event.EventLimit.BRANCH;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -16,7 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @SuppressWarnings ("UnusedDeclaration")
 @EventName("jira.dvcsconnector.sync.branch.created")
-public final class BranchCreatedEvent implements SyncEvent
+public final class BranchCreatedEvent implements SyncEvent, LimitedEvent
 {
     @Nonnull
     private final Branch branch;
@@ -62,6 +64,14 @@ public final class BranchCreatedEvent implements SyncEvent
     public Date getDate()
     {
         return date;
+    }
+
+    @Nonnull
+    @Override
+    @JsonIgnore
+    public EventLimit getEventLimit()
+    {
+        return BRANCH;
     }
 
     @JsonCreator

@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -16,6 +18,7 @@ public class LimitedTestEvent extends TestEvent implements LimitedEvent
 
     @Nonnull
     @Override
+    @JsonIgnore
     public EventLimit getEventLimit()
     {
         return eventLimit;
