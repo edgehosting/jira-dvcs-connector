@@ -8,6 +8,7 @@ import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
+import javax.annotation.Nullable;
 
 /**
  * AO mapping for a sync event.
@@ -20,6 +21,7 @@ public interface SyncEventMapping extends Entity
     String EVENT_DATE = "EVENT_DATE";
     String EVENT_CLASS = "EVENT_CLASS";
     String EVENT_JSON = "EVENT_JSON";
+    String SCHEDULED_SYNC = "SCHEDULED_SYNC";
 
     /**
      * @return the id of the repository that the event is for
@@ -51,4 +53,11 @@ public interface SyncEventMapping extends Entity
     @StringLength(StringLength.UNLIMITED)
     String getEventJson();
     void setEventJson(String eventClass);
+
+    /**
+     * @return whether this event was raised during a scheduled sync
+     */
+    @Nullable
+    Boolean getScheduledSync();
+    void setScheduledSync(@Nullable Boolean scheduledSync);
 }

@@ -22,8 +22,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.EnumSet;
+
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
@@ -71,7 +72,7 @@ public class MessageExecutorTest
         when(consumer.getParallelThreads()).thenReturn(1);
 
         when(clusterLockServiceFactory.getClusterLockService()).thenReturn(clusterLockService);
-        when(repoSyncHelper.startSync(any(Repository.class), anyBoolean())).thenReturn(repoSync);
+        when(repoSyncHelper.startSync(any(Repository.class), any(EnumSet.class))).thenReturn(repoSync);
 
         messageExecutor.init();
     }

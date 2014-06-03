@@ -139,7 +139,7 @@ public class DefaultSynchronizer implements Synchronizer
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-            final RepositorySync repoSync = repoSyncHelper.startSync(repo, softSync);
+            final RepositorySync repoSync = repoSyncHelper.startSync(repo, flags);
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
             int auditId = 0;
             try

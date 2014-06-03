@@ -108,11 +108,15 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -267,10 +271,10 @@ public class DefaultSynchronizerTest
     public void setUp() throws Exception
     {
         // repo sync that doesn't capture
-        when(repoSyncHelper.startSync(any(Repository.class), eq(false))).thenReturn(notCapturingRepoSync);
+        when(repoSyncHelper.startSync(any(Repository.class), (EnumSet) argThat(not(hasItem(SOFT_SYNC))))).thenReturn(notCapturingRepoSync);
 
         // the capturing syncs
-        when(repoSyncHelper.startSync(any(Repository.class), eq(true))).thenReturn(repoSyncForDefaultSync, repoSyncForMessageExecutor);
+        when(repoSyncHelper.startSync(any(Repository.class), (EnumSet) argThat(hasItem(SOFT_SYNC)))).thenReturn(repoSyncForDefaultSync, repoSyncForMessageExecutor);
 
         when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
 

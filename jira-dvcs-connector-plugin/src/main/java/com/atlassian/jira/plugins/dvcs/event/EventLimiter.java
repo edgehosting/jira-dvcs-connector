@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
 
-import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -73,13 +72,14 @@ class EventLimiter
      * Tries to acquire a permit for raising the given event.
      *
      * @param event the event to acquire a permit for
+     * @param scheduledSync whether the event was raised as part of a scheduled sync
      * @return true if a permit was acquired, false otherwise
      */
-    public boolean isLimitExceeded(@Nonnull SyncEvent event)
+    public boolean isLimitExceeded(@Nonnull SyncEvent event, boolean scheduledSync)
     {
         if (event instanceof LimitedEvent)
         {
-            AtomicLong remaining = remainingPermits.getUnchecked(LimitKey.of((LimitedEvent) event));
+            AtomicLong remaining = remainingPermits.getUnchecked(LimitKey.make((LimitedEvent) event, scheduledSync));
 
             return remaining.decrementAndGet() < 0;
         }
@@ -90,7 +90,7 @@ class EventLimiter
 
     /**
      * Returns the number of times that the limit was exceeded. This is equal to the number of times that {@link
-     * #isLimitExceeded(SyncEvent)} returned true.
+     * #isLimitExceeded(SyncEvent, boolean)} returned true.
      *
      * @return the number of times that the limit was exceeded
      */
@@ -134,9 +134,9 @@ class EventLimiter
      */
     private static class LimitKey
     {
-        public static LimitKey of(@Nonnull LimitedEvent event)
+        public static LimitKey make(@Nonnull LimitedEvent event, boolean scheduledSync)
         {
-            return new LimitKey(event.getEventLimit(), !event.getSyncFlags().contains(WEBHOOK_SYNC));
+            return new LimitKey(event.getEventLimit(), scheduledSync);
         }
 
         @Nonnull

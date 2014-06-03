@@ -24,6 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -88,14 +89,15 @@ public class EventServiceImplTest
     @Test (expectedExceptions = IllegalArgumentException.class)
     public void storeEventThrowsExceptionEventThatIsNotMarshallable() throws Exception
     {
-        eventService.storeEvent(repo1, new BadEvent());
+        eventService.storeEvent(repo1, new BadEvent(), false);
     }
 
     @Test
     public void storeSavesMappingInDao() throws Exception
     {
-        TestEvent event = new TestEvent(new Date(0), "my-data");
-        eventService.storeEvent(repo1, event);
+        final TestEvent event = new TestEvent(new Date(0), "my-data");
+        final boolean scheduled = true;
+        eventService.storeEvent(repo1, event, scheduled);
 
         ArgumentCaptor<SyncEventMapping> captor = ArgumentCaptor.forClass(SyncEventMapping.class);
         verify(syncEventDao).save(captor.capture());
@@ -106,6 +108,7 @@ public class EventServiceImplTest
         assertThat(mapping.getEventDate(), equalTo(event.getDate()));
         assertThat(mapping.getEventClass(), equalTo(event.getClass().getName()));
         assertThat(mapping.getEventJson(), equalTo("{\"date\":0,\"data\":\"my-data\"}"));
+        assertThat(mapping.getScheduledSync(), equalTo(scheduled));
     }
 
     @Test
@@ -157,7 +160,7 @@ public class EventServiceImplTest
 
         // let the first event through and limit the 2nd
         when(syncEventDao.findAllByRepoId(repo1.getId())).thenReturn(ImmutableList.of(repo1Mapping, repo1Mapping2));
-        when(eventLimiter.isLimitExceeded(any(SyncEvent.class))).thenReturn(false, true);
+        when(eventLimiter.isLimitExceeded(any(SyncEvent.class), anyBoolean())).thenReturn(false, true);
         when(eventLimiter.getLimitExceededCount()).thenReturn(1);
 
         eventService.dispatchEvents(repo1);
@@ -187,6 +190,7 @@ public class EventServiceImplTest
         mapping.setEventDate(date);
         mapping.setEventClass(TestEvent.class.getName());
         mapping.setEventJson(String.format("{\"date\":%d,\"data\": \"%s\"}", repository.getId(), data));
+        mapping.setScheduledSync(false);
 
         return mapping;
     }

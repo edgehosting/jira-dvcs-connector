@@ -16,6 +16,7 @@ import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_CLASS
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_DATE;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_JSON;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.REPO_ID;
+import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.SCHEDULED_SYNC;
 
 /**
  * DAO for SyncEventMapping instances.
@@ -59,7 +60,8 @@ public class SyncEventDao
                         REPO_ID, syncEventMapping.getRepoId(),
                         EVENT_DATE, syncEventMapping.getEventDate(),
                         EVENT_CLASS, syncEventMapping.getEventClass(),
-                        EVENT_JSON, syncEventMapping.getEventJson()
+                        EVENT_JSON, syncEventMapping.getEventJson(),
+                        SCHEDULED_SYNC, syncEventMapping.getScheduledSync()
                 ));
             }
         });

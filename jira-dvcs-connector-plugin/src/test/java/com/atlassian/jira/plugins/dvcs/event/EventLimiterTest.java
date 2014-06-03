@@ -24,15 +24,8 @@ public class EventLimiterTest
 {
     static final Long SYNC_INTERVAL = HOURS.toMillis(1);
 
-    /**
-     * A limited event raised during a webhook-initiated sync.
-     */
-    SyncEvent limitedWebhookEvent;
-
-    /**
-     * A limited event raised during a scheduled sync.
-     */
-    SyncEvent limitedScheduledEvent;
+    SyncEvent branchEvent;
+    SyncEvent commitEvent;
 
     @Mock
     SyncConfig syncConfig;
@@ -47,8 +40,8 @@ public class EventLimiterTest
     public void setUp() throws Exception
     {
         when(syncConfig.scheduledSyncIntervalMillis()).thenReturn(SYNC_INTERVAL);
-        limitedWebhookEvent = new LimitedTestEvent(BRANCH, false);
-        limitedScheduledEvent = new LimitedTestEvent(BRANCH, true);
+        branchEvent = new LimitedTestEvent(BRANCH);
+        commitEvent = new LimitedTestEvent(COMMIT);
     }
 
     @Test
@@ -56,14 +49,14 @@ public class EventLimiterTest
     {
         for (int i = 0; i < 100; i++)
         {
-            assertThat(eventLimiter.isLimitExceeded(new TestEvent()), equalTo(false));
+            assertThat(eventLimiter.isLimitExceeded(new TestEvent(), false), equalTo(false));
         }
     }
 
     @Test
     public void limitShouldBeUsedAsIsForWebHookTriggeredSync() throws Exception
     {
-        assertThat(eventLimiter, limitsEventTo(limitedWebhookEvent, BRANCH.getDefaultLimit()));
+        assertThat(eventLimiter, limitsEventTo(branchEvent, false, BRANCH.getDefaultLimit()));
     }
 
     @Test
@@ -72,7 +65,7 @@ public class EventLimiterTest
         final int syncIntervalMinutes = 30;
         when(syncConfig.scheduledSyncIntervalMillis()).thenReturn(MINUTES.toMillis(syncIntervalMinutes));
 
-        assertThat(eventLimiter, limitsEventTo(limitedScheduledEvent, BRANCH.getDefaultLimit() * syncIntervalMinutes));
+        assertThat(eventLimiter, limitsEventTo(branchEvent, true, BRANCH.getDefaultLimit() * syncIntervalMinutes));
     }
 
     @Test
@@ -82,7 +75,7 @@ public class EventLimiterTest
         when(syncConfig.scheduledSyncIntervalMillis()).thenReturn(MINUTES.toMillis(syncIntervalMinutes));
 
         // allow at most one hour of events per sync
-        assertThat(eventLimiter, limitsEventTo(limitedScheduledEvent, BRANCH.getDefaultLimit() * 60));
+        assertThat(eventLimiter, limitsEventTo(branchEvent, true, BRANCH.getDefaultLimit() * 60));
     }
 
     @Test
@@ -94,8 +87,8 @@ public class EventLimiterTest
         final int tries = Math.max(branchLimit, commitLimit) + extra;
 
         // try 2 extra events of each type
-        for (int i = 0; i < tries; i++) { eventLimiter.isLimitExceeded(limitedWebhookEvent); }
-        for (int i = 0; i < tries; i++) { eventLimiter.isLimitExceeded(new LimitedTestEvent(COMMIT, false)); }
+        for (int i = 0; i < tries; i++) { eventLimiter.isLimitExceeded(branchEvent, false); }
+        for (int i = 0; i < tries; i++) { eventLimiter.isLimitExceeded(commitEvent, false); }
 
         assertThat(eventLimiter.getLimitExceededCount(), equalTo((tries - branchLimit) + (tries - commitLimit)));
     }
@@ -107,14 +100,14 @@ public class EventLimiterTest
         when(applicationProperties.getString(COMMIT.getOverrideLimitProperty())).thenReturn(String.valueOf(maxCommits));
         when(applicationProperties.getString(BRANCH.getOverrideLimitProperty())).thenReturn("this not a number");
 
-        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(COMMIT, false), maxCommits));
-        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(BRANCH, false), BRANCH.getDefaultLimit()));
+        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(COMMIT), false, maxCommits));
+        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(BRANCH), false, BRANCH.getDefaultLimit()));
     }
 
     /**
      * @return a matcher that returns true if the event limiter limits {@code limit} events
      */
-    private TypeSafeMatcher<EventLimiter> limitsEventTo(final SyncEvent syncEvent, final int limit)
+    private TypeSafeMatcher<EventLimiter> limitsEventTo(final SyncEvent syncEvent, final boolean scheduledSync, final int limit)
     {
         return new TypeSafeMatcher<EventLimiter>()
         {
@@ -126,7 +119,7 @@ public class EventLimiterTest
                 while (i <= limit) // <- test up to boundary
                 {
                     boolean limitReached = i == limit;
-                    boolean limitExceeded = eventLimiter.isLimitExceeded(syncEvent);
+                    boolean limitExceeded = eventLimiter.isLimitExceeded(syncEvent, scheduledSync);
                     if (limitExceeded != limitReached)
                     {
                         return false;
