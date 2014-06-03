@@ -8,6 +8,8 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import org.openqa.selenium.By;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 public class BitbucketOAuthPage implements Page
 {    
     @ElementBy(linkText = "Add consumer")
@@ -64,10 +66,14 @@ public class BitbucketOAuthPage implements Page
 
     private OAuth parseOAuthCredentials()
     {
+        // retrieve oauth details and fail early when we could not get them (maybe due to BB UI changes)
         String applicationId = consumersTable.find(By.xpath("tr[@class='revealed']")).getAttribute("data-id");
+        assertThat(applicationId).overridingErrorMessage("newly added oauth consumer app id should not be empty").isNotEmpty();
         String key = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-key']")).getText();
+        assertThat(key).overridingErrorMessage("newly added oauth key should not be empty").isNotEmpty();
         String secret = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-secret']")).getText();
-        
+        assertThat(secret).overridingErrorMessage("newly added oauth secret should not be empty").isNotEmpty();
+
         return new OAuth(key, secret, applicationId);
     }
 
