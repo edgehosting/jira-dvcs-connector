@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,10 +12,13 @@ import org.springframework.stereotype.Component;
 public class EventLimiterFactory
 {
     private final SyncConfig syncConfig;
+    private final ApplicationProperties applicationProperties;
 
-    public EventLimiterFactory(SyncConfig syncConfig)
+    @Autowired
+    public EventLimiterFactory(SyncConfig syncConfig, ApplicationProperties applicationProperties)
     {
         this.syncConfig = syncConfig;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -23,6 +28,6 @@ public class EventLimiterFactory
      */
     EventLimiter create()
     {
-        return new EventLimiter(syncConfig);
+        return new EventLimiter(syncConfig, applicationProperties);
     }
 }

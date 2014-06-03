@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import org.hamcrest.Description;
@@ -35,6 +36,9 @@ public class EventLimiterTest
 
     @Mock
     SyncConfig syncConfig;
+
+    @Mock
+    ApplicationProperties applicationProperties;
 
     @InjectMocks
     EventLimiter eventLimiter;
@@ -94,6 +98,17 @@ public class EventLimiterTest
         for (int i = 0; i < tries; i++) { eventLimiter.isLimitExceeded(new LimitedTestEvent(COMMIT, false)); }
 
         assertThat(eventLimiter.getLimitExceededCount(), equalTo((tries - branchLimit) + (tries - commitLimit)));
+    }
+
+    @Test
+    public void limiterTakesApplicationPropertyOverridesIntoAccount() throws Exception
+    {
+        final int maxCommits = 1;
+        when(applicationProperties.getString(COMMIT.getOverrideLimitProperty())).thenReturn(String.valueOf(maxCommits));
+        when(applicationProperties.getString(BRANCH.getOverrideLimitProperty())).thenReturn("this not a number");
+
+        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(COMMIT, false), maxCommits));
+        assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(BRANCH, false), BRANCH.getDefaultLimit()));
     }
 
     /**

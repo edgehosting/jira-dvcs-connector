@@ -1,9 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
@@ -17,10 +20,17 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 class EventLimiter
 {
+    private static final Logger logger = LoggerFactory.getLogger(EventLimiter.class);
+
     /**
      * Used to obtain the scheduled sync interval, which is necessary to come up with the limit for scheduled syncs.
      */
     private final SyncConfig syncConfig;
+
+    /**
+     * Used to check for limit overrides.
+     */
+    private final ApplicationProperties applicationProperties;
 
     /**
      * The number of permits remaining for each limit. The cache values are mutable as they need to be decremented as
@@ -43,7 +53,7 @@ class EventLimiter
                 multiplier = Math.min(60, MILLISECONDS.toMinutes(syncConfig.scheduledSyncIntervalMillis()));
             }
 
-            return new AtomicLong(multiplier * key.eventLimit.getDefaultLimit());
+            return new AtomicLong(multiplier * getEffectiveLimit(key.eventLimit));
         }
     });
 
@@ -51,10 +61,12 @@ class EventLimiter
      * Creates a new EventLimiter.
      *
      * @param syncConfig a SyncConfig
+     * @param applicationProperties the ApplicationProperties
      */
-    public EventLimiter(SyncConfig syncConfig)
+    public EventLimiter(SyncConfig syncConfig, ApplicationProperties applicationProperties)
     {
         this.syncConfig = syncConfig;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -91,6 +103,30 @@ class EventLimiter
         }
 
         return exceeded;
+    }
+
+    /**
+     * Returns the effective limit for {@code eventLimit}, taking any overrides into account.
+     *
+     * @param eventLimit the EventLimit to calculate the effective limit for
+     * @return the effective limit for {@code eventLimit}
+     */
+    private int getEffectiveLimit(EventLimit eventLimit)
+    {
+        String override = applicationProperties.getString(eventLimit.getOverrideLimitProperty());
+        if (override != null)
+        {
+            try
+            {
+                return Integer.parseInt(override);
+            }
+            catch (NumberFormatException e)
+            {
+                logger.warn("Ignoring invalid limit override for {}: {}", eventLimit, override);
+            }
+        }
+
+        return eventLimit.getDefaultLimit();
     }
 
     /**
