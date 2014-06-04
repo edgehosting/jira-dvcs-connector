@@ -12,13 +12,11 @@ import org.springframework.stereotype.Component;
 public class EventLimiterFactory
 {
     private final SyncConfig syncConfig;
-    private final ApplicationProperties applicationProperties;
 
     @Autowired
     public EventLimiterFactory(SyncConfig syncConfig, ApplicationProperties applicationProperties)
     {
         this.syncConfig = syncConfig;
-        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -28,6 +26,6 @@ public class EventLimiterFactory
      */
     EventLimiter create()
     {
-        return new EventLimiter(syncConfig, applicationProperties);
+        return new EventLimiter(syncConfig);
     }
 }

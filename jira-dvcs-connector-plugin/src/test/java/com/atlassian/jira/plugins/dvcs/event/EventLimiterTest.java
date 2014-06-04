@@ -1,12 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
-import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -17,6 +18,7 @@ import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
@@ -30,9 +32,6 @@ public class EventLimiterTest
     @Mock
     SyncConfig syncConfig;
 
-    @Mock
-    ApplicationProperties applicationProperties;
-
     @InjectMocks
     EventLimiter eventLimiter;
 
@@ -40,6 +39,15 @@ public class EventLimiterTest
     public void setUp() throws Exception
     {
         when(syncConfig.scheduledSyncIntervalMillis()).thenReturn(SYNC_INTERVAL);
+        when(syncConfig.getEffectiveLimit(any(EventLimit.class))).thenAnswer(new Answer<Integer>()
+        {
+            @Override
+            public Integer answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return ((EventLimit) invocation.getArguments()[0]).getDefaultLimit();
+            }
+        });
+
         branchEvent = new LimitedTestEvent(BRANCH);
         commitEvent = new LimitedTestEvent(COMMIT);
     }
@@ -94,11 +102,10 @@ public class EventLimiterTest
     }
 
     @Test
-    public void limiterTakesApplicationPropertyOverridesIntoAccount() throws Exception
+    public void limiterTakesOverridesIntoAccount() throws Exception
     {
         final int maxCommits = 1;
-        when(applicationProperties.getString(COMMIT.getOverrideLimitProperty())).thenReturn(String.valueOf(maxCommits));
-        when(applicationProperties.getString(BRANCH.getOverrideLimitProperty())).thenReturn("this not a number");
+        when(syncConfig.getEffectiveLimit(COMMIT)).thenReturn(maxCommits);
 
         assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(COMMIT), false, maxCommits));
         assertThat(eventLimiter, limitsEventTo(new LimitedTestEvent(BRANCH), false, BRANCH.getDefaultLimit()));
