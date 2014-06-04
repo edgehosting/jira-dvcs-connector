@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.event.EventLimit;
-import com.atlassian.util.concurrent.Nullable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import org.joda.time.Duration;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
