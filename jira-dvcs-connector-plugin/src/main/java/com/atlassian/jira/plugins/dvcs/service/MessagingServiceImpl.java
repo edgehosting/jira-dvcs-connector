@@ -30,7 +30,6 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.util.concurrent.NotNull;
 import com.atlassian.util.concurrent.Promise;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -926,7 +925,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private static class MessageAddressLoader<P extends HasProgress> implements CacheLoader<IdKey<P>, MessageAddress<P>>
     {
         @Override
-        public MessageAddress<P> load(@NotNull final IdKey<P> key)
+        public MessageAddress<P> load(@Nonnull final IdKey<P> key)
         {
             log.debug("idToMessageAddress loading new item for key id: {} payloadType: {} ", key.id, key.payloadType);
             return new MessageAddress<P>()

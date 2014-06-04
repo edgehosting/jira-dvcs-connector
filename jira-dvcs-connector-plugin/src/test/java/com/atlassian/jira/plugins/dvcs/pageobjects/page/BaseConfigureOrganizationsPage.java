@@ -100,7 +100,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public void assertThatErrorMessage(Matcher<String> matcher)
     {
-        Poller.waitUntil(messageBarDiv.find(By.className("error")).timed().getText(), matcher);
+        Poller.waitUntil(messageBarDiv.find(By.className("aui-message-error")).timed().getText(), matcher);
     }
 
     protected void waitFormBecomeVisible()
@@ -116,7 +116,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public String getErrorStatusMessage()
     {
-        return messageBarDiv.find(By.className("error")).timed().getText().now();
+        return messageBarDiv.find(By.className("aui-message-error")).timed().getText().now();
     }
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);

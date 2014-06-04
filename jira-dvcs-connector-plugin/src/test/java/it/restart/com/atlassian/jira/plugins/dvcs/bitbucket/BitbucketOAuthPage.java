@@ -8,6 +8,8 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import org.openqa.selenium.By;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 public class BitbucketOAuthPage implements Page
 {    
     @ElementBy(linkText = "Add consumer")
@@ -64,21 +66,27 @@ public class BitbucketOAuthPage implements Page
 
     private OAuth parseOAuthCredentials()
     {
+        // retrieve oauth details and fail early when we could not get them (maybe due to BB UI changes)
         String applicationId = consumersTable.find(By.xpath("tr[@class='revealed']")).getAttribute("data-id");
-        String key = consumersTable.find(By.xpath("tr[last()]//li[3]/span")).getText();
-        String secret = consumersTable.find(By.xpath("tr[last()]//li[4]/span")).getText();
-        
+        assertThat(applicationId).overridingErrorMessage("newly added oauth consumer app id should not be empty").isNotEmpty();
+        String key = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-key']")).getText();
+        assertThat(key).overridingErrorMessage("newly added oauth key should not be empty").isNotEmpty();
+        String secret = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-secret']")).getText();
+        assertThat(secret).overridingErrorMessage("newly added oauth secret should not be empty").isNotEmpty();
+
         return new OAuth(key, secret, applicationId);
     }
 
     public void removeConsumer(String applicationId)
     {
         PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
-        PageElement deleteButton = oauthConsumer.find(By.linkText("Delete"));
 
-        // accessing tag name as workaround for permission denied to access property 'nr@context' issue
-        PageElementUtils.permissionDeniedWorkAround(deleteButton);
+        // click to show the actions inline dialog
+        oauthConsumer.find(By.className("actions")).find(By.tagName("button")).click();
 
+        // click on the Delete button
+        final PageElement inlineDialog = body.find(By.id("consumer-actions-" + applicationId));
+        final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
         deleteButton.click();
     }
 }
