@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.atlassian.jira.plugins.dvcs.event.EventLimit.BRANCH;
@@ -52,7 +53,7 @@ public class TestEventLimitsResource
                 BRANCH.name(), newLimit
         )));
 
-        assertThat("branch limits override should be removed", limitsClient.setLimits(ImmutableMap.of(BRANCH.name(), -1)).limits(), equalTo((Map) ImmutableMap.of(
+        assertThat("branch limits override should be removed", limitsClient.setLimits(Collections.<String, Integer>singletonMap(BRANCH.name(), null)).limits(), equalTo((Map) ImmutableMap.of(
                 COMMIT.name(), COMMIT.getDefaultLimit(),
                 BRANCH.name(), BRANCH.getDefaultLimit()
         )));

@@ -61,8 +61,7 @@ public class EventLimitsResource
         // update all the limits
         for (EventLimit limitType : limitsToSet.keySet())
         {
-            Integer newLimit = limitsToSet.get(limitType);
-            syncConfig.setEffectiveLimit(limitType, newLimit > 0 ? newLimit : null);
+            syncConfig.setEffectiveLimit(limitType, limitsToSet.get(limitType));
         }
 
         // finally, return the current effective limits

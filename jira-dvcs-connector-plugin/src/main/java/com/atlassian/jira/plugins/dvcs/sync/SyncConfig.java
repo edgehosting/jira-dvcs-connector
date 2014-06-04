@@ -4,6 +4,7 @@ import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.event.EventLimit;
 import com.atlassian.util.concurrent.Nullable;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,17 +64,16 @@ public class SyncConfig
     {
         checkNotNull(eventLimit, "eventLimit");
 
-        String override = applicationProperties.getString(eventLimit.getOverrideLimitProperty());
-        if (override != null)
+        Optional<Integer> appProperty = optInteger(eventLimit, applicationProperties.getString(eventLimit.getOverrideLimitProperty()));
+        if (appProperty.isPresent())
         {
-            try
-            {
-                return Integer.parseInt(override);
-            }
-            catch (NumberFormatException e)
-            {
-                logger.warn("Ignoring invalid limit override for {}: {}", eventLimit, override);
-            }
+            return appProperty.get();
+        }
+
+        Optional<Integer> sysProperty = optInteger(eventLimit, System.getProperty(eventLimit.getOverrideLimitProperty()));
+        if (sysProperty.isPresent())
+        {
+            return sysProperty.get();
         }
 
         return eventLimit.getDefaultLimit();
@@ -89,5 +89,22 @@ public class SyncConfig
     {
         checkNotNull(eventLimit, "eventLimit");
         applicationProperties.setString(eventLimit.getOverrideLimitProperty(), newLimit != null ? newLimit.toString() : null);
+    }
+
+    private static Optional<Integer> optInteger(EventLimit eventLimit, @Nullable String override)
+    {
+        if (override != null)
+        {
+            try
+            {
+                return Optional.of(Integer.parseInt(override));
+            }
+            catch (NumberFormatException e)
+            {
+                logger.warn("Ignoring invalid limit override for {}: {}", eventLimit, override);
+            }
+        }
+
+        return Optional.absent();
     }
 }
