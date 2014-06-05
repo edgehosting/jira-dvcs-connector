@@ -28,16 +28,22 @@ public class OrganizationDaoImplTest
     }
     
     @Test
-    public void testSerializeDefaultGroups()
+    public void willSerializeDefaultGroupsWithSimpleNames()
     {
         String serializedGroups = oDao.serializeDefaultGroups(Sets.newHashSet(new Group("a"), new Group("b")));
         List<String> expectedResults = Lists.newArrayList("a", "b");
         List<String> actualResults = Lists.newArrayList(Splitter.on(";").split(serializedGroups));
         assertThat(expectedResults).containsAll(actualResults);
+        assertThat(expectedResults).hasSameSizeAs(actualResults);
+    }
 
-        serializedGroups = oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"), new Group("raka")));
-        expectedResults = Lists.newArrayList("raka", "abraka dab");
-        actualResults = Lists.newArrayList(Splitter.on(";").split(serializedGroups));
+    @Test
+    public void willSerializeDefaultGroupsWithComplexNames()
+    {
+        String serializedGroups = oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"), new Group("raka")));
+        List<String> expectedResults = Lists.newArrayList("raka", "abraka dab");
+        List<String> actualResults = Lists.newArrayList(Splitter.on(";").split(serializedGroups));
         assertThat(expectedResults).containsAll(actualResults);
+        assertThat(expectedResults).hasSameSizeAs(actualResults);
     }
 }
