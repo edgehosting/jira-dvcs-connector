@@ -1,8 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -26,10 +30,14 @@ public class OrganizationDaoImplTest
     @Test
     public void testSerializeDefaultGroups()
     {
-        assertThat(oDao.serializeDefaultGroups(Sets.newHashSet(new Group("a"),new Group("b"))))
-                .isEqualTo("a;b");
+        String serializedGroups = oDao.serializeDefaultGroups(Sets.newHashSet(new Group("a"), new Group("b")));
+        List<String> expectedResults = Lists.newArrayList("a", "b");
+        List<String> actualResults = Lists.newArrayList(Splitter.on(";").split(serializedGroups));
+        assertThat(expectedResults).containsAll(actualResults);
 
-        assertThat(oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"),new Group("raka"))))
-                .isEqualTo("raka;abraka dab");
+        serializedGroups = oDao.serializeDefaultGroups(Sets.newHashSet(new Group("abraka dab"), new Group("raka")));
+        expectedResults = Lists.newArrayList("raka", "abraka dab");
+        actualResults = Lists.newArrayList(Splitter.on(";").split(serializedGroups));
+        assertThat(expectedResults).containsAll(actualResults);
     }
 }
