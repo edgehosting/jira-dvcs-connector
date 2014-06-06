@@ -58,6 +58,9 @@ public class DefaultProgress implements Progress, Serializable
     @XmlAttribute
     private boolean softsync;
 
+    @XmlAttribute
+    private boolean webHookSync;
+
     @XmlTransient
     private boolean hasAdminPermission = true;
 
@@ -301,5 +304,15 @@ public class DefaultProgress implements Progress, Serializable
     public void setSoftsync(final boolean softsync)
     {
         this.softsync = softsync;
+    }
+
+    public boolean isWebHookSync()
+    {
+        return webHookSync;
+    }
+
+    public void setWebHookSync(final boolean webHookSync)
+    {
+        this.webHookSync = webHookSync;
     }
 }

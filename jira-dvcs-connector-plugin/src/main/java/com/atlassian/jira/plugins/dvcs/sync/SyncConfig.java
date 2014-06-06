@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.event.EventLimit;
+import com.atlassian.util.concurrent.LazyReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import org.joda.time.Duration;
@@ -39,6 +40,19 @@ public class SyncConfig
      */
     private final ApplicationProperties applicationProperties;
 
+    /**
+     * Changing the system property after the job has been scheduled does not have any effect so we read it
+     * once and use that value throughout the lifetime of the plugin.
+     */
+    private final LazyReference<Long> scheduledSyncInterval = new LazyReference<Long>()
+    {
+        @Override
+        protected Long create() throws Exception
+        {
+            return Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL.getMillis());
+        }
+    };
+
     @Autowired
     public SyncConfig(ApplicationProperties applicationProperties)
     {
@@ -48,10 +62,13 @@ public class SyncConfig
     /**
      * Returns the sync interval that should be used. This defaults to 1 hour and can be overridden by setting the
      * {@value #PROPERTY_KEY} system property to a value in milliseconds.
+     * <p/>
+     * Note that changing the system property after the plugin has started has no effect.
      */
     public long scheduledSyncIntervalMillis()
     {
-        return Long.getLong(PROPERTY_KEY, DEFAULT_INTERVAL.getMillis());
+        //noinspection ConstantConditions
+        return scheduledSyncInterval.get();
     }
 
     /**

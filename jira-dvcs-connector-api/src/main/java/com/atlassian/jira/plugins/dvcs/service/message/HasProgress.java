@@ -9,4 +9,6 @@ public interface HasProgress extends HasRepository
     int getSyncAuditId();
 
     boolean isSoftSync();
+
+    boolean isWebHookSync();
 }

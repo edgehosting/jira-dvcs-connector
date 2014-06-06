@@ -133,7 +133,7 @@ public class MessageExecutorTest
     {
         MockPayload()
         {
-            super(new DefaultProgress(), 1, true, repository);
+            super(new DefaultProgress(), 1, true, repository, false);
             getProgress().setSoftsync(true);
         }
     }
