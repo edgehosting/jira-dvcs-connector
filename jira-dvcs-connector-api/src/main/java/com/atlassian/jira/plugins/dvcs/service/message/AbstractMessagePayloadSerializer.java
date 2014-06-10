@@ -35,6 +35,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             json.put("repository", payload.getRepository().getId());
             json.put("softSync", payload.isSoftSync());
+            json.put("webHookSync", payload.isWebHookSync());
             json.put("version", 1);
             //
             serializeInternal(json, payload);
@@ -67,6 +68,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
             deserialized.repository = repositoryService.get(jsoned.optInt("repository"));
 
             deserialized.softSync = jsoned.optBoolean("softSync");
+            deserialized.webHookSync = jsoned.optBoolean("webHookSync");
 
             progress = synchronizer.getProgress(deserialized.repository.getId());
             if (progress == null || progress.isFinished())
@@ -75,6 +77,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
                 // inject existing sync audit id
                 progress.setAuditLogId(result.getSyncAuditId());
                 progress.setSoftsync(deserialized.softSync);
+                progress.setWebHookSync(deserialized.webHookSync);
                 synchronizer.putProgress(deserialized.repository, progress);
             }
             deserialized.progress = progress;

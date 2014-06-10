@@ -33,9 +33,9 @@ public class BitbucketSynchronizeChangesetMessage extends BaseProgressEnabledMes
 
     public BitbucketSynchronizeChangesetMessage(Repository repository, Date refreshAfterSynchronizedAt,
             Progress progress, List<String> include, List<String> exclude, BitbucketChangesetPage page,
-            Map<String, String> nodesToBranches, boolean softSync, int syncAuditId)
+            Map<String, String> nodesToBranches, boolean softSync, int syncAuditId, boolean webHookSync)
     {
-        super(progress, syncAuditId, softSync, repository);
+        super(progress, syncAuditId, softSync, repository, webHookSync);
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;
         this.include = include;
         this.exclude = exclude;

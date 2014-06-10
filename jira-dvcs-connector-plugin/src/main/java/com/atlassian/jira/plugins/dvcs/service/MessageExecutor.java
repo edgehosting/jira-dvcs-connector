@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
@@ -34,8 +35,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.NO_FLAGS;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -344,8 +345,15 @@ public class MessageExecutor
             // listen for sync events during soft sync only to avoid replaying events when accounts are removed and
             // subsequently re-added
             final boolean softSync = progress.isSoftsync() && payload.isSoftSync();
+            final boolean webHookSync = progress.isWebHookSync() && payload.isWebHookSync();
             final Repository repository = messagingService.getRepositoryFromMessage(message);
-            final RepositorySync repoSync = repoSyncHelper.startSync(repository, softSync ? EnumSet.of(SOFT_SYNC) : NO_FLAGS);
+
+            // reconstruct the sync flags from softSync / webHookSync
+            final EnumSet<SynchronizationFlag> syncFlags = EnumSet.noneOf(SynchronizationFlag.class);
+            if (softSync) { syncFlags.add(SOFT_SYNC); }
+            if (webHookSync) { syncFlags.add(WEBHOOK_SYNC); }
+
+            final RepositorySync repoSync = repoSyncHelper.startSync(repository, syncFlags);
             try
             {
                 consumer.onReceive(message, payload);

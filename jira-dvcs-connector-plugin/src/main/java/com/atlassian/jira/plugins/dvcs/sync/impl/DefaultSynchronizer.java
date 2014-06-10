@@ -242,6 +242,7 @@ public class DefaultSynchronizer implements Synchronizer
     {
         DefaultProgress progress = new DefaultProgress();
         progress.setSoftsync(flags.contains(SynchronizationFlag.SOFT_SYNC));
+        progress.setWebHookSync(flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
         progress.start();
         putProgress(repository, progress);
         return progress;

@@ -35,7 +35,7 @@ public class OldBitbucketSynchronizeCsetMsgSerializer extends AbstractMessagePay
         node = json.getString("node");
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
 
-        return new OldBitbucketSynchronizeCsetMsg(null, branch, node, refreshAfterSynchronizedAt, null, false, 0);
+        return new OldBitbucketSynchronizeCsetMsg(null, branch, node, refreshAfterSynchronizedAt, null, false, 0, false);
     }
 
     @Override
