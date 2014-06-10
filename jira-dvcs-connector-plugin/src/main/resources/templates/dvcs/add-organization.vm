@@ -244,13 +244,12 @@
                 <td class="dvcs-sync-repo dvcs-centered">
                     <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
                         #if ($action.isSyncDisabled($org.getDvcsType()))
-                        <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="return false;">
-                            <span id="syncrepoicon_$repo.id" class="aui-icon aui-icon-small aui-iconfont-devtools-task-disabled dvcs-link-disabled" title="Synchronization is disabled" data-title="Synchronization is disabled">&nbsp;</span>
+                        <span id="syncrepoicon_$repo.id" class="aui-icon aui-icon-small aui-iconfont-devtools-task-disabled dvcs-link-disabled" title="Synchronization is disabled" data-title="Synchronization is disabled">&nbsp;</span>
                         #else
                         <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="forceSync(event, $repo.id); return false;">
                             <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" data-title="Click To Sync Repo $textutils.htmlEncode($repo.name)">&nbsp;</span>
-                        #end
                         </a>
+                        #end
                     </div>
                 </td>
                 
