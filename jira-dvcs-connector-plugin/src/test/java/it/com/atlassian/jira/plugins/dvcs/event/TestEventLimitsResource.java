@@ -1,5 +1,6 @@
 package it.com.atlassian.jira.plugins.dvcs.event;
 
+import com.atlassian.jira.functest.framework.FunctTestConstants;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.testkit.client.Backdoor;
 import com.atlassian.pageobjects.TestedProductFactory;
@@ -32,7 +33,7 @@ public class TestEventLimitsResource
     @Test
     public void limitsApiIsOnlyAccessibleToAdmins() throws Exception
     {
-        limitsClient.loginAs("fred");
+        limitsClient.loginAs(FunctTestConstants.FRED_USERNAME);
 
         assertThat(limitsClient.getLimits().status(), equalTo(403));
         assertThat(limitsClient.setLimits(ImmutableMap.of("some_limit", 1)).status(), equalTo(403));

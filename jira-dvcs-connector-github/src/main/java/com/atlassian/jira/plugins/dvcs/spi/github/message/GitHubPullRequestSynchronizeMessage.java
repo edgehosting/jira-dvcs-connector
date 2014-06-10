@@ -33,6 +33,7 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
      * @param pullRequestNumber
      *            {@link #getPullRequestNumber()}
      * @param webHookSync
+     *            whether this sync was triggered by a web hook
      */
     public GitHubPullRequestSynchronizeMessage(Progress progress, int syncAuditId, boolean softSync, Repository repository,
             int pullRequestNumber, boolean webHookSync)
