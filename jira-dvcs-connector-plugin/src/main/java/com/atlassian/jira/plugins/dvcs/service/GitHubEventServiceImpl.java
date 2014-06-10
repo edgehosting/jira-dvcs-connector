@@ -73,7 +73,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(final Repository repository, final boolean isSoftSync, final String[] synchronizationTags)
+    public void synchronize(final Repository repository, final boolean isSoftSync, final String[] synchronizationTags, boolean webHookSync)
     {
         EventService eventService = githubClientProvider.getEventService(repository);
 
@@ -83,7 +83,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventMapping lastGitHubEventSavePoint = gitHubEventDAO.getLastSavePoint(repository);
 
         String lastProceedEventGitHubId = null;
-        final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
+        final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags, webHookSync);
         Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(forRepositoryId).iterator();
         while (eventsIterator.hasNext())
         {

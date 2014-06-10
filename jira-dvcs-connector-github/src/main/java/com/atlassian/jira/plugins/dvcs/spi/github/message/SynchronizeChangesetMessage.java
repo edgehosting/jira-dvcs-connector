@@ -26,9 +26,9 @@ public class SynchronizeChangesetMessage extends BaseProgressEnabledMessage impl
     private Date refreshAfterSynchronizedAt;
 
     public SynchronizeChangesetMessage(Repository repository, String branch, String node, Date refreshAfterSynchronizedAt,
-            Progress progress, boolean softSync, int syncAuditId)
+            Progress progress, boolean softSync, int syncAuditId, boolean webHookSync)
     {
-        super(progress, syncAuditId, softSync, repository);
+        super(progress, syncAuditId, softSync, repository, webHookSync);
         this.branch = branch;
         this.node = node;
         this.refreshAfterSynchronizedAt = refreshAfterSynchronizedAt;

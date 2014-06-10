@@ -42,12 +42,12 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     protected OldBitbucketSynchronizeCsetMsg createNextMessage(OldBitbucketSynchronizeCsetMsg payload, String parentChangesetNode)
     {
        return new OldBitbucketSynchronizeCsetMsg(payload.getRepository(), //
-                payload.getBranch(), //
-                parentChangesetNode, //
-                payload.getRefreshAfterSynchronizedAt(), //
-                payload.getProgress(),
-                payload.isSoftSync(), payload.getSyncAuditId()
-        );
+               payload.getBranch(), //
+               parentChangesetNode, //
+               payload.getRefreshAfterSynchronizedAt(), //
+               payload.getProgress(),
+               payload.isSoftSync(), payload.getSyncAuditId(),
+               payload.isWebHookSync());
     }
 
     @Override

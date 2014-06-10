@@ -19,6 +19,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.Immutable;
 
+import static com.atlassian.fugue.Option.option;
 import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -28,30 +29,37 @@ public class EventServiceImpl implements EventService
     private static final Logger logger = LoggerFactory.getLogger(EventServiceImpl.class);
     private static final int DESTROY_TIMEOUT_SECS = 10;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final EventPublisher eventPublisher;
     private final SyncEventDao syncEventDao;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final EventLimiterFactory eventLimiterFactory;
     private final ExecutorService eventDispatcher;
 
     @Autowired
-    public EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao)
+    public EventServiceImpl(EventPublisher eventPublisher, EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
     {
-        this(eventPublisher, syncEventDao, createEventDispatcher());
+        this(eventPublisher, syncEventDao, eventLimiterFactory, createEventDispatcher());
     }
 
     @VisibleForTesting
-    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, ExecutorService executorService)
+    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
     {
         this.eventPublisher = eventPublisher;
         this.syncEventDao = syncEventDao;
+        this.eventLimiterFactory = eventLimiterFactory;
         this.eventDispatcher = executorService;
     }
 
     public void storeEvent(Repository repository, SyncEvent event) throws IllegalArgumentException
     {
+        storeEvent(repository, event, false);
+    }
+
+    public void storeEvent(Repository repository, SyncEvent event, boolean scheduledSync) throws IllegalArgumentException
+    {
         try
         {
-            syncEventDao.save(toSyncEventMapping(repository, event));
+            syncEventDao.save(toSyncEventMapping(repository, event, scheduledSync));
             logger.debug("Saved event for repository {}: {}", repository, event);
         }
         catch (IOException e)
@@ -102,7 +110,8 @@ public class EventServiceImpl implements EventService
      */
     private void doDispatchEvents(DispatchRequest dispatch)
     {
-        List<SyncEventMapping> eventMappings = syncEventDao.findAllByRepoId(dispatch.repoId());
+        final EventLimiter limiter = eventLimiterFactory.create();
+        final List<SyncEventMapping> eventMappings = syncEventDao.findAllByRepoId(dispatch.repoId());
         for (int i = 0, size = eventMappings.size(); i < size; i++)
         {
             if (Thread.interrupted())
@@ -116,6 +125,11 @@ public class EventServiceImpl implements EventService
             try
             {
                 final SyncEvent event = fromSyncEventMapping(syncEventMapping);
+                if (limiter.isLimitExceeded(event, option(syncEventMapping.getScheduledSync()).getOrElse(false)))
+                {
+                    logger.debug("Limit exceeded, dropping event for repository {}: {}", dispatch, event);
+                    continue;
+                }
 
                 logger.debug("Publishing event for repository {}: {}", dispatch, event);
                 eventPublisher.publish(event);
@@ -133,6 +147,12 @@ public class EventServiceImpl implements EventService
                 syncEventDao.delete(syncEventMapping);
             }
         }
+
+        int dropped = limiter.getLimitExceededCount();
+        if (dropped > 0)
+        {
+            eventPublisher.publish(new LimitExceededEvent(dropped));
+        }
     }
 
     @Override
@@ -142,13 +162,14 @@ public class EventServiceImpl implements EventService
         logger.debug("Deleted {} events from repo: {}", deleted, repository);
     }
 
-    private SyncEventMapping toSyncEventMapping(Repository repository, SyncEvent event) throws IOException
+    private SyncEventMapping toSyncEventMapping(Repository repository, SyncEvent event, final Boolean scheduledSync) throws IOException
     {
         SyncEventMapping mapping = syncEventDao.create();
         mapping.setRepoId(repository.getId());
         mapping.setEventDate(event.getDate());
         mapping.setEventClass(event.getClass().getName());
         mapping.setEventJson(objectMapper.writeValueAsString(event));
+        mapping.setScheduledSync(scheduledSync);
 
         return mapping;
     }

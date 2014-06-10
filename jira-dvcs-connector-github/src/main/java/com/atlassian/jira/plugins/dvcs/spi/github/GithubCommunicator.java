@@ -605,9 +605,10 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
-        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+        final boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        final boolean webHookSync = flags.contains(SynchronizationFlag.WEBHOOK_SYNC);
+        final boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
         String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
         if (changestesSync)
@@ -621,7 +622,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
                             branch.getName(), branchHead.getHead(), //
                             synchronizationStartedAt, //
-                            null, softSync, auditId);
+                            null, softSync, auditId, webHookSync);
                     MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                             SynchronizeChangesetMessage.class, //
                             GithubSynchronizeChangesetMessageConsumer.ADDRESS //
@@ -635,7 +636,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         if (pullRequestSync)
         {
-            gitHubEventService.synchronize(repo, softSync, synchronizationTags);
+            gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
         }
     }
 

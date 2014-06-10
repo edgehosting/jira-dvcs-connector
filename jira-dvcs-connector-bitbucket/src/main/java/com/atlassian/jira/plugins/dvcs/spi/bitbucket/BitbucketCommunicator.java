@@ -665,15 +665,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Override
     public void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId)
     {
-        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+        final boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        final boolean webHookSync = flags.contains(SynchronizationFlag.WEBHOOK_SYNC);
+        final boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
         if (changestesSync)
         {
             // sync csets
             BranchFilterInfo filterNodes = getFilterNodes(repo);
-            processBitbucketCsetSync(repo, softSync, filterNodes, auditId);
+            processBitbucketCsetSync(repo, softSync, filterNodes, auditId, webHookSync);
 
             branchService.updateBranchHeads(repo, filterNodes.newBranches, filterNodes.oldHeads);
             branchService.updateBranches(repo, filterNodes.newBranches);
@@ -681,7 +682,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         // sync pull requests
         if (pullRequestSync)
         {
-            processBitbucketPrSync(repo, softSync, auditId);
+            processBitbucketPrSync(repo, softSync, auditId, webHookSync);
         }
     }
 
@@ -716,7 +717,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId)
+    private void processBitbucketCsetSync(Repository repository, boolean softSync, BranchFilterInfo filterNodes, int auditId, boolean webHookSync)
     {
         List<Branch> newBranches = filterNodes.newBranches;
 
@@ -732,7 +733,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     OldBitbucketSynchronizeCsetMsg message = new OldBitbucketSynchronizeCsetMsg(repository, //
                             branchHead.getName(), branchHead.getHead(), //
                             synchronizationStartedAt, //
-                            null, softSync, auditId);
+                            null, softSync, auditId, webHookSync);
                     MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                             OldBitbucketSynchronizeCsetMsg.class, //
                             OldBitbucketSynchronizeCsetMsgConsumer.KEY //
@@ -756,7 +757,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
             BitbucketSynchronizeChangesetMessage message = new BitbucketSynchronizeChangesetMessage(repository, synchronizationStartedAt,
                     (Progress) null, createInclude(filterNodes), filterNodes.oldHeadsHashes, null,
-                    asNodeToBranches(filterNodes.newBranches), softSync, auditId);
+                    asNodeToBranches(filterNodes.newBranches), softSync, auditId, webHookSync);
 
             messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY,
                     messagingService.getTagForSynchronization(repository), messagingService.getTagForAuditSynchronization(auditId));
@@ -773,13 +774,13 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return newHeadsNodes;
     }
 
-    protected void processBitbucketPrSync(Repository repo, boolean softSync, int auditId)
+    protected void processBitbucketPrSync(Repository repo, boolean softSync, int auditId, boolean webHookSync)
     {
         MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                 BitbucketSynchronizeActivityMessage.class, //
                 BitbucketSynchronizeActivityMessageConsumer.KEY //
                 );
-        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId),
+        messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId, webHookSync),
                 softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY,
                 messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
     }

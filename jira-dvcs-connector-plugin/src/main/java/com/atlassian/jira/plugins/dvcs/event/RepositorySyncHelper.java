@@ -1,12 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.EnumSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -32,15 +36,16 @@ public class RepositorySyncHelper
      * is false the returned RepositorySync will not capture (or store) events.
      *
      * @param repository the Repository being synchronised
-     * @param softSync whether the synchronisation is a soft sync
+     * @param syncFlags synchronisation flags
      * @return a RepositorySync
      */
     @Nonnull
-    public RepositorySync startSync(@Nullable Repository repository, boolean softSync)
+    public RepositorySync startSync(@Nullable Repository repository, @Nonnull EnumSet<SynchronizationFlag> syncFlags)
     {
-        if (repository != null && softSync)
+        checkNotNull(syncFlags, "syncFlags");
+        if (repository != null && syncFlags.contains(SOFT_SYNC))
         {
-            return new CapturingRepositorySync(eventService, repository, threadEvents.startCapturing());
+            return new CapturingRepositorySync(eventService, repository, !syncFlags.contains(WEBHOOK_SYNC), threadEvents.startCapturing());
         }
 
         return NULL_REPO_SYNC;
