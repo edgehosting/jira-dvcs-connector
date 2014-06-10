@@ -43,7 +43,6 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
             json.put("page", payload.getPage().getPage());
         }
         json.put("nodesToBranches", payload.getNodesToBranches());
-        json.put("webHookSync", payload.isWebHookSync());
     }
 
     @Override
@@ -65,7 +64,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         include = collectionFromString(json.optString("include"));
         nodesToBranches = asMap(json.optJSONObject("nodesToBranches"));
 
-        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, nodesToBranches, false, 0, json.getBoolean("webHookSync"));
+        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, nodesToBranches, false, 0, false);
     }
 
     protected Map<String, String> asMap(JSONObject object)

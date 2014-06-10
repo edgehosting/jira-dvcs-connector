@@ -21,7 +21,6 @@ public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloa
         json.put("branch", payload.getBranch());
         json.put("node", payload.getNode());
         json.put("refreshAfterSynchronizedAt", payload.getRefreshAfterSynchronizedAt().getTime());
-        json.put("webHookSync", payload.isWebHookSync());
     }
 
     @Override
@@ -35,7 +34,7 @@ public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloa
         node = json.getString("node");
         refreshAfterSynchronizedAt = parseDate(json, "refreshAfterSynchronizedAt", version);
 
-        return new SynchronizeChangesetMessage(null, branch, node, refreshAfterSynchronizedAt, null, false, 0, json.getBoolean("webHookSync"));
+        return new SynchronizeChangesetMessage(null, branch, node, refreshAfterSynchronizedAt, null, false, 0, false);
     }
 
     @Override

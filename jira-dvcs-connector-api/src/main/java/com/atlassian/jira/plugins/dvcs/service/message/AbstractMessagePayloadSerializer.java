@@ -35,6 +35,7 @@ public abstract class AbstractMessagePayloadSerializer<P extends HasProgress> im
 
             json.put("repository", payload.getRepository().getId());
             json.put("softSync", payload.isSoftSync());
+            json.put("webHookSync", payload.isWebHookSync());
             json.put("version", 1);
             //
             serializeInternal(json, payload);

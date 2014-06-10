@@ -21,7 +21,6 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         {
             json.put("lastSyncDate", payload.getLastSyncDate().getTime());
         }
-        json.put("webHookSync", payload.isWebHookSync());
     }
 
     @Override
@@ -37,7 +36,7 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
         processedPullRequestsLocal = asSet(json.optJSONArray("processedPullRequestsLocal"));
         lastSyncDate = parseDate(json, "lastSyncDate", version);
 
-        return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0, json.getBoolean("webHookSync"));
+        return new BitbucketSynchronizeActivityMessage(null, null, false, page, processedPullRequests, processedPullRequestsLocal, lastSyncDate, 0, false);
     }
 
 

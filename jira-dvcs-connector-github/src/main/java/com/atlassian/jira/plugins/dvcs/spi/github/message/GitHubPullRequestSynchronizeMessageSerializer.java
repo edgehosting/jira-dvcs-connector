@@ -22,13 +22,12 @@ public class GitHubPullRequestSynchronizeMessageSerializer extends AbstractMessa
     protected void serializeInternal(JSONObject json, GitHubPullRequestSynchronizeMessage payload) throws Exception
     {
         json.put("pullRequestNumber", payload.getPullRequestNumber());
-        json.put("webHookSync", payload.isWebHookSync());
     }
 
     @Override
     protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json, final int version) throws Exception
     {
-        return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"), json.getBoolean("webHookSync"));
+        return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"), false);
     }
 
 }
