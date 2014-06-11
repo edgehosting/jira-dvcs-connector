@@ -96,10 +96,10 @@
 #macro (printOrganizations)
 
 <div class="vert-space">&nbsp;</div>
-
-#foreach( $org in $action.loadOrganizations() )
+#set($orgs = $action.loadOrganizations())
+#foreach( $org in $orgs )
   <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
-      #if ($action.isSyncDisabled($org.getDvcsType()))
+      #if ($orgs.size() > 1 && $action.isSyncDisabled($org.getDvcsType()))
           <div class="aui-message warning shadowed">
               <p class="title">
                   <span class="aui-icon icon-warning"></span>

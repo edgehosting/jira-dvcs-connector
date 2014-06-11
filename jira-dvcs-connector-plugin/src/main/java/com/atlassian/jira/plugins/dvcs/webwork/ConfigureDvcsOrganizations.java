@@ -32,8 +32,7 @@ import java.util.List;
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
     static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
-    public static final String SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE_START = "Synchronization for all ";
-    public static final String SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE_END = "accounts have been temporarily disabled by Atlassian for maintenance. Thank you for your patience.";
+    public static final String SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE = "Synchronization for all %saccounts have been temporarily disabled by Atlassian for maintenance. Thank you for your patience.";
     public static final String SYNCHRONIZATION_IS_DISABLED_MESSAGE = "Synchronization for this account has been temporarily disabled by Atlassian for maintenance. Thank you for your patience.";
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
@@ -79,11 +78,11 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return doExecute();
     }
 
-    public Organization[] loadOrganizations()
+    public List<Organization> loadOrganizations()
     {
         List<Organization> allOrganizations = organizationService.getAll(true);
         sort(allOrganizations);
-        return allOrganizations.toArray(new Organization[] { });
+        return allOrganizations;
     }
 
     public boolean isInvalidOrganization(Organization organization)
@@ -194,21 +193,17 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
             return null;
         }
 
-        StringBuilder sb = new StringBuilder(SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE_START);
-
+        String disabledAccounts = "";
         if (!syncDisabledHelper.isSyncDisabled())
         {
-            Joiner.on("/").skipNulls().appendTo(sb,
+            disabledAccounts = Joiner.on("/").skipNulls().join(
                     syncDisabledHelper.isBitbucketSyncDisabled() ? "Bitbucket" : null,
                     syncDisabledHelper.isBitbucketSyncDisabled() ? "GitHub" : null,
                     syncDisabledHelper.isGithubEnterpriseSyncDisabled() ? "GitHub Enterprise" : null
-            );
-            sb.append(" ");
+            ) + " ";
         }
 
-        sb.append(SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE_END);
-
-        return sb.toString();
+        return String.format(SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE, disabledAccounts);
     }
 
     public boolean isSyncDisabled(String dvcsType)
