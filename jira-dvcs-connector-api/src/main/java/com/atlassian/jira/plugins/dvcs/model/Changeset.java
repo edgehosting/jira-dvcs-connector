@@ -305,4 +305,10 @@ public class Changeset
     {
         this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Changeset{repositoryId=" + repositoryId + ", node='" + node + '\'' + '}';
+    }
 }
