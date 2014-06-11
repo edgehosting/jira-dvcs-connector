@@ -63,6 +63,12 @@ public final class ChangesetCreatedEvent implements SyncEvent, LimitedEvent
         return COMMIT;
     }
 
+    @Override
+    public String toString()
+    {
+        return "ChangesetCreatedEvent{changeset=" + changeset + ", issueKeys=" + issueKeys + ", date=" + getDate() + '}';
+    }
+
     @JsonCreator
     private static ChangesetCreatedEvent fromJSON(@JsonProperty ("changeset") Changeset changeset, @JsonProperty ("issueKeys") Set<String> issueKeys)
     {

@@ -74,6 +74,12 @@ public final class BranchCreatedEvent implements SyncEvent, LimitedEvent
         return BRANCH;
     }
 
+    @Override
+    public String toString()
+    {
+        return "BranchCreatedEvent{branch=" + branch + ", issueKeys=" + issueKeys + ", date=" + date + '}';
+    }
+
     @JsonCreator
     private static BranchCreatedEvent fromJSON(@JsonProperty("branch") Branch branch, @JsonProperty("issueKeys") Set<String> issueKeys, @JsonProperty("date") Date date)
     {

@@ -151,6 +151,7 @@ public class EventServiceImpl implements EventService
         int dropped = limiter.getLimitExceededCount();
         if (dropped > 0)
         {
+            logger.info("Event limit exceeded for {}. Dropped {} subsequent events.", dispatch, dropped);
             eventPublisher.publish(new LimitExceededEvent(dropped));
         }
     }
