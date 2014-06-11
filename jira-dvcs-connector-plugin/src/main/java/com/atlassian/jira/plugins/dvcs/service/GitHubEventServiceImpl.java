@@ -85,6 +85,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
         String latestEventGitHubId = null;
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
         Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(forRepositoryId).iterator();
+        EVENTS:
         while (eventsIterator.hasNext())
         {
             final Collection<Event> nextPage = eventsIterator.next();
@@ -130,10 +131,10 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
                 if (shouldStop)
                 {
-                    break;
+                    // we must break also page iteration
+                    break EVENTS;
                 }
             }
-
         }
 
         // marks last event as a save point - because all previous records was fully proceed
