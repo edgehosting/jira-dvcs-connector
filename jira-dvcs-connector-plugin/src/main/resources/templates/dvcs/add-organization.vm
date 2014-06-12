@@ -104,7 +104,8 @@
 
 <div class="vert-space">&nbsp;</div>
 #foreach( $org in $action.loadOrganizations() )
-  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
+  #set($syncDisabled = $action.isSyncDisabled($org.getDvcsType()))
+  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container #if($syncDisabled) dvcs-disabled #end">
     <div id="aui-message-bar-$org.id"></div>
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
@@ -129,13 +130,13 @@
         <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
-        #if($action.isSyncDisabled($org.getDvcsType())) <span class="aui-lozenge">Sync disabled</span> #end
         </h4>
+        #if($syncDisabled) <span class="aui-lozenge">Sync disabled</span> #end
 		#if($action.isInvalidOrganization($org))
 			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 		#end
 		<div class="dvcs-org-container">
-			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
+			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger" #if ($syncDisabled) aria-disabled="true" disabled #end>
 				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
 			</button>
 			<div id="setting-dropdown-$org.id" class="dvcs-organization-controls aui-dropdown2 aui-style-default">
@@ -214,7 +215,8 @@
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>
                     <input class="radio" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');"
+                        #if ($syncDisabled) aria-disabled="true" disabled #end />
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
 
                 </td>
@@ -242,13 +244,13 @@
 
                 <td class="dvcs-sync-repo dvcs-centered">
                     <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
-                        #if ($action.isSyncDisabled($org.getDvcsType()))
+                    #if ($syncDisabled)
                         <span id="syncrepoicon_$repo.id" class="aui-icon aui-icon-small aui-iconfont-devtools-task-disabled dvcs-link-disabled" title="Synchronization is disabled" data-title="Synchronization is disabled">&nbsp;</span>
-                        #else
+                    #else
                         <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="forceSync(event, $repo.id); return false;">
                             <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" data-title="Click To Sync Repo $textutils.htmlEncode($repo.name)">&nbsp;</span>
                         </a>
-                        #end
+                    #end
                     </div>
                 </td>
                 
@@ -259,7 +261,8 @@
 
 
                         <input class="radio" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
-                         onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
+                         onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');"
+                            #if($syncDisabled) aria-disabled="true" disabled #end/>
 
                         <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
 
