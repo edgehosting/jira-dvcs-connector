@@ -36,7 +36,7 @@ public class GlobalFilterQueryWhereClauseBuilder
                 whereClauseProjectsSb.append(renderSqlIn("ISSUE." + IssueToChangesetMapping.PROJECT_KEY, gf.getInProjects())).append(" ");
                 params.addAll(Lists.newArrayList(gf.getInProjects()));
             }
-            //
+
             if (gf.getNotInProjects() != null && gf.getNotInProjects().iterator().hasNext())
             {
                 if (whereClauseProjectsSb.length() != 0)
@@ -46,13 +46,13 @@ public class GlobalFilterQueryWhereClauseBuilder
                 whereClauseProjectsSb.append(renderSqlNotIn("ISSUE." + IssueToChangesetMapping.PROJECT_KEY, gf.getNotInProjects())).append(" ");
                 params.addAll(Lists.newArrayList(gf.getNotInProjects()));
             }
-            //
+
             if (gf.getInIssues() != null && gf.getInIssues().iterator().hasNext())
             {
                 whereClauseIssueKyesSb.append(renderSqlIn("ISSUE." + IssueToChangesetMapping.ISSUE_KEY, gf.getInIssues())).append(" ");
                 params.addAll(Lists.newArrayList(gf.getInIssues()));
             }
-            //
+
             if (gf.getNotInIssues() != null && gf.getNotInIssues().iterator().hasNext())
             {
                 if (whereClauseIssueKyesSb.length() != 0)
@@ -62,13 +62,13 @@ public class GlobalFilterQueryWhereClauseBuilder
                 whereClauseIssueKyesSb.append(renderSqlNotIn("ISSUE." + IssueToChangesetMapping.ISSUE_KEY, gf.getNotInIssues())).append(" ");
                 params.addAll(Lists.newArrayList(gf.getNotInIssues()));
             }
-            //
+
             if (gf.getInUsers() != null && gf.getInUsers().iterator().hasNext())
             {
                 whereClauseUsersSb.append(renderSqlIn("CHANGESET." + ChangesetMapping.AUTHOR, gf.getInUsers())).append(" ");
                 params.addAll(Lists.newArrayList(gf.getInUsers()));
             }
-            //
+
             if (gf.getNotInUsers() != null && gf.getNotInUsers().iterator().hasNext())
             {
                 whereClauseUsersSb.append(renderSqlNotIn("CHANGESET." + ChangesetMapping.AUTHOR, gf.getNotInUsers())).append(" ");
@@ -107,12 +107,12 @@ public class GlobalFilterQueryWhereClauseBuilder
         return new SqlAndParams(whereClauseSb.toString(), params.toArray());
     }
 
-    private StringBuilder renderSqlNotIn(final String column, final Iterable<String> values)
+    private String renderSqlNotIn(final String column, final Iterable<String> values)
     {
         return ActiveObjectsUtils.renderListOperator(column, "NOT IN", "AND", values);
     }
 
-    private StringBuilder renderSqlIn(final String column, final Iterable<String> values)
+    private String renderSqlIn(final String column, final Iterable<String> values)
     {
         return ActiveObjectsUtils.renderListOperator(column, "IN", "OR", values);
     }

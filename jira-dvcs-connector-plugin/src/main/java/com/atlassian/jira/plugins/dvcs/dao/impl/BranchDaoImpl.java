@@ -207,7 +207,7 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
     {
-        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
         final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
@@ -241,7 +241,7 @@ public class BranchDaoImpl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys, final String dvcsType)
     {
-        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
         final Object [] params = ObjectArrays.concat(new Object[]{dvcsType, Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()

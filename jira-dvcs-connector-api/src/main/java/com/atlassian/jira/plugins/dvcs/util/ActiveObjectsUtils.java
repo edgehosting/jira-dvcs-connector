@@ -46,10 +46,10 @@ public class ActiveObjectsUtils
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, ids.size() - deleted);
             if (DELETE_WITH_SQL)
             {
-                activeObjects.deleteWithSQL(entityType, renderListOperator("ID", "IN", "OR", window).toString(), window.toArray());
+                activeObjects.deleteWithSQL(entityType, renderListOperator("ID", "IN", "OR", window), window.toArray());
             } else
             {
-                activeObjects.delete(activeObjects.find(entityType, renderListOperator("ID", "IN", "OR", window).toString(), window.toArray()));
+                activeObjects.delete(activeObjects.find(entityType, renderListOperator("ID", "IN", "OR", window), window.toArray()));
             }
             deleted += window.size();
         }
@@ -69,12 +69,12 @@ public class ActiveObjectsUtils
         return s;
     }
 
-    public static <T> StringBuilder renderListOperator(final String column, final String operator, final String joinWithOperator,
+    public static <T> String renderListOperator(final String column, final String operator, final String joinWithOperator,
             final Iterable<T> values)
     {
         final StringBuilder builder = new StringBuilder(column);
         builder.append(" ").append(operator).append(" (");
-        final Iterator<?> valuesIterator = values.iterator();
+        final Iterator<T> valuesIterator = values.iterator();
         int valuesInQuery = 0;
         boolean overThousandValues = false;
         while(valuesIterator.hasNext())
@@ -87,8 +87,6 @@ public class ActiveObjectsUtils
                     builder.append(", ");
                 }
 
-                //addValue(builder, value);
-                
                 builder.append("?");
                 
                 ++valuesInQuery;
@@ -101,6 +99,6 @@ public class ActiveObjectsUtils
             }
         }
         builder.append(")");
-        return overThousandValues ? builder.insert(0, "(").append(")") : builder;
+        return overThousandValues ? builder.insert(0, "(").append(")").toString() : builder.toString();
     }
 }
