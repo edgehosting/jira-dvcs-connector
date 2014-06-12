@@ -62,8 +62,9 @@
         <div class="aui-message warning shadowed">
             <p class="title">
                 <span class="aui-icon icon-warning"></span>
-                $action.syncDisabledWarningMessage
+                $action.syncDisabledWarningTitle
             </p>
+            <p>$action.syncDisabledWarningMessage</p>
         </div>
         #end
 		<div id="aui-message-bar-global"></div>
@@ -96,18 +97,9 @@
 #macro (printOrganizations)
 
 <div class="vert-space">&nbsp;</div>
-#set($orgs = $action.loadOrganizations())
-#foreach( $org in $orgs )
+#foreach( $org in $action.loadOrganizations() )
   <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
-      #if ($orgs.size() > 1 && $action.isSyncDisabled($org.getDvcsType()))
-          <div class="aui-message warning shadowed">
-              <p class="title">
-                  <span class="aui-icon icon-warning"></span>
-                  $action.getSyncDisabledWarningMessage($org.getDvcsType())
-              </p>
-          </div>
-      #end
-    <div id="aui-message-bar-$org.id"></div>        
+    <div id="aui-message-bar-$org.id"></div>
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
         #set( $orgSmartcommitsOnNewReposDisabled = "")
@@ -131,7 +123,8 @@
         <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
-        </h4>  
+        #if($action.isSyncDisabled($org.getDvcsType())) <span class="aui-lozenge">Sync disabled</span> #end
+        </h4>
 		#if($action.isInvalidOrganization($org))
 			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 		#end

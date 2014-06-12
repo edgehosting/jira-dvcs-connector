@@ -32,8 +32,10 @@ import java.util.List;
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
     static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
-    public static final String SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE = "Synchronization for all %saccounts have been temporarily disabled by Atlassian for maintenance. Thank you for your patience.";
-    public static final String SYNCHRONIZATION_IS_DISABLED_MESSAGE = "Synchronization for this account has been temporarily disabled by Atlassian for maintenance. Thank you for your patience.";
+    public static final String SYNCHRONIZATION_DISABLED_TITLE = "%s syncing disabled";
+    public static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Syncing disabled";
+    public static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled syncing with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
+    public static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled syncing for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String postCommitRepositoryType;
@@ -186,6 +188,22 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return syncDisabledHelper.isBitbucketSyncDisabled() || syncDisabledHelper.isGithubSyncDisabled() || syncDisabledHelper.isGithubEnterpriseSyncDisabled();
     }
 
+    public String getSyncDisabledWarningTitle()
+    {
+        if (!isSyncDisabled())
+        {
+            return null;
+        }
+
+        if (syncDisabledHelper.isSyncDisabled())
+        {
+            // All synchronizations are disabled
+            return SYNCHRONIZATION_ALL_DISABLED_TITLE;
+        }
+
+        return String.format(SYNCHRONIZATION_DISABLED_TITLE, getDisabledSystemsList());
+    }
+
     public String getSyncDisabledWarningMessage()
     {
         if (!isSyncDisabled())
@@ -193,17 +211,22 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
             return null;
         }
 
-        String disabledAccounts = "";
-        if (!syncDisabledHelper.isSyncDisabled())
+        if (syncDisabledHelper.isSyncDisabled())
         {
-            disabledAccounts = Joiner.on("/").skipNulls().join(
-                    syncDisabledHelper.isBitbucketSyncDisabled() ? "Bitbucket" : null,
-                    syncDisabledHelper.isBitbucketSyncDisabled() ? "GitHub" : null,
-                    syncDisabledHelper.isGithubEnterpriseSyncDisabled() ? "GitHub Enterprise" : null
-            ) + " ";
+            // All synchronizations are disabled
+            return SYNCHRONIZATION_ALL_DISABLED_MESSAGE;
         }
 
-        return String.format(SYNCHRONIZATION_DISABLED_GLOBAL_MESSAGE, disabledAccounts);
+        return String.format(SYNCHRONIZATION_DISABLED_MESSAGE, getDisabledSystemsList());
+    }
+
+    private String getDisabledSystemsList()
+    {
+        return Joiner.on("/").skipNulls().join(
+                syncDisabledHelper.isBitbucketSyncDisabled() ? "Bitbucket" : null,
+                syncDisabledHelper.isGithubSyncDisabled() ? "GitHub" : null,
+                syncDisabledHelper.isGithubEnterpriseSyncDisabled() ? "GitHub Enterprise" : null
+        );
     }
 
     public boolean isSyncDisabled(String dvcsType)
@@ -224,26 +247,5 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         }
 
         return false;
-    }
-
-
-    public String getSyncDisabledWarningMessage(String dvcsType)
-    {
-        if (BitbucketCommunicator.BITBUCKET.equals(dvcsType) && isBitbucketSyncDisabled())
-        {
-            return SYNCHRONIZATION_IS_DISABLED_MESSAGE;
-        }
-
-        if (GithubCommunicator.GITHUB.equals(dvcsType) && isGitHubSyncDisabled())
-        {
-            return SYNCHRONIZATION_IS_DISABLED_MESSAGE;
-        }
-
-        if (GithubEnterpriseCommunicator.GITHUB_ENTERPRISE.equals(dvcsType) && isGitHubEnterpriseSyncDisabled())
-        {
-            return SYNCHRONIZATION_IS_DISABLED_MESSAGE;
-        }
-
-        return null;
     }
 }
