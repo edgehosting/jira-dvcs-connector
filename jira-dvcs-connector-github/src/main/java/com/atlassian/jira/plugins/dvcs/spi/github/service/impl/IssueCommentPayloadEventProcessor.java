@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.sync;
+package com.atlassian.jira.plugins.dvcs.spi.github.service.impl;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -36,7 +36,20 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     {
         IssueCommentPayload payload = getPayload(event);
 
+        // if payload doesn't contain information about issue we can stop
+        if (payload.getIssue() == null)
+        {
+            return;
+        }
+
         PullRequest pullRequest = payload.getIssue().getPullRequest();
+
+        // it can happen that the issue is not related to pull request (only issue is created)
+        // and the repository is null here
+        if (pullRequest == null)
+        {
+            return;
+        }
 
         // reloads PR-s by HTML URL because PR of issue's comment does not contains any other PR informations
         pullRequest = getPullRequestByHtmlUrl(repository, pullRequest.getHtmlUrl());
@@ -51,13 +64,11 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
     /**
      * Resolves {@link PullRequest} for the provided pull request PR HTML URL.
      * 
-     * @param domain
-     *            over which repository
      * @param repository
      *            PR owner
      * @param htmlUrl
      *            of the {@link PullRequest}
-     * @return resolved {@link GitHubPullRequest}
+     * @return resolved {@link PullRequest}
      */
     private PullRequest getPullRequestByHtmlUrl(Repository repository, String htmlUrl)
     {

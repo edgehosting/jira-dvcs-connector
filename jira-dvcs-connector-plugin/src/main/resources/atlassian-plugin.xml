@@ -268,19 +268,19 @@
     </component>
 
     <!-- GitHub - Events -->
-    <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.DefaultGitHubEventProcessor">
+    <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.DefaultGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     <component key="gitHubEventProcessorAggregatorImpl" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubEventProcessorAggregatorImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator</interface>
     </component>
-    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestPayloadGitHubEventProcessor">
+    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.PullRequestPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestReviewCommentPayloadGitHubEventProcessor">
+    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.PullRequestReviewCommentPayloadGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="issueCommentPayloadEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.IssueCommentPayloadEventProcessor">
+    <component key="issueCommentPayloadEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.IssueCommentPayloadEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     

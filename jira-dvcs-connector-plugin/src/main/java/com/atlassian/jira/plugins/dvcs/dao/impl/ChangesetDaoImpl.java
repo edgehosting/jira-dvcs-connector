@@ -85,7 +85,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public void removeAllInRepository(final int repositoryId)
     {
-
+        long startTime = System.currentTimeMillis();
         activeObjects.executeInTransaction(new TransactionCallback<Object>()
         {
             @Override
@@ -100,23 +100,31 @@ public class ChangesetDaoImpl implements ChangesetDao
                 ActiveObjectsUtils.delete(activeObjects, RepositoryToChangesetMapping.class, query);
 
                 // delete association issues - changeset
-                query = Query.select().where(
-                        IssueToChangesetMapping.CHANGESET_ID + " not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                query = Query.select()
+                        .alias(IssueToChangesetMapping.class, "i2c")
+                        .where("not exists " +
+                            "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where i2c." +
+                                queryHelper.getSqlColumnName(IssueToChangesetMapping.CHANGESET_ID) + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+
+
                 log.debug("deleting orphaned issue-changeset associations");
                 ActiveObjectsUtils.delete(activeObjects, IssueToChangesetMapping.class, query);
 
 
                 // delete orphaned changesets
-                query = Query.select().where(
-                        "ID not in  " +
-                                "(select " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + " from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + ")");
+                query = Query.select()
+                        .alias(ChangesetMapping.class, "c")
+                        .where("not exists " +
+                                "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where c." +
+                                queryHelper.getSqlColumnName("ID") + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
 
                 return null;
             }
         });
+        log.debug("Changesets in repository {} were deleted in {} ms", repositoryId, System.currentTimeMillis() - startTime);
     }
 
     @Override
