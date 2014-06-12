@@ -188,6 +188,11 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return syncDisabledHelper.isBitbucketSyncDisabled() || syncDisabledHelper.isGithubSyncDisabled() || syncDisabledHelper.isGithubEnterpriseSyncDisabled();
     }
 
+    public boolean isAllSyncDisabled()
+    {
+        return syncDisabledHelper.isBitbucketSyncDisabled() && syncDisabledHelper.isGithubSyncDisabled() && syncDisabledHelper.isGithubEnterpriseSyncDisabled();
+    }
+
     public String getSyncDisabledWarningTitle()
     {
         if (!isSyncDisabled())

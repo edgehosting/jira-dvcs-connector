@@ -24,7 +24,13 @@
 		
 		dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
 		dvcs.connector.plugin.atlToken = "$atl_token";
-				
+		dvcs.connector.plugin.disabledHosts = {
+            bitbucket : $action.isSyncDisabled("bitbucket"),
+            github : $action.isSyncDisabled("github"),
+            githube: $action.isSyncDisabled("githube")
+        }
+
+
         #set($oAuthStore = $action.getOAuthStore())
         
         dvcs.connector.plugin.oAuthStore = {
@@ -79,7 +85,7 @@
         #end
 	    <br/>
 
-	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
+	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" #if ($action.isAllSyncDisabled()) aria-disabled="true" disabled #end/>
        <div style="display: hidden" id="dvcs-connect-source"#if($source) data-source="$textutils.htmlEncode(${source})"#end data-source-or-default="$textutils.htmlEncode(${sourceOrDefault})"></div>
 
        <div id="organization-list">

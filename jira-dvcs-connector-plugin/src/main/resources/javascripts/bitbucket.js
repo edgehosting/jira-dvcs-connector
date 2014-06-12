@@ -179,7 +179,9 @@ function showAddRepoDetails(show, hostToSelect) {
     urlSelect.find("option").each(function(index, option) {
         var $option = AJS.$(option);
         $option.data("index", index);
-        availableHosts[$option.attr("value")] = $option;
+        if (!dvcs.connector.plugin.disabledHosts[$option.attr("value")]) {
+            availableHosts[$option.attr("value")] = $option;
+        }
     });
 
     var selectedHost;
@@ -228,7 +230,8 @@ function createAddOrganizationDialog(action) {
         isOnDemandLicense:dvcs.connector.plugin.onDemandLicense,
         atlToken:dvcs.connector.plugin.atlToken,
         oAuthStore:dvcs.connector.plugin.oAuthStore,
-        source: getSourceDiv().data("source")
+        source: getSourceDiv().data("source"),
+        disabledHosts: dvcs.connector.plugin.disabledHosts
     }), "panel-body");
 
     dialog.addButtonPanel();
