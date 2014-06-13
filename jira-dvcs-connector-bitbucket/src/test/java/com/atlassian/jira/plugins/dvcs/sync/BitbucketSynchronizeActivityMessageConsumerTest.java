@@ -121,6 +121,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @BeforeMethod
     private void init()
     {
+        pullRequestRemoteRestpoint = null;
+        testedClass = null;
+
         MockitoAnnotations.initMocks(this);
 
         when(repository.getOrgName()).thenReturn("org");
