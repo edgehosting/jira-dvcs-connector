@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.gzipfilter.org.apache.commons.lang.ArrayUtils;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -39,8 +40,10 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Matchers.any;
@@ -52,7 +55,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Test
@@ -102,19 +107,42 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Captor
     private ArgumentCaptor<Map> savePullRequestCaptor;
 
+    private BuilderAnswer builderAnswer;
+
     private static class BuilderAnswer implements Answer<Object>
     {
+        private List<InvocationOnMock> invocationsOnBuilder = new ArrayList<InvocationOnMock>();
+
         @Override
         public Object answer(InvocationOnMock invocation) throws Throwable
         {
             Object builderMock = invocation.getMock();
             if (invocation.getMethod().getReturnType().isInstance(builderMock))
             {
+                invocationsOnBuilder.add(invocation);
                 return builderMock;
             } else
             {
                 return Mockito.RETURNS_DEFAULTS.answer(invocation);
             }
+        }
+
+        public boolean executed(String method, Object... arguments)
+        {
+            for (InvocationOnMock invocationOnMock : invocationsOnBuilder)
+            {
+                if (invocationOnMock.getMethod().getName().equals(method) && ArrayUtils.isEquals(invocationOnMock.getArguments(), arguments))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void reset()
+        {
+            invocationsOnBuilder.clear();
         }
     }
 
@@ -130,17 +158,18 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(repository.getSlug()).thenReturn("repo");
         when(bitbucketPullRequest.getId()).thenReturn(1L);
         when(bitbucketPullRequest.getUpdatedOn()).thenReturn(new Date());
-        bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
+        builderAnswer = new BuilderAnswer();
+        bitbucketClientBuilder = mock(BitbucketClientBuilder.class, builderAnswer);
 
         when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
         when(bitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(pullRequestRemoteRestpoint);
 
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = Mockito.mock(BitbucketPullRequestPage.class);
 
-        String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s&page=0", repository.getOrgName(), repository.getSlug(), PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE);
+        String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s&page=", repository.getOrgName(), repository.getSlug(), PullRequestRemoteRestpoint.REPO_ACTIVITY_PAGESIZE);
         String pullRequestDetailUrl = String.format("/repositories/%s/%s/pullrequests/%s", repository.getOrgName(), repository.getSlug(), bitbucketPullRequest.getId());
 
-        when(requestor.get(eq(activityUrl), anyMap(), any(ResponseCallback.class))).thenReturn(activityPage);
+        when(requestor.get(Mockito.startsWith(activityUrl), anyMap(), any(ResponseCallback.class))).thenReturn(activityPage);
         when(requestor.get(eq(pullRequestDetailUrl), anyMap(), any(ResponseCallback.class))).thenReturn(bitbucketPullRequest);
 
         BitbucketPullRequestActivityInfo activityInfo = Mockito.mock(BitbucketPullRequestActivityInfo.class);
@@ -159,6 +188,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(payload.getProgress()).thenReturn(progress);
         when(payload.getRepository()).thenReturn(repository);
+        when(payload.getPageNum()).thenReturn(1);
 
         RepositoryPullRequestMapping pullRequestMapping = Mockito.mock(RepositoryPullRequestMapping.class);
         Date updatedOn = bitbucketPullRequest.getUpdatedOn();
@@ -255,6 +285,23 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
 
         verify(repositoryPullRequestDao, never()).createParticipant(anyInt(), anyInt(), any(Participant.class));
+    }
+
+    @Test
+    public void testCacheOnlyFirstPage()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
+        when(payload.getPageNum()).thenReturn(1);
+        testedClass.onReceive(message, payload);
+        assertTrue(builderAnswer.executed("cached"));
+        builderAnswer.reset();
+        when(payload.getPageNum()).thenReturn(2);
+        testedClass.onReceive(message, payload);
+        assertFalse(builderAnswer.executed("cached"));
     }
 
     private BitbucketLinks mockLinks()
