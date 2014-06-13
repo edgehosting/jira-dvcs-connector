@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import com.atlassian.gzipfilter.org.apache.commons.lang.ArrayUtils;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -40,10 +39,8 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Matchers.any;
@@ -53,11 +50,10 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Test
@@ -87,13 +83,14 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Mock
     private BitbucketRemoteClient bitbucketRemoteClient;
 
-    private BitbucketClientBuilder bitbucketClientBuilder;
+    @Mock
+    private BitbucketRemoteClient cachedBitbucketRemoteClient;
 
     @Mock
     private RemoteRequestor requestor;
 
-    @InjectMocks
-    private PullRequestRemoteRestpoint pullRequestRemoteRestpoint;
+    @Mock
+    private RemoteRequestor cachedRequestor;
 
     @Mock
     private BitbucketPullRequest bitbucketPullRequest;
@@ -107,11 +104,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Captor
     private ArgumentCaptor<Map> savePullRequestCaptor;
 
-    private BuilderAnswer builderAnswer;
-
-    private static class BuilderAnswer implements Answer<Object>
+    private class BuilderAnswer implements Answer<Object>
     {
-        private List<InvocationOnMock> invocationsOnBuilder = new ArrayList<InvocationOnMock>();
+        private boolean cached;
 
         @Override
         public Object answer(InvocationOnMock invocation) throws Throwable
@@ -119,37 +114,21 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
             Object builderMock = invocation.getMock();
             if (invocation.getMethod().getReturnType().isInstance(builderMock))
             {
-                invocationsOnBuilder.add(invocation);
+                if (invocation.getMethod().getName().equals("cached"))
+                {
+                    cached = true;
+                }
                 return builderMock;
             } else
             {
-                return Mockito.RETURNS_DEFAULTS.answer(invocation);
+                return cached ? cachedBitbucketRemoteClient : bitbucketRemoteClient;
             }
-        }
-
-        public boolean executed(String method, Object... arguments)
-        {
-            for (InvocationOnMock invocationOnMock : invocationsOnBuilder)
-            {
-                if (invocationOnMock.getMethod().getName().equals(method) && ArrayUtils.isEquals(invocationOnMock.getArguments(), arguments))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void reset()
-        {
-            invocationsOnBuilder.clear();
         }
     }
 
     @BeforeMethod
     private void init()
     {
-        pullRequestRemoteRestpoint = null;
         testedClass = null;
 
         MockitoAnnotations.initMocks(this);
@@ -158,11 +137,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(repository.getSlug()).thenReturn("repo");
         when(bitbucketPullRequest.getId()).thenReturn(1L);
         when(bitbucketPullRequest.getUpdatedOn()).thenReturn(new Date());
-        builderAnswer = new BuilderAnswer();
-        bitbucketClientBuilder = mock(BitbucketClientBuilder.class, builderAnswer);
 
-        when(bitbucketClientBuilder.build()).thenReturn(bitbucketRemoteClient);
-        when(bitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(pullRequestRemoteRestpoint);
+        when(bitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(new PullRequestRemoteRestpoint(requestor));
+        when(cachedBitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(new PullRequestRemoteRestpoint(cachedRequestor));
 
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = Mockito.mock(BitbucketPullRequestPage.class);
 
@@ -171,6 +148,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(requestor.get(Mockito.startsWith(activityUrl), anyMap(), any(ResponseCallback.class))).thenReturn(activityPage);
         when(requestor.get(eq(pullRequestDetailUrl), anyMap(), any(ResponseCallback.class))).thenReturn(bitbucketPullRequest);
+        when(cachedRequestor.get(Mockito.startsWith(activityUrl), anyMap(), any(ResponseCallback.class))).thenReturn(activityPage);
+        when(cachedRequestor.get(eq(pullRequestDetailUrl), anyMap(), any(ResponseCallback.class))).thenReturn(bitbucketPullRequest);
 
         BitbucketPullRequestActivityInfo activityInfo = Mockito.mock(BitbucketPullRequestActivityInfo.class);
 
@@ -184,7 +163,16 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(activityInfo.getPullRequest()).thenReturn(bitbucketPullRequest);
         BitbucketLinks bitbucketLinks = Mockito.mock(BitbucketLinks.class);
         when(bitbucketPullRequest.getLinks()).thenReturn(bitbucketLinks);
-        when(bitbucketClientBuilderFactory.forRepository(repository)).thenReturn(bitbucketClientBuilder);
+        when(bitbucketClientBuilderFactory.forRepository(repository)).then(new Answer<BitbucketClientBuilder>()
+        {
+            @Override
+            public BitbucketClientBuilder answer(final InvocationOnMock invocation) throws Throwable
+            {
+                BuilderAnswer builderAnswer = new BuilderAnswer();
+                BitbucketClientBuilder bitbucketClientBuilder = mock(BitbucketClientBuilder.class, builderAnswer);
+                return bitbucketClientBuilder;
+            }
+        });
 
         when(payload.getProgress()).thenReturn(progress);
         when(payload.getRepository()).thenReturn(repository);
@@ -232,7 +220,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     public void testAccessDenied()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.Unauthorized_401());
-        Message<BitbucketSynchronizeActivityMessage> message = Mockito.mock(Message.class);
+        when(cachedRequestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.Unauthorized_401());
 
         testedClass.onReceive(message, payload);
     }
@@ -241,7 +229,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     public void testNotFound()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.NotFound_404());
-        Message<BitbucketSynchronizeActivityMessage> message = Mockito.mock(Message.class);
+        when(cachedRequestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.NotFound_404());
 
         testedClass.onReceive(message, payload);
     }
@@ -250,7 +238,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     public void testInternalServerError()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.InternalServerError_500());
-        Message<BitbucketSynchronizeActivityMessage> message = Mockito.mock(Message.class);
+        when(cachedRequestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.InternalServerError_500());
 
         testedClass.onReceive(message, payload);
     }
@@ -264,8 +252,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(bitbucketPullRequest.getDestination()).thenReturn(destination);
 
         when(bitbucketPullRequest.getAuthor()).thenReturn(null);
-
-        Message<BitbucketSynchronizeActivityMessage> message = Mockito.mock(Message.class);
 
         testedClass.onReceive(message, payload);
 
@@ -297,11 +283,20 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(payload.getPageNum()).thenReturn(1);
         testedClass.onReceive(message, payload);
-        assertTrue(builderAnswer.executed("cached"));
-        builderAnswer.reset();
+        verify(cachedRequestor, times(1)).get(anyString(), anyMap(), any(ResponseCallback.class));
+    }
+
+    @Test
+    public void testNoCacheSecondPage()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
         when(payload.getPageNum()).thenReturn(2);
         testedClass.onReceive(message, payload);
-        assertFalse(builderAnswer.executed("cached"));
+        verify(cachedRequestor, never()).get(anyString(), anyMap(), any(ResponseCallback.class));
     }
 
     private BitbucketLinks mockLinks()
