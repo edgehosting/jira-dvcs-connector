@@ -64,7 +64,7 @@
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
 
-        #if ($action.isSyncDisabled())
+        #if ($action.isAnySyncDisabled())
         <div class="aui-message warning shadowed">
             <p class="title">
                 <span class="aui-icon icon-warning"></span>
@@ -105,7 +105,7 @@
 <div class="vert-space">&nbsp;</div>
 #foreach( $org in $action.loadOrganizations() )
   #set($syncDisabled = $action.isSyncDisabled($org.getDvcsType()))
-  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container #if($syncDisabled) dvcs-disabled #end">
+  <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
     <div id="aui-message-bar-$org.id"></div>
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
@@ -122,10 +122,10 @@
     
     <div class="dvcs-header-container">
         <!--[if IE]>
-        <h4 class="aui dvcsLogo"><img class="aui-icon supported-app-icon" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
+        <h4 class="aui dvcsLogo"><img class="aui-icon supported-app-icon #if($syncDisabled) dvcs-sync-disabled #end" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
         <![endif]-->
         <![if ! IE]>
-        <h4 class="aui $org.getDvcsType()Logo">
+        <h4 class="aui $org.getDvcsType()Logo #if($syncDisabled) dvcs-sync-disabled #end">
         <![endif]>
         <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
@@ -135,7 +135,7 @@
 		#if($action.isInvalidOrganization($org))
 			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 		#end
-		<div class="dvcs-org-container">
+		<div class="dvcs-org-container #if($syncDisabled) dvcs-sync-disabled #end">
 			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger" #if ($syncDisabled) aria-disabled="true" disabled #end>
 				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
 			</button>
@@ -177,7 +177,7 @@
            
        #if (!$org.getRepositories().isEmpty())
         
-       <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
+       <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table #if($syncDisabled) dvcs-sync-disabled #end">
         <thead>
             <tr>
                 <th>Enabled</th>

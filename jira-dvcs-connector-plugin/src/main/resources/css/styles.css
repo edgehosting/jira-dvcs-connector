@@ -405,7 +405,7 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 	margin: 0 10px 0 0;
 }
 
-.dvcs-disabled .dvcs-header-container div, .dvcs-disabled .dvcs-header-container h4, .dvcs-disabled .dvcs-repos-table {
+.dvcs-sync-disabled {
     filter: alpha(opacity=50);
     opacity: 0.50;
 }

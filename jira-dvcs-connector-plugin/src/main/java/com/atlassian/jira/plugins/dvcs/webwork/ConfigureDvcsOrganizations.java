@@ -32,10 +32,10 @@ import java.util.List;
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
     static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
-    public static final String SYNCHRONIZATION_DISABLED_TITLE = "%s syncing disabled";
-    public static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Syncing disabled";
-    public static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled syncing with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
-    public static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled syncing for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
+    public static final String SYNCHRONIZATION_DISABLED_TITLE = "%s synchronization disabled";
+    public static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Synchronization disabled";
+    public static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
+    public static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String postCommitRepositoryType;
@@ -183,7 +183,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return syncDisabledHelper.isGithubEnterpriseSyncDisabled();
     }
 
-    public boolean isSyncDisabled()
+    public boolean isAnySyncDisabled()
     {
         return syncDisabledHelper.isBitbucketSyncDisabled() || syncDisabledHelper.isGithubSyncDisabled() || syncDisabledHelper.isGithubEnterpriseSyncDisabled();
     }
@@ -195,7 +195,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     public String getSyncDisabledWarningTitle()
     {
-        if (!isSyncDisabled())
+        if (!isAnySyncDisabled())
         {
             return null;
         }
@@ -211,7 +211,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     public String getSyncDisabledWarningMessage()
     {
-        if (!isSyncDisabled())
+        if (!isAnySyncDisabled())
         {
             return null;
         }
