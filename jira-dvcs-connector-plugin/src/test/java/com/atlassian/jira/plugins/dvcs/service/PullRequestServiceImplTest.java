@@ -16,10 +16,12 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +93,29 @@ public class PullRequestServiceImplTest
 
         PullRequestCreatedEvent event = (PullRequestCreatedEvent) eventCaptor.getValue();
         assertThat(event.getPullRequest().getName(), equalTo(NAME));
+    }
+
+    @Test
+    public void createPullRequestShouldSynthesiseCreatedEvent() throws Exception
+    {
+        final Status currentStatus = Status.MERGED;
+        when(origPr.getLastStatus()).thenReturn(currentStatus.name());
+        service.createPullRequest(origPr);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(threadEvents, times(2)).broadcast(eventCaptor.capture());
+
+        final List<Object> events = eventCaptor.getAllValues();
+        assertThat(events.size(), equalTo(2));
+
+        final Object firstEvent = events.get(0);
+        final Object secondEvent = events.get(1);
+        assertThat(firstEvent, instanceOf(PullRequestCreatedEvent.class));
+        assertThat(secondEvent, instanceOf(PullRequestUpdatedEvent.class));
+
+        assertThat(((PullRequestCreatedEvent) firstEvent).getPullRequest().getStatus(), equalTo(Status.OPEN.name()));
+        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequestBeforeUpdate().getStatus(), equalTo(Status.OPEN.name()));
+        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequest().getStatus(), equalTo(currentStatus.name()));
     }
 
     @Test
