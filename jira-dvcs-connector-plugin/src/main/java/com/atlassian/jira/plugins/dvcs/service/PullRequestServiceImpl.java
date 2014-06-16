@@ -73,9 +73,25 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping)
     {
-        RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
+        final RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
+        final PullRequest pullRequest = transformer.transform(createdMapping);
 
-        threadEvents.broadcast(new PullRequestCreatedEvent(transformer.transform(createdMapping)));
+        // we know that pull requests always start off in the OPEN state so if that's not the current state we can
+        // deduce that we missed the pull request's creation. in this case we broadcast separate create and updated
+        // events so that listeners can observe the distinct events.
+        if (!Status.OPEN.name().equalsIgnoreCase(pullRequest.getStatus()))
+        {
+            final PullRequest createdPullRequest = transformer.transform(createdMapping);
+            createdPullRequest.setStatus(Status.OPEN.name());
+
+            threadEvents.broadcast(new PullRequestCreatedEvent(createdPullRequest));
+            threadEvents.broadcast(new PullRequestUpdatedEvent(pullRequest, createdPullRequest));
+        }
+        else
+        {
+            threadEvents.broadcast(new PullRequestCreatedEvent(pullRequest));
+        }
+
         return createdMapping;
     }
 
