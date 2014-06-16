@@ -79,7 +79,8 @@ public class GithubLoginPage implements Page
         if (githubWebLogoutLink.isPresent())
         {
             githubWebLogoutLink.click();
-        } else
+        }
+        else
         {
             oldGithubWebLogoutLink.click();
         }
