@@ -989,10 +989,10 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         gitResource.checkout(repositoryName, fixBranchName);
 
         gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        commitNodeOpen[0] = gitResource.commit(repositoryName, issueKey + " Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        commitNodeOpen[1] = gitResource.commit(repositoryName, issueKey + " Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
