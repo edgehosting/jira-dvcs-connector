@@ -416,7 +416,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         catch (BitbucketRequestException e)
         {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not add pull request postcommit hook", e);
+            throw new SourceControlException.PostCommitHookRegistrationException("Could not add pull request hook", e);
         }
     }
     

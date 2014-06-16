@@ -1,12 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import org.apache.commons.httpclient.HttpStatus;
 
 import java.util.List;
 import javax.ws.rs.core.MediaType;
@@ -29,21 +26,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     public GitHubRepositoryHook addHook(Repository repository, GitHubRepositoryHook hook)
     {
         WebResource webResource = resource(repository, "/hooks");
-        try
-        {
-            return webResource.type(MediaType.APPLICATION_JSON_TYPE).post(GitHubRepositoryHook.class, hook);
-        } catch (UniformInterfaceException e)
-        {
-            if (e.getResponse().getStatus() == HttpStatus.SC_UNPROCESSABLE_ENTITY)
-            {
-                throw new SourceControlException.PostCommitHookRegistrationException("Could not add request hook: "
-                        + e.getResponse().getEntity(String.class), e);
-            } else
-            {
-                throw new SourceControlException.PostCommitHookRegistrationException(
-                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
-            }
-        }
+        return webResource.type(MediaType.APPLICATION_JSON_TYPE).post(GitHubRepositoryHook.class, hook);
     }
 
     /**
@@ -53,13 +36,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     public void deleteHook(Repository repository, GitHubRepositoryHook hook)
     {
         WebResource webResource = resource(repository, "/hooks/" + hook.getId());
-        try
-        {
-            webResource.delete();
-        } catch (UniformInterfaceException e)
-        {
-            throw new SourceControlException.PostCommitHookRegistrationException("Could not remove postcommit hook", e);
-        }
+        webResource.delete();
     }
 
     /**

@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynch
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
@@ -102,8 +103,19 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
-        localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
+        try
+        {
+            localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
+        }
+        catch (IllegalStateException e)
+        {
+            // This should not happen
+            LOGGER.warn("Pull request " + remotePullRequest.getId() + " from repository with id " + repository.getId() + " could not be processed", e);
+            // let's return prematurely
+            return;
+        }
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
@@ -130,10 +142,14 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             Map<String, Object> activity = new HashMap<String, Object>();
             map(activity, repository, remotePullRequest);
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
-        } else
+        }
+        else
         {
-            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(), remotePullRequest
-                    .getHead().getRef(), remotePullRequest.getBase().getRef(), resolveStatus(remotePullRequest), remotePullRequest
+            String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
+            String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
+
+            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
+                    sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
                     .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
         }
 
@@ -142,6 +158,26 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
         return localPullRequest;
+    }
+
+    private String checkNotNull(String branch, String object)
+    {
+        if (branch == null)
+        {
+            throw new IllegalStateException(object + " must not be null");
+        }
+
+        return branch;
+    }
+
+    private String getBranchName(PullRequestMarker ref, String oldBranchName)
+    {
+        if (ref == null || ref.getRef() == null)
+        {
+            return oldBranchName;
+        }
+
+        return ref.getRef();
     }
 
     private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
@@ -299,18 +335,24 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private void map(Map<String, Object> target, Repository repository, PullRequest source)
     {
+        String sourceBranch = checkNotNull(getBranchName(source.getHead(), null), "Source branch");
+        String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
+
         target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
         target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
 
         target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
 
-        target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
+        if (source.getUser() != null)
+        {
+            target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
+        }
         target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
         target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
         target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, source.getHead().getRef());
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, source.getBase().getRef());
+        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, sourceBranch);
+        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, dstBranch);
         target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
         target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
     }
