@@ -13,21 +13,21 @@
             {foreach $organization in $organizations}
                 <div class="checkbox" style="padding-left: 0px; margin-top: 2px; margin-bottom: 5px;">
                     <!--[if IE]>
-                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em;">
-                        <img style="vertical-align: text-bottom; padding-right: 5px" src="{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png" alt="Bitbucket logo" title="Bitbucket" height="20px" width="20px"/>
+                    <div class="dvcs-adduser-account">
+                        <img class="dvcs-adduser-account-image" src="{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png" alt="Bitbucket logo" title="Bitbucket" height="20px" width="20px"/>
                     <![endif]-->
                     <![if ! IE]>
-                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent; background-size: 20px 20px;">
+                    <div class="dvcs-adduser-account dvcs-adduser-account-icon">
                     <![endif]>
                         <span><a href="{$organization.organizationUrl}">{$organization.name}</a></span>
                     </div>
-        
+
                     {if $organization.groups.length > 0}
                         {foreach $group in $organization.groups}
                             <div style="margin-left: 25px; margin-bottom: 3px">
-                                <input {if $group.selected} checked='checked' {/if} 
-                                    id="dvcs_org_selector_{$organization.id}_{$group.slug}" 
-                                    class="checkbox" type="checkbox" 
+                                <input {if $group.selected} checked='checked' {/if}
+                                    id="dvcs_org_selector_{$organization.id}_{$group.slug}"
+                                    class="checkbox" type="checkbox"
                                     name="dvcs_org_selector" value="{$organization.id}:{$group.slug}" />
                                 <label for="dvcs_org_selector_{$organization.id}_{$group.slug}">{$group.niceName}</label>
                             </div>
@@ -35,7 +35,7 @@
                     {/if}
                 </div>
             {/foreach}
-      
+
         </fieldset>
     {/if}
 
@@ -48,11 +48,11 @@
             <p>
                 {foreach $errorOrganization in $errors}
                     <!--[if IE]>
-                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em;">
-                        <img style="vertical-align: text-bottom; padding-right: 5px" src="{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png" alt="Bitbucket logo" title="Bitbucket" height="20px" width="20px"/>
+                    <div class="dvcs-adduser-account">
+                        <img class="dvcs-adduser-account-image" src="{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png" alt="Bitbucket logo" title="Bitbucket" height="20px" width="20px"/>
                     <![endif]-->
                     <![if ! IE]>
-                    <div style="padding-top: 1px; margin-bottom: 4px; font-weight: bold; font-size: 1.1em; padding-left: 25px; background: url('{contextPath()}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent; background-size: 20px 20px;">
+                    <div class="dvcs-adduser-account dvcs-adduser-account-icon">
                     <![endif]>
                         <span><a href='{$errorOrganization.organizationUrl}'>{$errorOrganization.name}</a></span>
                     </div>
