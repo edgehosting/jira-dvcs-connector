@@ -970,6 +970,62 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), expectedPullRequestName + fixBranch2, expectedCommitNodes2, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
     }
 
+    /**
+     * Test that issue key only in commit messages will associate with the correct issue
+     */
+    @Test
+    public void testCommits()
+    {
+        String pullRequestName = "Issue key only in commits PR";
+        String fixBranchName = "branch_fix";
+        String[] commitNodeOpen = new String[2];
+
+        gitResource.init(repositoryName, gitHubResource.getRepository(GitHubTestResource.USER, repositoryName).getCloneUrl());
+        gitResource.addFile(repositoryName, "README.txt", "Hello World!".getBytes());
+        gitResource.commit(repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
+
+        gitResource.createBranch(repositoryName, fixBranchName);
+        gitResource.checkout(repositoryName, fixBranchName);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
+        commitNodeOpen[0] = gitResource.commit(repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.addFile(repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
+        commitNodeOpen[1] = gitResource.commit(repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+
+        gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
+
+        // let's wait before opening pull request
+        sleep(1000);
+
+        PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
+                "Open PR description", fixBranchName, "master");
+
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
+        account.refresh();
+
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
+        repository.enable();
+        repository.synchronize();
+
+        RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+        Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
+        Assert.assertEquals(pullRequestActual.getRepositories().get(0).getPullRequests().size(), 1);
+        RestPullRequest actualPullRequest = pullRequestActual.getRepositories().get(0).getPullRequests().get(0);
+
+        assertPullRequestInfo(actualPullRequest, "OPEN", pullRequestName, pullRequest.getHtmlUrl());
+
+        assertRestRef(actualPullRequest.getSource(), GitHubTestResource.USER, repositoryName, fixBranchName);
+        assertRestRef(actualPullRequest.getDestination(), GitHubTestResource.USER, repositoryName, "master");
+
+        Assert.assertEquals(actualPullRequest.getCommentCount(), 0);
+
+        Assert.assertEquals(actualPullRequest.getParticipants().size(), 1);
+        assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), GitHubTestResource.USER, GitHubTestResource.NAME);
+    }
+
     private void assertPullRequest(final String owner, final String user, final String userName, final String repositoryName, final PullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
     {
         assertPullRequestInfo(restPullRequest, status.toString(), pullRequestTitle, pullRequest.getHtmlUrl());
