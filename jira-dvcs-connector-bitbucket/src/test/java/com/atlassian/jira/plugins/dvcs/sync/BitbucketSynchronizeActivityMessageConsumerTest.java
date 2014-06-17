@@ -54,6 +54,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Test
@@ -103,6 +104,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     @Captor
     private ArgumentCaptor<Map> savePullRequestCaptor;
+
+    @Captor
+    private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
 
     private class BuilderAnswer implements Answer<Object>
     {
@@ -208,8 +212,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     {
         when(bitbucketPullRequest.getSource()).thenReturn(null);
 
-        Message<BitbucketSynchronizeActivityMessage> message = Mockito.mock(Message.class);
-
         testedClass.onReceive(message, payload);
 
         verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
@@ -270,7 +272,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).createParticipant(anyInt(), anyInt(), any(Participant.class));
+        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
+        assertTrue(participantsIndexCaptor.getValue().isEmpty());
     }
 
     @Test
