@@ -1,21 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.Query;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
@@ -33,6 +17,20 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import net.java.ao.Query;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The Class OrganizationDaoImpl.
@@ -217,6 +215,11 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization getByHostAndName(final String hostUrl, final String name)
     {
+        if (name == null)
+        {
+            return null;
+        }
+
         OrganizationMapping [] orgs = activeObjects
                 .executeInTransaction(new TransactionCallback<OrganizationMapping[]>()
                 {
@@ -236,7 +239,7 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public boolean apply(OrganizationMapping org)
             {
-                return name != null && name.equalsIgnoreCase(org.getName());
+                return org != null && name.equalsIgnoreCase(org.getName());
             }
         }, null);
         return transform(organizationMapping);

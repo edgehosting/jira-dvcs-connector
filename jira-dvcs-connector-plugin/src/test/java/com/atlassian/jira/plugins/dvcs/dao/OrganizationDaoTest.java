@@ -162,5 +162,6 @@ public class OrganizationDaoTest
         assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "TEST"));
         assertNotNull(organizationDao.getByHostAndName("https://bitbucket.org", "Test"));
         assertNull(organizationDao.getByHostAndName("https://bitbucket.org", "nontest"));
+        assertNull(organizationDao.getByHostAndName("https://bitbucket.org", null));
     }
 }
