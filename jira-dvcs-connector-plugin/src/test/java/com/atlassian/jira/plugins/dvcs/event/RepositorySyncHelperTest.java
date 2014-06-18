@@ -24,7 +24,7 @@ public class RepositorySyncHelperTest
     ThreadEvents threadEvents;
 
     @Mock
-    EventService eventService;
+    CarefulEventService eventService;
 
     @Mock
     Repository repository;

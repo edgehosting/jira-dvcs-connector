@@ -5,7 +5,7 @@ import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -85,7 +85,7 @@ public class RepositoryServiceTest
     private ClusterLockService clusterLockService;
 
     @Mock
-    EventService eventService;
+    CarefulEventService eventService;
 
     @Mock
     Repository repository;

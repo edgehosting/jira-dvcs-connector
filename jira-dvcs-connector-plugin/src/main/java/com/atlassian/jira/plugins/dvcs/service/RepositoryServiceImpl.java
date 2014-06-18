@@ -5,7 +5,7 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -91,7 +91,7 @@ public class RepositoryServiceImpl implements RepositoryService
     private ClusterLockServiceFactory clusterLockServiceFactory;
 
     @Resource
-    private EventService eventService;
+    private CarefulEventService eventService;
 
     private ClusterLockService clusterLockService;
 

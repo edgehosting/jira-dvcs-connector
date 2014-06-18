@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
@@ -137,7 +137,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private HttpClientProvider httpClientProvider;
 
     @Resource
-    private EventService eventService;
+    private CarefulEventService eventService;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.

@@ -22,10 +22,10 @@ public class RepositorySyncHelper
     private static RepositorySync NULL_REPO_SYNC = new NullRepositorySync();
 
     private final ThreadEvents threadEvents;
-    private final EventService eventService;
+    private final CarefulEventService eventService;
 
     @Autowired
-    public RepositorySyncHelper(@Nonnull ThreadEvents threadEvents, @Nonnull EventService eventService)
+    public RepositorySyncHelper(@Nonnull ThreadEvents threadEvents, @Nonnull CarefulEventService eventService)
     {
         this.threadEvents = checkNotNull(threadEvents, "threadEvents");
         this.eventService = checkNotNull(eventService, "eventService");
