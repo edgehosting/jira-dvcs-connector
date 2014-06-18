@@ -23,17 +23,19 @@ public class RepositorySyncHelper
 
     private final ThreadEvents threadEvents;
     private final CarefulEventService eventService;
+    private final EventsFeature eventsFeature;
 
     @Autowired
-    public RepositorySyncHelper(@Nonnull ThreadEvents threadEvents, @Nonnull CarefulEventService eventService)
+    public RepositorySyncHelper(@Nonnull ThreadEvents threadEvents, @Nonnull CarefulEventService eventService, @Nonnull EventsFeature eventsFeature)
     {
         this.threadEvents = checkNotNull(threadEvents, "threadEvents");
         this.eventService = checkNotNull(eventService, "eventService");
+        this.eventsFeature = checkNotNull(eventsFeature, "eventsFeature");
     }
 
     /**
-     * Returns a new RepositorySync object for the given repository. If {@code repository} is null or {@code softSync}
-     * is false the returned RepositorySync will not capture (or store) events.
+     * Returns a new RepositorySync object for the given repository. If {@code repository} is null or {@code syncFlags}
+     * does not indicate a soft sync then the returned RepositorySync will not capture (or store) events.
      *
      * @param repository the Repository being synchronised
      * @param syncFlags synchronisation flags
@@ -43,7 +45,7 @@ public class RepositorySyncHelper
     public RepositorySync startSync(@Nullable Repository repository, @Nonnull EnumSet<SynchronizationFlag> syncFlags)
     {
         checkNotNull(syncFlags, "syncFlags");
-        if (repository != null && syncFlags.contains(SOFT_SYNC))
+        if (eventsFeature.isEnabled() && repository != null  && syncFlags.contains(SOFT_SYNC))
         {
             return new CapturingRepositorySync(eventService, repository, !syncFlags.contains(WEBHOOK_SYNC), threadEvents.startCapturing());
         }
