@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -108,45 +108,50 @@ public class EventServiceImpl implements EventService
      *
      * @param dispatch a DispatchRequest
      */
-    private void doDispatchEvents(DispatchRequest dispatch)
+    private void doDispatchEvents(final DispatchRequest dispatch)
     {
         final EventLimiter limiter = eventLimiterFactory.create();
-        final List<SyncEventMapping> eventMappings = syncEventDao.findAllByRepoId(dispatch.repoId());
-        for (int i = 0, size = eventMappings.size(); i < size; i++)
+        syncEventDao.streamAllByRepoId(dispatch.repoId(), new StreamCallback<SyncEventMapping>()
         {
-            if (Thread.interrupted())
-            {
-                logger.error("Thread interrupted after dispatching {}/{} events for: {}", new Object[] { i, size, dispatch });
-                Thread.currentThread().interrupt();
-                return;
-            }
+            int dispatched = 0;
 
-            final SyncEventMapping syncEventMapping = eventMappings.get(i);
-            try
+            @Override
+            public void callback(final SyncEventMapping syncEventMapping)
             {
-                final SyncEvent event = fromSyncEventMapping(syncEventMapping);
-                if (limiter.isLimitExceeded(event, option(syncEventMapping.getScheduledSync()).getOrElse(false)))
+                if (Thread.interrupted())
                 {
-                    logger.debug("Limit exceeded, dropping event for repository {}: {}", dispatch, event);
-                    continue;
+                    logger.error("Thread interrupted after dispatching {} events for: {}", new Object[] { dispatched, dispatch });
+                    Thread.currentThread().interrupt();
+                    return;
                 }
 
-                logger.debug("Publishing event for repository {}: {}", dispatch, event);
-                eventPublisher.publish(event);
+                try
+                {
+                    final SyncEvent event = fromSyncEventMapping(syncEventMapping);
+                    if (limiter.isLimitExceeded(event, option(syncEventMapping.getScheduledSync()).getOrElse(false)))
+                    {
+                        logger.debug("Limit exceeded, dropping event for repository {}: {}", dispatch, event);
+                        return;
+                    }
+
+                    logger.debug("Publishing event for repository {}: {}", dispatch, event);
+                    eventPublisher.publish(event);
+                    dispatched = dispatched + 1;
+                }
+                catch (ClassNotFoundException e)
+                {
+                    logger.error("Can't dispatch event (event class not found): " + syncEventMapping.getEventClass(), e);
+                }
+                catch (IOException e)
+                {
+                    logger.error("Can't dispatch event (unable to convert from JSON): " + syncEventMapping.getEventJson(), e);
+                }
+                finally
+                {
+                    syncEventDao.delete(syncEventMapping);
+                }
             }
-            catch (ClassNotFoundException e)
-            {
-                logger.error("Can't dispatch event (event class not found): " + syncEventMapping.getEventClass(), e);
-            }
-            catch (IOException e)
-            {
-                logger.error("Can't dispatch event (unable to convert from JSON): " + syncEventMapping.getEventJson(), e);
-            }
-            finally
-            {
-                syncEventDao.delete(syncEventMapping);
-            }
-        }
+        });
 
         int dropped = limiter.getLimitExceededCount();
         if (dropped > 0)

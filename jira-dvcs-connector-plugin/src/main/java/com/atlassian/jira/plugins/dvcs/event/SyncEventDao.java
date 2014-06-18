@@ -1,16 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_CLASS;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_DATE;
@@ -89,18 +88,28 @@ public class SyncEventDao
      * Returns all {code SyncEventMapping}s associated with the given repository id, sorted by date.
      *
      * @param repoId the id of the repository for which to dispatch events
+     * @param callback a Callback
      */
-    public List<SyncEventMapping> findAllByRepoId(final int repoId)
+    public void streamAllByRepoId(final int repoId, final StreamCallback<SyncEventMapping> callback)
     {
-        return activeObjects.executeInTransaction(new TransactionCallback<ImmutableList<SyncEventMapping>>()
+        activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
-            public ImmutableList<SyncEventMapping> doInTransaction()
+            public Void doInTransaction()
             {
                 Query query = createQueryFor(repoId).order(EVENT_DATE + " ASC");
                 query.setWhereParams(new Object[] { repoId });
 
-                return ImmutableList.copyOf(activeObjects.find(SyncEventMapping.class, query));
+                activeObjects.stream(SyncEventMapping.class, query, new EntityStreamCallback<SyncEventMapping, Integer>()
+                {
+                    @Override
+                    public void onRowRead(SyncEventMapping syncEventMapping)
+                    {
+                        callback.callback(activeObjects.get(SyncEventMapping.class, syncEventMapping.getID()));
+                    }
+                });
+
+                return null;
             }
         });
     }
