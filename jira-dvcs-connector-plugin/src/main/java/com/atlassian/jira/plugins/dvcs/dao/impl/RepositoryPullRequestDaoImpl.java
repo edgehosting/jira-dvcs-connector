@@ -18,8 +18,10 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Sets;
 import net.java.ao.Query;
 import org.slf4j.Logger;
@@ -264,12 +266,14 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         {
             return Lists.newArrayList();
         }
-        final String whereClause = ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString();
+        final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
+        final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, prIds.toArray(), Object.class);
+        
         Query select = Query.select("ID, *")
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
-                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, Boolean.FALSE, Boolean.TRUE);
+                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, params);
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
@@ -277,18 +281,23 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys, final String dvcsType)
     {
         Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
+        
         if (prIds.isEmpty())
         {
             return Lists.newArrayList();
         }
-        final String whereClause = ActiveObjectsUtils.renderListNumbersOperator("pr.ID", "IN", "OR", prIds).toString();
+       
+        final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
+        final Object [] params = ObjectArrays.concat(new Object[] { dvcsType, Boolean.FALSE, Boolean.TRUE }, prIds.toArray(), Object.class);
+
         Query select = Query.select("ID, *")
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .alias(OrganizationMapping.class, "org")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
-                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, dvcsType, Boolean.FALSE, Boolean.TRUE);
+                .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, params);
+        
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
@@ -306,10 +315,10 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 
     private List<RepositoryPullRequestIssueKeyMapping> findRelatedPullRequestsObjects(final Iterable<String> issueKeys)
     {
-        String whereClause = ActiveObjectsUtils.renderListStringsOperator(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
+        String whereClause = ActiveObjectsUtils.renderListOperator(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
 
         final Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(whereClause);
+                .where(whereClause, Iterables.toArray(issueKeys, Object.class));
 
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         return Arrays.asList(mappings);

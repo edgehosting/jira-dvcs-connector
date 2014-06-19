@@ -540,6 +540,11 @@
         <resource type="download" name="javascripts/dvcs-tabs.js" location="javascripts/dvcs-tabs.js"/>
     </web-resource>
 
+    <web-resource name="adminCssResources" key="adminCssResources">
+        <resource type="download" name="css/admin.css" location="css/admin.css" />
+        <context>atl.admin</context>
+    </web-resource>
+
 	<web-resource key="soy-templates-admin-">
 		<context>atl.admin</context>
 	    <dependency>com.atlassian.soy.soy-template-plugin:soy-deps</dependency>
