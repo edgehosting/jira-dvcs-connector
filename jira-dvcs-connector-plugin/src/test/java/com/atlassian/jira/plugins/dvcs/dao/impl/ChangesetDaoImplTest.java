@@ -56,6 +56,14 @@ public class ChangesetDaoImplTest
                 return ((TransactionCallback) invocation.getArguments()[0]).doInTransaction();
             }
         });
+        when(activeObjects.create(ChangesetMapping.class)).then(new Answer<ChangesetMapping>()
+        {
+            @Override
+            public ChangesetMapping answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return createMapping();
+            }
+        });
     }
 
     @Test
@@ -70,13 +78,20 @@ public class ChangesetDaoImplTest
     @Test
     public void createOrAssociateShouldReturnFalseForExistingChangeset() throws Exception
     {
-        ChangesetMapping mapping = mock(ChangesetMapping.class);
-        when(mapping.<ChangesetMapping>getEntityType()).thenReturn(ChangesetMapping.class);
+        ChangesetMapping mapping = createMapping();
 
         when(mapping.getID()).thenReturn(1);
         when(activeObjects.find(eq(ChangesetMapping.class), anyString(), anyString(), anyString())).thenReturn(new ChangesetMapping[] { mapping });
 
         boolean isNew = changesetDao.createOrAssociate(changeset, issues);
         assertThat(isNew, equalTo(false));
+    }
+
+    private ChangesetMapping createMapping()
+    {
+        ChangesetMapping mapping = mock(ChangesetMapping.class);
+        when(mapping.<ChangesetMapping>getEntityType()).thenReturn(ChangesetMapping.class);
+
+        return mapping;
     }
 }
