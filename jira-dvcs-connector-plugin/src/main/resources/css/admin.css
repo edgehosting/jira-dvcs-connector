@@ -1,0 +1,17 @@
+.dvcs-adduser-account {
+    padding-top: 1px;
+    margin-bottom: 4px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.dvcs-adduser-account-icon {
+    padding-left: 25px;
+    background: url('../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png') no-repeat transparent;
+    background-size: 20px 20px;
+}
+
+.dvcs-adduser-account-image {
+    vertical-align: text-bottom;
+    padding-right: 5px;
+}
