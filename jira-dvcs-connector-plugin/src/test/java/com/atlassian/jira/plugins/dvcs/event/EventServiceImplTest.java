@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
@@ -25,6 +26,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -33,6 +36,9 @@ import static org.mockito.Mockito.when;
 @Listeners (MockitoTestNgListener.class)
 public class EventServiceImplTest
 {
+    static final int REPO_1_ID = 100;
+    static final int REPO_2_ID = 200;
+
     @Mock
     Repository repo1;
 
@@ -74,16 +80,16 @@ public class EventServiceImplTest
             }
         });
 
-        when(repo1.getId()).thenReturn(100);
-        when(repo2.getId()).thenReturn(200);
+        when(repo1.getId()).thenReturn(REPO_1_ID);
+        when(repo2.getId()).thenReturn(REPO_2_ID);
 
         repo1Mapping = createMapping(repo1, "repo1-mapping");
         repo2Mapping = createMapping(repo2, "repo2-mapping");
         repo2BadMapping = createMapping(repo2, "repo2-bad-mapping");
         repo2BadMapping.setEventClass("com.does.not.Exist");
 
-        when(syncEventDao.findAllByRepoId(repo1.getId())).thenReturn(ImmutableList.of(repo1Mapping));
-        when(syncEventDao.findAllByRepoId(repo2.getId())).thenReturn(ImmutableList.of(repo2BadMapping, repo2Mapping));
+        doAnswer(new StreamAnswer(repo1Mapping)).when(syncEventDao).streamAllByRepoId(eq(REPO_1_ID), any(StreamCallback.class));
+        doAnswer(new StreamAnswer(repo2BadMapping, repo2Mapping)).when(syncEventDao).streamAllByRepoId(eq(REPO_2_ID), any(StreamCallback.class));
     }
 
     @Test (expectedExceptions = IllegalArgumentException.class)
@@ -159,7 +165,7 @@ public class EventServiceImplTest
         final SyncEventMapping repo1Mapping2 = createMapping(repo1, "repo1-mapping2");
 
         // let the first event through and limit the 2nd
-        when(syncEventDao.findAllByRepoId(repo1.getId())).thenReturn(ImmutableList.of(repo1Mapping, repo1Mapping2));
+        doAnswer(new StreamAnswer(repo1Mapping, repo1Mapping2)).when(syncEventDao).streamAllByRepoId(eq(REPO_1_ID), any(StreamCallback.class));
         when(eventLimiter.isLimitExceeded(any(SyncEvent.class), anyBoolean())).thenReturn(false, true);
         when(eventLimiter.getLimitExceededCount()).thenReturn(1);
 
@@ -193,5 +199,31 @@ public class EventServiceImplTest
         mapping.setScheduledSync(false);
 
         return mapping;
+    }
+
+    /**
+     * Answer for streaming mappings.
+     */
+    private static class StreamAnswer implements Answer<Void>
+    {
+        private final ImmutableList<SyncEventMapping> mappings;
+
+        public StreamAnswer(SyncEventMapping... mappings)
+        {
+            this.mappings = ImmutableList.copyOf(mappings);
+        }
+
+        @Override
+        public Void answer(final InvocationOnMock invocation) throws Throwable
+        {
+            final StreamCallback callback = (StreamCallback) invocation.getArguments()[1];
+
+            for (SyncEventMapping mapping : mappings)
+            {
+                callback.callback(mapping);
+            }
+
+            return null;
+        }
     }
 }

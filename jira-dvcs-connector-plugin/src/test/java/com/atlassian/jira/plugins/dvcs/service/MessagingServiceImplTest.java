@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
-import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -57,7 +57,7 @@ public class MessagingServiceImplTest
     ChangesetService changesetService;
 
     @Mock
-    EventService eventService;
+    CarefulEventService eventService;
 
     @Mock
     MessageDao messageDao;
