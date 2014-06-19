@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -58,6 +59,10 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
             changeset.setSynchronizedAt(synchronizedAt);
             changeset.setBranch(branch);
+            if (!node.equals(changeset.getNode()))
+            {
+                throw new SourceControlException(String.format("Error fetching changeset %s from GitHub (got %s instead)", node, changeset.getNode()));
+            }
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
