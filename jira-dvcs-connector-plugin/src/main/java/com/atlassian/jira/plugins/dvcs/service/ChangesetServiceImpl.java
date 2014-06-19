@@ -64,10 +64,12 @@ public class ChangesetServiceImpl implements ChangesetService
         createLock.lock();
         try
         {
-            Changeset changesetNew = changesetDao.create(changeset, extractedIssues);
+            if (changesetDao.createOrAssociate(changeset, extractedIssues))
+            {
+                broadcastChangesetCreatedEvent(changeset, extractedIssues);
+            }
 
-            broadcastChangesetCreatedEvent(changesetNew, extractedIssues);
-            return changesetNew;
+            return changeset;
         }
         finally
         {
