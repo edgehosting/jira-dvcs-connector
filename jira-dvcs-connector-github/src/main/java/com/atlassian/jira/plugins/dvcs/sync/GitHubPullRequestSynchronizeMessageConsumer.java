@@ -114,9 +114,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             // let's return prematurely
             return;
         }
+        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
         processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
