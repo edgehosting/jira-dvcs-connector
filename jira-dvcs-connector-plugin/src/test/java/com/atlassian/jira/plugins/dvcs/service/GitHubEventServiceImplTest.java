@@ -110,6 +110,29 @@ public class GitHubEventServiceImplTest
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
     }
 
+    @Test
+    public void testSynchronize_SavePointAtEndOfPage()
+    {
+        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
+        event1 = mockEvent("4", 4);
+        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(4));
+        event2 = mockEvent("3", 3);
+        when(savePointEvent.getCreatedAt()).thenReturn(new Date(3));
+        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("3"))).thenReturn(savePointEvent);
+        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("4"))).thenReturn(newSavePointEvent);
+
+        when(events.iterator()).thenReturn(events);
+        when(events.hasNext()).thenReturn(true, true, false);
+        Collection<Event> firstPage = Lists.newArrayList(event1, event2);
+        Collection<Event> secondPage = Lists.newArrayList(mockEvent("2", 2), mockEvent("1", 1));
+        Collection<Event> thirdPage = Lists.newArrayList(mockEvent("0", 0));
+        when(events.next()).thenReturn(firstPage, secondPage, thirdPage);
+
+        gitHubEventService.synchronize(repository, true, new String[]{});
+        verify(events, times(2)).next();
+        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
+    }
+
     private Event mockEvent(String id, long date)
     {
         Event event = mock(Event.class);
