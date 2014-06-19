@@ -8,19 +8,21 @@ import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.google.common.collect.ImmutableSet;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.Date;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +46,7 @@ public class ChangesetServiceImplTest
 
     private ChangesetServiceImpl changesetService;
 
-    @Before
+    @BeforeMethod
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
@@ -56,11 +58,11 @@ public class ChangesetServiceImplTest
     }
 
     @Test
-    public void createShouldBroadcastChangesetCreatedEvent() throws Exception
+    public void createShouldBroadcastChangesetCreatedEventForNewChangesets() throws Exception
     {
         // int repositoryId, String node, String message, Date timestam
         Changeset changeset = new Changeset(1, "d11320d1e9321f4ea96f9b46ecae20027a85dc7b", "DEV-1: file changed", new Date());
-        when(changesetDao.create(changeset, ImmutableSet.of("DEV-1"))).thenReturn(changeset);
+        when(changesetDao.createOrAssociate(changeset, ImmutableSet.of("DEV-1"))).thenReturn(true);
 
         changesetService.create(changeset, ImmutableSet.of("DEV-1"));
 
@@ -70,5 +72,16 @@ public class ChangesetServiceImplTest
         assertThat(eventCaptor.getValue(), instanceOf(ChangesetCreatedEvent.class));
         ChangesetCreatedEvent event = (ChangesetCreatedEvent) eventCaptor.getValue();
         assertThat(event.getChangeset(), is(changeset));
+    }
+
+    @Test
+    public void createShouldNotBroadcastChangesetCreatedEventForExistingChangesets() throws Exception
+    {
+        // int repositoryId, String node, String message, Date timestam
+        Changeset changeset = new Changeset(1, "d11320d1e9321f4ea96f9b46ecae20027a85dc7b", "DEV-1: file changed", new Date());
+        when(changesetDao.createOrAssociate(changeset, ImmutableSet.of("DEV-1"))).thenReturn(false);
+
+        changesetService.create(changeset, ImmutableSet.of("DEV-1"));
+        verify(threadEvents, never()).broadcast(anyObject());
     }
 }

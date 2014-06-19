@@ -19,6 +19,7 @@ import net.java.ao.RawEntity;
 import net.java.ao.schema.PrimaryKey;
 import net.java.ao.schema.Table;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +130,15 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
+        createOrAssociate(changeset, extractedIssues);
+
+        return changeset;
+    }
+
+    @Override
+    public boolean createOrAssociate(final Changeset changeset, final Set<String> extractedIssues)
+    {
+        final MutableBoolean wasCreated = new MutableBoolean(false);
         ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
         {
             @Override
@@ -140,6 +150,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                     chm = activeObjects.create(ChangesetMapping.class);
                     fillProperties(changeset, chm);
                     chm.save();
+                    wasCreated.setValue(true);
                 }
 
                 associateRepositoryToChangeset(chm, changeset.getRepositoryId());
@@ -153,8 +164,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
 
         changeset.setId(changesetMapping.getID());
-
-        return changeset;
+        return wasCreated.booleanValue();
     }
 
     @Override
