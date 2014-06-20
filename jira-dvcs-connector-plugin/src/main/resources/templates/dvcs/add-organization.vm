@@ -122,7 +122,7 @@
     
     <div class="dvcs-header-container">
         <!--[if IE]>
-        <h4 class="aui dvcsLogo"><img class="aui-icon supported-app-icon #if($syncDisabled) dvcs-sync-disabled #end" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
+        <h4 class="aui dvcsLogo"><img class="dvcs-account-image #if($syncDisabled) dvcs-sync-disabled #end" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
         <![endif]-->
         <![if ! IE]>
         <h4 class="aui $org.getDvcsType()Logo #if($syncDisabled) dvcs-sync-disabled #end">

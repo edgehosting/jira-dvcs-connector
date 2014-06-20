@@ -414,3 +414,8 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
     vertical-align: bottom;
     margin-left: 5px;
 }
+
+.dvcs-account-image {
+    vertical-align: text-bottom;
+    padding-right: 2px;
+}

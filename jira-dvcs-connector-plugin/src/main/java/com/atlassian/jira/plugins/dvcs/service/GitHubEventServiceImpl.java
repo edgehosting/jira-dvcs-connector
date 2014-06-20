@@ -10,7 +10,9 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAg
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.collect.Iterables;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
@@ -82,59 +84,58 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
         final GitHubEventMapping lastGitHubEventSavePoint = gitHubEventDAO.getLastSavePoint(repository);
 
-        String lastProceedEventGitHubId = null;
+        String latestEventGitHubId = null;
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
-        Iterator<Collection<Event>> eventsIterator = eventService.pageEvents(forRepositoryId).iterator();
-        while (eventsIterator.hasNext())
+        PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
+
+        for (final Event event : Iterables.concat(events))
         {
-            final Collection<Event> nextPage = eventsIterator.next();
-
-            for (final Event event : nextPage)
+            // processes single event - and returns flag if the processing of next records should be stopped, because their was already
+            // proceed
+            boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
             {
-                // processes single event - and returns flag if the processing of next records should be stopped, because their was already
-                // proceed
-                boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
-                {
 
-                    @Override
-                    public Boolean doInTransaction()
+                @Override
+                public Boolean doInTransaction()
+                {
+                    // before, not before or equals - there can exists several events with the same timestamp, but it does not mean that
+                    // all of them was already proceed
+                    if (lastGitHubEventSavePoint != null && event.getCreatedAt().before(lastGitHubEventSavePoint.getCreatedAt()))
                     {
-                        // before, not before or equals - there can exists several events with the same timestamp, but it does not mean that
-                        // all of them was already proceed
-                        if (lastGitHubEventSavePoint != null && event.getCreatedAt().before(lastGitHubEventSavePoint.getCreatedAt()))
-                        {
-                            // all previous records was already proceed - we can stop events' iterating
-                            return Boolean.TRUE;
+                        // all previous records was already proceed - we can stop events' iterating
+                        return Boolean.TRUE;
 
-                        } else if (gitHubEventDAO.getByGitHubId(repository, event.getId()) != null)
-                        {
-                            // maybe partial synchronization, and there can exist remaining events which was fired at the same time
-                            // or save point was not marked and there can still exists entries which was not already proceed
-                            return Boolean.FALSE;
-
-                        }
-
-                        // called registered GitHub event processors
-                        gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags, context);
-                        saveEventCounterpart(repository, event);
-
-                        return Boolean.FALSE;
                     }
-                });
-                lastProceedEventGitHubId = event.getId();
+                    else if (gitHubEventDAO.getByGitHubId(repository, event.getId()) != null)
+                    {
+                        // maybe partial synchronization, and there can exist remaining events which was fired at the same time
+                        // or save point was not marked and there can still exists entries which was not already proceed
+                        return Boolean.FALSE;
 
-                if (shouldStop)
-                {
-                    break;
+                    }
+
+                    // called registered GitHub event processors
+                    gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags, context);
+                    saveEventCounterpart(repository, event);
+
+                    return Boolean.FALSE;
                 }
-            }
+            });
 
+            if (shouldStop)
+            {
+                break;
+            }
+            else if (latestEventGitHubId == null)
+            {
+                latestEventGitHubId = event.getId();
+            }
         }
 
         // marks last event as a save point - because all previous records was fully proceed
-        if (lastProceedEventGitHubId != null)
+        if (latestEventGitHubId != null)
         {
-            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, lastProceedEventGitHubId));
+            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, latestEventGitHubId));
         }
     }
 

@@ -536,7 +536,7 @@ public class RootResource
                 log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
 
                 Map<String, Object> groupView = new HashMap<String, Object>();
-                groupView.put("url", organization.getOrganizationUrl());
+                groupView.put("organizationUrl", organization.getOrganizationUrl());
                 groupView.put("name", organization.getName());
                 errors.add(groupView);
             }
