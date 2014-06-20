@@ -64,9 +64,18 @@ public class ActiveObjectsUtilsTest
             {
                 String criteria = (String) invocation.getArguments()[1];
                 List<Entity> result = new ArrayList<Entity>();
-                for (String id : Splitter.on(",").split(criteria.replaceAll("ID IN \\((.+)\\)", "$1")))
+                int i = 2;
+                for (String param : Splitter.on(",").split(criteria.replaceAll("ID IN \\((.+)\\)", "$1")))
                 {
-                    result.add(entities.get(Integer.valueOf(id.trim())).getEntity());
+                    if (param.trim().equals("?"))
+                    {
+                        Integer parameter = (Integer) invocation.getArguments()[i++];
+                        result.add(entities.get(parameter).getEntity());
+                    }
+                    else
+                    {
+                        result.add(entities.get(Integer.valueOf(param.trim())).getEntity());
+                    }
                 }
 
                 return result.toArray(new Entity[result.size()]);
