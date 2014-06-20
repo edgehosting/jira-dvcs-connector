@@ -13,6 +13,8 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,6 +24,7 @@ public class MessageConsumerSupportTest
 {
     private static final java.lang.Integer REPO_ID = 200;
     private static final String NODE = "e4798f084a6cf7e9aff6e8d540414ef364042a40";
+    private static final String DVCS_TYPE = "my-dvcs";
 
     @Mock
     ChangesetService changesetService;
@@ -43,6 +46,7 @@ public class MessageConsumerSupportTest
         MockitoAnnotations.initMocks(this);
 
         when(repository.getId()).thenReturn(REPO_ID);
+        when(repository.getDvcsType()).thenReturn(DVCS_TYPE);
         when(changesetService.getByNode(REPO_ID, NODE)).thenReturn(null);
         when(dvcsCommunicatorProvider.getCommunicator(anyString())).thenReturn(dvcsCommunicator);
         messageConsumer = new TestConsumer().injectMocks();
@@ -51,8 +55,9 @@ public class MessageConsumerSupportTest
     @Test
     public void syncShouldAbortIfGetChangesetReturnsWrongChangeset() throws Exception
     {
+        final String returnedNode = "not-" + NODE;
         com.atlassian.jira.plugins.dvcs.model.Changeset randomChangeset = mock(com.atlassian.jira.plugins.dvcs.model.Changeset.class);
-        when(randomChangeset.getNode()).thenReturn("not-" + NODE);
+        when(randomChangeset.getNode()).thenReturn(returnedNode);
         when(dvcsCommunicator.getChangeset(repository, NODE)).thenReturn(randomChangeset);
 
         try
@@ -62,7 +67,11 @@ public class MessageConsumerSupportTest
         }
         catch (SourceControlException e)
         {
-            // yes!
+            String message = e.getMessage();
+
+            assertThat(message, containsString(DVCS_TYPE));
+            assertThat(message, containsString(NODE));
+            assertThat(message, containsString(returnedNode));
         }
     }
 

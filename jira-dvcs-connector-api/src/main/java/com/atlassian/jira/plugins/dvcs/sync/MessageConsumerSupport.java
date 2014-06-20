@@ -61,7 +61,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             changeset.setBranch(branch);
             if (!node.equals(changeset.getNode()))
             {
-                throw new SourceControlException(String.format("Error fetching changeset %s from GitHub (got %s instead)", node, changeset.getNode()));
+                throw new SourceControlException(String.format("Error fetching changeset %s from %s (got %s instead). Aborting sync.", node, repo.getDvcsType(), changeset.getNode()));
             }
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
