@@ -176,11 +176,16 @@ function showAddRepoDetails(show, hostToSelect) {
      * in the case of potential XSS hole when mixing input from url with query string
      */
     var availableHosts = {};
+    var defaultHost;
     urlSelect.find("option").each(function(index, option) {
         var $option = AJS.$(option);
         $option.data("index", index);
         if (!dvcs.connector.plugin.disabledHosts[$option.attr("value")]) {
-            availableHosts[$option.attr("value")] = $option;
+            var host = $option.attr("value");
+            availableHosts[host] = $option;
+            if (!defaultHost || host == "bitbucket") {
+                defaultHost = host;
+            }
         }
     });
 
@@ -189,7 +194,7 @@ function showAddRepoDetails(show, hostToSelect) {
         selectedHost = AJS.$(availableHosts[hostToSelect]);
     } else {
         //Defaults to bitbucket
-        selectedHost = AJS.$(availableHosts["bitbucket"]);
+        selectedHost = AJS.$(availableHosts[defaultHost]);
     }
 
     urlSelect.val(selectedHost.attr("value"));
