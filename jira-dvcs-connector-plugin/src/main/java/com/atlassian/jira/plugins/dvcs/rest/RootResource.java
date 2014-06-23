@@ -151,7 +151,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -190,7 +190,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -223,7 +223,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -256,7 +256,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -282,7 +282,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -308,7 +308,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+            return buildResponse(Status.badRequest().message(e.getMessage()));
         }
     }
 
@@ -480,15 +480,15 @@ public class RootResource
 
         } catch (SourceControlException.Forbidden_403 e)
         {
-            return Status.forbidden().message("Unable to access Bitbucket").response();
+            return buildResponse(Status.forbidden().message("Unable to access Bitbucket"));
 
         } catch (SourceControlException e)
         {
-            return Status
+            return buildResponse(Status
                     .error()
                     .message(
                             "Error retrieving list of groups for " + organization.getOrganizationUrl()
-                                    + ". Please check JIRA logs for details.").response();
+                                    + ". Please check JIRA logs for details."));
         }
 
     }
@@ -595,7 +595,7 @@ public class RootResource
         Organization integratedAccount = organizationService.findIntegratedAccount();
         if (integratedAccount != null && id == integratedAccount.getId())
         {
-            return Status.error().message("Failed to delete integrated account.").response();
+            return buildResponse(Status.error().message("Failed to delete integrated account."));
         }
 
         if (organizationService.get(id, false) == null)
@@ -609,9 +609,15 @@ public class RootResource
         } catch (Exception e)
         {
             log.error("Failed to remove account with id " + id, e);
-            return Status.error().message("Failed to delete account.").response();
+            return buildResponse(Status.error().message("Failed to delete account."));
         }
 
         return Response.noContent().build();
+    }
+
+    private Response buildResponse(Status.StatusResponseBuilder statusResponseBuilder)
+    {
+        // resetting MediaType to remove default application/xml type generated in Status builder
+        return statusResponseBuilder.responseBuilder().type((MediaType) null).build();
     }
 }
