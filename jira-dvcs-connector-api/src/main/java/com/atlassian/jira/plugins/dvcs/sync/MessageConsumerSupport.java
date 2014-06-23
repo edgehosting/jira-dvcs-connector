@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -54,10 +55,15 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
         if (changesetService.getByNode(repo.getId(), node) == null)
         {
+            LOGGER.trace("Fetching changeset '{}'", node);
             Date synchronizedAt = new Date();
             Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
             changeset.setSynchronizedAt(synchronizedAt);
             changeset.setBranch(branch);
+            if (!node.equals(changeset.getNode()))
+            {
+                throw new SourceControlException(String.format("Error retrieving branch '%s'. Communicator for '%s' returned '%s' instead of '%s'", branch, repo.getDvcsType(), changeset.getNode(), node));
+            }
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
@@ -70,10 +76,17 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                     0 //
                     );
 
-            for (String parentChangesetNode : changeset.getParents())
+            if (changeset.getParents().isEmpty())
             {
-                if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
-                    messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), priority, tags);
+                LOGGER.debug("Changeset {} has no parents, stopping traversal for {}", node, branch);
+            }
+            else
+            {
+                for (String parentChangesetNode : changeset.getParents())
+                {
+                    if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {
+                        messagingService.publish(getAddress(), createNextMessage(payload, parentChangesetNode), priority, tags);
+                    }
                 }
             }
 
@@ -82,6 +95,10 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 repo.setLastCommitDate(changeset.getDate());
                 repositoryService.save(repo);
             }
+        }
+        else
+        {
+            LOGGER.debug("Changeset {} already exists, stopping traversal for {}", node, branch);
         }
     }
 
