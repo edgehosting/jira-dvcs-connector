@@ -371,13 +371,7 @@ public class GitHubTestResource
             // wait until forked repository is prepared
             do
             {
-                try
-                {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e)
-                {
-                    // nothing to do
-                }
+                sleep(5000);
             } while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
 
             RepositoryContext repositoryContext = new RepositoryContext(owner, repository);
@@ -437,25 +431,31 @@ public class GitHubTestResource
         baseMarker.setLabel(base);
         request.setBase(baseMarker);
 
+        PullRequest result = null;
+
         try
         {
-            PullRequest result = new PullRequestService(getGitHubClient(bySlug.owner)).createPullRequest(bySlug.repository, request);
-
-            // pull request creation is asynchronous process - it is necessary to wait a little bit
-            // otherwise unexpected behavior can happened - like next push will be part as open pull request
             try
             {
-                Thread.sleep(5000);
-            } catch (InterruptedException e)
-            {
-                // nothing to do
+                result = new PullRequestService(getGitHubClient(bySlug.owner)).createPullRequest(bySlug.repository, request);
             }
-
-            return result;
-        } catch (IOException e)
+            catch (RequestException e)
+            {
+                // let's try once more after while
+                sleep(5000);
+                result = new PullRequestService(getGitHubClient(bySlug.owner)).createPullRequest(bySlug.repository, request);
+            }
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+
+        // pull request creation is asynchronous process - it is necessary to wait a little bit
+        // otherwise unexpected behavior can happened - like next push will be part as open pull request
+        sleep(5000);
+
+        return result;
     }
 
     /**
@@ -480,23 +480,28 @@ public class GitHubTestResource
         pullRequest.setTitle(title);
         pullRequest.setBody(description);
 
+        PullRequest result;
         try
         {
-            PullRequest result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
-
             try
             {
-                Thread.sleep(5000);
-            } catch (InterruptedException e)
-            {
-                // nothing to do
+                result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
             }
-
-            return result;
-        } catch (IOException e)
+            catch (RequestException e)
+            {
+                // let's try once more after while
+                sleep(5000);
+                result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
+            }
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+
+        sleep(5000);
+
+        return result;
     }
 
     /**
@@ -764,6 +769,17 @@ public class GitHubTestResource
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    private void sleep(long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        } catch (InterruptedException e)
+        {
+            // nothing to do
         }
     }
 }
