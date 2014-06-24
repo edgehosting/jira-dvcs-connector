@@ -279,7 +279,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
                     return false;
                 }
             }
-        }, 5000);
+        }, 10000);
 
         sleep(1000);
 
@@ -657,6 +657,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest2, null);
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest3);
 
+        sleep(1000);
+
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
         account.refresh();
@@ -717,7 +719,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch1);
 
-        sleep(1000);
+        sleep(2000);
 
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, expectedPullRequestName + repositoryName,
                 "Open PR description", fixBranch1, "master");
@@ -740,7 +742,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(anotherRepositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranch2);
 
-        sleep(1000);
+        sleep(2000);
 
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, anotherRepositoryName, expectedPullRequestName + anotherRepositoryName,
                 "Open PR description", fixBranch2, "master");
