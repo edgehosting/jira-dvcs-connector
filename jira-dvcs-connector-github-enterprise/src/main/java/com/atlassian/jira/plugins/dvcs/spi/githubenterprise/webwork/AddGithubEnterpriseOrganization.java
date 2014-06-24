@@ -109,6 +109,12 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 //        {
 //            addErrorMessage("Invalid user/team account.");
 //        }
+
+        if (organizationService.getByHostAndName(url, organization) != null)
+        {
+            addErrorMessage("Account is already integrated with JIRA.");
+        }
+
         if (invalidInput())
         {
             triggerAddFailedEvent(FAILED_REASON_VALIDATION);
