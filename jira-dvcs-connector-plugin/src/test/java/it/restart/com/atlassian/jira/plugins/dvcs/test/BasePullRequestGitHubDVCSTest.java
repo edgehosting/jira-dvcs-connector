@@ -210,7 +210,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
@@ -290,15 +290,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize(new Predicate<Void>()
-        {
-            @Override
-            public boolean apply(@Nullable final Void input)
-            {
-                RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
-                return pullRequestActual.getRepositories().size() == 1;
-            }
-        });
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
@@ -307,6 +299,19 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         assertPullRequestInfo(actualPullRequest, "OPEN", pullRequest.getTitle(), pullRequest.getHtmlUrl());
         Assert.assertEquals(actualPullRequest.getCommentCount(), 1);
+    }
+
+    private Predicate<Void> getFinishPredicate()
+    {
+        return new Predicate<Void>()
+        {
+            @Override
+            public boolean apply(@Nullable final Void input)
+            {
+                RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+                return pullRequestActual.getRepositories().size() == 1;
+            }
+        };
     }
 
     /**
@@ -351,7 +356,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
@@ -403,7 +408,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
@@ -457,7 +462,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
@@ -1019,7 +1024,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
