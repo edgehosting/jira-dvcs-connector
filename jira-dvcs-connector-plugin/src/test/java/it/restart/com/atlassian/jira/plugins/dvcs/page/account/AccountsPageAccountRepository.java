@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
@@ -11,9 +12,11 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -34,6 +37,10 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     @Inject
     private PageElementFinder elementFinder;
+
+    @Inject
+    private JiraTestedProduct jiraTestedProduct;
+
     /**
      * Enable checkbox - with responsibility to enable repository.
      *
@@ -173,6 +180,37 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // retrying synchronization once
             syncAndWaitForFinish();
         }
+        Assert.assertTrue(getSyncErrors().isEmpty(), "Synchronization failed");
+    }
+
+    public void synchronize(final Predicate<Void> finishPredicate)
+    {
+        syncAndWaitForFinish();
+
+        try
+        {
+            jiraTestedProduct.getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
+            {
+                @Override
+                public Boolean apply(@Nullable final WebDriver input)
+                {
+                    if (getSyncErrors().isEmpty() && finishPredicate.apply(null))
+                    {
+                        return true;
+                    }
+
+                    // retrying synchronization
+                    syncAndWaitForFinish();
+
+                    return false;
+                }
+            }, 15000);
+        }
+        catch (TimeoutException e)
+        {
+            // nop
+        }
+
         Assert.assertTrue(getSyncErrors().isEmpty(), "Synchronization failed");
     }
 

@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Ordering;
@@ -289,7 +290,15 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
-        repository.synchronize();
+        repository.synchronize(new Predicate<Void>()
+        {
+            @Override
+            public boolean apply(@Nullable final Void input)
+            {
+                RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
+                return pullRequestActual.getRepositories().size() == 1;
+            }
+        });
 
         RestDevResponse<RestPrRepository> pullRequestActual = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(pullRequestActual.getRepositories().size(), 1);
