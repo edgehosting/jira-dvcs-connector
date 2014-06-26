@@ -18,9 +18,11 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -38,6 +40,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -634,7 +637,19 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         if (pullRequestSync)
         {
-            gitHubEventService.synchronize(repo, softSync, synchronizationTags);
+            if (softSync)
+            {
+                gitHubEventService.synchronize(repo, softSync, synchronizationTags);
+            }
+            else
+            {
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST);
+                MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
+                        GitHubPullRequestPageMessage.class,
+                        GitHubPullRequestPageMessageConsumer.ADDRESS
+                );
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+            }
         }
     }
 

@@ -57,28 +57,22 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     public static final String ADDRESS = GitHubPullRequestSynchronizeMessage.class.getCanonicalName();
 
     /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao} dependency.
+     * Injected {@link MessagingService} dependency.
      */
     @Resource
-    private RepositoryPullRequestDao repositoryPullRequestDao;
+    private MessagingService messagingService;
 
     /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.service.PullRequestService} dependency.
-     */
-    @Resource
-    private com.atlassian.jira.plugins.dvcs.service.PullRequestService pullRequestService;
-
-    /**
-     * Injected {@link GithubClientProvider} dependency.
+     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider} dependency.
      */
     @Resource(name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
     /**
-     * Injected {@link MessagingService} dependency.
+     * Injected {@link com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestProcessor} dependency.
      */
     @Resource
-    private MessagingService messagingService;
+    private GitHubPullRequestProcessor gitHubPullRequestProcessor;
 
     /**
      * {@inheritDoc}
@@ -98,133 +92,12 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Repository repository = payload.getRepository();
 
         PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
-        RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
-                remotePullRequest.getNumber());
-
-        Map<String, Participant> participantIndex = new HashMap<String,Participant>();
-
-        try
-        {
-            localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
-        }
-        catch (IllegalStateException e)
-        {
-            // This should not happen
-            LOGGER.warn("Pull request " + remotePullRequest.getId() + " from repository with id " + repository.getId() + " could not be processed", e);
-            // let's return prematurely
-            return;
-        }
-        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
-
-        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-
-        processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
-        processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
-
-        pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
-    }
-
-    /**
-     * Creates or updates local version of remote {@link PullRequest}.
-     * 
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request representation
-     * @param localPullRequest
-     * @return created/updated local pull request
-     */
-    private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
-    {
-        if (localPullRequest == null)
-        {
-            Map<String, Object> activity = new HashMap<String, Object>();
-            map(activity, repository, remotePullRequest);
-            localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
-        }
-        else
-        {
-            String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
-            String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
-
-            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
-                    sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
-                    .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
-        }
-
-        addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
-        addParticipant(participantIndex, remotePullRequest.getMergedBy(), Participant.ROLE_REVIEWER);
-        addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
-
-        return localPullRequest;
-    }
-
-    private String checkNotNull(String branch, String object)
-    {
-        if (branch == null)
-        {
-            throw new IllegalStateException(object + " must not be null");
-        }
-
-        return branch;
-    }
-
-    private String getBranchName(PullRequestMarker ref, String oldBranchName)
-    {
-        if (ref == null || ref.getRef() == null)
-        {
-            return oldBranchName;
-        }
-
-        return ref.getRef();
-    }
-
-    private void addParticipant(Map<String, Participant> participantIndex, User user, String role)
-    {
-        if (user != null)
-        {
-            Participant participant = participantIndex.get(user.getLogin());
-
-            if (participant == null)
-            {
-                participantIndex.put(user.getLogin(), new Participant(user.getLogin(), false, role));
-            }
-        }
-    }
-
-    private void updateLocalPullRequestCommits(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest)
-    {
-        List<RepositoryCommit> remoteCommits = getRemotePullRequestCommits(repository, remotePullRequest);
-
-        Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(localPullRequest
-                .getCommits()));
-
-        for (RepositoryCommit remoteCommit : remoteCommits)
-        {
-            RepositoryCommitMapping commit = repositoryPullRequestDao.getCommitByNode(repository, remoteCommit.getSha());
-            if (commit == null)
-            {
-                Map<String, Object> commitData = new HashMap<String, Object>();
-                map(commitData, remoteCommit);
-                commit = repositoryPullRequestDao.saveCommit(repository, commitData);
-                repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
-            } else
-            {
-                remainingCommitsToDelete.remove(commit);
-            }
-        }
-
-        for (RepositoryCommitMapping commit : remainingCommitsToDelete)
-        {
-            repositoryPullRequestDao.unlinkCommit(repository, localPullRequest, commit);
-        }
+        gitHubPullRequestProcessor.processPullRequest(repository, remotePullRequest);
     }
 
     /**
      * Loads remote {@link PullRequest}.
-     * 
+     *
      * @param repository
      *            owner of pull request
      * @param number
@@ -242,153 +115,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             throw new RuntimeException(e);
         }
 
-    }
-
-    /**
-     * Loads remote commits for provided pull request.
-     * 
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request
-     * @return remote commits of pull request
-     */
-    private List<RepositoryCommit> getRemotePullRequestCommits(Repository repository, PullRequest remotePullRequest)
-    {
-        PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
-        try
-        {
-            return pullRequestService.getCommits(RepositoryId.createFromUrl(repository.getRepositoryUrl()), remotePullRequest.getNumber());
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Processes comments of a Pull Request.
-     * 
-     * @param repository
-     * @param remotePullRequest
-     * @param localPullRequest
-     */
-    private void processPullRequestComments(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
-    {
-        updateCommentsCount(remotePullRequest, localPullRequest);
-
-        IssueService issueService = gitHubClientProvider.getIssueService(repository);
-        RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
-        List<Comment> pullRequestComments;
-        try
-        {
-            pullRequestComments = issueService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        for (Comment comment : pullRequestComments)
-        {
-            addParticipant(participantIndex, comment.getUser(), Participant.ROLE_PARTICIPANT);
-        }
-    }
-
-    /**
-     * Processes review comments of a Pull Request.
-     * 
-     * @param repository
-     * @param remotePullRequest
-     * @param localPullRequest
-     */
-    private void processPullRequestReviewComments(Repository repository, PullRequest remotePullRequest,
-            RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
-    {
-        updateCommentsCount(remotePullRequest, localPullRequest);
-
-        PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
-        RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
-        List<CommitComment> pullRequestReviewComments;
-        try
-        {
-            pullRequestReviewComments = pullRequestService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        for (CommitComment comment : pullRequestReviewComments)
-        {
-            addParticipant(participantIndex, comment.getUser(), Participant.ROLE_PARTICIPANT);
-        }
-    }
-
-    private void updateCommentsCount(PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
-    {
-        int commentsCount = remotePullRequest.getComments() + remotePullRequest.getReviewComments();
-        // updates count
-        repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), localPullRequest.getName(),
-                localPullRequest.getSourceBranch(), localPullRequest.getDestinationBranch(),
-                RepositoryPullRequestMapping.Status.valueOf(localPullRequest.getLastStatus()), localPullRequest.getUpdatedOn(),
-                localPullRequest.getSourceRepo(), commentsCount);
-    }
-
-    private void map(Map<String, Object> target, Repository repository, PullRequest source)
-    {
-        String sourceBranch = checkNotNull(getBranchName(source.getHead(), null), "Source branch");
-        String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
-
-        target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
-        target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
-
-        target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
-        target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
-
-        if (source.getUser() != null)
-        {
-            target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
-        }
-        target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
-        target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, sourceBranch);
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, dstBranch);
-        target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
-        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
-    }
-
-    private void map(Map<String, Object> target, RepositoryCommit source)
-    {
-        target.put(RepositoryCommitMapping.RAW_AUTHOR, source.getCommit().getAuthor().getName());
-        target.put(RepositoryCommitMapping.MESSAGE, source.getCommit().getMessage());
-        target.put(RepositoryCommitMapping.NODE, source.getCommit().getSha());
-        target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
-    }
-
-    private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
-    {
-        if ("open".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return RepositoryPullRequestMapping.Status.OPEN;
-        } else if ("closed".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return pullRequest.getMergedAt() != null ? RepositoryPullRequestMapping.Status.MERGED
-                    : RepositoryPullRequestMapping.Status.DECLINED;
-        } else
-        {
-            LOGGER.warn("Unable to parse Status of GitHub Pull Request, unknown GH state: " + pullRequest.getState());
-            return RepositoryPullRequestMapping.Status.OPEN;
-        }
-    }
-
-    private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
-    {
-        if (gitHubRepository == null || gitHubRepository.getOwner() == null)
-        {
-            return null;
-        }
-
-        return gitHubRepository.getOwner().getLogin() + "/" + gitHubRepository.getName();
     }
 
     /**

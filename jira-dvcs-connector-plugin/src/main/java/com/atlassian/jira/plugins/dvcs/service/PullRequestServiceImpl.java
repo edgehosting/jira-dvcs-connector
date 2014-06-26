@@ -14,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * Implementation of {@link PullRequestService}
@@ -22,16 +24,20 @@ import java.util.Map;
  */
 public class PullRequestServiceImpl implements PullRequestService
 {
-    private final RepositoryPullRequestDao pulLRequestDao;
+    @Resource
+    private RepositoryPullRequestDao pulLRequestDao;
 
-    private final PullRequestTransformer transformer;
+    private PullRequestTransformer transformer;
 
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    public PullRequestServiceImpl(final RepositoryPullRequestDao pulLRequestDao, final RepositoryService repositoryService, final DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    @Resource
+    private RepositoryService repositoryService;
+
+    @PostConstruct
+    public void init()
     {
-        this.pulLRequestDao = pulLRequestDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         transformer = new PullRequestTransformer(repositoryService);
     }
 
