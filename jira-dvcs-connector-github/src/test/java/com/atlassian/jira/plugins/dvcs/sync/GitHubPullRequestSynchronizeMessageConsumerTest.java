@@ -11,10 +11,13 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import org.eclipse.egit.github.core.Comment;
+import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitComment;
+import org.eclipse.egit.github.core.CommitUser;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
+import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RequestError;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.RequestException;
@@ -30,6 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -83,13 +87,16 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     private PullRequest pullRequest;
 
     @Captor
-    private ArgumentCaptor<Map> savePullRequestCaptor;
+    private ArgumentCaptor<Map<String, Object>> savePullRequestCaptor;
 
     @Mock
     private IssueService issueService;
 
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
+
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> saveCommitCaptor;
 
     @BeforeMethod
     private void init() throws IOException
@@ -128,6 +135,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), anyMap());
     }
 
@@ -206,6 +214,21 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     }
 
     @Test
+    public void testEmptyTitle()
+    {
+        final PullRequestMarker source = mockRef("branch");
+        when(pullRequest.getHead()).thenReturn(source);
+        final PullRequestMarker destination = mockRef("master");
+        when(pullRequest.getBase()).thenReturn(destination);
+
+        when(pullRequest.getTitle()).thenReturn(null);
+
+        testedClass.onReceive(message, payload);
+
+        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME));
+    }
+
+    @Test
     public void testNoParticipants() throws IOException
     {
         final PullRequestMarker source = mockRef("branch");
@@ -225,6 +248,28 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         Participant participant = participantsIndexCaptor.getValue().get("user");
         assertEquals(participant.getUsername(), "user");
         assertEquals(participant.getRole(), Participant.ROLE_PARTICIPANT);
+    }
+
+    @Test
+    public void testCommit() throws IOException
+    {
+        final PullRequestMarker source = mockRef("branch");
+        when(pullRequest.getHead()).thenReturn(source);
+        final PullRequestMarker destination = mockRef("master");
+        when(pullRequest.getBase()).thenReturn(destination);
+
+        RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
+        when(repositoryCommit.getSha()).thenReturn("aaa");
+        Commit commit = mock(Commit.class);
+        when(commit.getSha()).thenReturn("aaa");
+        when(commit.getAuthor()).thenReturn(mock(CommitUser.class));
+        when(repositoryCommit.getCommit()).thenReturn(commit);
+        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
     }
 
     private PullRequestMarker mockRef(String branch)

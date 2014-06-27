@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -17,11 +18,14 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLinks;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestBaseActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommitAuthor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestHead;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
@@ -39,6 +43,7 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -48,11 +53,13 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
@@ -108,6 +115,12 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
 
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> saveCommitCaptor;
+
+    @Mock
+    private BitbucketPullRequestUpdateActivity activity;
+
     private class BuilderAnswer implements Answer<Object>
     {
         private boolean cached;
@@ -159,14 +172,15 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(activityPage.getValues()).thenReturn(Lists.newArrayList(activityInfo));
 
-        BitbucketPullRequestBaseActivity activity = Mockito.mock(BitbucketPullRequestBaseActivity.class);
         when(activityInfo.getActivity()).thenReturn(activity);
         when(activity.getDate()).thenReturn(new Date());
         when(activity.getUpdatedOn()).thenReturn(new Date());
+        BitbucketPullRequestHead source = mock(BitbucketPullRequestHead.class);
+        BitbucketPullRequestRepository sourceRepository = mock(BitbucketPullRequestRepository.class);
+        when(source.getRepository()).thenReturn(sourceRepository);
+        when(activity.getSource()).thenReturn(source);
 
         when(activityInfo.getPullRequest()).thenReturn(bitbucketPullRequest);
-        BitbucketLinks bitbucketLinks = Mockito.mock(BitbucketLinks.class);
-        when(bitbucketPullRequest.getLinks()).thenReturn(bitbucketLinks);
         when(bitbucketClientBuilderFactory.forRepository(repository)).then(new Answer<BitbucketClientBuilder>()
         {
             @Override
@@ -261,6 +275,21 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
+    public void testEmptyTitle()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
+        when(bitbucketPullRequest.getTitle()).thenReturn(null);
+
+        testedClass.onReceive(message, payload);
+
+        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME));
+    }
+
+    @Test
     public void testNoParticipants()
     {
         BitbucketPullRequestHead source = mockRef("branch");
@@ -302,13 +331,47 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(cachedRequestor, never()).get(anyString(), anyMap(), any(ResponseCallback.class));
     }
 
+    @Test
+    public void testCommit() throws IOException
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
+
+        final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
+        when(commit.getHash()).thenReturn("aaa");
+        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
+        BitbucketUser user = mock(BitbucketUser.class);
+        when(commitAuthor.getUser()).thenReturn(user);
+
+        when(commit.getAuthor()).thenReturn(commitAuthor);
+        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
+        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(commit));
+
+        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+    }
+
     private BitbucketLinks mockLinks()
     {
         BitbucketLinks bitbucketLinks = new BitbucketLinks();
-        BitbucketLink htmlLink = new BitbucketLink();
-        bitbucketLinks.setHtml(htmlLink);
+        bitbucketLinks.setHtml(mockLink("htmlLink"));
+        bitbucketLinks.setCommits(mockLink("commitsLink"));
 
         return bitbucketLinks;
+    }
+
+    private BitbucketLink mockLink(final String link)
+    {
+        BitbucketLink bitbucketLink = mock(BitbucketLink.class);
+        when(bitbucketLink.getHref()).thenReturn(link);
+        return bitbucketLink;
     }
 
     private BitbucketPullRequestHead mockRef(String branchName)

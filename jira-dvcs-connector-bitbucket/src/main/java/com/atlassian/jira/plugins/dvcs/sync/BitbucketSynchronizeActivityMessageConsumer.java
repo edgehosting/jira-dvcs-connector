@@ -423,7 +423,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             RepositoryPullRequestMapping request)
     {
         dao.linkCommit(domainRepository, request, commitMapping);
-        commitMapping.save();
     }
 
 
