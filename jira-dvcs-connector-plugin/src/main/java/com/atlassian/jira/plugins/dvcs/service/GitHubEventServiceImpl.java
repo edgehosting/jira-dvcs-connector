@@ -116,7 +116,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
                     // called registered GitHub event processors
                     gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags, context);
-                    saveEventCounterpart(repository, event);
+                    saveEventCounterpart(repository, event, false);
 
                     return Boolean.FALSE;
                 }
@@ -142,19 +142,35 @@ public class GitHubEventServiceImpl implements GitHubEventService
     /**
      * Stores provided {@link Event} locally as {@link GitHubEventMapping}. It is determined as marker that provided event was already
      * proceed.
-     * 
+     *
      * @param repository
      *            over of event
      * @param event
      *            GitHub event which was proceed
+     * @param savePoint
+     *            true if it is save point, false otherwise
      */
-    private void saveEventCounterpart(Repository repository, Event event)
+
+    private void saveEventCounterpart(Repository repository, Event event, boolean savePoint)
     {
         Map<String, Object> gitHubEvent = new HashMap<String, Object>();
         gitHubEvent.put(GitHubEventMapping.GIT_HUB_ID, event.getId());
         gitHubEvent.put(GitHubEventMapping.CREATED_AT, event.getCreatedAt());
         gitHubEvent.put(GitHubEventMapping.REPOSITORY, repository.getId());
+        if (savePoint)
+        {
+            gitHubEvent.put(GitHubEventMapping.SAVE_POINT, savePoint);
+        }
         gitHubEventDAO.create(gitHubEvent);
     }
 
+    @Override
+    public void saveEvent(Repository repository, Event event, boolean savePoint)
+    {
+        // save only if the event is not there
+        if (gitHubEventDAO.getByGitHubId(repository, event.getId()) == null)
+        {
+            saveEventCounterpart(repository, event, savePoint);
+        }
+    }
 }
