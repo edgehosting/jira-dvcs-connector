@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -25,6 +26,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -105,6 +107,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class DefaultSynchronizerTest
@@ -220,7 +223,10 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ApplicationProperties ap;
-    
+
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
+
     @InjectMocks
     private DefaultSynchronizer defaultSynchronizer;
 
@@ -356,6 +362,7 @@ public class DefaultSynchronizerTest
 
         ReflectionTestUtils.setField(defaultSynchronizer, "branchService", branchService);
         ReflectionTestUtils.setField(defaultSynchronizer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(defaultSynchronizer, "syncDisabledHelper", syncDisabledHelper);
 
         bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
@@ -364,14 +371,19 @@ public class DefaultSynchronizerTest
         bitbucketCachingCommunicator = new CachingCommunicator();
         githubCachingCommunicator = new CachingCommunicator();
 
+        SyncDisabledHelper syncDisabledHelper = new SyncDisabledHelper();
+        ReflectionTestUtils.setField(syncDisabledHelper, "featureManager", featureManager);
+
         bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, ap);
         ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         githubCommunicator = new GithubCommunicator(oAuthStore, githubClientProvider);
         ReflectionTestUtils.setField(githubCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(githubCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(githubCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         bitbucketCachingCommunicator.setDelegate(bitbucketCommunicator);
         githubCachingCommunicator.setDelegate(githubCommunicator);
@@ -958,6 +970,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_Bitbucket_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void getChangesets_GitHub_softSync()
     {
 //       B3   D  B1   B2
@@ -1046,6 +1074,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_GitHub_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_GITHUB_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void shouldFallBackToFullSyncWhenNoBranchHeads()
     {
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
@@ -1066,6 +1110,32 @@ public class DefaultSynchronizerTest
     private void checkSynchronization(Graph graph, boolean softSync)
     {
         checkSynchronization(graph, new ArrayList<String>(), softSync);
+    }
+
+    private void checkNoSynchronization(boolean softSync)
+    {
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
+        if (softSync)
+        {
+            // soft sync
+            flags.add(SynchronizationFlag.SOFT_SYNC);
+        }
+
+        try
+        {
+            defaultSynchronizer.doSync(repositoryMock, flags);
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            // ignoring to proceed verification
+        }
+
+        verifyNoMoreInteractions(changesetService);
+        verifyNoMoreInteractions(branchesAndTagsRemoteRestpoint);
+        verifyNoMoreInteractions(changesetRestpoint);
+        verifyNoMoreInteractions(githubClientProvider);
+        verifyNoMoreInteractions(commitService);
+        verifyNoMoreInteractions(egitRepositoryService);
     }
 
     private void checkSynchronization(final Graph graph, final List<String> processedNodes, boolean softSync)
