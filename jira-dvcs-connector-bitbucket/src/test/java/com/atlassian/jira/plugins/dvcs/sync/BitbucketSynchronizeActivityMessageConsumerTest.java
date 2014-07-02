@@ -32,6 +32,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Respo
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -44,8 +45,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Matchers.any;
@@ -290,6 +293,21 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
+    public void testMaxTitle()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
+        when(bitbucketPullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
+
+        testedClass.onReceive(message, payload);
+
+        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long "));
+    }
+
+    @Test
     public void testNoParticipants()
     {
         BitbucketPullRequestHead source = mockRef("branch");
@@ -303,6 +321,39 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
         assertTrue(participantsIndexCaptor.getValue().isEmpty());
+    }
+
+    @Test
+    public void testMaxParticipants()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
+        List<BitbucketPullRequestParticipant> participants = new ArrayList<BitbucketPullRequestParticipant>();
+        for (int i = 0; i < 1000; i++)
+        {
+            BitbucketPullRequestParticipant participant = new BitbucketPullRequestParticipant();
+            participant.setRole(i % 2 == 0 ? Participant.ROLE_PARTICIPANT : Participant.ROLE_REVIEWER);
+            participant.setApproved(i % 4 == 0 ? true : false);
+            BitbucketUser bitbucketUser = new BitbucketUser();
+            bitbucketUser.setUsername("User" + i);
+            participant.setUser(bitbucketUser);
+            participants.add(participant);
+        }
+
+        when(bitbucketPullRequest.getParticipants()).thenReturn(participants);
+
+        testedClass.onReceive(message, payload);
+
+        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
+        Map<String, Participant> participantsIndex = participantsIndexCaptor.getValue();
+        assertEquals(participantsIndex.size(), 1000);
+        for (int i = 0; i < 1000; i++)
+        {
+            assertEquals(participantsIndex.get("User" + i).getUsername(), "User" + i);
+        }
     }
 
     @Test
@@ -356,6 +407,44 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+    }
+
+    @Test
+    public void testMaxCommits() throws IOException
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
+
+        List<BitbucketPullRequestCommit> commits = new ArrayList<BitbucketPullRequestCommit>();
+        for (int i = 0; i < 100; i++)
+        {
+            final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
+            when(commit.getHash()).thenReturn("aaa" + i);
+            BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
+            BitbucketUser user = mock(BitbucketUser.class);
+            when(commitAuthor.getUser()).thenReturn(user);
+            when(commit.getAuthor()).thenReturn(commitAuthor);
+
+            commits.add(commit);
+        }
+        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
+
+        when(commitsPage.getValues()).thenReturn(commits);
+
+        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao, times(100)).saveCommit(eq(repository), saveCommitCaptor.capture());
+
+        assertEquals(saveCommitCaptor.getAllValues().size(), 100);
+        int i = 0;
+        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+        {
+            assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
+        }
     }
 
     private BitbucketLinks mockLinks()
