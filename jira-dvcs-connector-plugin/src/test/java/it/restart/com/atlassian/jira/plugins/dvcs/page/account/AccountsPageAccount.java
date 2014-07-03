@@ -206,12 +206,9 @@ public class AccountsPageAccount extends WebDriverElement
         if (!repository.isEnabled())
         {
             repository.enable();
-            repository.synchronize();
-        } else
-        {
-            // we need to fullsync here because of the bug https://sdog.jira.com/browse/BBC-608
-            repository.fullSynchronize();
         }
+
+        repository.synchronize();
 
         return repository;
     }
@@ -225,6 +222,10 @@ public class AccountsPageAccount extends WebDriverElement
     public AccountsPageAccountRepository fullSynchronizeRepository(String repositoryName)
     {
         AccountsPageAccountRepository repository = getRepository(repositoryName);
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+        }
         repository.fullSynchronize();
 
         return repository;
