@@ -205,10 +205,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testNoAuthor()
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
 
         when(pullRequest.getUser()).thenReturn(null);
 
@@ -220,10 +217,19 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testEmptyTitle()
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
+
+        when(pullRequest.getTitle()).thenReturn("");
+
+        testedClass.onReceive(message, payload);
+
+        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), "");
+    }
+
+    @Test
+    public void testNullTitle()
+    {
+        mockSourceAndDestination();
 
         when(pullRequest.getTitle()).thenReturn(null);
 
@@ -235,25 +241,19 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxTitle()
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
 
         when(pullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
 
         testedClass.onReceive(message, payload);
 
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long "));
+        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
     }
 
     @Test
     public void testNoParticipants() throws IOException
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
         when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<Comment>emptyList());
         when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<CommitComment>emptyList());
 
@@ -271,10 +271,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxParticipants() throws IOException
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
 
         List<Comment> comments = new ArrayList<Comment>();
         for (int i = 0; i < 100; i++)
@@ -337,10 +334,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testCommit() throws IOException
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
 
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
         when(repositoryCommit.getSha()).thenReturn("aaa");
@@ -359,10 +353,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxCommits() throws IOException
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        mockSourceAndDestination();
 
         List<RepositoryCommit> repositoryCommits = new ArrayList<RepositoryCommit>();
         for (int i = 0; i < 100; i++)
@@ -397,4 +388,12 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         return sourceRef;
     }
 
+
+    private void mockSourceAndDestination()
+    {
+        final PullRequestMarker source = mockRef("branch");
+        when(pullRequest.getHead()).thenReturn(source);
+        final PullRequestMarker destination = mockRef("master");
+        when(pullRequest.getBase()).thenReturn(destination);
+    }
 }

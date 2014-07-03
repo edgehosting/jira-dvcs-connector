@@ -285,6 +285,21 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(bitbucketPullRequest.getSource()).thenReturn(source);
         when(bitbucketPullRequest.getDestination()).thenReturn(destination);
 
+        when(bitbucketPullRequest.getTitle()).thenReturn("");
+
+        testedClass.onReceive(message, payload);
+
+        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), "");
+    }
+
+    @Test
+    public void testNullTitle()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+
         when(bitbucketPullRequest.getTitle()).thenReturn(null);
 
         testedClass.onReceive(message, payload);
@@ -304,7 +319,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long "));
+        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
     }
 
     @Test
