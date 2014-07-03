@@ -15,13 +15,14 @@ public class GitHubPullRequestPageMessageSerializer extends AbstractMessagePaylo
     protected void serializeInternal(final JSONObject json, final GitHubPullRequestPageMessage payload) throws Exception
     {
         json.put("page", payload.getPage());
+        json.put("pagelen", payload.getPagelen());
     }
 
     @Override
     protected GitHubPullRequestPageMessage deserializeInternal(final JSONObject json, final int version)
             throws Exception
     {
-        return new GitHubPullRequestPageMessage(null, 0, false, null, json.getInt("page"));
+        return new GitHubPullRequestPageMessage(null, 0, false, null, json.getInt("page"), json.getInt("pagelen"));
     }
 
     @Override

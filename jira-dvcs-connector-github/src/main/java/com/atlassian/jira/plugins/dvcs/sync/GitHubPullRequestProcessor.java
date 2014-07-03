@@ -228,6 +228,8 @@ public class GitHubPullRequestProcessor
             throw new RuntimeException(e);
         }
 
+        remotePullRequest.setComments(Math.max(remotePullRequest.getComments(), pullRequestComments.size()));
+
         for (Comment comment : pullRequestComments)
         {
             addParticipant(participantIndex, comment.getUser(), Participant.ROLE_PARTICIPANT);
@@ -256,6 +258,8 @@ public class GitHubPullRequestProcessor
         {
             throw new RuntimeException(e);
         }
+
+        remotePullRequest.setReviewComments(Math.max(remotePullRequest.getReviewComments(), pullRequestReviewComments.size()));
 
         for (CommitComment comment : pullRequestReviewComments)
         {

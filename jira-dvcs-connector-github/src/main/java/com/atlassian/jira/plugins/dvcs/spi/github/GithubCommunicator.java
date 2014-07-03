@@ -70,6 +70,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
+    private static final int PULLREQUEST_PAGE_SIZE = 30;
 
     @Resource
     private MessagingService messagingService;
@@ -643,7 +644,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
             else
             {
-                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST);
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE);
                 MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
                         GitHubPullRequestPageMessage.class,
                         GitHubPullRequestPageMessageConsumer.ADDRESS

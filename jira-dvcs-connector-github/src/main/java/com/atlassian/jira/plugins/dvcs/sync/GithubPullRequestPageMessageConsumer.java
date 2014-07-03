@@ -62,6 +62,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
     {
         Repository repository = payload.getRepository();
         int page = payload.getPage();
+        int pagelen = payload.getPagelen();
 
         PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
         IssueService issueService = gitHubClientProvider.getIssueService(repository);
@@ -76,24 +77,12 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             gitHubEventService.saveEvent(repository, event, true);
         }
 
-        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, "all", page, PagedRequest.PAGE_SIZE);
+        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, "all", page, pagelen);
         Collection<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, null);
         if (pullRequests != null)
         {
             for (PullRequest pullRequest : pullRequests)
             {
-                try
-                {
-                    // fetching comments because pull requests api doesn't return them
-                    int comments = pullRequestService.getComments(repositoryId, pullRequest.getNumber()).size();
-                    int issueComments = issueService.getComments(repositoryId, pullRequest.getNumber()).size();
-                    pullRequest.setComments(comments);
-                    pullRequest.setReviewComments(issueComments);
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
                 gitHubPullRequestProcessor.processPullRequest(repository, pullRequest);
             }
         }
@@ -106,7 +95,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
 
     private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload)
     {
-        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(payload.getProgress(), payload.getSyncAuditId(), payload.isSoftSync(), payload.getRepository(), payload.getPage() + 1);
+        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(payload.getProgress(), payload.getSyncAuditId(), payload.isSoftSync(), payload.getRepository(), payload.getPage() + 1, payload.getPagelen());
         messagingService.publish(getAddress(), nextMessage, message.getTags());
     }
 

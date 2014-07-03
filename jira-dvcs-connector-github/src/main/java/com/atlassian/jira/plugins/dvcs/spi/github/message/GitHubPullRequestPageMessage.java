@@ -12,15 +12,22 @@ import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessag
 public class GitHubPullRequestPageMessage extends BaseProgressEnabledMessage
 {
     private final int page;
+    private final int pagelen;
 
-    public GitHubPullRequestPageMessage(final Progress progress, final int syncAuditId, final boolean softSync, final Repository repository, final int page)
+    public GitHubPullRequestPageMessage(final Progress progress, final int syncAuditId, final boolean softSync, final Repository repository, final int page, final int pagelen)
     {
         super(progress, syncAuditId, softSync, repository);
         this.page = page;
+        this.pagelen = pagelen;
     }
 
     public int getPage()
     {
         return page;
+    }
+
+    public int getPagelen()
+    {
+        return pagelen;
     }
 }
