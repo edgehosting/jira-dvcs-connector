@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -34,6 +35,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
@@ -121,6 +123,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -257,6 +260,9 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ApplicationProperties ap;
+
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
 
     private final CacheManager cacheManager = new MemoryCacheManager();
 
@@ -419,6 +425,7 @@ public class DefaultSynchronizerTest
 
         ReflectionTestUtils.setField(defaultSynchronizer, "branchService", branchService);
         ReflectionTestUtils.setField(defaultSynchronizer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(defaultSynchronizer, "syncDisabledHelper", syncDisabledHelper);
 
         final BitbucketClientBuilder bitbucketClientBuilder = mock(BitbucketClientBuilder.class, new BuilderAnswer());
 
@@ -427,14 +434,19 @@ public class DefaultSynchronizerTest
         final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
         final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager);
 
+        SyncDisabledHelper syncDisabledHelper = new SyncDisabledHelper();
+        ReflectionTestUtils.setField(syncDisabledHelper, "featureManager", featureManager);
+
         final BitbucketCommunicator bitbucketCommunicator = new BitbucketCommunicator(bitbucketLinker, pluginAccessor, bitbucketClientBuilderFactory, ap);
         ReflectionTestUtils.setField(bitbucketCommunicator, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(bitbucketCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(bitbucketCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(bitbucketCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         final GithubCommunicator githubCommunicator = new GithubCommunicator(oAuthStore, githubClientProvider);
         ReflectionTestUtils.setField(githubCommunicator, "branchService", branchService);
         ReflectionTestUtils.setField(githubCommunicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(githubCommunicator, "syncDisabledHelper", syncDisabledHelper);
 
         bitbucketCachingCommunicator.setDelegate(bitbucketCommunicator);
         githubCachingCommunicator.setDelegate(githubCommunicator);
@@ -1018,6 +1030,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_Bitbucket_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void syncEventsShouldBeStoredDuringSoftSync()
     {
         Graph graph = new Graph();
@@ -1148,6 +1176,22 @@ public class DefaultSynchronizerTest
     }
 
     @Test
+    public void getChangesets_GitHub_disabledSynchronization()
+    {
+        when(featureManager.isEnabled(SyncDisabledHelper.DISABLE_GITHUB_SYNCHRONIZATION_FEATURE)).thenReturn(true);
+        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+
+        Graph graph = new Graph();
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .mock();
+
+        checkNoSynchronization(false);
+    }
+
+    @Test
     public void shouldFallBackToFullSyncWhenNoBranchHeads()
     {
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
@@ -1168,6 +1212,32 @@ public class DefaultSynchronizerTest
     private void checkSynchronization(Graph graph, boolean softSync)
     {
         checkSynchronization(graph, new ArrayList<String>(), softSync);
+    }
+
+    private void checkNoSynchronization(boolean softSync)
+    {
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS);
+        if (softSync)
+        {
+            // soft sync
+            flags.add(SynchronizationFlag.SOFT_SYNC);
+        }
+
+        try
+        {
+            defaultSynchronizer.doSync(repositoryMock, flags);
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            // ignoring to proceed verification
+        }
+
+        verifyNoMoreInteractions(changesetService);
+        verifyNoMoreInteractions(branchesAndTagsRemoteRestpoint);
+        verifyNoMoreInteractions(changesetRestpoint);
+        verifyNoMoreInteractions(githubClientProvider);
+        verifyNoMoreInteractions(commitService);
+        verifyNoMoreInteractions(egitRepositoryService);
     }
 
     @SuppressWarnings ("unchecked")

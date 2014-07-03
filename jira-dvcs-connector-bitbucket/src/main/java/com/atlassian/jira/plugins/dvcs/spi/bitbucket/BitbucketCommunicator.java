@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.JsonParsingException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
@@ -88,6 +89,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
     
     @Resource
     private ChangesetDao changesetDao;
+
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
             BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
@@ -684,6 +688,12 @@ public class BitbucketCommunicator implements DvcsCommunicator
         {
             processBitbucketPrSync(repo, softSync, auditId, webHookSync);
         }
+    }
+
+    @Override
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    {
+        return syncDisabledHelper.isBitbucketSyncDisabled();
     }
 
     protected BranchFilterInfo getFilterNodes(Repository repository)

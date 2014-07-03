@@ -5,7 +5,6 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
@@ -13,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -20,8 +20,9 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -45,10 +46,6 @@ public class DefaultSynchronizer implements Synchronizer
     static final String SYNC_LOCK = DefaultSynchronizer.class.getName() + ".doSync";
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultSynchronizer.class);
-
-    private static final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private static final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private static final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -75,9 +72,6 @@ public class DefaultSynchronizer implements Synchronizer
     private SyncAuditLogDao syncAudit;
 
     @Resource
-    private FeatureManager featureManager;
-
-    @Resource
     private EventPublisher eventPublisher;
 
     @Resource
@@ -85,6 +79,9 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Resource
     private RepositorySyncHelper repoSyncHelper;
+
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     private final ClusterLockService clusterLockService;
 
@@ -112,13 +109,15 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
+
         // We take a copy of the flags, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
-        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
+        if (communicator.isSyncDisabled(repo, flags))
         {
-            LOG.info("The synchronization is disabled.");
-            return;
+            LOG.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+            throw new SourceControlException.SynchronizationDisabled("Synchronization is disabled for repository " + repo.getName() + " (" + repo.getId() + ")");
         }
 
         if (repo.isLinked())
@@ -148,21 +147,25 @@ public class DefaultSynchronizer implements Synchronizer
                 auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
-                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
+                if (!softSync)
                 {
-                    removeRepoDataForFullSync(repo, flags);
+                    if (!syncDisabledHelper.isFullSychronizationDisabled())
+                    {
+                        removeRepoDataForFullSync(repo, flags);
+                    }
+                    else
+                    {
+                        LOG.info("Full synchronization is disabled. Doing a soft sync for repository {} ({}) instead.", repo.getName(), repo.getId());
+                    }
                 }
 
                 // first retry all failed messages
                 retryFailedMessages(repo, auditId);
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
+                if (!postponePrSyncHelper.isAfterPostponedTime() || syncDisabledHelper.isPullRequestSynchronizationDisabled())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
-
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                        .getCommunicator(repo.getDvcsType());
 
                 communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)

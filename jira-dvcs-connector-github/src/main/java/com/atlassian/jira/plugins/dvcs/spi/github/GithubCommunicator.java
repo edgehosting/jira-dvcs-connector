@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
@@ -84,6 +85,9 @@ public class GithubCommunicator implements DvcsCommunicator
      */
     @Resource
     private GitHubRESTClient gitHubRESTClient;
+
+    @Resource
+    protected SyncDisabledHelper syncDisabledHelper;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -638,6 +642,12 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
         }
+    }
+
+    @Override
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    {
+        return syncDisabledHelper.isGithubSyncDisabled();
     }
 
     private String getRef(String slug, String branch)

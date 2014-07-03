@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
@@ -823,7 +824,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         progress.setRunAgainFlags(null);
                         // to be sure that soft sync will be run
                         flags.add(SynchronizationFlag.SOFT_SYNC);
-                        synchronizer.doSync(repository, flags);
+                        try
+                        {
+                            synchronizer.doSync(repository, flags);
+                        }
+                        catch (SourceControlException.SynchronizationDisabled e)
+                        {
+                            // ignoring
+                        }
                     }
                 }
 

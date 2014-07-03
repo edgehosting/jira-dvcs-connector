@@ -407,7 +407,14 @@ public class RepositoryServiceImpl implements RepositoryService
             if (!newRepoSlugs.contains(repository.getSlug()))
             {
                 // not a new repo
-                doSync(repository, flags);
+                try
+                {
+                    doSync(repository, flags);
+                }
+                catch (SourceControlException.SynchronizationDisabled e)
+                {
+                    // ignoring
+                }
             } else
             {
                 // it is a new repo, we force to hard sync
@@ -416,7 +423,15 @@ public class RepositoryServiceImpl implements RepositoryService
                 // repo to DVCS avoiding duplicate smart commits
                 EnumSet<SynchronizationFlag> newFlags = EnumSet.copyOf(flags);
                 newFlags.remove(SynchronizationFlag.SOFT_SYNC);
-                doSync(repository, newFlags);
+
+                try
+                {
+                    doSync(repository, newFlags);
+                }
+                catch (SourceControlException.SynchronizationDisabled e)
+                {
+                    // ignoring
+                }
 
                 if (repository.isLinked())
                 {
@@ -523,7 +538,7 @@ public class RepositoryServiceImpl implements RepositoryService
             }
             catch (Exception e)
             {
-                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                log.warn("Error when " + (linked ? "adding" : "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
                 registration.setCallBackUrlInstalled(!linked);
             }
 
