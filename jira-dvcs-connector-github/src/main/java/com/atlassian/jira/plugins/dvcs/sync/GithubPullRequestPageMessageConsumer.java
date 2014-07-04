@@ -70,11 +70,14 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
 
         RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
-        // saving first event as save point
-        PageIterator<Event> eventsPages = eventService.pageEvents(repositoryId, 1);
-        for (Event event : Iterables.getFirst(eventsPages, Collections.<Event>emptyList()))
+        if (page == 1)
         {
-            gitHubEventService.saveEvent(repository, event, true);
+            // saving first event as save point
+            PageIterator<Event> eventsPages = eventService.pageEvents(repositoryId, 1);
+            for (Event event : Iterables.getFirst(eventsPages, Collections.<Event>emptyList()))
+            {
+                gitHubEventService.saveEvent(repository, event, true);
+            }
         }
 
         PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, "all", page, pagelen);
