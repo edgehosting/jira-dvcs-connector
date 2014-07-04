@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
@@ -18,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
@@ -91,7 +91,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private GitHubRESTClient gitHubRESTClient;
 
     @Resource
-    private FeatureManager featureManager;
+    protected SyncDisabledHelper syncDisabledHelper;
 
     @Resource
     private ApplicationProperties applicationProperties;
@@ -652,6 +652,12 @@ public class GithubCommunicator implements DvcsCommunicator
                 messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
             }
         }
+    }
+
+    @Override
+    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    {
+        return syncDisabledHelper.isGithubSyncDisabled();
     }
 
     private String getRef(String slug, String branch)

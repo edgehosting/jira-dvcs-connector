@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -14,8 +14,9 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -37,10 +38,6 @@ import javax.annotation.Resource;
 public class DefaultSynchronizer implements Synchronizer, DisposableBean, InitializingBean
 {
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
-
-    private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
-    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -67,9 +64,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private SyncAuditLogDao syncAudit;
 
     @Resource
-    private FeatureManager featureManager;
-
-    @Resource
     private EventPublisher eventPublisher;
 
     /**
@@ -78,6 +72,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Resource
     private GitHubEventService gitHubEventService;
 
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
@@ -90,13 +86,15 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void doSync(Repository repo, EnumSet<SynchronizationFlag> flagsOrig)
     {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
+
         // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
-        if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
+        if (communicator.isSyncDisabled(repo, flags))
         {
-            log.info("The synchronization is disabled.");
-            return;
+            log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
+            throw new SourceControlException.SynchronizationDisabled("Synchronization is disabled for repository " + repo.getName() + " (" + repo.getId() + ")");
         }
 
         if (repo.isLinked())
@@ -121,7 +119,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
             boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
             boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
-            
+
             fireAnalyticsStart(softSync, changesetsSync, pullRequestSync, flags.contains(SynchronizationFlag.WEBHOOK_SYNC));
 
             int auditId = 0;
@@ -131,28 +129,35 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
-                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
+                if (!softSync)
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
-                    stopSynchronization(repo);
-                    if (changesetsSync)
+                    if (!syncDisabledHelper.isFullSychronizationDisabled())
                     {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
-                        changesetService.removeAllInRepository(repo.getId());
-                        branchService.removeAllBranchHeadsInRepository(repo.getId());
-                        branchService.removeAllBranchesInRepository(repo.getId());
+                        //TODO This will deleted both changeset and PR messages, we should distinguish between them
+                        // Stopping synchronization to delete failed messages for repository
+                        stopSynchronization(repo);
+                        if (changesetsSync)
+                        {
+                            // we are doing full sync, lets delete all existing changesets
+                            // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                            changesetService.removeAllInRepository(repo.getId());
+                            branchService.removeAllBranchHeadsInRepository(repo.getId());
+                            branchService.removeAllBranchesInRepository(repo.getId());
 
-                        repo.setLastCommitDate(null);
+                            repo.setLastCommitDate(null);
+                        }
+                        if (pullRequestSync)
+                        {
+                            gitHubEventService.removeAll(repo);
+                            repositoryPullRequestDao.removeAll(repo);
+                            repo.setActivityLastSync(null);
+                        }
+                        repositoryDao.save(repo);
                     }
-                    if (pullRequestSync)
+                    else
                     {
-                        gitHubEventService.removeAll(repo);
-                        repositoryPullRequestDao.removeAll(repo);
-                        repo.setActivityLastSync(null);
+                        log.info("Full synchronization is disabled. Doing a soft sync for repository {} ({}) instead.", repo.getName(), repo.getId());
                     }
-                    repositoryDao.save(repo);
                 }
 
                 // first retry all failed messages
@@ -164,13 +169,10 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
+                if (!postponePrSyncHelper.isAfterPostponedTime() || syncDisabledHelper.isPullRequestSynchronizationDisabled())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
-
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                        .getCommunicator(repo.getDvcsType());
 
                 communicator.startSynchronisation(repo, flags, auditId);
             } catch (Throwable t)
