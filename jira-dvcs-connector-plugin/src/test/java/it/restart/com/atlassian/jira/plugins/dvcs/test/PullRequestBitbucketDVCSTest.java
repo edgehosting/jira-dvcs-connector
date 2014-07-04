@@ -604,7 +604,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             {
                 return restPrCommit.getNode();
             }
-        }), Matchers.containsInAnyOrder(ObjectArrays.concat(stableCommit, ObjectArrays.concat(expectedCommitNodeOpen, expectedCommitNodeUpdate, String.class))));
+        }), Matchers.containsInAnyOrder(ObjectArrays.concat(expectedCommitNodeOpen, expectedCommitNodeUpdate, String.class)));
         Assert.assertEquals(restPullRequest.getParticipants().size(), 1);
         Assert.assertEquals(restPullRequest.getParticipants().get(0).getUser().getUsername(), FORK_ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getParticipants().get(0).getRole(), "REVIEWER");
