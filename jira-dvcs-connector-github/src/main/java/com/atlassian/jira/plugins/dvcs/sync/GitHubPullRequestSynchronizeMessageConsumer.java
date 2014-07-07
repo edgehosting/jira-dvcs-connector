@@ -218,7 +218,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         for (RepositoryCommitMapping commit : remainingCommitsToDelete)
         {
+            LOGGER.debug("Removing commit {} in pull request {}", commit.getNode(), localPullRequest.getID());
             repositoryPullRequestDao.unlinkCommit(repository, localPullRequest, commit);
+            repositoryPullRequestDao.removeCommit(commit);
         }
     }
 
@@ -361,7 +363,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         target.put(RepositoryCommitMapping.RAW_AUTHOR, source.getCommit().getAuthor().getName());
         target.put(RepositoryCommitMapping.MESSAGE, source.getCommit().getMessage());
-        target.put(RepositoryCommitMapping.NODE, source.getCommit().getSha());
+        target.put(RepositoryCommitMapping.NODE, source.getSha() != null ? source.getSha() : source.getCommit().getSha());
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
     }
 

@@ -14,7 +14,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -36,11 +35,14 @@ import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 
 /**
@@ -369,6 +371,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         {
             final Progress sync = repo.getSync();
 
+            final Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(savedPullRequest
+                    .getCommits()));
+
             FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Void>()
             {
                 @Override
@@ -385,8 +390,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                             {
                                 localCommit = saveCommit(repo, commit, null, localPullRequestId);
                                 linkCommit(repo, localCommit, savedPullRequest);
-                            } else {
-                                break;
+                            } else
+                            {
+                                remainingCommitsToDelete.remove(localCommit);
                             }
                         }
                     } catch(BitbucketRequestException.NotFound_404 e)
@@ -397,6 +403,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                     return null;
                 }
             });
+
+            // removing deleted commits
+            for (RepositoryCommitMapping commit : remainingCommitsToDelete)
+            {
+                LOGGER.debug("Removing commit {} in pull request {}", commit.getNode(), savedPullRequest.getID());
+                dao.unlinkCommit(repo, savedPullRequest, commit);
+                dao.removeCommit(commit);
+            }
+
         } else
         {
             LOGGER.debug("The source repository is not available for pull request [{}]. Skipping loading commits.", remotePullRequest.getId());

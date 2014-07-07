@@ -33,6 +33,8 @@ public interface RepositoryPullRequestDao
 
     void unlinkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit);
 
+    void removeCommit(RepositoryCommitMapping commit);
+
     // R
 
     List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys);

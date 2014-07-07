@@ -92,6 +92,12 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
+    public void removeCommit(RepositoryCommitMapping commit)
+    {
+        activeObjects.delete(commit);
+    }
+
+    @Override
     public RepositoryPullRequestMapping savePullRequest(final Repository domain, final Map<String, Object> request)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<RepositoryPullRequestMapping>()
