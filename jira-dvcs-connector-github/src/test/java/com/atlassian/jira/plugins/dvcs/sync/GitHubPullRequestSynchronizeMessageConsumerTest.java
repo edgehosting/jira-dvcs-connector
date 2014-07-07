@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Commit;
@@ -43,6 +44,7 @@ import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -336,12 +338,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     {
         mockSourceAndDestination();
 
-        RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
-        when(repositoryCommit.getSha()).thenReturn("aaa");
-        Commit commit = mock(Commit.class);
-        when(commit.getSha()).thenReturn("aaa");
-        when(commit.getAuthor()).thenReturn(mock(CommitUser.class));
-        when(repositoryCommit.getCommit()).thenReturn(commit);
+        RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
 
         testedClass.onReceive(message, payload);
@@ -358,13 +355,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         List<RepositoryCommit> repositoryCommits = new ArrayList<RepositoryCommit>();
         for (int i = 0; i < 100; i++)
         {
-            RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
-            final String sha = "aaa" + i;
-            when(repositoryCommit.getSha()).thenReturn(sha);
-            Commit commit = mock(Commit.class);
-            when(commit.getSha()).thenReturn(sha);
-            when(commit.getAuthor()).thenReturn(mock(CommitUser.class));
-            when(repositoryCommit.getCommit()).thenReturn(commit);
+            RepositoryCommit repositoryCommit = mockCommit("aaa" + i);
             repositoryCommits.add(repositoryCommit);
         }
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(repositoryCommits);
@@ -378,6 +369,43 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
         }
+    }
+
+    @Test
+    public void testUpdateCommits() throws IOException
+    {
+        mockSourceAndDestination();
+
+        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
+        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
+        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+                .thenReturn(pullRequestMapping);
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        RepositoryCommit repositoryCommit = mockCommit("aaa");
+        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+
+        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+        // TODO uncomment after BBC-763 is merged
+//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+    }
+
+    private RepositoryCommit mockCommit(String sha)
+    {
+        RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
+        when(repositoryCommit.getSha()).thenReturn(sha);
+        Commit commit = mock(Commit.class);
+        when(commit.getSha()).thenReturn(sha);
+        when(commit.getAuthor()).thenReturn(mock(CommitUser.class));
+        when(repositoryCommit.getCommit()).thenReturn(commit);
+        return repositoryCommit;
     }
 
     private PullRequestMarker mockRef(String branch)
