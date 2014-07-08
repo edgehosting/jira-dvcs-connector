@@ -124,6 +124,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Mock
     private BitbucketPullRequestUpdateActivity activity;
 
+    @Mock
+    private RepositoryPullRequestMapping pullRequestMapping;
+
     private class BuilderAnswer implements Answer<Object>
     {
         private boolean cached;
@@ -157,6 +160,10 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(repository.getSlug()).thenReturn("repo");
         when(bitbucketPullRequest.getId()).thenReturn(1L);
         when(bitbucketPullRequest.getUpdatedOn()).thenReturn(new Date());
+        BitbucketPullRequestHead sourceBranch = mockRef("branch");
+        BitbucketPullRequestHead destinationBranch = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(sourceBranch);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destinationBranch);
 
         when(bitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(new PullRequestRemoteRestpoint(requestor));
         when(cachedBitbucketRemoteClient.getPullRequestAndCommentsRemoteRestpoint()).thenReturn(new PullRequestRemoteRestpoint(cachedRequestor));
@@ -171,17 +178,42 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(cachedRequestor.get(Mockito.startsWith(activityUrl), anyMap(), any(ResponseCallback.class))).thenReturn(activityPage);
         when(cachedRequestor.get(eq(pullRequestDetailUrl), anyMap(), any(ResponseCallback.class))).thenReturn(bitbucketPullRequest);
 
+        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
+        when(pullRequestMapping.getUpdatedOn()).thenReturn(new Date(0L));
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+        long remoteId = bitbucketPullRequest.getId();
+        when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
+
         BitbucketPullRequestActivityInfo activityInfo = Mockito.mock(BitbucketPullRequestActivityInfo.class);
 
         when(activityPage.getValues()).thenReturn(Lists.newArrayList(activityInfo));
 
         when(activityInfo.getActivity()).thenReturn(activity);
-        when(activity.getDate()).thenReturn(new Date());
-        when(activity.getUpdatedOn()).thenReturn(new Date());
+        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
+        Date updatedOnDate = new Date();
+        when(activity.getDate()).thenReturn(updatedOnDate);
+        when(activity.getUpdatedOn()).thenReturn(updatedOnDate);
+
         BitbucketPullRequestHead source = mock(BitbucketPullRequestHead.class);
         BitbucketPullRequestRepository sourceRepository = mock(BitbucketPullRequestRepository.class);
         when(source.getRepository()).thenReturn(sourceRepository);
         when(activity.getSource()).thenReturn(source);
+
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
+        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+                .thenReturn(pullRequestMapping);
+
+        final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
+        when(commit.getHash()).thenReturn("aaa");
+        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
+        BitbucketUser user = mock(BitbucketUser.class);
+        when(commitAuthor.getUser()).thenReturn(user);
+
+        when(commit.getAuthor()).thenReturn(commitAuthor);
+        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
+        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(commit));
+
+        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
 
         when(activityInfo.getPullRequest()).thenReturn(bitbucketPullRequest);
         when(bitbucketClientBuilderFactory.forRepository(repository)).then(new Answer<BitbucketClientBuilder>()
@@ -199,11 +231,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(payload.getRepository()).thenReturn(repository);
         when(payload.getPageNum()).thenReturn(1);
 
-        RepositoryPullRequestMapping pullRequestMapping = Mockito.mock(RepositoryPullRequestMapping.class);
-        Date updatedOn = bitbucketPullRequest.getUpdatedOn();
-        long remoteId = bitbucketPullRequest.getId();
-        when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOn);
-        when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
         when(repositoryPullRequestDao.savePullRequest(eq(repository), savePullRequestCaptor.capture())).thenReturn(pullRequestMapping);
 
         BitbucketLinks links = mockLinks();
@@ -265,12 +292,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testNoAuthor()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(bitbucketPullRequest.getAuthor()).thenReturn(null);
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -280,12 +304,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testEmptyTitle()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(bitbucketPullRequest.getTitle()).thenReturn("");
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -295,12 +316,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testNullTitle()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(bitbucketPullRequest.getTitle()).thenReturn(null);
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -310,12 +328,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testMaxTitle()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(bitbucketPullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -325,11 +340,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testNoParticipants()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(bitbucketPullRequest.getParticipants()).thenReturn(Collections.<BitbucketPullRequestParticipant>emptyList());
 
         testedClass.onReceive(message, payload);
@@ -341,11 +351,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testMaxParticipants()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         List<BitbucketPullRequestParticipant> participants = new ArrayList<BitbucketPullRequestParticipant>();
         for (int i = 0; i < 1000; i++)
         {
@@ -374,11 +379,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testCacheOnlyFirstPage()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(payload.getPageNum()).thenReturn(1);
         testedClass.onReceive(message, payload);
         verify(cachedRequestor, times(1)).get(anyString(), anyMap(), any(ResponseCallback.class));
@@ -387,11 +387,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testNoCacheSecondPage()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-
         when(payload.getPageNum()).thenReturn(2);
         testedClass.onReceive(message, payload);
         verify(cachedRequestor, never()).get(anyString(), anyMap(), any(ResponseCallback.class));
@@ -400,12 +395,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testCommit()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
-
         final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
         when(commit.getHash()).thenReturn("aaa");
         BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
@@ -427,12 +416,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testMaxCommits()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
-
         List<BitbucketPullRequestCommit> commits = new ArrayList<BitbucketPullRequestCommit>();
         for (int i = 0; i < 100; i++)
         {
@@ -465,36 +448,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testUpdateCommit()
     {
-        BitbucketPullRequestHead source = mockRef("branch");
-        BitbucketPullRequestHead destination = mockRef("master");
-        when(bitbucketPullRequest.getSource()).thenReturn(source);
-        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
-        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
-        Date updatedOnDate = new Date();
-        when(activity.getDate()).thenReturn(updatedOnDate);
-        when(activity.getUpdatedOn()).thenReturn(updatedOnDate);
-
-        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
-        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
-        when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOnDate);
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
-        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
-                .thenReturn(pullRequestMapping);
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
-
-        final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
-        when(commit.getHash()).thenReturn("aaa");
-        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
-        BitbucketUser user = mock(BitbucketUser.class);
-        when(commitAuthor.getUser()).thenReturn(user);
-
-        when(commit.getAuthor()).thenReturn(commitAuthor);
-        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
-        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(commit));
-
-        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
 
         testedClass.onReceive(message, payload);
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
