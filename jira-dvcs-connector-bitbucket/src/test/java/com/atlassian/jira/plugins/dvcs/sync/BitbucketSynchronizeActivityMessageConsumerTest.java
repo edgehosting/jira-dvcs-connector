@@ -44,7 +44,6 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -53,6 +52,7 @@ import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -398,7 +398,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
-    public void testCommit() throws IOException
+    public void testCommit()
     {
         BitbucketPullRequestHead source = mockRef("branch");
         BitbucketPullRequestHead destination = mockRef("master");
@@ -425,7 +425,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
-    public void testMaxCommits() throws IOException
+    public void testMaxCommits()
     {
         BitbucketPullRequestHead source = mockRef("branch");
         BitbucketPullRequestHead destination = mockRef("master");
@@ -460,6 +460,50 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
         }
+    }
+
+    @Test
+    public void testUpdateCommit()
+    {
+        BitbucketPullRequestHead source = mockRef("branch");
+        BitbucketPullRequestHead destination = mockRef("master");
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(bitbucketPullRequest.getDestination()).thenReturn(destination);
+        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
+        Date updatedOnDate = new Date();
+        when(activity.getDate()).thenReturn(updatedOnDate);
+        when(activity.getUpdatedOn()).thenReturn(updatedOnDate);
+
+        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
+        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
+        when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOnDate);
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
+        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+                .thenReturn(pullRequestMapping);
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
+        when(commit.getHash()).thenReturn("aaa");
+        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
+        BitbucketUser user = mock(BitbucketUser.class);
+        when(commitAuthor.getUser()).thenReturn(user);
+
+        when(commit.getAuthor()).thenReturn(commitAuthor);
+        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
+        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(commit));
+
+        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+
+        // TODO uncomment after BBC-763 is merged
+//        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
     }
 
     private BitbucketLinks mockLinks()
