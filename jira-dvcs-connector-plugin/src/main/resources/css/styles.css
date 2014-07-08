@@ -404,3 +404,18 @@ div.jira-dvcs-connector-plugin.forceSyncDialog .buttons {
 .dialog-button-panel span.button-panel-link {
 	margin: 0 10px 0 0;
 }
+
+.dvcs-sync-disabled {
+    filter: alpha(opacity=50);
+    opacity: 0.50;
+}
+
+.dvcs-header-container .aui-lozenge {
+    vertical-align: bottom;
+    margin-left: 5px;
+}
+
+.dvcs-account-image {
+    vertical-align: text-bottom;
+    padding-right: 2px;
+}

@@ -11,13 +11,13 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryRegistration;
 import com.atlassian.jira.plugins.dvcs.model.SentData;
 import com.atlassian.jira.plugins.dvcs.ondemand.AccountsConfigService;
+import com.atlassian.jira.plugins.dvcs.rest.common.Status;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,6 +40,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -76,7 +77,9 @@ public class RootResource
      * @param organizationService
      *            the organization service
      * @param repositoryService
-     * @param pullRequestService
+     *            the repository service
+     * @param ondemandAccountConfig
+     *            OnDemand account config service
      */
     public RootResource(OrganizationService organizationService, RepositoryService repositoryService, AccountsConfigService ondemandAccountConfig)
     {
@@ -142,10 +145,17 @@ public class RootResource
         log.info("Postcommit hook started synchronization for repository [{}].", id);
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
 
-        repositoryService.sync(id,
-                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.WEBHOOK_SYNC));
+        try
+        {
+            repositoryService.sync(id,
+                    EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.WEBHOOK_SYNC));
 
-        return Response.ok().build();
+            return Response.ok().build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     @AnonymousAllowed
@@ -174,10 +184,17 @@ public class RootResource
 
         log.debug("Rest request to soft sync pull requests for repository [{}] with type [{}]", id, key);
 
-        repositoryService.sync(id,
+        try
+        {
+            repositoryService.sync(id,
                 EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_PULL_REQUESTS, SynchronizationFlag.WEBHOOK_SYNC));
 
-        return Response.ok().build();
+            return Response.ok().build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     /**
@@ -195,16 +212,22 @@ public class RootResource
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
-        repositoryService.sync(id,
-                EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id,
+                    EnumSet.of(SynchronizationFlag.SOFT_SYNC, SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
-
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     /**
@@ -222,15 +245,22 @@ public class RootResource
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SYNC_PULL_REQUESTS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     @POST
@@ -241,15 +271,22 @@ public class RootResource
     {
         log.debug("Rest request to changesets fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     @POST
@@ -260,15 +297,22 @@ public class RootResource
     {
         log.debug("Rest request to pull request fullsync repository [{}] ", id);
 
-        repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
+        try
+        {
+            repositoryService.sync(id, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS));
 
-        // ...
-        // redirect to Repository resource - that will contain sync
-        // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+            // ...
+            // redirect to Repository resource - that will contain sync
+            // message/status
+            UriBuilder ub = uriInfo.getBaseUriBuilder();
+            URI uri = ub.path("/repository/{id}").build(id);
 
-        return Response.seeOther(uri).build();
+            return Response.seeOther(uri).build();
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     /**
@@ -439,17 +483,14 @@ public class RootResource
 
         } catch (SourceControlException.Forbidden_403 e)
         {
-            return Status.forbidden().message("Unable to access Bitbucket").response();
+            return buildErrorResponse(Response.Status.FORBIDDEN, "Unable to access Bitbucket");
 
         } catch (SourceControlException e)
         {
-            return Status
-                    .error()
-                    .message(
-                            "Error retrieving list of groups for " + organization.getOrganizationUrl()
-                                    + ". Please check JIRA logs for details.").response();
+            return buildErrorResponse(Response.Status.INTERNAL_SERVER_ERROR,
+                    "Error retrieving list of groups for " + organization.getOrganizationUrl()
+                            + ". Please check JIRA logs for details.");
         }
-
     }
 
     @GET
@@ -554,7 +595,7 @@ public class RootResource
         Organization integratedAccount = organizationService.findIntegratedAccount();
         if (integratedAccount != null && id == integratedAccount.getId())
         {
-            return Status.error().message("Failed to delete integrated account.").response();
+            return buildErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Failed to delete integrated account.");
         }
 
         if (organizationService.get(id, false) == null)
@@ -568,9 +609,20 @@ public class RootResource
         } catch (Exception e)
         {
             log.error("Failed to remove account with id " + id, e);
-            return Status.error().message("Failed to delete account.").response();
+            return buildErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Failed to delete account.");
         }
 
         return Response.noContent().build();
+    }
+
+    private Response buildErrorResponse(Response.Status status, String message)
+    {
+        CacheControl cacheControl = new CacheControl();
+        cacheControl.setNoCache(true);
+        cacheControl.setNoStore(true);
+
+        Response.ResponseBuilder responseBuilder = Response.status(status).entity(new Status(status, message)).cacheControl(cacheControl);
+
+        return responseBuilder.build();
     }
 }

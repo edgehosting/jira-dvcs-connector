@@ -96,7 +96,7 @@ public class OrganizationDiv
     public String getOrganizationType()
     {
         // <h4 class="aui bitbucketLogo">
-        return organizationType.getAttribute("class").replaceAll("aui (.*)Logo", "$1");
+        return organizationType.getAttribute("class").replaceAll(".*aui (.*)Logo.*", "$1");
     }
     
     public String getOrganizationName()

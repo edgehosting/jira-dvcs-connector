@@ -74,4 +74,12 @@ public class SourceControlException extends RuntimeException
             super(message, cause);
         }
     }
+
+    public static class SynchronizationDisabled extends SourceControlException
+    {
+        public SynchronizationDisabled(final String message)
+        {
+            super(message);
+        }
+    }
 }
