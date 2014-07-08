@@ -163,6 +163,10 @@
 		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
 	</component>
 
+    <component key="initialDelayPropertyCleanUpUpgradeTask" name="Initial Delay Cleanup Upgrade Task" class="com.atlassian.jira.plugins.dvcs.upgrade.To_03_InitialPRSyncDelayCleanUpUpgradeTask" public="true">
+		<interface>com.atlassian.sal.api.upgrade.PluginUpgradeTask</interface>
+	</component>
+
     <component key="bitbucketLinker" name="bitbucketLinker" class="com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinkerImpl">
         <interface>com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker</interface>
     </component>
