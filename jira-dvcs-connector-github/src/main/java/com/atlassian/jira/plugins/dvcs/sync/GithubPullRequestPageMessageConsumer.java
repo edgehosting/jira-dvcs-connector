@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
@@ -12,13 +13,9 @@ import com.google.common.collect.Iterables;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.PageIterator;
-import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
-import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Resource;
@@ -64,8 +61,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
         int page = payload.getPage();
         int pagelen = payload.getPagelen();
 
-        PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
-        IssueService issueService = gitHubClientProvider.getIssueService(repository);
+        CustomPullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
         EventService eventService = gitHubClientProvider.getEventService(repository);
 
         RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
@@ -82,7 +78,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             }
         }
 
-        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, "all", page, pagelen);
+        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, page, pagelen);
         Collection<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, null);
         if (pullRequests != null)
         {
@@ -94,13 +90,13 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
 
         if (pullRequestsPages.hasNext())
         {
-            fireNextPage(message, payload);
+            fireNextPage(message, payload, pullRequestsPages.getNextPage());
         }
     }
 
-    private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload)
+    private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload, int nextPage)
     {
-        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(payload.getProgress(), payload.getSyncAuditId(), payload.isSoftSync(), payload.getRepository(), payload.getPage() + 1, payload.getPagelen());
+        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(payload.getProgress(), payload.getSyncAuditId(), payload.isSoftSync(), payload.getRepository(), nextPage, payload.getPagelen());
         messagingService.publish(getAddress(), nextMessage, message.getTags());
     }
 

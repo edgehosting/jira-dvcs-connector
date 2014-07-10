@@ -95,9 +95,9 @@ public class GithubClientProvider
         return new RepositoryService(createClient(organization));
     }
 
-    public PullRequestService getPullRequestService(Repository repository)
+    public CustomPullRequestService getPullRequestService(Repository repository)
     {
-        return new PullRequestService(createClient(repository));
+        return new CustomPullRequestService(createClient(repository));
     }
     
     public IssueService getIssueService(Repository repository) {
