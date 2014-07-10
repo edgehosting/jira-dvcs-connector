@@ -26,12 +26,6 @@
         <dependency>
         	<groupId>com.atlassian.activeobjects</groupId>
         	<artifactId>activeobjects-plugin</artifactId>
-        	<exclusions>
-        		<exclusion>
-        			<groupId>net.java.dev.activeobjects</groupId>
-        			<artifactId>activeobjects</artifactId>
-        		</exclusion>
-        	</exclusions>
         </dependency>
     </dependencies>
 </project>
