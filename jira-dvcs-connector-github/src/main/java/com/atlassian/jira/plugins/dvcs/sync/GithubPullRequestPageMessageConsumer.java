@@ -78,7 +78,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             }
         }
 
-        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, page, pagelen);
+        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);
         Collection<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, null);
         if (pullRequests != null)
         {
