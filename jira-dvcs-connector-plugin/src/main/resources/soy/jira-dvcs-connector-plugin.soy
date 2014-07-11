@@ -212,6 +212,7 @@
  * @param atlToken
  * @param oAuthStore
  * @param? source the source of the configuration, e.g., jira.devtools.
+ * @param disabledHosts
  */
 {template .addOrganizationDialog}
 	<form class="aui long-label" id="repoEntry" method="post"  >
@@ -226,9 +227,9 @@
 		    <div class="field-group" >
 		      <label for="urlSelect">Host</label>
 		      <select id="urlSelect" name="urlSelect" class="select">
-		        <option value="bitbucket">Bitbucket</option>
-		        <option value="github">GitHub</option>
-		        <option value="githube">GitHub Enterprise</option>
+		        <option value="bitbucket" {if $disabledHosts['bitbucket']}disabled{/if}>Bitbucket</option>
+		        <option value="github" {if $disabledHosts['github']}disabled{/if}>GitHub</option>
+		        <option value="githube"{if $disabledHosts['githube']}disabled{/if}>GitHub Enterprise</option>
 		      </select>
 		      <div class="fieldValue" id="urlReadOnly"></div>
 		      <div id="url-error" class="dvcs-error error">Choose URL.</div>

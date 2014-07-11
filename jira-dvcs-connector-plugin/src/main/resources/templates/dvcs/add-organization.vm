@@ -24,7 +24,13 @@
 		
 		dvcs.connector.plugin.onDemandLicense = $action.isOnDemandLicense();
 		dvcs.connector.plugin.atlToken = "$atl_token";
-				
+		dvcs.connector.plugin.disabledHosts = {
+            bitbucket : $action.isSyncDisabled("bitbucket"),
+            github : $action.isSyncDisabled("github"),
+            githube: $action.isSyncDisabled("githube")
+        }
+
+
         #set($oAuthStore = $action.getOAuthStore())
         
         dvcs.connector.plugin.oAuthStore = {
@@ -57,7 +63,16 @@
         #else
             <p>Connect your <a href="http://confluence.atlassian.com/display/BITBUCKET/Using+the+JIRA+DVCS+Connector+Plugin" target="_blank">Bitbucket and GitHub accounts to JIRA</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
         #end
-		
+
+        #if ($action.isAnySyncDisabled())
+        <div class="aui-message warning shadowed">
+            <p class="title">
+                <span class="aui-icon icon-warning"></span>
+                $action.syncDisabledWarningTitle
+            </p>
+            <p>$action.syncDisabledWarningMessage</p>
+        </div>
+        #end
 		<div id="aui-message-bar-global"></div>
         #foreach ($errorMessage in $action.getErrorMessages())
                 <div class="aui-message error shadowed">
@@ -70,7 +85,7 @@
         #end
 	    <br/>
 
-	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" />
+	   <input class="aui-button submit" id="linkRepositoryButton" type="button" title="Link Bitbucket or GitHub account" onclick="showAddRepoDetails(true)" value="Link Bitbucket or GitHub account" #if ($action.isAllSyncDisabled()) aria-disabled="true" disabled #end/>
        <div style="display: hidden" id="dvcs-connect-source"#if($source) data-source="$textutils.htmlEncode(${source})"#end data-source-or-default="$textutils.htmlEncode(${sourceOrDefault})"></div>
 
        <div id="organization-list">
@@ -88,10 +103,10 @@
 #macro (printOrganizations)
 
 <div class="vert-space">&nbsp;</div>
-
 #foreach( $org in $action.loadOrganizations() )
+  #set($syncDisabled = $action.isSyncDisabled($org.getDvcsType()))
   <div id="dvcs-orgdata-container-$org.id" class="dvcs-orgdata-container">
-    <div id="aui-message-bar-$org.id"></div>        
+    <div id="aui-message-bar-$org.id"></div>
     #if($org.isAutolinkNewRepos())
         #set( $orgAutolink = "checked")
         #set( $orgSmartcommitsOnNewReposDisabled = "")
@@ -107,20 +122,21 @@
     
     <div class="dvcs-header-container">
         <!--[if IE]>
-        <h4 class="aui dvcsLogo"><img style="vertical-align: text-bottom; padding-right: 5px" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
+        <h4 class="aui dvcsLogo"><img class="dvcs-account-image #if($syncDisabled) dvcs-sync-disabled #end" src="${baseurl}/download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/${org.getDvcsType()}_logo.png" alt="${org.getDvcsType()} logo" title="${org.getDvcsType()} logo" height="20px" width="20px"/>
         <![endif]-->
         <![if ! IE]>
-        <h4 class="aui $org.getDvcsType()Logo">
+        <h4 class="aui $org.getDvcsType()Logo #if($syncDisabled) dvcs-sync-disabled #end">
         <![endif]>
         <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
-        </h4>  
+        </h4>
+        #if($syncDisabled) <span class="aui-lozenge">Sync disabled</span> #end
 		#if($action.isInvalidOrganization($org))
 			<span class="dvcs-invalid-organization error">Invalid credentials, please reset OAuth settings</span>
 		#end
-		<div class="dvcs-org-container">
-			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger">
+		<div class="dvcs-org-container #if($syncDisabled) dvcs-sync-disabled #end">
+			<button aria-owns="setting-dropdown-$org.id" aria-haspopup="true" class="aui-button aui-dropdown2-trigger" #if ($syncDisabled) aria-disabled="true" disabled #end>
 				<span class="aui-icon aui-icon-small aui-iconfont-configure">Show Settings</span>
 			</button>
 			<div id="setting-dropdown-$org.id" class="dvcs-organization-controls aui-dropdown2 aui-style-default">
@@ -161,7 +177,7 @@
            
        #if (!$org.getRepositories().isEmpty())
         
-       <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
+       <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table #if($syncDisabled) dvcs-sync-disabled #end">
         <thead>
             <tr>
                 <th>Enabled</th>
@@ -199,7 +215,8 @@
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>
                     <input class="radio" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');"
+                        #if ($syncDisabled) aria-disabled="true" disabled #end />
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
 
                 </td>
@@ -227,9 +244,13 @@
 
                 <td class="dvcs-sync-repo dvcs-centered">
                     <div id="dvcs-action-container2-$repo.id" class="$!dvcsNoDisplayClass dvcs-action-container">
+                    #if ($syncDisabled)
+                        <span id="syncrepoicon_$repo.id" class="aui-icon aui-icon-small aui-iconfont-devtools-task-disabled dvcs-link-disabled" title="Synchronization is disabled" data-title="Synchronization is disabled">&nbsp;</span>
+                    #else
                         <a href="#" id="jira-dvcs-connector-forceSyncDialog-$repo.id" onclick="forceSync(event, $repo.id); return false;">
                             <span id="syncrepoicon_$repo.id" class="syncrepoicon" title="Click To Sync Repo $textutils.htmlEncode($repo.name)" data-title="Click To Sync Repo $textutils.htmlEncode($repo.name)">&nbsp;</span>
                         </a>
+                    #end
                     </div>
                 </td>
                 
@@ -240,7 +261,8 @@
 
 
                         <input class="radio" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
-                         onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
+                         onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');"
+                            #if($syncDisabled) aria-disabled="true" disabled #end/>
 
                         <span style="display:none; width: 16px; height: 16px;" id="repo_smartcommit_check${repo.id}working" class="syncicon running">&nbsp;</span>
 

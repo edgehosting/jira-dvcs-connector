@@ -101,4 +101,6 @@ public interface DvcsCommunicator
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, final String sourceBranch, String destinationSlug, final String destinationBranch, String eventSource);
 
     void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId);
+
+    boolean isSyncDisabled(Repository repo, EnumSet<SynchronizationFlag> flags);
 }

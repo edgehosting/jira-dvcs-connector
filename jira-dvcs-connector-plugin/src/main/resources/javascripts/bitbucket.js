@@ -176,10 +176,17 @@ function showAddRepoDetails(show, hostToSelect) {
      * in the case of potential XSS hole when mixing input from url with query string
      */
     var availableHosts = {};
+    var defaultHost;
     urlSelect.find("option").each(function(index, option) {
         var $option = AJS.$(option);
         $option.data("index", index);
-        availableHosts[$option.attr("value")] = $option;
+        if (!dvcs.connector.plugin.disabledHosts[$option.attr("value")]) {
+            var host = $option.attr("value");
+            availableHosts[host] = $option;
+            if (!defaultHost || host == "bitbucket") {
+                defaultHost = host;
+            }
+        }
     });
 
     var selectedHost;
@@ -187,7 +194,7 @@ function showAddRepoDetails(show, hostToSelect) {
         selectedHost = AJS.$(availableHosts[hostToSelect]);
     } else {
         //Defaults to bitbucket
-        selectedHost = AJS.$(availableHosts["bitbucket"]);
+        selectedHost = AJS.$(availableHosts[defaultHost]);
     }
 
     urlSelect.val(selectedHost.attr("value"));
@@ -228,7 +235,8 @@ function createAddOrganizationDialog(action) {
         isOnDemandLicense:dvcs.connector.plugin.onDemandLicense,
         atlToken:dvcs.connector.plugin.atlToken,
         oAuthStore:dvcs.connector.plugin.oAuthStore,
-        source: getSourceDiv().data("source")
+        source: getSourceDiv().data("source"),
+        disabledHosts: dvcs.connector.plugin.disabledHosts
     }), "panel-body");
 
     dialog.addButtonPanel();
