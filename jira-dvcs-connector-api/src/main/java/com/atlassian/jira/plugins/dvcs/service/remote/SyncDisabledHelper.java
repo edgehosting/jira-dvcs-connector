@@ -15,8 +15,9 @@ public class SyncDisabledHelper
     public static final String DISABLE_BITBUCKET_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.bitbucket";
     public static final String DISABLE_GITHUB_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.github";
     public static final String DISABLE_GITHUB_ENTERPRISE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled.githube";
-    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
-    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
+    private static final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
+    private static final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
+    private static final String FORCE_GITHUB_EVENTS_FULL_SYNC = "dvcs.connector.pr-synchronization.github.events-fullsync";
 
     @Resource
     private FeatureManager featureManager;
@@ -49,5 +50,10 @@ public class SyncDisabledHelper
     public boolean isSyncDisabled()
     {
         return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE);
+    }
+
+    public boolean isPullRequestGitHubEventsFullSync()
+    {
+        return featureManager.isEnabled(FORCE_GITHUB_EVENTS_FULL_SYNC);
     }
 }

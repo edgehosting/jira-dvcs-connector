@@ -638,7 +638,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         if (pullRequestSync)
         {
-            if (softSync)
+            if (softSync || syncDisabledHelper.isPullRequestGitHubEventsFullSync())
             {
                 gitHubEventService.synchronize(repo, softSync, synchronizationTags);
             }
