@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.upgrade;
 
+import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -50,6 +51,6 @@ public class To_03_InitialPRSyncDelayCleanUpUpgradeTask implements PluginUpgrade
     @Override
     public String getPluginKey()
     {
-        return "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin";
+        return DvcsConstants.PLUGIN_KEY;
     }
 }
