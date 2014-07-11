@@ -108,7 +108,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
         Query query = Query.select();
         query.where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.SAVE_POINT + " = ? ", repository.getId(), true);
         query.setOrderClause(queryHelper.getOrder(new OrderClause[] {
-                new OrderClause(GitHubEventMapping.CREATED_AT, OrderClause.Order.ASC), new OrderClause("ID", OrderClause.Order.DESC) }));
+                new OrderClause(GitHubEventMapping.CREATED_AT, OrderClause.Order.DESC), new OrderClause("ID", OrderClause.Order.DESC) }));
         query.setLimit(1);
 
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
