@@ -58,11 +58,39 @@ public class GitHubPullRequestProcessor
     @Resource(name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
+    /**
+     * Updates pull request if update date differs
+     *
+     * @param repository
+     * @param remotePullRequest
+     *
+     * @return <i>true</i> if updated, <i>false</i> otherwise
+     */
+    public boolean processPullRequestIfNeeded(final Repository repository, final PullRequest remotePullRequest)
+    {
+        RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
+                remotePullRequest.getNumber());
+
+
+        if (localPullRequest == null || remotePullRequest.getUpdatedAt().after(localPullRequest.getUpdatedOn()))
+        {
+            processPullRequest(repository, remotePullRequest, localPullRequest);
+            return true;
+        }
+
+        return false;
+    }
+
     public void processPullRequest(final Repository repository, final PullRequest remotePullRequest)
     {
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
                 remotePullRequest.getNumber());
 
+        processPullRequest(repository, remotePullRequest, localPullRequest);
+    }
+
+    public void processPullRequest(final Repository repository, final PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
+    {
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
         try

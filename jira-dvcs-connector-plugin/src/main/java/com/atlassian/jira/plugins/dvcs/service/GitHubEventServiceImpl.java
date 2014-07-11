@@ -5,19 +5,24 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Iterables;
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +37,7 @@ import javax.annotation.Resource;
 public class GitHubEventServiceImpl implements GitHubEventService
 {
 
+    public static final int MAX_EVENTS = 300;
     /**
      * Injected {@link GitHubEventDAO} dependency.
      */
@@ -62,6 +68,12 @@ public class GitHubEventServiceImpl implements GitHubEventService
     @Resource
     MessagingService messagingService;
 
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
+
+    @Resource
+    private GitHubPullRequestProcessor gitHubPullRequestProcessor;
+
     /**
      * {@inheritDoc}
      */
@@ -88,8 +100,10 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
+        int eventCount = 0;
         for (final Event event : Iterables.concat(events))
         {
+            eventCount++;
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
@@ -136,6 +150,38 @@ public class GitHubEventServiceImpl implements GitHubEventService
         if (latestEventGitHubId != null)
         {
             gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, latestEventGitHubId));
+        }
+
+        if (eventCount >= MAX_EVENTS && !syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+        {
+            // there could be other updates, lets fetch them form PR list API
+            CustomPullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
+            PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(forRepositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, PagedRequest.PAGE_FIRST, GithubCommunicator.PULLREQUEST_PAGE_SIZE);
+
+            Iterator<PullRequest> pullRequestIterator = Iterables.concat(pullRequestsPages).iterator();
+
+            // skipping already synchronized pull requests (using GitHub events)
+            PullRequest earliestUpdatedPullRequest = context.getEarliestUpdatedPullrequest();
+            if (earliestUpdatedPullRequest != null)
+            {
+                while (pullRequestIterator.hasNext())
+                {
+                    PullRequest pullRequest = pullRequestIterator.next();
+                    if (pullRequest.getId() == earliestUpdatedPullRequest.getId())
+                    {
+                        break;
+                    }
+                }
+            }
+
+            while (pullRequestIterator.hasNext())
+            {
+                PullRequest pullRequest = pullRequestIterator.next();
+                if (!gitHubPullRequestProcessor.processPullRequestIfNeeded(repository, pullRequest))
+                {
+                    break;
+                }
+            }
         }
     }
 

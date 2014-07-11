@@ -70,7 +70,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
-    private static final int PULLREQUEST_PAGE_SIZE = 30;
+    public static final int PULLREQUEST_PAGE_SIZE = 30;
 
     @Resource
     private MessagingService messagingService;
@@ -638,7 +638,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         if (pullRequestSync)
         {
-            if (softSync || syncDisabledHelper.isPullRequestGitHubEventsFullSync())
+            if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
             {
                 gitHubEventService.synchronize(repo, softSync, synchronizationTags);
             }
