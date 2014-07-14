@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
-import com.atlassian.jira.plugins.dvcs.model.PullRequestStatusGitHub;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -372,22 +371,15 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     private PullRequestStatus resolveStatus(PullRequest pullRequest)
     {
-        PullRequestStatusGitHub githubStatus = PullRequestStatusGitHub.from(pullRequest.getState());
+        PullRequestStatus githubStatus = PullRequestStatus.fromGithubStatus(pullRequest.getState(), pullRequest.getMergedAt());
 
-        if (githubStatus == PullRequestStatusGitHub.OPEN) {
-            return PullRequestStatus.OPEN;
-        }
-
-        else if (githubStatus == PullRequestStatusGitHub.CLOSED)
-        {
-            return pullRequest.getMergedAt() != null ? PullRequestStatus.MERGED
-                    : PullRequestStatus.DECLINED;
-        }
-        else
+        if (githubStatus == null)
         {
             LOGGER.warn("Unable to parse Status of GitHub Pull Request, unknown GH state: " + pullRequest.getState());
             return PullRequestStatus.OPEN;
         }
+
+        return githubStatus;
     }
 
     private String getRepositoryFullName(PullRequestMarker pullRequestMarker)

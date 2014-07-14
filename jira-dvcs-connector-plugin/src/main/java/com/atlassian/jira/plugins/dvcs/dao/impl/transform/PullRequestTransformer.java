@@ -43,7 +43,7 @@ public class PullRequestTransformer
         pullRequest.setSource(new PullRequestRef(pullRequestMapping.getSourceBranch(), pullRequestMapping.getSourceRepo(), createRepositoryUrl(repository.getOrgHostUrl(), pullRequestMapping.getSourceRepo())));
         pullRequest.setDestination(new PullRequestRef(pullRequestMapping.getDestinationBranch(), createRepositoryLabel(repository), repository.getRepositoryUrl()));
 
-        pullRequest.setStatus(PullRequestStatus.from(pullRequestMapping.getLastStatus()));
+        pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(pullRequestMapping.getLastStatus()));
         pullRequest.setCreatedOn(pullRequestMapping.getCreatedOn());
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());

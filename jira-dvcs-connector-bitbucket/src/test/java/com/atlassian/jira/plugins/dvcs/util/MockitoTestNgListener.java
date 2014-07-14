@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import com.beust.jcommander.internal.Sets;
+import com.google.common.collect.Sets;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

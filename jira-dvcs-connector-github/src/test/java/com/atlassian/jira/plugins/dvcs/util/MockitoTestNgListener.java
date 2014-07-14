@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.util;
 
-import com.beust.jcommander.internal.Sets;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -12,6 +11,7 @@ import org.testng.IInvokedMethodListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestResult;
 import org.testng.annotations.Listeners;
+import org.testng.collections.Sets;
 
 import java.util.Set;
 

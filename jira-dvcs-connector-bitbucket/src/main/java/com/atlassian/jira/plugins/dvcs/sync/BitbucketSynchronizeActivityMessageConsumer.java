@@ -455,7 +455,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         String sourceBranch = checkNotNull(getBranchName(request.getSource(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
         String dstBranch = checkNotNull(getBranchName(request.getDestination(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
 
-        PullRequestStatus prStatus = PullRequestStatus.from(request.getState());
+        PullRequestStatus prStatus = PullRequestStatus.fromBitbucketStatus(request.getState());
 
         RepositoryPullRequestMapping mapping = dao.createPullRequest();
 

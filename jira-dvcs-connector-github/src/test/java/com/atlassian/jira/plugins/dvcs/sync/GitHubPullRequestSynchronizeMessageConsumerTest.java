@@ -12,11 +12,7 @@ import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-
 import java.util.Date;
-
-import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatusGitHub.CLOSED;
-import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatusGitHub.OPEN;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -58,7 +54,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void toDaoModelPullRequest_fieldExecutedByShouldBeAuthorForPullRequestOpened()
     {
-        source.setState(OPEN.name());
+        source.setState("open");
         RepositoryPullRequestMapping prMapping = messageConsumer.toDaoModelPullRequest(repository, source, localPullRequest);
 
         assertEquals(AUTHOR, prMapping.getExecutedBy());
@@ -70,7 +66,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     {
         source.setMergedBy(createUser(USER));
         source.setMergedAt(new Date());
-        source.setState(CLOSED.name());
+        source.setState("closed");
 
         RepositoryPullRequestMapping prMapping = messageConsumer.toDaoModelPullRequest(repository, source, localPullRequest);
 
@@ -83,7 +79,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     {
         source.setMergedBy(null);
         source.setMergedAt(null);
-        source.setState(CLOSED.name());
+        source.setState("closed");
 
         RepositoryPullRequestMapping prMapping = messageConsumer.toDaoModelPullRequest(repository, source, localPullRequest);
 
