@@ -644,7 +644,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
             else
             {
-                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE);
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null);
                 MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
                         GitHubPullRequestPageMessage.class,
                         GitHubPullRequestPageMessageConsumer.ADDRESS

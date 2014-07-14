@@ -16,8 +16,8 @@ import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import javax.annotation.Resource;
 
 /**
@@ -60,13 +60,15 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
         Repository repository = payload.getRepository();
         int page = payload.getPage();
         int pagelen = payload.getPagelen();
+        boolean softSync = payload.isSoftSync();
+        Set<Long> processedPullRequests = payload.getProcessedPullRequests();
 
         CustomPullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
         EventService eventService = gitHubClientProvider.getEventService(repository);
 
         RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
-        if (page == 1)
+        if (page == 1 && !softSync)
         {
             // saving the first event as save point
             // GitHub doesn't support per_page parameter for events, therefore 30 events will be downloaded and saved
@@ -78,13 +80,22 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             }
         }
 
-        PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);
-        Collection<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, null);
-        if (pullRequests != null)
+        PageIterator<PullRequest> pullRequestsPages = softSync ?
+                pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, page, pagelen) :
+                pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);
+
+        Iterable<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, Collections.<PullRequest>emptyList());
+
+        for ( PullRequest pullRequest : pullRequests)
         {
-            for (PullRequest pullRequest : pullRequests)
+            if (processedPullRequests != null && processedPullRequests.contains(pullRequest.getId()))
             {
-                gitHubPullRequestProcessor.processPullRequest(repository, pullRequest);
+                continue;
+            }
+
+            if (!gitHubPullRequestProcessor.processPullRequestIfNeeded(repository, pullRequest))
+            {
+                break;
             }
         }
 
@@ -96,7 +107,14 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
 
     private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload, int nextPage)
     {
-        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(payload.getProgress(), payload.getSyncAuditId(), payload.isSoftSync(), payload.getRepository(), nextPage, payload.getPagelen());
+        GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(
+                payload.getProgress(),
+                payload.getSyncAuditId(),
+                payload.isSoftSync(),
+                payload.getRepository(),
+                nextPage,
+                payload.getPagelen(),
+                payload.getProcessedPullRequests());
         messagingService.publish(getAddress(), nextMessage, message.getTags());
     }
 
