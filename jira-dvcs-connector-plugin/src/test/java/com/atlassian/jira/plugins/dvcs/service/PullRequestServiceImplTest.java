@@ -2,10 +2,10 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import org.mockito.ArgumentCaptor;
@@ -21,11 +21,14 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertNull;
 
-@Listeners(MockitoTestNgListener.class)
+@Listeners (MockitoTestNgListener.class)
 public class PullRequestServiceImplTest
 {
     static final int REPO_ID = 123;
@@ -33,7 +36,7 @@ public class PullRequestServiceImplTest
     static final String NAME = "my PR";
     static final String SRC_BRANCH = "from_branch";
     static final String DST_BRANCH = "to_branch";
-    static final RepositoryPullRequestMapping.Status STATUS = Status.OPEN;
+    static final PullRequestStatus STATUS = PullRequestStatus.OPEN;
     static final Date UPDATED_ON = new Date();
     static final String SOURCE_REPO = "my_repo";
     static final int COMMENT_COUNT = 23;
@@ -71,7 +74,7 @@ public class PullRequestServiceImplTest
         trainPullRequestMock(origPr);
         trainPullRequestMock(updatePr, origPr.getName() + "-UPDATED");
 
-        when(dao.updatePullRequestInfo(PR_ID, updatePr.getName(), SRC_BRANCH, DST_BRANCH, STATUS, UPDATED_ON, SOURCE_REPO, COMMENT_COUNT)).thenReturn(updatePr);
+        when(dao.updatePullRequestInfo(eq(PR_ID), any(RepositoryPullRequestMapping.class))).thenReturn(updatePr);
     }
 
     @Test
@@ -98,7 +101,7 @@ public class PullRequestServiceImplTest
     @Test
     public void createPullRequestShouldSynthesiseCreatedEvent() throws Exception
     {
-        final Status currentStatus = Status.MERGED;
+        final PullRequestStatus currentStatus = PullRequestStatus.MERGED;
         when(origPr.getLastStatus()).thenReturn(currentStatus.name());
         service.createPullRequest(origPr);
 
@@ -113,16 +116,16 @@ public class PullRequestServiceImplTest
         assertThat(firstEvent, instanceOf(PullRequestCreatedEvent.class));
         assertThat(secondEvent, instanceOf(PullRequestUpdatedEvent.class));
 
-        assertThat(((PullRequestCreatedEvent) firstEvent).getPullRequest().getStatus(), equalTo(Status.OPEN.name()));
-        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequestBeforeUpdate().getStatus(), equalTo(Status.OPEN.name()));
-        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequest().getStatus(), equalTo(currentStatus.name()));
+        assertThat(((PullRequestCreatedEvent) firstEvent).getPullRequest().getStatus(), equalTo(PullRequestStatus.OPEN));
+        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequestBeforeUpdate().getStatus(), equalTo(PullRequestStatus.OPEN));
+        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequest().getStatus(), equalTo(currentStatus));
     }
 
     @Test
     public void updatePullRequestShouldUpdatePullRequestInDatabase() throws Exception
     {
         service.updatePullRequest(PR_ID, updatePr);
-        verify(dao).updatePullRequestInfo(PR_ID, updatePr.getName(), SRC_BRANCH, DST_BRANCH, STATUS, UPDATED_ON, SOURCE_REPO, COMMENT_COUNT);
+        verify(dao).updatePullRequestInfo(PR_ID, updatePr);
     }
 
     @Test
@@ -137,6 +140,22 @@ public class PullRequestServiceImplTest
         PullRequestUpdatedEvent updateEvent = (PullRequestUpdatedEvent) eventCaptor.getValue();
         assertThat(origPr.getName(), equalTo(updateEvent.getPullRequestBeforeUpdate().getName()));
         assertThat(updatePr.getName(), equalTo(updateEvent.getPullRequest().getName()));
+    }
+
+    @Test
+    public void updatePullRequestShouldResetExecutedByForPullRequestReopenedInGitHub() throws Exception
+    {
+        when(origPr.getAuthor()).thenReturn("joe");
+        when(origPr.getExecutedBy()).thenReturn("luke");
+        when(origPr.getLastStatus()).thenReturn(PullRequestStatus.DECLINED.name());
+
+        when(updatePr.getAuthor()).thenReturn("joe");
+        when(updatePr.getExecutedBy()).thenReturn("anna");
+        when(updatePr.getLastStatus()).thenReturn(PullRequestStatus.OPEN.name());
+
+        service.updatePullRequest(PR_ID, updatePr);
+
+        assertNull(updatePr.getExecutedBy());
     }
 
     private void trainPullRequestMock(final RepositoryPullRequestMapping pullRequest)

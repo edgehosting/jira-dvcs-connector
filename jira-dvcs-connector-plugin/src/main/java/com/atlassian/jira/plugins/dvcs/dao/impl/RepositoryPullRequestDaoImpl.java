@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -134,17 +133,19 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
-                                                              RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo, final int commentCount)
+    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, RepositoryPullRequestMapping pullRequestMapping)
     {
         final RepositoryPullRequestMapping request = findRequestById(localId);
-        request.setName(name);
-        request.setSourceBranch(sourceBranch);
-        request.setDestinationBranch(dstBranch);
-        request.setLastStatus(status.name());
-        request.setSourceRepo(sourceRepo);
-        request.setUpdatedOn(updatedOn);
-        request.setCommentCount(commentCount);
+        request.setName(pullRequestMapping.getName());
+        request.setSourceBranch(pullRequestMapping.getSourceBranch());
+        request.setDestinationBranch(pullRequestMapping.getDestinationBranch());
+        request.setLastStatus(pullRequestMapping.getLastStatus());
+        request.setSourceRepo(pullRequestMapping.getSourceRepo());
+        request.setUpdatedOn(pullRequestMapping.getUpdatedOn());
+        request.setCommentCount(pullRequestMapping.getCommentCount());
+
+        request.setExecutedBy(pullRequestMapping.getExecutedBy());
+
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override
@@ -473,6 +474,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         attributes.put(RepositoryPullRequestMapping.URL, mapping.getUrl());
         attributes.put(RepositoryPullRequestMapping.TO_REPO_ID, mapping.getToRepositoryId());
         attributes.put(RepositoryPullRequestMapping.AUTHOR, mapping.getAuthor());
+        attributes.put(RepositoryPullRequestMapping.EXECUTED_BY, mapping.getExecutedBy());
         attributes.put(RepositoryPullRequestMapping.CREATED_ON, mapping.getCreatedOn());
         attributes.put(RepositoryPullRequestMapping.UPDATED_ON, mapping.getUpdatedOn());
         attributes.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, mapping.getDestinationBranch());
@@ -480,7 +482,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         attributes.put(RepositoryPullRequestMapping.LAST_STATUS, mapping.getLastStatus());
         attributes.put(RepositoryPullRequestMapping.SOURCE_REPO, mapping.getSourceRepo());
         attributes.put(RepositoryPullRequestMapping.COMMENT_COUNT, mapping.getCommentCount());
-
         return attributes;
     }
 }

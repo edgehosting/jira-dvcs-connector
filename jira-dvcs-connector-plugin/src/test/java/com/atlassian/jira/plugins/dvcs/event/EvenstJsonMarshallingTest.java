@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -75,7 +76,7 @@ public class EvenstJsonMarshallingTest
         pullRequest.setRemoteId(123);
         pullRequest.setRepositoryId(254);
         pullRequest.setSource(new PullRequestRef("source-branch", "source-repo", "source-repo-url"));
-        pullRequest.setStatus("OPEN");
+        pullRequest.setStatus(PullRequestStatus.OPEN);
         pullRequest.setUpdatedOn(new Date());
         pullRequest.setUrl("pr_url");
     }

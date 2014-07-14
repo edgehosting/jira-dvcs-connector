@@ -3,13 +3,13 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping.Status;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
 
 /**
  * Implementation of {@link PullRequestService}
@@ -79,10 +81,10 @@ public class PullRequestServiceImpl implements PullRequestService
         // we know that pull requests always start off in the OPEN state so if that's not the current state we can
         // deduce that we missed the pull request's creation. in this case we broadcast separate create and updated
         // events so that listeners can observe the distinct events.
-        if (!Status.OPEN.name().equalsIgnoreCase(pullRequest.getStatus()))
+        if (OPEN != pullRequest.getStatus())
         {
             final PullRequest createdPullRequest = transformer.transform(createdMapping);
-            createdPullRequest.setStatus(Status.OPEN.name());
+            createdPullRequest.setStatus(OPEN);
 
             threadEvents.broadcast(new PullRequestCreatedEvent(createdPullRequest));
             threadEvents.broadcast(new PullRequestUpdatedEvent(pullRequest, createdPullRequest));
@@ -104,23 +106,24 @@ public class PullRequestServiceImpl implements PullRequestService
             throw new IllegalArgumentException(String.format("RepositoryPullRequestMapping with id=%s does not exist", updatedPullRequestMapping.getID()));
         }
 
-        RepositoryPullRequestMapping mappingAfterUpdate = pullRequestDao.updatePullRequestInfo(
-                pullRequestId,
-                updatedPullRequestMapping.getName(),
-                updatedPullRequestMapping.getSourceBranch(),
-                updatedPullRequestMapping.getDestinationBranch(),
-                Status.valueOf(updatedPullRequestMapping.getLastStatus()),
-                updatedPullRequestMapping.getUpdatedOn(),
-                updatedPullRequestMapping.getSourceRepo(),
-                updatedPullRequestMapping.getCommentCount()
-        );
+        RepositoryPullRequestMapping mappingAfterUpdate = pullRequestDao.updatePullRequestInfo(pullRequestId, updatedPullRequestMapping);
 
         // send both the before and after state of the PR in the event
         PullRequest prAfter = transformer.transform(mappingAfterUpdate);
         PullRequest prBefore = transformer.transform(mappingBeforeUpdate);
-        threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
 
+        if (isPullRequestReopened(prBefore, prAfter))
+        {
+            prAfter.setExecutedBy(null); // clear misleading author set in executedBy field for re-opened since it won't be available cheaply via Github api
+        }
+
+        threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
         return mappingAfterUpdate;
+    }
+
+    private boolean isPullRequestReopened(PullRequest prBefore, PullRequest prAfter)
+    {
+        return (prAfter.getStatus() == PullRequestStatus.OPEN && prBefore.getStatus() != PullRequestStatus.OPEN);
     }
 
     @Override
@@ -133,7 +136,8 @@ public class PullRequestServiceImpl implements PullRequestService
             if (participant == null)
             {
                 pullRequestDao.removeParticipant(participantMapping);
-            } else
+            }
+            else
             {
                 boolean markedForSave = false;
                 if (participant.isApproved() != participantMapping.isApproved())

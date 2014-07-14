@@ -52,6 +52,7 @@
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
+        <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -141,6 +142,11 @@
     
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.eclipse.mylyn.github</groupId>
+                <artifactId>org.eclipse.egit.github.core</artifactId>
+                <version>${org.eclipse.mylyn.github.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.atlassian.beehive</groupId>
                 <artifactId>beehive-compat</artifactId>

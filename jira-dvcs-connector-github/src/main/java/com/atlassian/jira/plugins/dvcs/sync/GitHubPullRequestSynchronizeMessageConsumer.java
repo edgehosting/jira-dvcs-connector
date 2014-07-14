@@ -5,12 +5,15 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatusGitHub;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.google.common.annotations.VisibleForTesting;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -34,9 +37,8 @@ import javax.annotation.Resource;
 
 /**
  * Message consumer {@link GitHubPullRequestSynchronizeMessage}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsumer<GitHubPullRequestSynchronizeMessage>
 {
@@ -71,7 +73,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Injected {@link GithubClientProvider} dependency.
      */
-    @Resource(name = "githubClientProvider")
+    @Resource (name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
     /**
@@ -101,7 +103,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
                 remotePullRequest.getNumber());
 
-        Map<String, Participant> participantIndex = new HashMap<String,Participant>();
+        Map<String, Participant> participantIndex = new HashMap<String, Participant>();
 
         try
         {
@@ -126,12 +128,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Creates or updates local version of remote {@link PullRequest}.
-     * 
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request representation
-     * @param localPullRequest
+     *
+     * @param repository pull request owner
+     * @param remotePullRequest remote pull request representation
      * @return created/updated local pull request
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
@@ -203,7 +202,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 map(commitData, remoteCommit);
                 commit = repositoryPullRequestDao.saveCommit(repository, commitData);
                 repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
-            } else
+            }
+            else
             {
                 remainingCommitsToDelete.remove(commit);
             }
@@ -217,11 +217,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Loads remote {@link PullRequest}.
-     * 
-     * @param repository
-     *            owner of pull request
-     * @param number
-     *            number of pull request
+     *
+     * @param repository owner of pull request
+     * @param number number of pull request
      * @return remote pull request
      */
     private PullRequest getRemotePullRequest(Repository repository, int number)
@@ -230,7 +228,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
             return pullRequestService.getPullRequest(RepositoryId.createFromUrl(repository.getRepositoryUrl()), number);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -239,11 +238,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Loads remote commits for provided pull request.
-     * 
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request
+     *
+     * @param repository pull request owner
+     * @param remotePullRequest remote pull request
      * @return remote commits of pull request
      */
     private List<RepositoryCommit> getRemotePullRequestCommits(Repository repository, PullRequest remotePullRequest)
@@ -252,7 +249,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             return pullRequestService.getCommits(RepositoryId.createFromUrl(repository.getRepositoryUrl()), remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -276,7 +274,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             pullRequestComments = issueService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -289,7 +288,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Processes review comments of a Pull Request.
-     * 
+     *
      * @param repository
      * @param remotePullRequest
      * @param localPullRequest
@@ -305,7 +304,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             pullRequestReviewComments = pullRequestService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -324,10 +324,13 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
-    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
+    @VisibleForTesting
+    RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
     {
         String sourceBranch = checkNotNull(getBranchName(source.getHead(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
         String dstBranch = checkNotNull(getBranchName(source.getBase(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
+
+        PullRequestStatus prStatus = resolveStatus(source);
 
         RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
         target.setDomainId(repository.getId());
@@ -343,8 +346,18 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.setSourceRepo(getRepositoryFullName(source.getHead()));
         target.setSourceBranch(sourceBranch);
         target.setDestinationBranch(dstBranch);
-        target.setLastStatus(resolveStatus(source).name());
+        target.setLastStatus(prStatus.name());
         target.setCommentCount(source.getComments());
+
+        if (prStatus == PullRequestStatus.OPEN)
+        {
+            target.setExecutedBy(target.getAuthor());
+        }
+        else
+        {
+            // Note: PullRequest.mergedBy will have the user who merged the PR but will miss who closed or reopened.
+            target.setExecutedBy(source.getMergedBy() != null ? source.getMergedBy().getLogin() : null);
+        }
 
         return target;
     }
@@ -357,19 +370,23 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
     }
 
-    private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
+    private PullRequestStatus resolveStatus(PullRequest pullRequest)
     {
-        if ("open".equalsIgnoreCase(pullRequest.getState()))
+        PullRequestStatusGitHub githubStatus = PullRequestStatusGitHub.from(pullRequest.getState());
+
+        if (githubStatus == PullRequestStatusGitHub.OPEN) {
+            return PullRequestStatus.OPEN;
+        }
+
+        else if (githubStatus == PullRequestStatusGitHub.CLOSED)
         {
-            return RepositoryPullRequestMapping.Status.OPEN;
-        } else if ("closed".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return pullRequest.getMergedAt() != null ? RepositoryPullRequestMapping.Status.MERGED
-                    : RepositoryPullRequestMapping.Status.DECLINED;
-        } else
+            return pullRequest.getMergedAt() != null ? PullRequestStatus.MERGED
+                    : PullRequestStatus.DECLINED;
+        }
+        else
         {
             LOGGER.warn("Unable to parse Status of GitHub Pull Request, unknown GH state: " + pullRequest.getState());
-            return RepositoryPullRequestMapping.Status.OPEN;
+            return PullRequestStatus.OPEN;
         }
     }
 

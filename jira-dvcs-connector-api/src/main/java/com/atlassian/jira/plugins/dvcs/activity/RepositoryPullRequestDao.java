@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.activity;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +35,7 @@ public interface RepositoryPullRequestDao
      */
     RepositoryPullRequestMapping savePullRequest(RepositoryPullRequestMapping pullRequest);
 
-    RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch, RepositoryPullRequestMapping.Status status,
-            Date updatedOn, String sourceRepo, final int commentCount);
+    RepositoryPullRequestMapping updatePullRequestInfo(int localId, RepositoryPullRequestMapping pullRequestMapping);
 
     /**
      * Updates issue keys related to the provided pull request to reflect current state.

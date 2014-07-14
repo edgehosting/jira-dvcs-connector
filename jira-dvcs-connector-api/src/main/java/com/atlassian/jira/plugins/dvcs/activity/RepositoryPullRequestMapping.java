@@ -8,14 +8,13 @@ import net.java.ao.schema.Table;
 import java.util.Date;
 
 @Preload
-@Table("PULL_REQUEST")
+@Table ("PULL_REQUEST")
 public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 {
     String REMOTE_ID = "REMOTE_ID";
     String TO_REPO_ID = "TO_REPOSITORY_ID";
     String NAME = "NAME";
     String URL = "URL";
-
     String AUTHOR = "AUTHOR";
     String SOURCE_REPO = "SOURCE_REPO";
     String SOURCE_BRANCH = "SOURCE_BRANCH";
@@ -25,14 +24,12 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String UPDATED_ON = "UPDATED_ON";
     String PARTICIPANTS = "PARTICIPANTS";
     String COMMENT_COUNT = "COMMENT_COUNT";
-
-    public enum Status {
-        OPEN, DECLINED, MERGED;
-    }
+    String EXECUTED_BY = "EXECUTED_BY";
 
     //
     // getters
     //
+
     /**
      * @return remote Id of this pull request
      */
@@ -59,7 +56,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     String getAuthor();
 
-    @ManyToMany(reverse = "getRequest", through = "getCommit", value = RepositoryPullRequestToCommitMapping.class)
+    @ManyToMany (reverse = "getRequest", through = "getCommit", value = RepositoryPullRequestToCommitMapping.class)
     RepositoryCommitMapping[] getCommits();
 
     String getSourceRepo();
@@ -68,6 +65,8 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     PullRequestParticipantMapping[] getParticipants();
 
     int getCommentCount();
+
+    String getExecutedBy();
 
     //
     // setters
@@ -95,4 +94,6 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     void setSourceRepo(String sourceRepo);
 
     void setCommentCount(int commentCount);
+
+    void setExecutedBy(String user);
 }
