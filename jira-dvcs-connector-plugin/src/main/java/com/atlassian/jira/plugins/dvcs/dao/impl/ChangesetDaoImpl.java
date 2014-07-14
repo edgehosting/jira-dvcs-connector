@@ -193,11 +193,13 @@ public class ChangesetDaoImpl implements ChangesetDao
         String matchRawNode = ChangesetMapping.RAW_NODE + " = ? ";
 
         // 3. Previous implementation has used NODE, but it is mix in some cases it is short version, in some cases it is full version
-        String matchNode = ChangesetMapping.NODE + " like ? ";
+        //  translate NODE like '123%' to NODE >= '123' AND NODE < '123g' for Postgresql. MySQL and MS SQL Server could do it implicitly
+        String matchNode = " ( " + ChangesetMapping.NODE + " >= ? AND " + ChangesetMapping.NODE + " < ? )";
 
-        String shortNode = changeset.getNode().substring(0, 12) + "%";
+        String shortNode = changeset.getNode().substring(0, 12);
+        String shortNodeNext = changeset.getNode().substring(0, 12) + 'g';
         ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class, "(" + hasRawNode + " AND " + matchRawNode + " ) OR ( NOT "
-                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode);
+                + hasRawNode + " AND " + matchNode + " ) ", changeset.getRawNode(), shortNode, shortNodeNext);
 
         if (mappings.length > 1)
         {

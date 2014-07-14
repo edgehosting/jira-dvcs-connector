@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Entity;
 import net.java.ao.Polymorphic;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 
 /**
@@ -20,9 +21,11 @@ public interface RepositoryDomainMapping extends Entity
     String DOMAIN = "DOMAIN_ID";
 
     /**
+     * The domain of the objects, mostly repository atm. For easy querying/deletion of objects by domain.
      * @return Domain of validity.
      */
     @NotNull
+    @Indexed
     int getDomainId();
 
     /**

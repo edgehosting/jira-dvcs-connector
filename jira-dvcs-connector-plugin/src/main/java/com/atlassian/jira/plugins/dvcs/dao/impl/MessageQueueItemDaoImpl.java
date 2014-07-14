@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -17,6 +18,9 @@ import net.java.ao.Query;
 import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Resource;
+
+import static com.atlassian.jira.plugins.dvcs.service.message.MessagingService.DEFAULT_PRIORITY;
+import static com.atlassian.jira.plugins.dvcs.service.message.MessagingService.SOFTSYNC_PRIORITY;
 
 /**
  * {@link MessageQueueItemDao} implementation over AO.
@@ -220,9 +224,28 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     @Override
     public MessageQueueItemMapping getNextItemForProcessing(String queue, String address)
     {
+        // for performance reason, we try the higher priority msgs first and then the lower priority ones.
+        //  trying to do both in a single query resulted in sorting all messages based on priority, which requires a seq scan.
+        // This works as there are only two priorities.
+        MessageQueueItemMapping nextItemSoftSync = getNextItemForProcessingByPriority(SOFTSYNC_PRIORITY, queue, address);
+        if (nextItemSoftSync != null)
+        {
+            return nextItemSoftSync;
+        }
+
+        return getNextItemForProcessingByPriority(DEFAULT_PRIORITY, queue, address);
+    }
+
+    /**
+     * Find the next item to be processed by priority and queue and address.
+     *
+     * @param priority the priority of the messages, see {@link MessagingService#SOFTSYNC_PRIORITY}
+     * and {@link MessagingService#DEFAULT_PRIORITY}
+     */
+    private MessageQueueItemMapping getNextItemForProcessingByPriority(int priority, String queue, String address)
+    {
         Query query = new QueryTemplate(queryHelper)
         {
-
             @Override
             protected void build()
             {
@@ -233,16 +256,14 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 
                 where(and(//
                         eq(column(MessageMapping.class, MessageMapping.ADDRESS), parameter("address")), //
+                        eq(column(MessageMapping.class, MessageMapping.PRIORITY), parameter("priority")), //
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.QUEUE), parameter("queue")), //
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
                 ));
 
-                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(MessageMapping.PRIORITY)), false), //
-                      orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName("ID")), true) //
-                );
+                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName("ID")), true));
             }
-
-        }.toQuery(MapBuilder.<String, Object> build("address", address, "queue", queue, "state", MessageState.PENDING));
+        }.toQuery(MapBuilder.<String, Object> build("address", address, "priority", priority, "queue", queue, "state", MessageState.PENDING));
         query.limit(1);
 
         MessageQueueItemMapping[] founded = activeObjects.find(MessageQueueItemMapping.class, query);
