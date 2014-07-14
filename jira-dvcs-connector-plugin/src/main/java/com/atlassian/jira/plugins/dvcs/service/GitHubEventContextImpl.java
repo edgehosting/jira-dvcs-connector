@@ -27,8 +27,6 @@ public class GitHubEventContextImpl implements GitHubEventContext
 
     private final Set<Long> processedPullRequests = new HashSet<Long>();
 
-    private PullRequest earliestUpdatedPullrequest;
-
     public GitHubEventContextImpl(final Synchronizer synchronizer, final MessagingService messagingService, final Repository repository, final boolean softSync, final String[] synchronizationTags)
     {
         this.synchronizer = synchronizer;
@@ -55,15 +53,10 @@ public class GitHubEventContextImpl implements GitHubEventContext
         messagingService.publish(
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),
                 message, synchronizationTags);
-
-        if (earliestUpdatedPullrequest == null || (pullRequest.getUpdatedAt() != null && earliestUpdatedPullrequest.getUpdatedAt().before(pullRequest.getUpdatedAt())))
-        {
-            earliestUpdatedPullrequest = pullRequest;
-        }
     }
 
-    public PullRequest getEarliestUpdatedPullrequest()
+    public Set<Long> getProcessedPullRequests()
     {
-        return earliestUpdatedPullrequest;
+        return processedPullRequests;
     }
 }

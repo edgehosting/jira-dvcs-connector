@@ -23,9 +23,12 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 
 /**
@@ -158,25 +161,18 @@ public class GitHubEventServiceImpl implements GitHubEventService
             CustomPullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
             PageIterator<PullRequest> pullRequestsPages = pullRequestService.pagePullRequests(forRepositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, PagedRequest.PAGE_FIRST, GithubCommunicator.PULLREQUEST_PAGE_SIZE);
 
-            Iterator<PullRequest> pullRequestIterator = Iterables.concat(pullRequestsPages).iterator();
+            Iterable<PullRequest> pullRequests = Iterables.concat(pullRequestsPages);
 
             // skipping already synchronized pull requests (using GitHub events)
-            PullRequest earliestUpdatedPullRequest = context.getEarliestUpdatedPullrequest();
-            if (earliestUpdatedPullRequest != null)
-            {
-                while (pullRequestIterator.hasNext())
-                {
-                    PullRequest pullRequest = pullRequestIterator.next();
-                    if (pullRequest.getId() == earliestUpdatedPullRequest.getId())
-                    {
-                        break;
-                    }
-                }
-            }
+            Set<Long> processedPullRequests = context.getProcessedPullRequests();
 
-            while (pullRequestIterator.hasNext())
+            for (PullRequest pullRequest : pullRequests)
             {
-                PullRequest pullRequest = pullRequestIterator.next();
+                if (processedPullRequests.contains(pullRequest.getId()))
+                {
+                    continue;
+                }
+
                 if (!gitHubPullRequestProcessor.processPullRequestIfNeeded(repository, pullRequest))
                 {
                     break;
