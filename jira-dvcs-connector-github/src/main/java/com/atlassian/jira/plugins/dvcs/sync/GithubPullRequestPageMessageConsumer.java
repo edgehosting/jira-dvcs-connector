@@ -74,9 +74,11 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             // GitHub doesn't support per_page parameter for events, therefore 30 events will be downloaded and saved
             // leaving the page size set to 1 in case that this will change in the future to request only the first event
             PageIterator<Event> eventsPages = eventService.pageEvents(repositoryId, 1);
+            boolean savePoint = true;
             for (Event event : Iterables.getFirst(eventsPages, Collections.<Event>emptyList()))
             {
-                gitHubEventService.saveEvent(repository, event, true);
+                gitHubEventService.saveEvent(repository, event, savePoint);
+                savePoint = false;
             }
         }
 
