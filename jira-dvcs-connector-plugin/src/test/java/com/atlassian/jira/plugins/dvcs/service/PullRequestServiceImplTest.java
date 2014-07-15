@@ -153,9 +153,12 @@ public class PullRequestServiceImplTest
         when(updatePr.getExecutedBy()).thenReturn("anna");
         when(updatePr.getLastStatus()).thenReturn(PullRequestStatus.OPEN.name());
 
-        service.updatePullRequest(PR_ID, updatePr);
+        ArgumentCaptor<PullRequestUpdatedEvent> eventCaptor = ArgumentCaptor.forClass(PullRequestUpdatedEvent.class);
 
-        assertNull(updatePr.getExecutedBy());
+        service.updatePullRequest(PR_ID, updatePr);
+        verify(threadEvents).broadcast(eventCaptor.capture());
+
+        assertNull(eventCaptor.getValue().getPullRequest().getExecutedBy());
     }
 
     private void trainPullRequestMock(final RepositoryPullRequestMapping pullRequest)

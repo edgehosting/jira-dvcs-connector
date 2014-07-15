@@ -31,6 +31,13 @@
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-api</artifactId>
             <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
