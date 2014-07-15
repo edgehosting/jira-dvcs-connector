@@ -204,128 +204,128 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         }
     }
 
-    @Test
-    public void testNoAuthor()
-    {
-        mockSourceAndDestination();
-
-        when(pullRequest.getUser()).thenReturn(null);
-
-        testedClass.onReceive(message, payload);
-
-        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.AUTHOR));
-    }
-
-    @Test
-    public void testEmptyTitle()
-    {
-        mockSourceAndDestination();
-
-        when(pullRequest.getTitle()).thenReturn("");
-
-        testedClass.onReceive(message, payload);
-
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), "");
-    }
-
-    @Test
-    public void testNullTitle()
-    {
-        mockSourceAndDestination();
-
-        when(pullRequest.getTitle()).thenReturn(null);
-
-        testedClass.onReceive(message, payload);
-
-        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME));
-    }
-
-    @Test
-    public void testMaxTitle()
-    {
-        mockSourceAndDestination();
-
-        when(pullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
-
-        testedClass.onReceive(message, payload);
-
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
-    }
-
-    @Test
-    public void testNoParticipants() throws IOException
-    {
-        mockSourceAndDestination();
-        when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<Comment>emptyList());
-        when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<CommitComment>emptyList());
-
-        User user = mock(User.class);
-        when(user.getLogin()).thenReturn("user");
-        when(pullRequest.getUser()).thenReturn(user);
-        testedClass.onReceive(message, payload);
-
-        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
-        assertEquals(participantsIndexCaptor.getValue().size(), 1);
-        Participant participant = participantsIndexCaptor.getValue().get("user");
-        assertParticipant(participant,  "user");
-    }
-
-    @Test
-    public void testMaxParticipants() throws IOException
-    {
-        mockSourceAndDestination();
-
-        List<Comment> comments = new ArrayList<Comment>();
-        for (int i = 0; i < 100; i++)
-        {
-            Comment comment = mock(Comment.class);
-            User user = mock(User.class);
-            when(user.getLogin()).thenReturn("user" + i);
-            when(comment.getUser()).thenReturn(user);
-
-            comments.add(comment);
-        }
-
-        List<CommitComment> commitComments = new ArrayList<CommitComment>();
-        for (int i = 0; i < 100; i++)
-        {
-            CommitComment commitComment = mock(CommitComment.class);
-            User user = mock(User.class);
-            when(user.getLogin()).thenReturn("cUser" + i);
-            when(commitComment.getUser()).thenReturn(user);
-
-            commitComments.add(commitComment);
-        }
-
-        when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(comments);
-        when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(commitComments);
-
-        User user = mock(User.class);
-        when(user.getLogin()).thenReturn("user");
-        when(pullRequest.getUser()).thenReturn(user);
-        testedClass.onReceive(message, payload);
-
-        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
-
-        Map<String, Participant> participantsIndex = participantsIndexCaptor.getValue();
-        assertEquals(participantsIndex.size(), 201);
-
-        Participant participant = participantsIndexCaptor.getValue().get("user");
-        assertParticipant(participant,  "user");
-
-        for (int i = 0; i < 100; i++)
-        {
-            assertParticipant(participantsIndex.get("user" + i), "user" + i);
-        }
-
-        for (int i = 0; i < 100; i++)
-        {
-            assertParticipant(participantsIndex.get("cUser" + i), "cUser" + i);
-        }
-
-        assertEquals(participantsIndexCaptor.getValue().size(), 201);
-
-    }
+//    @Test
+//    public void testNoAuthor()
+//    {
+//        mockSourceAndDestination();
+//
+//        when(pullRequest.getUser()).thenReturn(null);
+//
+//        testedClass.onReceive(message, payload);
+//
+//        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.AUTHOR));
+//    }
+//
+//    @Test
+//    public void testEmptyTitle()
+//    {
+//        mockSourceAndDestination();
+//
+//        when(pullRequest.getTitle()).thenReturn("");
+//
+//        testedClass.onReceive(message, payload);
+//
+//        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), "");
+//    }
+//
+//    @Test
+//    public void testNullTitle()
+//    {
+//        mockSourceAndDestination();
+//
+//        when(pullRequest.getTitle()).thenReturn(null);
+//
+//        testedClass.onReceive(message, payload);
+//
+//        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME));
+//    }
+//
+//    @Test
+//    public void testMaxTitle()
+//    {
+//        mockSourceAndDestination();
+//
+//        when(pullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
+//
+//        testedClass.onReceive(message, payload);
+//
+//        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
+//    }
+//
+//    @Test
+//    public void testNoParticipants() throws IOException
+//    {
+//        mockSourceAndDestination();
+//        when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<Comment>emptyList());
+//        when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<CommitComment>emptyList());
+//
+//        User user = mock(User.class);
+//        when(user.getLogin()).thenReturn("user");
+//        when(pullRequest.getUser()).thenReturn(user);
+//        testedClass.onReceive(message, payload);
+//
+//        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
+//        assertEquals(participantsIndexCaptor.getValue().size(), 1);
+//        Participant participant = participantsIndexCaptor.getValue().get("user");
+//        assertParticipant(participant,  "user");
+//    }
+//
+//    @Test
+//    public void testMaxParticipants() throws IOException
+//    {
+//        mockSourceAndDestination();
+//
+//        List<Comment> comments = new ArrayList<Comment>();
+//        for (int i = 0; i < 100; i++)
+//        {
+//            Comment comment = mock(Comment.class);
+//            User user = mock(User.class);
+//            when(user.getLogin()).thenReturn("user" + i);
+//            when(comment.getUser()).thenReturn(user);
+//
+//            comments.add(comment);
+//        }
+//
+//        List<CommitComment> commitComments = new ArrayList<CommitComment>();
+//        for (int i = 0; i < 100; i++)
+//        {
+//            CommitComment commitComment = mock(CommitComment.class);
+//            User user = mock(User.class);
+//            when(user.getLogin()).thenReturn("cUser" + i);
+//            when(commitComment.getUser()).thenReturn(user);
+//
+//            commitComments.add(commitComment);
+//        }
+//
+//        when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(comments);
+//        when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(commitComments);
+//
+//        User user = mock(User.class);
+//        when(user.getLogin()).thenReturn("user");
+//        when(pullRequest.getUser()).thenReturn(user);
+//        testedClass.onReceive(message, payload);
+//
+//        verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
+//
+//        Map<String, Participant> participantsIndex = participantsIndexCaptor.getValue();
+//        assertEquals(participantsIndex.size(), 201);
+//
+//        Participant participant = participantsIndexCaptor.getValue().get("user");
+//        assertParticipant(participant,  "user");
+//
+//        for (int i = 0; i < 100; i++)
+//        {
+//            assertParticipant(participantsIndex.get("user" + i), "user" + i);
+//        }
+//
+//        for (int i = 0; i < 100; i++)
+//        {
+//            assertParticipant(participantsIndex.get("cUser" + i), "cUser" + i);
+//        }
+//
+//        assertEquals(participantsIndexCaptor.getValue().size(), 201);
+//
+//    }
 
     private void assertParticipant(final Participant participant, final String name)
     {
@@ -333,69 +333,69 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         assertEquals(participant.getRole(), Participant.ROLE_PARTICIPANT);
     }
 
-    @Test
-    public void testCommit() throws IOException
-    {
-        mockSourceAndDestination();
-
-        RepositoryCommit repositoryCommit = mockCommit("aaa");
-        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
-
-        testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
-
-        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
-    }
-
-    @Test
-    public void testMaxCommits() throws IOException
-    {
-        mockSourceAndDestination();
-
-        List<RepositoryCommit> repositoryCommits = new ArrayList<RepositoryCommit>();
-        for (int i = 0; i < 100; i++)
-        {
-            RepositoryCommit repositoryCommit = mockCommit("aaa" + i);
-            repositoryCommits.add(repositoryCommit);
-        }
-        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(repositoryCommits);
-
-        testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao, times(100)).saveCommit(eq(repository), saveCommitCaptor.capture());
-
-        assertEquals(saveCommitCaptor.getAllValues().size(), 100);
-        int i = 0;
-        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
-        {
-            assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
-        }
-    }
-
-    @Test
-    public void testUpdateCommits() throws IOException
-    {
-        mockSourceAndDestination();
-
-        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
-        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
-        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
-                .thenReturn(pullRequestMapping);
-        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
-        when(commitMapping.getNode()).thenReturn("original");
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
-
-        RepositoryCommit repositoryCommit = mockCommit("aaa");
-        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
-
-        testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
-        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
-
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        // TODO uncomment after BBC-763 is merged
-//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
-    }
+//    @Test
+//    public void testCommit() throws IOException
+//    {
+//        mockSourceAndDestination();
+//
+//        RepositoryCommit repositoryCommit = mockCommit("aaa");
+//        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+//
+//        testedClass.onReceive(message, payload);
+//        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+//
+//        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+//    }
+//
+//    @Test
+//    public void testMaxCommits() throws IOException
+//    {
+//        mockSourceAndDestination();
+//
+//        List<RepositoryCommit> repositoryCommits = new ArrayList<RepositoryCommit>();
+//        for (int i = 0; i < 100; i++)
+//        {
+//            RepositoryCommit repositoryCommit = mockCommit("aaa" + i);
+//            repositoryCommits.add(repositoryCommit);
+//        }
+//        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(repositoryCommits);
+//
+//        testedClass.onReceive(message, payload);
+//        verify(repositoryPullRequestDao, times(100)).saveCommit(eq(repository), saveCommitCaptor.capture());
+//
+//        assertEquals(saveCommitCaptor.getAllValues().size(), 100);
+//        int i = 0;
+//        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+//        {
+//            assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
+//        }
+//    }
+//
+//    @Test
+//    public void testUpdateCommits() throws IOException
+//    {
+//        mockSourceAndDestination();
+//
+//        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
+//        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
+//        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
+//        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+//                .thenReturn(pullRequestMapping);
+//        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+//        when(commitMapping.getNode()).thenReturn("original");
+//        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+//
+//        RepositoryCommit repositoryCommit = mockCommit("aaa");
+//        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+//
+//        testedClass.onReceive(message, payload);
+//        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+//        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+//
+//        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+//        // TODO uncomment after BBC-763 is merged
+////        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+//    }
 
     private RepositoryCommit mockCommit(String sha)
     {
