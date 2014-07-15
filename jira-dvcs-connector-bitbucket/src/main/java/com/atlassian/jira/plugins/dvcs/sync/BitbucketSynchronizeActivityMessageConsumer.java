@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
@@ -31,6 +32,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -44,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 /**
@@ -59,6 +63,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public static final String KEY = BitbucketSynchronizeActivityMessage.class.getCanonicalName();
     private static final String REVIEWER_ROLE = "REVIEWER";
 
+
     @Resource
     private MessagingService messagingService;
     @Resource
@@ -69,6 +74,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private PullRequestService pullRequestService;
     @Resource
     private RepositoryDao repositoryDao;
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     public BitbucketSynchronizeActivityMessageConsumer()
     {
@@ -375,6 +382,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             final Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(savedPullRequest
                     .getCommits()));
 
+            final Map<String, RepositoryCommitMapping> commitsIndex = Maps.uniqueIndex(remainingCommitsToDelete, new Function<RepositoryCommitMapping, String>()
+            {
+                @Override
+                public String apply(@Nullable final RepositoryCommitMapping repositoryCommitMapping)
+                {
+                    return repositoryCommitMapping.getNode();
+                }
+            });
+
             FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Void>()
             {
                 @Override
@@ -386,13 +402,18 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
                         for (BitbucketPullRequestCommit commit : commitsIterator)
                         {
-                            RepositoryCommitMapping localCommit = dao.getCommitByNode(repo, localPullRequestId, commit.getHash());
+                            RepositoryCommitMapping localCommit = commitsIndex.get(commit.getHash());
                             if (localCommit == null)
                             {
                                 localCommit = saveCommit(repo, commit, null, localPullRequestId);
                                 linkCommit(repo, localCommit, savedPullRequest);
                             } else
                             {
+                                if (syncDisabledHelper.isPullRequestCommitsFallback())
+                                {
+                                    remainingCommitsToDelete.clear();
+                                    break;
+                                }
                                 remainingCommitsToDelete.remove(localCommit);
                             }
                         }
@@ -425,14 +446,19 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         BitbucketLink commitsLink = remotePullRequest.getLinks().getCommits();
         if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
         {
-            commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref());
+            commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref(), getRequestLimit());
         } else
         {
             // if there is no commits link, fall back to use generated commits url
-            commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "");
+            commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "", getRequestLimit());
         }
 
         return commitsIterator;
+    }
+
+    private int getRequestLimit()
+    {
+        return syncDisabledHelper.isBitbucketFallBack30() ? 30 : 100;
     }
 
     private void linkCommit(Repository domainRepository, RepositoryCommitMapping commitMapping,

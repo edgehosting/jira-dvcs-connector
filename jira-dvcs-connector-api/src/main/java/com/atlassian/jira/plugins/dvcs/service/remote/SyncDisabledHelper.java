@@ -18,6 +18,9 @@ public class SyncDisabledHelper
     private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
     private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
+    private final String BITBUCKET_COMMITS30_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits30.bitbucket.fallback";
+    private final String COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.fallback";
+
     @Resource
     private FeatureManager featureManager;
 
@@ -49,5 +52,15 @@ public class SyncDisabledHelper
     public boolean isSyncDisabled()
     {
         return featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE);
+    }
+
+    public boolean isBitbucketFallBack30()
+    {
+        return featureManager.isEnabled(BITBUCKET_COMMITS30_FALLBACK_FEATURE);
+    }
+
+    public boolean isPullRequestCommitsFallback()
+    {
+        return featureManager.isEnabled(COMMITS_FALLBACK_FEATURE);
     }
 }

@@ -9,9 +9,12 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -31,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 /**
@@ -80,6 +84,9 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
      */
     @Resource
     private MessagingService messagingService;
+
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     /**
      * {@inheritDoc}
@@ -202,9 +209,18 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(localPullRequest
                 .getCommits()));
 
+        final Map<String, RepositoryCommitMapping> commitsIndex = Maps.uniqueIndex(remainingCommitsToDelete, new Function<RepositoryCommitMapping, String>()
+        {
+            @Override
+            public String apply(@Nullable final RepositoryCommitMapping repositoryCommitMapping)
+            {
+                return repositoryCommitMapping.getNode();
+            }
+        });
+
         for (RepositoryCommit remoteCommit : remoteCommits)
         {
-            RepositoryCommitMapping commit = repositoryPullRequestDao.getCommitByNode(repository, remoteCommit.getSha());
+            RepositoryCommitMapping commit = commitsIndex.get(getSha(remoteCommit));
             if (commit == null)
             {
                 Map<String, Object> commitData = new HashMap<String, Object>();
@@ -213,6 +229,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
             } else
             {
+                if (syncDisabledHelper.isPullRequestCommitsFallback())
+                {
+                    remainingCommitsToDelete.clear();
+                    break;
+                }
                 remainingCommitsToDelete.remove(commit);
             }
         }
@@ -364,8 +385,13 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     {
         target.put(RepositoryCommitMapping.RAW_AUTHOR, source.getCommit().getAuthor().getName());
         target.put(RepositoryCommitMapping.MESSAGE, source.getCommit().getMessage());
-        target.put(RepositoryCommitMapping.NODE, source.getSha() != null ? source.getSha() : source.getCommit().getSha());
+        target.put(RepositoryCommitMapping.NODE, getSha(source));
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
+    }
+
+    private String getSha(final RepositoryCommit source)
+    {
+        return source.getSha() != null ? source.getSha() : source.getCommit().getSha();
     }
 
     private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)

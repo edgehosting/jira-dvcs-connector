@@ -80,16 +80,16 @@ public class PullRequestRemoteRestpoint
 
     }
 
-    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String owner, String repoSlug, String localId)
+    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String owner, String repoSlug, String localId, int requestLimit)
     {
         String url = String.format("/repositories/%s/%s/pullrequests/%s/commits", owner, repoSlug, localId);
 
-        return new BitbucketPullRequestCommitIterator(requestor, url);
+        return new BitbucketPullRequestCommitIterator(requestor, url, requestLimit);
     }
 
-    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String urlIncludingApi)
+    public Iterable<BitbucketPullRequestCommit> getPullRequestCommits(String urlIncludingApi, int requestLimit)
     {
-        return new BitbucketPullRequestCommitIterator(requestor, urlIncludingApi);
+        return new BitbucketPullRequestCommitIterator(requestor, urlIncludingApi, requestLimit);
     }
 
     public BitbucketPullRequest getPullRequestDetail(String owner, String repoSlug, String localId)
