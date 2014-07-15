@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -68,9 +67,6 @@ public class RepositoryServiceTest
 
 	@Mock
 	private PluginSettingsFactory settings;
-
-	@Mock
-	private PostponeOndemandPrSyncListener posponePrSyncHelper;
 
 	@Mock
 	private Synchronizer synchroizerMock;

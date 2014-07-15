@@ -13,7 +13,6 @@ import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -64,9 +63,6 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Resource
     private RepositoryPullRequestDao repositoryPullRequestDao;
-
-    @Resource
-    private PostponeOndemandPrSyncListener postponePrSyncHelper;
 
     @Resource
     private SyncAuditLogDao syncAudit;
@@ -162,7 +158,7 @@ public class DefaultSynchronizer implements Synchronizer
                 // first retry all failed messages
                 retryFailedMessages(repo, auditId);
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || syncDisabledHelper.isPullRequestSynchronizationDisabled())
+                if (syncDisabledHelper.isPullRequestSynchronizationDisabled())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }

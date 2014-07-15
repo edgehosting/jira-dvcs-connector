@@ -14,7 +14,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -31,6 +30,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -419,7 +419,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             RepositoryPullRequestMapping request)
     {
         dao.linkCommit(domainRepository, request, commitMapping);
-        commitMapping.save();
     }
 
 
@@ -460,7 +459,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         mapping.setDomainId(repository.getId());
         mapping.setRemoteId(request.getId());
-        mapping.setName(request.getTitle());
+        mapping.setName(ActiveObjectsUtils.stripToLimit(request.getTitle(), 255));
         mapping.setUrl(request.getLinks().getHtml().getHref());
         mapping.setToRepositoryId(repository.getId());
         mapping.setAuthor(request.getAuthor() != null ? request.getAuthor().getUsername() : null);
