@@ -151,7 +151,10 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         // commits
         for (RepositoryCommitMapping commit : repositoryPullRequestMapping.getCommits())
         {
-            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            if (!commit.isMerge())
+            {
+                currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            }
         }
 
         // updates information to reflect current state

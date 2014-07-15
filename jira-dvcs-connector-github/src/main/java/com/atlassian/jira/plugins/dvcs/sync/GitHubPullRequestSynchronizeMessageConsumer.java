@@ -387,6 +387,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryCommitMapping.MESSAGE, source.getCommit().getMessage());
         target.put(RepositoryCommitMapping.NODE, getSha(source));
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
+        target.put(RepositoryCommitMapping.MERGE, source.getParents() != null && source.getParents().size() > 1);
     }
 
     private String getSha(final RepositoryCommit source)

@@ -405,7 +405,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                             RepositoryCommitMapping localCommit = commitsIndex.get(commit.getHash());
                             if (localCommit == null)
                             {
-                                localCommit = saveCommit(repo, commit, null, localPullRequestId);
+                                localCommit = saveCommit(repo, commit);
                                 linkCommit(repo, localCommit, savedPullRequest);
                             } else
                             {
@@ -468,7 +468,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
 
-    private RepositoryCommitMapping saveCommit(Repository domainRepository, BitbucketPullRequestCommit commit, String nextNode, int localPullRequestId)
+    private RepositoryCommitMapping saveCommit(Repository domainRepository, BitbucketPullRequestCommit commit)
     {
         if (commit != null)
         {
@@ -491,6 +491,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryCommitMapping.NODE, commit.getHash());
         ret.put(RepositoryCommitMapping.DATE, commit.getDate());
+        ret.put(RepositoryCommitMapping.MERGE, commit.getParents() != null && commit.getParents().size() > 1);
 
         return ret;
     }
