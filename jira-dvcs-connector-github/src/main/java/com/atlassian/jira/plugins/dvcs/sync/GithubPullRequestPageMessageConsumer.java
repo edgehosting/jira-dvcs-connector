@@ -17,6 +17,7 @@ import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.annotation.Resource;
 
@@ -87,6 +88,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
                 pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);
 
         Iterable<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, Collections.<PullRequest>emptyList());
+        Set<Long> currentlyProccessedPullRequests = new LinkedHashSet<Long>();
 
         for ( PullRequest pullRequest : pullRequests)
         {
@@ -94,20 +96,21 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             {
                 continue;
             }
-
+            currentlyProccessedPullRequests.add(pullRequest.getId());
             if (!gitHubPullRequestProcessor.processPullRequestIfNeeded(repository, pullRequest))
             {
-                break;
+                return;
             }
         }
 
         if (pullRequestsPages.hasNext())
         {
-            fireNextPage(message, payload, pullRequestsPages.getNextPage());
+            currentlyProccessedPullRequests.addAll(processedPullRequests);
+            fireNextPage(message, payload, pullRequestsPages.getNextPage(), currentlyProccessedPullRequests);
         }
     }
 
-    private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload, int nextPage)
+    private void fireNextPage(Message<GitHubPullRequestPageMessage> message, GitHubPullRequestPageMessage payload, int nextPage, Set<Long> proccessedPullRequests)
     {
         GitHubPullRequestPageMessage nextMessage = new GitHubPullRequestPageMessage(
                 payload.getProgress(),
@@ -116,7 +119,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
                 payload.getRepository(),
                 nextPage,
                 payload.getPagelen(),
-                payload.getProcessedPullRequests());
+                proccessedPullRequests);
         messagingService.publish(getAddress(), nextMessage, message.getTags());
     }
 
