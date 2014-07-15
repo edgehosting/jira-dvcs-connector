@@ -69,7 +69,7 @@ public class ChangesetDaoImplTest
     @Test
     public void createOrAssociateShouldReturnTrueForNewChangeset() throws Exception
     {
-        when(activeObjects.find(eq(ChangesetMapping.class), anyString(), anyString(), anyString())).thenReturn(new ChangesetMapping[0]);
+        when(activeObjects.find(eq(ChangesetMapping.class), anyString(), anyString(), anyString(), anyString())).thenReturn(new ChangesetMapping[0]);
 
         boolean isNew = changesetDao.createOrAssociate(changeset, issues);
         assertThat(isNew, equalTo(true));
@@ -81,7 +81,7 @@ public class ChangesetDaoImplTest
         ChangesetMapping mapping = createMapping();
 
         when(mapping.getID()).thenReturn(1);
-        when(activeObjects.find(eq(ChangesetMapping.class), anyString(), anyString(), anyString())).thenReturn(new ChangesetMapping[] { mapping });
+        when(activeObjects.find(eq(ChangesetMapping.class), anyString(), anyString(), anyString(), anyString())).thenReturn(new ChangesetMapping[] { mapping });
 
         boolean isNew = changesetDao.createOrAssociate(changeset, issues);
         assertThat(isNew, equalTo(false));

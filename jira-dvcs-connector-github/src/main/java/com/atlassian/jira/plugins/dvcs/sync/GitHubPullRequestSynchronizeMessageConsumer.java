@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import com.google.common.annotations.VisibleForTesting;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -36,8 +37,9 @@ import javax.annotation.Resource;
 
 /**
  * Message consumer {@link GitHubPullRequestSynchronizeMessage}.
- *
+ * 
  * @author Stanislav Dvorscak
+ * 
  */
 public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsumer<GitHubPullRequestSynchronizeMessage>
 {
@@ -72,7 +74,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Injected {@link GithubClientProvider} dependency.
      */
-    @Resource (name = "githubClientProvider")
+    @Resource(name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
     /**
@@ -102,7 +104,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
                 remotePullRequest.getNumber());
 
-        Map<String, Participant> participantIndex = new HashMap<String, Participant>();
+        Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
         try
         {
@@ -127,9 +129,12 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Creates or updates local version of remote {@link PullRequest}.
-     *
-     * @param repository pull request owner
-     * @param remotePullRequest remote pull request representation
+     * 
+     * @param repository
+     *            pull request owner
+     * @param remotePullRequest
+     *            remote pull request representation
+     * @param localPullRequest
      * @return created/updated local pull request
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
@@ -216,9 +221,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Loads remote {@link PullRequest}.
-     *
-     * @param repository owner of pull request
-     * @param number number of pull request
+     * 
+     * @param repository
+     *            owner of pull request
+     * @param number
+     *            number of pull request
      * @return remote pull request
      */
     private PullRequest getRemotePullRequest(Repository repository, int number)
@@ -237,9 +244,11 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Loads remote commits for provided pull request.
-     *
-     * @param repository pull request owner
-     * @param remotePullRequest remote pull request
+     * 
+     * @param repository
+     *            pull request owner
+     * @param remotePullRequest
+     *            remote pull request
      * @return remote commits of pull request
      */
     private List<RepositoryCommit> getRemotePullRequestCommits(Repository repository, PullRequest remotePullRequest)
@@ -287,7 +296,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
     /**
      * Processes review comments of a Pull Request.
-     *
+     * 
      * @param repository
      * @param remotePullRequest
      * @param localPullRequest
@@ -334,7 +343,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
         target.setDomainId(repository.getId());
         target.setRemoteId((long) source.getNumber());
-        target.setName(source.getTitle());
+        target.setName(ActiveObjectsUtils.stripToLimit(source.getTitle(), 255));
 
         target.setUrl(source.getHtmlUrl());
         target.setToRepositoryId(repository.getId());

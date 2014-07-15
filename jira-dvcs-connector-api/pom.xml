@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.1.18-SNAPSHOT</version>
+        <version>2.1.19-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
@@ -26,12 +26,6 @@
         <dependency>
         	<groupId>com.atlassian.activeobjects</groupId>
         	<artifactId>activeobjects-plugin</artifactId>
-        	<exclusions>
-        		<exclusion>
-        			<groupId>net.java.dev.activeobjects</groupId>
-        			<artifactId>activeobjects</artifactId>
-        		</exclusion>
-        	</exclusions>
         </dependency>
     </dependencies>
     <build>

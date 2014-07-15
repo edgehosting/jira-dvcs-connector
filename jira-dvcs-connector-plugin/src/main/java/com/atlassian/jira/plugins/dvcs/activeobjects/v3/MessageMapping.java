@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.model.Message;
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -43,6 +44,7 @@ public interface MessageMapping extends Entity
      * @return {@link Message#getAddress()}
      */
     @NotNull
+    @Indexed
     String getAddress();
 
     /**

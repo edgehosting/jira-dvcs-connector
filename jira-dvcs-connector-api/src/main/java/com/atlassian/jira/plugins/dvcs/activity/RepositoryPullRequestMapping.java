@@ -3,18 +3,20 @@ package com.atlassian.jira.plugins.dvcs.activity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
 
 @Preload
-@Table ("PULL_REQUEST")
+@Table("PULL_REQUEST")
 public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 {
     String REMOTE_ID = "REMOTE_ID";
     String TO_REPO_ID = "TO_REPOSITORY_ID";
     String NAME = "NAME";
     String URL = "URL";
+
     String AUTHOR = "AUTHOR";
     String SOURCE_REPO = "SOURCE_REPO";
     String SOURCE_BRANCH = "SOURCE_BRANCH";
@@ -29,15 +31,18 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     //
     // getters
     //
-
     /**
+     * Unique per repo on Bitbucket and unique globally on GitHub.
+     *
      * @return remote Id of this pull request
      */
+    @Indexed
     Long getRemoteId();
 
     /**
      * @return local id of destination repository
      */
+    @Indexed
     int getToRepositoryId();
 
     String getName();
@@ -56,7 +61,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     String getAuthor();
 
-    @ManyToMany (reverse = "getRequest", through = "getCommit", value = RepositoryPullRequestToCommitMapping.class)
+    @ManyToMany(reverse = "getRequest", through = "getCommit", value = RepositoryPullRequestToCommitMapping.class)
     RepositoryCommitMapping[] getCommits();
 
     String getSourceRepo();
