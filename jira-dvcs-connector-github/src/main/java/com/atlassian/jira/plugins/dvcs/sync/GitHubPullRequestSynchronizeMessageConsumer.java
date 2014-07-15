@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -341,7 +342,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
 
         target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
-        target.put(RepositoryPullRequestMapping.NAME, source.getTitle());
+        target.put(RepositoryPullRequestMapping.NAME, ActiveObjectsUtils.stripToLimit(source.getTitle(), 255));
 
         target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
         target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());

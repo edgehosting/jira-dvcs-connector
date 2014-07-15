@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -37,6 +38,7 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     /**
      * @return SHA/commit ID/hash ID of the commit.
      */
+    @Indexed
     String getNode();
 
     /**

@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -214,9 +213,6 @@ public class DefaultSynchronizerTest
     
     @Mock
     private ChangesetDao changesetDao;
-
-    @Mock
-    private PostponeOndemandPrSyncListener postponePrSyncHelper;
 
     @Mock
     private org.eclipse.egit.github.core.service.RepositoryService egitRepositoryService;
