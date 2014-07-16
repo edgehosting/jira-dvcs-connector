@@ -33,6 +33,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
@@ -189,12 +190,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
         RepositoryPullRequestMapping localPullRequest = ensurePullRequestPresent(repo, pullRestpoint, info, payload);
 
-        if (isUpdateActivity(info.getActivity()) && !payload.getProcessedPullRequestsLocal().contains(localPullRequest.getID()))
-        {
-            loadPullRequestCommits(repo, pullRestpoint, localPullRequest.getID(), (BitbucketPullRequestUpdateActivity) info.getActivity(),
-                     localPullRequest, info.getPullRequest());
-            payload.getProcessedPullRequestsLocal().add(localPullRequest.getID());
-        }
         return localPullRequest.getID();
     }
 
@@ -246,9 +241,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
         RepositoryPullRequestMapping local = dao.findRequestByRemoteId(repo, remoteId);
 
+        boolean shouldUpdateCommits = false;
+
         // don't have this pull request, let's save it
         if (local == null)
         {
+            shouldUpdateCommits = true;
             local = dao.savePullRequest(repo, toDaoModelPullRequest(remote, repo, commentCount));
         }
 
@@ -258,11 +256,21 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             String sourceBranch = checkNotNull(getBranchName(remote.getSource(), local.getSourceBranch()), "Source branch");
             String dstBranch = checkNotNull(getBranchName(remote.getDestination(), local.getDestinationBranch()), "Destination branch");
 
+            shouldUpdateCommits = !payload.getProcessedPullRequestsLocal().contains(local.getID()) && shouldCommitsBeLoaded(remote, local);
+
             local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(),
                     sourceBranch, dstBranch,
                     resolveBitbucketStatus(remote.getState()),
                     remote.getUpdatedOn(), getRepositoryFullName(remote.getSource().getRepository()), commentCount
             );
+        }
+
+        if (shouldUpdateCommits && isUpdateActivity(info.getActivity()))
+        {
+            loadPullRequestCommits(repo, pullRestpoint, local.getID(), (BitbucketPullRequestUpdateActivity) info.getActivity(),
+                    local, info.getPullRequest());
+            // mark that commits were synchronized for the PR during the current synchronization
+            payload.getProcessedPullRequestsLocal().add(local.getID());
         }
 
         if (participantIndex != null)
@@ -271,6 +279,26 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         }
 
         return local;
+    }
+
+    private boolean shouldCommitsBeLoaded(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return hasStatusChanged(remote, local) || hasSourceChanged(remote, local) || hasDestinationChanged(remote, local);
+    }
+
+    private boolean hasStatusChanged(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !resolveBitbucketStatus(remote.getState()).name().equals(local.getLastStatus());
+    }
+
+    private boolean hasSourceChanged(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getSourceBranch(), getBranchName(remote.getSource(), local.getSourceBranch()))
+                || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getSource().getRepository()));
+    }
+    private boolean hasDestinationChanged(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getDestinationBranch(), getBranchName(remote.getDestination(), local.getDestinationBranch()));
     }
 
     private String checkNotNull(String branch, String object)
@@ -528,8 +556,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)
     {
-        return activity instanceof BitbucketPullRequestUpdateActivity
-                && RepositoryPullRequestMapping.Status.OPEN.name().equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getState());
+        return activity instanceof BitbucketPullRequestUpdateActivity;
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
@@ -122,7 +123,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             // let's return prematurely
             return;
         }
-        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
@@ -145,8 +145,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
     {
+        boolean shouldUpdateCommits = false;
         if (localPullRequest == null)
         {
+            shouldUpdateCommits = true;
             Map<String, Object> activity = new HashMap<String, Object>();
             map(activity, repository, remotePullRequest);
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
@@ -155,6 +157,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
             String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
+
+            shouldUpdateCommits = shouldCommitsBeLoaded(remotePullRequest, localPullRequest);
 
             localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
                     sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
@@ -165,7 +169,32 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         addParticipant(participantIndex, remotePullRequest.getMergedBy(), Participant.ROLE_REVIEWER);
         addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
+        if (shouldUpdateCommits)
+        {
+            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        }
+
         return localPullRequest;
+    }
+
+    private boolean shouldCommitsBeLoaded(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return hasStatusChanged(remote, local) || hasSourceChanged(remote, local) || hasDestinationChanged(remote, local);
+    }
+
+    private boolean hasStatusChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !resolveStatus(remote).name().equals(local.getLastStatus());
+    }
+
+    private boolean hasSourceChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getSourceBranch(), getBranchName(remote.getHead(), local.getSourceBranch()))
+                || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getHead().getRepo()));
+    }
+    private boolean hasDestinationChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getDestinationBranch(), getBranchName(remote.getBase(), local.getDestinationBranch()));
     }
 
     private String checkNotNull(String branch, String object)
