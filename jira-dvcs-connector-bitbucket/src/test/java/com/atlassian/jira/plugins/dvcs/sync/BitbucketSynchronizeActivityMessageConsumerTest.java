@@ -7,12 +7,14 @@ import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLinks;
@@ -22,7 +24,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommitAuthor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestHead;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestPage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestParticipant;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestUpdateActivity;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
@@ -31,8 +32,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Remot
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
+import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -44,12 +45,12 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
+import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.DECLINED;
+import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.MERGED;
+import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -59,16 +60,10 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
-/**
- * Test
- */
 public class BitbucketSynchronizeActivityMessageConsumerTest
 {
     @Mock
@@ -127,6 +122,11 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
 
+    private RepositoryPullRequestMappingMock target;
+    private BitbucketPullRequest source;
+    private static final String AUTHOR = "joe";
+    private static final String USER = "anna";
+
     private class BuilderAnswer implements Answer<Object>
     {
         private boolean cached;
@@ -142,7 +142,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
                     cached = true;
                 }
                 return builderMock;
-            } else
+            }
+            else
             {
                 return cached ? cachedBitbucketRemoteClient : bitbucketRemoteClient;
             }
@@ -180,7 +181,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
         when(pullRequestMapping.getUpdatedOn()).thenReturn(new Date(0L));
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { });
         long remoteId = bitbucketPullRequest.getId();
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
 
@@ -189,7 +190,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(activityPage.getValues()).thenReturn(Lists.newArrayList(activityInfo));
 
         when(activityInfo.getActivity()).thenReturn(activity);
-        when(activity.getState()).thenReturn(RepositoryPullRequestMapping.Status.OPEN.name());
+        when(activity.getState()).thenReturn(PullRequestStatus.OPEN.name());
         Date updatedOnDate = new Date();
         when(activity.getDate()).thenReturn(updatedOnDate);
         when(activity.getUpdatedOn()).thenReturn(updatedOnDate);
@@ -200,7 +201,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(activity.getSource()).thenReturn(source);
 
         when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
-        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class)))
                 .thenReturn(pullRequestMapping);
 
         final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
@@ -237,6 +238,25 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(bitbucketPullRequest.getLinks()).thenReturn(links);
     }
 
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeAuthorForPullRequestOpened()
+    {
+        toDaoModelPullRequest_validateFieldExecutedBy(null, OPEN, AUTHOR, AUTHOR);
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestMerged()
+    {
+        toDaoModelPullRequest_validateFieldExecutedBy(USER, MERGED, USER, AUTHOR);
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestDeclined()
+    {
+        toDaoModelPullRequest_validateFieldExecutedBy(USER, DECLINED, USER, AUTHOR);
+    }
+
     @Test
     public void testSourceBranchDeleted()
     {
@@ -247,7 +267,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), any(Map.class));
     }
 
@@ -258,11 +278,11 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), any(Map.class));
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.Unauthorized_401.class)
+    @Test (expectedExceptions = BitbucketRequestException.Unauthorized_401.class)
     public void testAccessDenied()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.Unauthorized_401());
@@ -271,7 +291,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.NotFound_404.class)
+    @Test (expectedExceptions = BitbucketRequestException.NotFound_404.class)
     public void testNotFound()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.NotFound_404());
@@ -280,7 +300,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.InternalServerError_500.class)
+    @Test (expectedExceptions = BitbucketRequestException.InternalServerError_500.class)
     public void testInternalServerError()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.InternalServerError_500());
@@ -488,4 +508,42 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         return source;
     }
+
+    private void setDataForExecutedByTests()
+    {
+        source = new BitbucketPullRequest();
+        source.setAuthor(createAccount(AUTHOR));
+
+        target = new RepositoryPullRequestMappingMock();
+        when(repositoryPullRequestDao.createPullRequest()).thenReturn(target);
+        when(pullRequestMapping.getSourceBranch()).thenReturn("source-branch");
+        when(pullRequestMapping.getDestinationBranch()).thenReturn("dest-branch");
+        when(repository.getId()).thenReturn(1);
+
+        source.setLinks(new BitbucketLinks());
+        source.getLinks().setHtml(new BitbucketLink());
+        source.getLinks().getHtml().setHref("some-ref");
+    }
+
+    private void toDaoModelPullRequest_validateFieldExecutedBy(String closedBy, PullRequestStatus prStatus,
+            String expectedExecutedBy, String expectedAuthor)
+    {
+        setDataForExecutedByTests();
+
+        source.setClosedBy(createAccount(closedBy));
+        source.setState(prStatus.name());
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(source, repository, pullRequestMapping, 0);
+
+        assertEquals(expectedExecutedBy, prMapping.getExecutedBy());
+        assertEquals(expectedAuthor, prMapping.getAuthor());
+    }
+
+    private BitbucketAccount createAccount(String login)
+    {
+        BitbucketAccount user = new BitbucketAccount();
+        user.setUsername(login);
+        return user;
+    }
+
 }

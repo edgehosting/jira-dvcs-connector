@@ -134,17 +134,19 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, String name, String sourceBranch, String dstBranch,
-                                                              RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo, final int commentCount)
+    public RepositoryPullRequestMapping updatePullRequestInfo(int localId, RepositoryPullRequestMapping pullRequestMapping)
     {
         final RepositoryPullRequestMapping request = findRequestById(localId);
-        request.setName(ActiveObjectsUtils.stripToLimit(name, 255));
-        request.setSourceBranch(sourceBranch);
-        request.setDestinationBranch(dstBranch);
-        request.setLastStatus(status.name());
-        request.setSourceRepo(sourceRepo);
-        request.setUpdatedOn(updatedOn);
-        request.setCommentCount(commentCount);
+        request.setName(ActiveObjectsUtils.stripToLimit(pullRequestMapping.getName(), 255));
+        request.setSourceBranch(pullRequestMapping.getSourceBranch());
+        request.setDestinationBranch(pullRequestMapping.getDestinationBranch());
+        request.setLastStatus(pullRequestMapping.getLastStatus());
+        request.setSourceRepo(pullRequestMapping.getSourceRepo());
+        request.setUpdatedOn(pullRequestMapping.getUpdatedOn());
+        request.setCommentCount(pullRequestMapping.getCommentCount());
+
+        request.setExecutedBy(pullRequestMapping.getExecutedBy());
+
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
         {
             @Override

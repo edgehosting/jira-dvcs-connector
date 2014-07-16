@@ -5,12 +5,14 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
+import com.google.common.annotations.VisibleForTesting;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
@@ -204,7 +206,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 map(commitData, remoteCommit);
                 commit = repositoryPullRequestDao.saveCommit(repository, commitData);
                 repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
-            } else
+            }
+            else
             {
                 remainingCommitsToDelete.remove(commit);
             }
@@ -231,7 +234,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
             return pullRequestService.getPullRequest(RepositoryId.createFromUrl(repository.getRepositoryUrl()), number);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -253,7 +257,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             return pullRequestService.getCommits(RepositoryId.createFromUrl(repository.getRepositoryUrl()), remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -277,7 +282,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             pullRequestComments = issueService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -306,7 +312,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         try
         {
             pullRequestReviewComments = pullRequestService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -325,10 +332,13 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
-    private RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
+    @VisibleForTesting
+    RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
     {
         String sourceBranch = checkNotNull(getBranchName(source.getHead(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
         String dstBranch = checkNotNull(getBranchName(source.getBase(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
+
+        PullRequestStatus prStatus = resolveStatus(source);
 
         RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
         target.setDomainId(repository.getId());
@@ -344,8 +354,18 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.setSourceRepo(getRepositoryFullName(source.getHead()));
         target.setSourceBranch(sourceBranch);
         target.setDestinationBranch(dstBranch);
-        target.setLastStatus(resolveStatus(source).name());
+        target.setLastStatus(prStatus.name());
         target.setCommentCount(source.getComments());
+
+        if (prStatus == PullRequestStatus.OPEN)
+        {
+            target.setExecutedBy(target.getAuthor());
+        }
+        else
+        {
+            // Note: PullRequest.mergedBy will have the user who merged the PR but will miss who closed or reopened.
+            target.setExecutedBy(source.getMergedBy() != null ? source.getMergedBy().getLogin() : null);
+        }
 
         return target;
     }
@@ -358,20 +378,17 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
     }
 
-    private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
+    private PullRequestStatus resolveStatus(PullRequest pullRequest)
     {
-        if ("open".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return RepositoryPullRequestMapping.Status.OPEN;
-        } else if ("closed".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return pullRequest.getMergedAt() != null ? RepositoryPullRequestMapping.Status.MERGED
-                    : RepositoryPullRequestMapping.Status.DECLINED;
-        } else
+        PullRequestStatus githubStatus = PullRequestStatus.fromGithubStatus(pullRequest.getState(), pullRequest.getMergedAt());
+
+        if (githubStatus == null)
         {
             LOGGER.warn("Unable to parse Status of GitHub Pull Request, unknown GH state: " + pullRequest.getState());
-            return RepositoryPullRequestMapping.Status.OPEN;
+            return PullRequestStatus.OPEN;
         }
+
+        return githubStatus;
     }
 
     private String getRepositoryFullName(PullRequestMarker pullRequestMarker)

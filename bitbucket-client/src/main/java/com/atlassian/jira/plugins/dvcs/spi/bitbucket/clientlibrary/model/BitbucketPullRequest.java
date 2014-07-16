@@ -26,6 +26,7 @@ public class BitbucketPullRequest implements Serializable
     private String state;
     private BitbucketAccount user;
     private BitbucketAccount author;
+    private BitbucketAccount closedBy;
     private BitbucketLinks links;
     private BitbucketPullRequestHead source;
     private BitbucketPullRequestHead destination;
@@ -156,5 +157,15 @@ public class BitbucketPullRequest implements Serializable
     public void setAuthor(final BitbucketAccount author)
     {
         this.author = author;
+    }
+
+    public BitbucketAccount getClosedBy()
+    {
+        return closedBy;
+    }
+
+    public void setClosedBy(final BitbucketAccount closedBy)
+    {
+        this.closedBy = closedBy;
     }
 }

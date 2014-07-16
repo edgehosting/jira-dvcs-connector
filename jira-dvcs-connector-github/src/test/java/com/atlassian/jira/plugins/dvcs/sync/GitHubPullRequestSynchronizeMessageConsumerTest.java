@@ -10,11 +10,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
-import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.Comment;
+import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
 import org.eclipse.egit.github.core.Commit;
-import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.CommitUser;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.PullRequest;
@@ -35,22 +32,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -62,6 +52,9 @@ import static org.testng.Assert.assertNull;
  */
 public class GitHubPullRequestSynchronizeMessageConsumerTest
 {
+    @Mock
+    private RepositoryPullRequestDao repositoryPullRequestDao;
+
     @Mock
     private GitHubPullRequestSynchronizeMessage payload;
 
@@ -78,7 +71,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     private Repository repository;
 
     @Mock
-    private RepositoryPullRequestDao repositoryPullRequestDao;
+    private RepositoryPullRequestMapping localPullRequest;
 
     @Mock
     private PullRequestService pullRequestService;
@@ -103,6 +96,12 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
     @Captor
     private ArgumentCaptor<Map<String, Object>> saveCommitCaptor;
+
+    private RepositoryPullRequestMappingMock target;
+    private PullRequest source;
+
+    private static final String AUTHOR = "joe";
+    private static final String USER = "anna";
 
     @BeforeMethod
     private void init() throws IOException
@@ -131,6 +130,67 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         when(repositoryPullRequestDao.savePullRequest(eq(repository), savePullRequestCaptor.capture())).thenReturn(pullRequestMapping);
     }
 
+    private void toDaoModelPullRequest_setup()
+    {
+        source = new PullRequest();
+        source.setUser(createUser(AUTHOR));
+
+        target = new RepositoryPullRequestMappingMock();
+        when(repositoryPullRequestDao.createPullRequest()).thenReturn(target);
+        when(localPullRequest.getSourceBranch()).thenReturn("source-branch");
+        when(localPullRequest.getDestinationBranch()).thenReturn("dest-branch");
+        when(repository.getId()).thenReturn(1);
+    }
+
+    private User createUser(String login)
+    {
+        User user = new User();
+        user.setLogin(login);
+        return user;
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeAuthorForPullRequestOpened()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setState("open");
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertEquals(AUTHOR, prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestMerged()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setMergedBy(createUser(USER));
+        source.setMergedAt(new Date());
+        source.setState("closed");
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertEquals(USER, prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestDeclined()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setMergedBy(null);
+        source.setMergedAt(null);
+        source.setState("closed");
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertNull(prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
     @Test
     public void testSourceBranchDeleted()
     {
@@ -141,7 +201,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), anyMap());
     }
 
@@ -152,7 +212,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), any(Map.class));
     }
 

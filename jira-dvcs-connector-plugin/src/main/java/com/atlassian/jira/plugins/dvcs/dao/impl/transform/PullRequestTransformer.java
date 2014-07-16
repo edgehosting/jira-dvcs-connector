@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import org.slf4j.Logger;
@@ -42,13 +43,14 @@ public class PullRequestTransformer
         pullRequest.setSource(new PullRequestRef(pullRequestMapping.getSourceBranch(), pullRequestMapping.getSourceRepo(), createRepositoryUrl(repository.getOrgHostUrl(), pullRequestMapping.getSourceRepo())));
         pullRequest.setDestination(new PullRequestRef(pullRequestMapping.getDestinationBranch(), createRepositoryLabel(repository), repository.getRepositoryUrl()));
 
-        pullRequest.setStatus(pullRequestMapping.getLastStatus());
+        pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(pullRequestMapping.getLastStatus()));
         pullRequest.setCreatedOn(pullRequestMapping.getCreatedOn());
         pullRequest.setUpdatedOn(pullRequestMapping.getUpdatedOn());
         pullRequest.setAuthor(pullRequestMapping.getAuthor());
         pullRequest.setParticipants(transform(pullRequestMapping.getParticipants()));
         pullRequest.setCommentCount(pullRequestMapping.getCommentCount());
 
+        pullRequest.setExecutedBy(pullRequestMapping.getExecutedBy());
         return pullRequest;
     }
 

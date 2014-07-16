@@ -31,6 +31,13 @@
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-dvcs-connector-api</artifactId>
             <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
@@ -149,7 +156,6 @@
         <dependency>
             <groupId>org.eclipse.mylyn.github</groupId>
             <artifactId>org.eclipse.egit.github.core</artifactId>
-            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
