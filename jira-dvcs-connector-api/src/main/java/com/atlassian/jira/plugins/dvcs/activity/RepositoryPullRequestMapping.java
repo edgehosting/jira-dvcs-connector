@@ -71,6 +71,14 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     int getCommentCount();
 
+    /**
+     * Pull requests can be declined, merged or reopened by some user that is not the author.
+     * In Github/Githube for PR declined and reopened the user will be null because it would be expensive to find out
+     * the actor.
+     *
+     * @return actor who created, merged, declined or reopened the pull request.
+     *
+     */
     String getExecutedBy();
 
     //

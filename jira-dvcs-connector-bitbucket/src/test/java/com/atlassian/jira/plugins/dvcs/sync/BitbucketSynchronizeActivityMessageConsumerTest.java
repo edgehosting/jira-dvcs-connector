@@ -142,7 +142,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
                     cached = true;
                 }
                 return builderMock;
-            } else
+            }
+            else
             {
                 return cached ? cachedBitbucketRemoteClient : bitbucketRemoteClient;
             }
@@ -180,7 +181,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
         when(pullRequestMapping.getUpdatedOn()).thenReturn(new Date(0L));
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { });
         long remoteId = bitbucketPullRequest.getId();
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
 
@@ -256,20 +257,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         toDaoModelPullRequest_validateFieldExecutedBy(USER, DECLINED, USER, AUTHOR);
     }
 
-    public void toDaoModelPullRequest_validateFieldExecutedBy(String closedBy, PullRequestStatus prStatus,
-            String expectedExecutedBy, String expectedAuthor)
-    {
-        setDataForExecutedByTests();
-
-        source.setClosedBy(createAccount(closedBy));
-        source.setState(prStatus.name());
-
-        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(source, repository, pullRequestMapping, 0);
-
-        assertEquals(expectedExecutedBy, prMapping.getExecutedBy());
-        assertEquals(expectedAuthor, prMapping.getAuthor());
-    }
-
     @Test
     public void testSourceBranchDeleted()
     {
@@ -291,11 +278,11 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         testedClass.onReceive(message, payload);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(),  any(RepositoryPullRequestMapping.class));
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), any(Map.class));
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.Unauthorized_401.class)
+    @Test (expectedExceptions = BitbucketRequestException.Unauthorized_401.class)
     public void testAccessDenied()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.Unauthorized_401());
@@ -304,7 +291,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.NotFound_404.class)
+    @Test (expectedExceptions = BitbucketRequestException.NotFound_404.class)
     public void testNotFound()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.NotFound_404());
@@ -313,7 +300,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
     }
 
-    @Test(expectedExceptions = BitbucketRequestException.InternalServerError_500.class)
+    @Test (expectedExceptions = BitbucketRequestException.InternalServerError_500.class)
     public void testInternalServerError()
     {
         when(requestor.get(anyString(), anyMap(), any(ResponseCallback.class))).thenThrow(new BitbucketRequestException.InternalServerError_500());
@@ -538,6 +525,19 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         source.getLinks().getHtml().setHref("some-ref");
     }
 
+    private void toDaoModelPullRequest_validateFieldExecutedBy(String closedBy, PullRequestStatus prStatus,
+            String expectedExecutedBy, String expectedAuthor)
+    {
+        setDataForExecutedByTests();
+
+        source.setClosedBy(createAccount(closedBy));
+        source.setState(prStatus.name());
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(source, repository, pullRequestMapping, 0);
+
+        assertEquals(expectedExecutedBy, prMapping.getExecutedBy());
+        assertEquals(expectedAuthor, prMapping.getAuthor());
+    }
 
     private BitbucketAccount createAccount(String login)
     {

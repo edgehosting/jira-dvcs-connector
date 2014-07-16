@@ -31,8 +31,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
-import com.google.common.annotations.VisibleForTesting;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -49,7 +49,6 @@ import javax.annotation.Resource;
  * Consumer of {@link BitbucketSynchronizeActivityMessage}-s.
  *
  * @author Stanislav Dvorscak
- *
  */
 public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsumer<BitbucketSynchronizeActivityMessage>
 {
@@ -417,7 +416,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             RepositoryPullRequestMapping request)
     {
         dao.linkCommit(domainRepository, request, commitMapping);
-        commitMapping.save();
     }
 
 
@@ -489,8 +487,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
     private boolean isUpdateActivity(BitbucketPullRequestBaseActivity activity)
     {
-        return activity instanceof BitbucketPullRequestUpdateActivity
-                && PullRequestStatus.OPEN.name().equalsIgnoreCase(((BitbucketPullRequestUpdateActivity) activity).getState());
+        if (!(activity instanceof BitbucketPullRequestUpdateActivity))
+        {
+            return false;
+        }
+
+        return PullRequestStatus.fromBitbucketStatus(((BitbucketPullRequestUpdateActivity) activity).getState()) == PullRequestStatus.OPEN;
     }
 
     @Override
