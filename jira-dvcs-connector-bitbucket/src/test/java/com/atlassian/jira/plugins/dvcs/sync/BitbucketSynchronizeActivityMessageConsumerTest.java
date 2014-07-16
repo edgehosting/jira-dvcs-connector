@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -126,6 +127,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
+
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
 
     private class BuilderAnswer implements Answer<Object>
     {
