@@ -256,7 +256,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             String sourceBranch = checkNotNull(getBranchName(remote.getSource(), local.getSourceBranch()), "Source branch");
             String dstBranch = checkNotNull(getBranchName(remote.getDestination(), local.getDestinationBranch()), "Destination branch");
 
-            shouldUpdateCommits = !payload.getProcessedPullRequestsLocal().contains(local.getID()) && shouldCommitsBeLoaded(remote, local);
+            shouldUpdateCommits = !payload.getProcessedPullRequestsLocal().contains(local.getID()) && isUpdateActivity(info.getActivity()) && shouldCommitsBeLoaded(remote, local);
 
             local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(),
                     sourceBranch, dstBranch,
@@ -265,10 +265,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             );
         }
 
-        if (shouldUpdateCommits && isUpdateActivity(info.getActivity()))
+        if (shouldUpdateCommits)
         {
-            loadPullRequestCommits(repo, pullRestpoint, local.getID(), (BitbucketPullRequestUpdateActivity) info.getActivity(),
-                    local, info.getPullRequest());
+            loadPullRequestCommits(repo, pullRestpoint, info, local, remote);
             // mark that commits were synchronized for the PR during the current synchronization
             payload.getProcessedPullRequestsLocal().add(local.getID());
         }
@@ -400,71 +399,63 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 || local.getCommentCount() != commentCount;
     }
 
-    private void loadPullRequestCommits(final Repository repo, final PullRequestRemoteRestpoint pullRestpoint,
-            final int localPullRequestId, final BitbucketPullRequestUpdateActivity activity, final RepositoryPullRequestMapping savedPullRequest, final BitbucketPullRequest remotePullRequest)
+    private void loadPullRequestCommits(final Repository repo, final PullRequestRemoteRestpoint pullRestpoint, final BitbucketPullRequestActivityInfo info,
+            final RepositoryPullRequestMapping savedPullRequest, final BitbucketPullRequest remotePullRequest)
     {
-        if (activity.getSource() != null && activity.getSource().getRepository() != null)
+        final BitbucketPullRequest pullRequest = Objects.firstNonNull(remotePullRequest, info.getPullRequest());
+        final Progress sync = repo.getSync();
+        final Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(savedPullRequest
+                .getCommits()));
+        final Map<String, RepositoryCommitMapping> commitsIndex = Maps.uniqueIndex(remainingCommitsToDelete, new Function<RepositoryCommitMapping, String>()
         {
-            final Progress sync = repo.getSync();
-
-            final Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(savedPullRequest
-                    .getCommits()));
-
-            final Map<String, RepositoryCommitMapping> commitsIndex = Maps.uniqueIndex(remainingCommitsToDelete, new Function<RepositoryCommitMapping, String>()
+            @Override
+            public String apply(@Nullable final RepositoryCommitMapping repositoryCommitMapping)
             {
-                @Override
-                public String apply(@Nullable final RepositoryCommitMapping repositoryCommitMapping)
-                {
-                    return repositoryCommitMapping.getNode();
-                }
-            });
-
-            FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Void>()
-            {
-                @Override
-                public Void call()
-                {
-                    try
-                    {
-                        Iterable<BitbucketPullRequestCommit> commitsIterator = getCommits(repo, remotePullRequest, pullRestpoint);
-
-                        for (BitbucketPullRequestCommit commit : commitsIterator)
-                        {
-                            RepositoryCommitMapping localCommit = commitsIndex.get(commit.getHash());
-                            if (localCommit == null)
-                            {
-                                localCommit = saveCommit(repo, commit);
-                                linkCommit(repo, localCommit, savedPullRequest);
-                            } else
-                            {
-                                if (syncDisabledHelper.isPullRequestCommitsFallback())
-                                {
-                                    remainingCommitsToDelete.clear();
-                                    break;
-                                }
-                                remainingCommitsToDelete.remove(localCommit);
-                            }
-                        }
-                    } catch(BitbucketRequestException.NotFound_404 e)
-                    {
-                        LOGGER.info("There are no commits for pull request", e);
-                    }
-
-                    return null;
-                }
-            });
-
-            // removing deleted commits
-            for (RepositoryCommitMapping commit : remainingCommitsToDelete)
-            {
-                LOGGER.debug("Removing commit {} in pull request {}", commit.getNode(), savedPullRequest.getID());
-                dao.unlinkCommit(repo, savedPullRequest, commit);
-                dao.removeCommit(commit);
+                return repositoryCommitMapping.getNode();
             }
+        });
 
-        } else
+        FlightTimeInterceptor.execute(sync, new FlightTimeInterceptor.Callable<Void>()
         {
-            LOGGER.debug("The source repository is not available for pull request [{}]. Skipping loading commits.", remotePullRequest.getId());
+            @Override
+            public Void call()
+            {
+                try
+                {
+                    Iterable<BitbucketPullRequestCommit> commitsIterator = getCommits(repo, pullRequest, pullRestpoint);
+
+                    for (BitbucketPullRequestCommit commit : commitsIterator)
+                    {
+                        RepositoryCommitMapping localCommit = commitsIndex.get(commit.getHash());
+                        if (localCommit == null)
+                        {
+                            localCommit = saveCommit(repo, commit);
+                            linkCommit(repo, localCommit, savedPullRequest);
+                        } else
+                        {
+                            if (syncDisabledHelper.isPullRequestCommitsFallback())
+                            {
+                                remainingCommitsToDelete.clear();
+                                break;
+                            }
+                            remainingCommitsToDelete.remove(localCommit);
+                        }
+                    }
+                } catch(BitbucketRequestException.NotFound_404 e)
+                {
+                    LOGGER.info("There are no commits for pull request " + pullRequest.getId(), e);
+                }
+
+                return null;
+            }
+        });
+
+        // removing deleted commits
+        for (RepositoryCommitMapping commit : remainingCommitsToDelete)
+        {
+            LOGGER.debug("Removing commit {} in pull request {}", commit.getNode(), savedPullRequest.getID());
+            dao.unlinkCommit(repo, savedPullRequest, commit);
+            dao.removeCommit(commit);
         }
     }
 
