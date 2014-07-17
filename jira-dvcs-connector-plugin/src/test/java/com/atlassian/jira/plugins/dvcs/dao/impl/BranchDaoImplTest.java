@@ -16,14 +16,20 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.*;
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.isSelect;
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereParamsThat;
+import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Listeners(MockitoTestNgListener.class)
-public class BranchDaoImplTest {
+@Listeners (MockitoTestNgListener.class)
+public class BranchDaoImplTest
+{
 
     @Mock
     ActiveObjects activeObjects;
@@ -33,11 +39,14 @@ public class BranchDaoImplTest {
     BranchDaoImpl branchDao;
 
     @Test
-    public void testDeleteSetsRepository() {
+    public void testDeleteSetsRepository()
+    {
 
-        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).then(new Answer<Object>() {
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).then(new Answer<Object>()
+        {
             @Override
-            public Object answer(final InvocationOnMock invocation) throws Throwable {
+            public Object answer(final InvocationOnMock invocation) throws Throwable
+            {
                 return ((TransactionCallback) invocation.getArguments()[0]).doInTransaction();
             }
         });
