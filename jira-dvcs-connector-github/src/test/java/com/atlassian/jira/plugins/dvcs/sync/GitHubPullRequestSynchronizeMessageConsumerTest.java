@@ -10,7 +10,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Commit;
@@ -28,7 +27,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -98,6 +96,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Mock
     private IssueService issueService;
 
+    @Mock
+    private RepositoryPullRequestMapping pullRequestMapping;
+
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
 
@@ -110,6 +111,11 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         MockitoAnnotations.initMocks(this);
         when(pullRequest.getId()).thenReturn(1L);
         when(pullRequest.getUpdatedAt()).thenReturn(new Date());
+        final PullRequestMarker source = mockRef("sourceBranch", "sourceRepo");
+        when(pullRequest.getHead()).thenReturn(source);
+        final PullRequestMarker destination = mockRef("destinationBranch");
+        when(pullRequest.getBase()).thenReturn(destination);
+        when(pullRequest.getState()).thenReturn("open");
 
         when(repository.getOrgName()).thenReturn("org");
         when(repository.getSlug()).thenReturn("repo");
@@ -121,14 +127,19 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         when(gitHubClientProvider.getIssueService(repository)).thenReturn(issueService);
         when(gitHubPullRequestService.getPullRequest(any(IRepositoryIdProvider.class), anyInt())).thenReturn(pullRequest);
 
-        RepositoryPullRequestMapping pullRequestMapping = Mockito.mock(RepositoryPullRequestMapping.class);
         Date updatedOn = pullRequest.getUpdatedAt();
         long remoteId = pullRequest.getId();
         when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOn);
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
+        when(pullRequestMapping.getSourceBranch()).thenReturn("sourceBranch");
+        when(pullRequestMapping.getSourceRepo()).thenReturn("owner/sourceRepo");
+        when(pullRequestMapping.getDestinationBranch()).thenReturn("destinationBranch");
         when(repositoryPullRequestDao.savePullRequest(eq(repository), savePullRequestCaptor.capture())).thenReturn(pullRequestMapping);
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
+        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
+                .thenReturn(pullRequestMapping);
     }
 
     @Test
@@ -139,6 +150,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         when(sourceRef.getRef()).thenReturn(null);
         when(pullRequest.getHead()).thenReturn(sourceRef);
 
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
         testedClass.onReceive(message, payload);
 
         verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
@@ -148,7 +161,10 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testSourceRepositoryDeleted()
     {
-        when(pullRequest.getHead()).thenReturn(null);
+        PullRequestMarker source = mockRef(null, null);
+        when(pullRequest.getHead()).thenReturn(source);
+
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -207,9 +223,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testNoAuthor()
     {
-        mockSourceAndDestination();
-
         when(pullRequest.getUser()).thenReturn(null);
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -219,9 +235,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testEmptyTitle()
     {
-        mockSourceAndDestination();
-
         when(pullRequest.getTitle()).thenReturn("");
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -231,9 +247,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testNullTitle()
     {
-        mockSourceAndDestination();
-
         when(pullRequest.getTitle()).thenReturn(null);
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -243,9 +259,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxTitle()
     {
-        mockSourceAndDestination();
-
         when(pullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -255,7 +271,6 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testNoParticipants() throws IOException
     {
-        mockSourceAndDestination();
         when(issueService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<Comment>emptyList());
         when(gitHubPullRequestService.getComments(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Collections.<CommitComment>emptyList());
 
@@ -273,8 +288,6 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxParticipants() throws IOException
     {
-        mockSourceAndDestination();
-
         List<Comment> comments = new ArrayList<Comment>();
         for (int i = 0; i < 100; i++)
         {
@@ -336,7 +349,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testCommit() throws IOException
     {
-        mockSourceAndDestination();
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
@@ -350,7 +363,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testMaxCommits() throws IOException
     {
-        mockSourceAndDestination();
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         List<RepositoryCommit> repositoryCommits = new ArrayList<RepositoryCommit>();
         for (int i = 0; i < 100; i++)
@@ -374,13 +388,66 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Test
     public void testUpdateCommits() throws IOException
     {
-        mockSourceAndDestination();
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
-        RepositoryPullRequestMapping pullRequestMapping = mock(RepositoryPullRequestMapping.class);
-        when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
-        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
-                .thenReturn(pullRequestMapping);
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        RepositoryCommit repositoryCommit = mockCommit("aaa");
+        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+
+        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+    }
+
+    @Test
+    public void testUpdateCommitNoChange() throws IOException
+    {
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        RepositoryCommit repositoryCommit = mockCommit("aaa");
+        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), anyMap());
+
+        verify(repositoryPullRequestDao, never()).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+        verify(repositoryPullRequestDao, never()).removeCommit(eq(commitMapping));
+    }
+
+    @Test
+    public void testUpdateCommitRetargeted() throws IOException
+    {
+        final PullRequestMarker destination = mockRef("destinationBranch2");
+        when(pullRequest.getBase()).thenReturn(destination);
+
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        RepositoryCommit repositoryCommit = mockCommit("aaa");
+        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+
+        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+    }
+
+    @Test
+    public void testUpdateCommitStatusChanged() throws IOException
+    {
+        when(pullRequest.getState()).thenReturn("closed");
+
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
@@ -409,18 +476,23 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
     private PullRequestMarker mockRef(String branch)
     {
-        PullRequestMarker sourceRef = mock(PullRequestMarker.class);
-        when(sourceRef.getRepo()).thenReturn(mock(org.eclipse.egit.github.core.Repository.class));
-        when(sourceRef.getRef()).thenReturn(branch);
-        return sourceRef;
+        return mockRef(branch, null);
     }
 
-
-    private void mockSourceAndDestination()
+    private PullRequestMarker mockRef(String branchName, String repositoryName)
     {
-        final PullRequestMarker source = mockRef("branch");
-        when(pullRequest.getHead()).thenReturn(source);
-        final PullRequestMarker destination = mockRef("master");
-        when(pullRequest.getBase()).thenReturn(destination);
+        PullRequestMarker ref = mock(PullRequestMarker.class);
+        when(ref.getRef()).thenReturn(branchName);
+        if (repositoryName != null)
+        {
+            org.eclipse.egit.github.core.Repository gitHubRepository = mock(org.eclipse.egit.github.core.Repository.class);
+            when(gitHubRepository.getName()).thenReturn(repositoryName);
+            User owner = mock(User.class);
+            when(owner.getLogin()).thenReturn("owner");
+            when(gitHubRepository.getOwner()).thenReturn(owner);
+            when(ref.getRepo()).thenReturn(gitHubRepository);
+        }
+        return ref;
     }
+
 }

@@ -256,7 +256,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             String sourceBranch = checkNotNull(getBranchName(remote.getSource(), local.getSourceBranch()), "Source branch");
             String dstBranch = checkNotNull(getBranchName(remote.getDestination(), local.getDestinationBranch()), "Destination branch");
 
-            shouldUpdateCommits = !payload.getProcessedPullRequestsLocal().contains(local.getID()) && isUpdateActivity(info.getActivity()) && shouldCommitsBeLoaded(remote, local);
+            shouldUpdateCommits = shouldUpdateCommits || (!payload.getProcessedPullRequestsLocal().contains(local.getID()) && isUpdateActivity(info.getActivity()) && shouldCommitsBeLoaded(remote, local));
 
             local = dao.updatePullRequestInfo(local.getID(), remote.getTitle(),
                     sourceBranch, dstBranch,
