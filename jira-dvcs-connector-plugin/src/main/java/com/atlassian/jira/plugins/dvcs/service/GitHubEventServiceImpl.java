@@ -37,8 +37,6 @@ import javax.annotation.Resource;
  */
 public class GitHubEventServiceImpl implements GitHubEventService
 {
-
-    public static final int MAX_EVENTS = 300;
     /**
      * Injected {@link GitHubEventDAO} dependency.
      */
@@ -101,10 +99,10 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
-        int eventCount = 0;
+        boolean forcePRListSynchronization = false;
         for (final Event event : Iterables.concat(events))
         {
-            eventCount++;
+            forcePRListSynchronization = true;
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
@@ -139,6 +137,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
             if (shouldStop)
             {
+                forcePRListSynchronization = false;
                 break;
             }
             else if (latestEventGitHubId == null)
@@ -153,7 +152,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
             gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, latestEventGitHubId));
         }
 
-        if (eventCount >= MAX_EVENTS && !syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+        if (forcePRListSynchronization && !syncDisabledHelper.isGitHubUsePullRequestListDisabled())
         {
             // there could be other updates, lets fetch them form PR list API
 
