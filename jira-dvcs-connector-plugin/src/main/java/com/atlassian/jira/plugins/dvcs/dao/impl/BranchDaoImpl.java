@@ -133,13 +133,17 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
+                log.debug("deleting branch mapping for branch with name {} and repository with id = [ {} ]", new Object[] { branch.getName(), repositoryId });
+
+                final Object [] params = new Object [] {branch.getName(), repositoryId};
+
                 // delete association issues - branch
                 Query query = Query.select()
                         .from(IssueToBranchMapping.class)
                         .alias(IssueToBranchMapping.class, "mapping")
                         .alias(BranchMapping.class, "branch")
                         .join(BranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
-                        .where("branch." + BranchMapping.NAME + " = ?", branch.getName());
+                        .where("branch." + BranchMapping.NAME + " = ? and branch." + BranchMapping.REPOSITORY_ID + " = ?", params);
 
                 ActiveObjectsUtils.delete(activeObjects, IssueToBranchMapping.class, query);
 
@@ -151,8 +155,6 @@ public class BranchDaoImpl implements BranchDao
                 return null;
             }
         });
-
-
     }
 
     @Override
