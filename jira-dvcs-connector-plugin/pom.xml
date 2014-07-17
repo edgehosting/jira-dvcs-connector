@@ -320,7 +320,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -335,6 +334,7 @@
         <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
+        <skipTests>false</skipTests>
     </properties>
     <profiles>
         <profile>
