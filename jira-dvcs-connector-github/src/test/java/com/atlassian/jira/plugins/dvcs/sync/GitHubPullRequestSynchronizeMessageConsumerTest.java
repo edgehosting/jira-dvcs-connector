@@ -393,8 +393,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
         verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        // TODO uncomment after BBC-763 is merged
-//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
     }
 
     private RepositoryCommit mockCommit(String sha)

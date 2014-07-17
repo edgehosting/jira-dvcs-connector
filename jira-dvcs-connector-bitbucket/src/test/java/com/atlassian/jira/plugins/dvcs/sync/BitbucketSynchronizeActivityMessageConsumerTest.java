@@ -461,9 +461,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        // TODO uncomment after BBC-763 is merged
-//        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
+        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
     }
 
     private BitbucketLinks mockLinks()
