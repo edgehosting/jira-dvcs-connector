@@ -71,18 +71,6 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>1.7</version>
                 </plugin>
-                <plugin>
-                    <!-- explicitly declaring it here as the base pom has the following excludes that
-                         somehow would trigger the integration-test but without starting up jira
-                    <configuration>
-                        <excludes>
-                            <exclude>**/*$*</exclude>
-                        </excludes>
-                    </configuration>
-                    -->
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <!--<version>2.4.3</version>-->
-                </plugin>
                 <!-- remove these when we could run mvn 3 -->
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
@@ -98,36 +86,48 @@
         </pluginManagement>
         <plugins>
             <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-resources-plugin</artifactId>
-			    <executions>
-			       <execution>
-			          <id>copy-license</id>
-			          <phase>process-sources</phase>
-			          <goals>
-			              <goal>copy-resources</goal>
-			          </goals>
-			          <configuration>
-			              <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
-			              <overwrite>true</overwrite>
-			              <resources>
-			                <resource>
-			                        <directory>${user.dir}</directory>
-			                        <includes>
-			                                <include>LICENSE.txt</include>
-			                                <include>NOTICE.txt</include>
-			                                <include>license.txt</include>
-			                                <include>notice.txt</include>
-			                        </includes>
-			                        <filtering>true</filtering>
-			                </resource>
-			            </resources>
-			         </configuration>
-			       </execution>
-			    </executions>
-			</plugin>
+                <!-- explicitly declaring it here as the base pom has the following excludes that
+                     somehow would trigger the integration-test but without starting up jira.
+                     And somehow this has to be in <plugins> instead of <pluginManagement> for it to work.
+                <configuration>
+                    <excludes>
+                        <exclude>**/*$*</exclude>
+                    </excludes>
+                </configuration>
+                -->
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
             <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                   <execution>
+                      <id>copy-license</id>
+                      <phase>process-sources</phase>
+                      <goals>
+                          <goal>copy-resources</goal>
+                      </goals>
+                      <configuration>
+                          <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+                          <overwrite>true</overwrite>
+                          <resources>
+                            <resource>
+                                    <directory>${user.dir}</directory>
+                                    <includes>
+                                            <include>LICENSE.txt</include>
+                                            <include>NOTICE.txt</include>
+                                            <include>license.txt</include>
+                                            <include>notice.txt</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                            </resource>
+                        </resources>
+                     </configuration>
+                   </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
                     <execution>
@@ -288,7 +288,7 @@
             </exclusions>
         </dependency>
     </dependencies>
-	<profiles>
+    <profiles>
         <profile>
             <id>jira52</id>
             <properties>
