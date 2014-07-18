@@ -29,9 +29,9 @@
     </modules>
 
     <scm>
-        <connection>scm:hg:ssh://hg@bitbucket.org/atlassian/jira-bitbucket-connector</connection>
-        <developerConnection>scm:hg:ssh://hg@bitbucket.org/atlassian/jira-bitbucket-connector</developerConnection>
-        <url>https://bitbucket.org/atlassian/jira-bitbucket-connector</url>
+        <connection>scm:git:ssh://git@bitbucket.org/atlassian/jira-dvcs-connector.git</connection>
+        <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/jira-dvcs-connector.git</developerConnection>
+        <url>https://bitbucket.org/atlassian/jira-dvcs-connector</url>
     </scm>
 
     <name>JIRA DVCS Connector Parent POM</name>
@@ -55,6 +55,7 @@
         <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>false</skipTests>
     </properties>
 
     <distributionManagement>
