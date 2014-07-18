@@ -18,6 +18,10 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://jira.atlassian.com/browse/DCON</url>
+    </issueManagement>
 
     <modules>
         <module>bitbucket-client</module>
