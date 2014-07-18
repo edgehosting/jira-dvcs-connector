@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>2.0.9-SNAPSHOT</version>
+    <version>2.0.10-SNAPSHOT</version>
 
     <organization>
         <name>Atlassian</name>
@@ -43,7 +43,7 @@
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
 
-        <ao.version>0.23.1-m1</ao.version>
+        <ao.version>0.23.2</ao.version>
         <streams.version>5.3.14</streams.version>
         <greenhopper.version>6.3.13</greenhopper.version>
         <analytics.version>2.25</analytics.version>
@@ -137,6 +137,18 @@
                 <artifactId>jira-api</artifactId>
                 <version>${jira.compile.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.activeobjects</groupId>
+                <artifactId>activeobjects-plugin</artifactId>
+                <version>${ao.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>net.java.dev.activeobjects</groupId>
+                        <artifactId>activeobjects</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>

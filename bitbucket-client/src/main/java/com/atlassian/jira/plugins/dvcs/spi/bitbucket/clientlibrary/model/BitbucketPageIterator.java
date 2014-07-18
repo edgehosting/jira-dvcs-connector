@@ -49,7 +49,7 @@ public abstract class BitbucketPageIterator<T> implements Iterator<T>, Iterable<
             return;
         }
 
-        requestor.get(url, null, createResponseCallback());
+        currentPage = requestor.get(url, null, createResponseCallback());
     }
 
     @Override
@@ -100,7 +100,6 @@ public abstract class BitbucketPageIterator<T> implements Iterator<T>, Iterable<
 
                 BitbucketPullRequestPage<T> remote = transformFromJson(response);
 
-                BitbucketPageIterator.this.currentPage = remote;
                 return remote;
             }
         };

@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Table;
 
 @Preload
@@ -14,8 +15,10 @@ public interface RepositoryPullRequestIssueKeyMapping extends RepositoryDomainMa
     //
     // getters
     //
+    @Indexed
     int getPullRequestId();
 
+    @Indexed
     String getIssueKey();
 
     //

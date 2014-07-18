@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.activity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Table;
 
 import java.util.Date;
@@ -27,20 +28,24 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String COMMENT_COUNT = "COMMENT_COUNT";
 
     public enum Status {
-        OPEN, DECLINED, MERGED;
+        OPEN, DECLINED, MERGED
     }
 
     //
     // getters
     //
     /**
+     * Unique per repo on Bitbucket and unique globally on GitHub.
+     *
      * @return remote Id of this pull request
      */
+    @Indexed
     Long getRemoteId();
 
     /**
      * @return local id of destination repository
      */
+    @Indexed
     int getToRepositoryId();
 
     String getName();

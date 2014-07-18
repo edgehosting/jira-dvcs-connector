@@ -111,7 +111,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo, final int commentCount)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
-      request.setName(name);
+      request.setName(ActiveObjectsUtils.stripToLimit(name, 255));
       request.setSourceBranch(sourceBranch);
       request.setDestinationBranch(dstBranch);
       request.setLastStatus(status.name());
