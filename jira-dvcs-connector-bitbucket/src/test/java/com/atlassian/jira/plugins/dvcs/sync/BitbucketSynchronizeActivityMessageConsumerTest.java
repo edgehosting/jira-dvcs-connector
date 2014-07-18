@@ -558,8 +558,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "original")));
         verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "bbb")));
 
-        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping1, commitMapping2)));
-        verify(repositoryPullRequestDao, never()).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping1, commitMapping2)));
+        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping2)));
+        verify(repositoryPullRequestDao, never()).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping2)));
     }
 
     private RepositoryCommitMapping mockRepositoryCommitMapping(String node)
