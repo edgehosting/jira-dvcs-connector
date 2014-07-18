@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
+import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import com.google.common.collect.Lists;
@@ -30,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -87,7 +89,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     private GithubClientProvider gitHubClientProvider;
 
     @Mock
-    private org.eclipse.egit.github.core.service.PullRequestService gitHubPullRequestService;
+    private CustomPullRequestService gitHubPullRequestService;
 
     @Mock
     private PullRequest pullRequest;
@@ -97,6 +99,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
     @Mock
     private IssueService issueService;
+
+    @InjectMocks
+    private GitHubPullRequestProcessor gitHubPullRequestProcessor;
 
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
@@ -108,6 +113,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     private void init() throws IOException
     {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(testedClass, "gitHubPullRequestProcessor", gitHubPullRequestProcessor);
+
         when(pullRequest.getId()).thenReturn(1L);
         when(pullRequest.getUpdatedAt()).thenReturn(new Date());
 
@@ -267,7 +274,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         verify(pullRequestService).updatePullRequestParticipants(anyInt(), anyInt(), participantsIndexCaptor.capture());
         assertEquals(participantsIndexCaptor.getValue().size(), 1);
         Participant participant = participantsIndexCaptor.getValue().get("user");
-        assertParticipant(participant,  "user");
+        assertParticipant(participant, "user");
     }
 
     @Test
