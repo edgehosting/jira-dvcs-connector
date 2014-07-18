@@ -42,7 +42,6 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
     }
 
     /**
-     *
      * @return set of pull requests that were processed during synchronization
      */
     public Set<Integer> getProcessedPullRequests()
@@ -56,7 +55,6 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
     }
 
     /**
-     *
      * @return set of pull requests for which commits were updated
      */
     public Set<Integer> getProcessedPullRequestsLocal()

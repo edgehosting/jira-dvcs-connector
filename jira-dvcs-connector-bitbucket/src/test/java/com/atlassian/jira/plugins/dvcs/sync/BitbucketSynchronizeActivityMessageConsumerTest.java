@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
@@ -34,6 +35,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -56,6 +58,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
@@ -130,6 +133,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     @Mock
     private SyncDisabledHelper syncDisabledHelper;
+
+    @Mock
+    private FeatureManager featureManager;
 
     private class BuilderAnswer implements Answer<Object>
     {
@@ -477,8 +483,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     @Test
@@ -491,8 +497,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
         verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), anyMap());
 
-        verify(repositoryPullRequestDao, never()).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao, never()).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), any(Iterable.class));
+        verify(repositoryPullRequestDao, never()).removeCommits(any(Iterable.class));
     }
 
     @Test
@@ -510,8 +516,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     @Test
@@ -528,8 +534,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     private BitbucketLinks mockLinks()

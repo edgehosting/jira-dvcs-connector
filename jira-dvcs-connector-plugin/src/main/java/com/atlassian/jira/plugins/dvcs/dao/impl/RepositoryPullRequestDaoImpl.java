@@ -83,18 +83,29 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
      * {@inheritDoc}
      */
     @Override
-    public void unlinkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit)
+    public void unlinkCommits(Repository domain, RepositoryPullRequestMapping request, Iterable<? extends RepositoryCommitMapping> commits)
     {
+        Iterable<Integer> commitIds = Iterables.transform(commits, new Function<RepositoryCommitMapping, Integer>()
+        {
+            @Override
+            public Integer apply(final RepositoryCommitMapping repositoryCommitMapping)
+            {
+                return repositoryCommitMapping.getID();
+            }
+        });
+
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + RepositoryPullRequestToCommitMapping.COMMIT, "IN", "OR", commitIds);
+
         Query query = Query.select();
         query.where(RepositoryPullRequestToCommitMapping.REQUEST_ID + " = ? AND "
-                + RepositoryPullRequestToCommitMapping.COMMIT + " = ? ", request.getID(), commit.getID());
+                + baseWhereClause, ObjectArrays.concat(request.getID(), Iterables.toArray(commitIds, Object.class)));
         ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestToCommitMapping.class, query);
     }
 
     @Override
-    public void removeCommit(RepositoryCommitMapping commit)
+    public void removeCommits(Iterable<? extends RepositoryCommitMapping> commits)
     {
-        activeObjects.delete(commit);
+        activeObjects.delete(Iterables.toArray(commits, RepositoryCommitMapping.class));
     }
 
     @Override

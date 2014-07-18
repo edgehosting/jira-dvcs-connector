@@ -23,6 +23,7 @@ import org.eclipse.egit.github.core.RequestError;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.IssueService;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -45,6 +46,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -401,8 +403,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     @Test
@@ -418,8 +420,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         testedClass.onReceive(message, payload);
         verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), anyMap());
 
-        verify(repositoryPullRequestDao, never()).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao, never()).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), any(Iterable.class));
+        verify(repositoryPullRequestDao, never()).removeCommits(any(Iterable.class));
     }
 
     @Test
@@ -439,8 +441,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     @Test
@@ -459,8 +461,8 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
     private RepositoryCommit mockCommit(String sha)
