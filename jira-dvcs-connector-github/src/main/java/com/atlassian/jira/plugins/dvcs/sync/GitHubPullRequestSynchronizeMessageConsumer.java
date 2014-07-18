@@ -86,9 +86,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     @Resource
     private MessagingService messagingService;
 
-    @Resource
-    private SyncDisabledHelper syncDisabledHelper;
-
     /**
      * {@inheritDoc}
      */
@@ -258,11 +255,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
                 repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
             } else
             {
-                if (syncDisabledHelper.isPullRequestCommitsFallback())
-                {
-                    remainingCommitsToDelete.clear();
-                    break;
-                }
                 remainingCommitsToDelete.remove(commit);
             }
         }

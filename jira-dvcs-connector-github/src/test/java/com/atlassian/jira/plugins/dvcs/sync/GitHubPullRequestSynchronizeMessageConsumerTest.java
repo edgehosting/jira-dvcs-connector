@@ -25,7 +25,6 @@ import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
-import org.hamcrest.collection.IsMapContaining;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -468,33 +467,6 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
         verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
-    }
-
-    @Test
-    public void testUpdateCommitsFallback() throws IOException
-    {
-        when(syncDisabledHelper.isPullRequestCommitsFallback()).thenReturn(true);
-
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
-
-        RepositoryCommitMapping commitMapping1 = mock(RepositoryCommitMapping.class);
-        when(commitMapping1.getNode()).thenReturn("aaa");
-
-        RepositoryCommitMapping commitMapping2 = mock(RepositoryCommitMapping.class);
-        when(commitMapping2.getNode()).thenReturn("original");
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping1, commitMapping2 });
-
-        RepositoryCommit repositoryCommit1 = mockCommit("bbb");
-        RepositoryCommit repositoryCommit2 = mockCommit("aaa");
-        when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit1, repositoryCommit2));
-
-        testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
-        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "original")));
-        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "bbb")));
-
-        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping1, commitMapping2)));
-        verify(repositoryPullRequestDao, never()).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping1, commitMapping2)));
     }
 
     private RepositoryCommit mockCommit(String sha)
