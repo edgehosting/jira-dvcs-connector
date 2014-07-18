@@ -222,7 +222,6 @@
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
-                <version>${amps.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
@@ -316,7 +315,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -325,20 +323,13 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Workaround for https://ecosystem.atlassian.net/browse/AMPS-1112 -->
-            <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-amps-plugin</artifactId>
-                <version>${amps.version}</version>
-                <extensions>true</extensions>
-            </plugin>
         </plugins>
     </build>
     <properties>
         <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
-        <amps.version>4.2.18</amps.version>
+        <skipTests>false</skipTests>
     </properties>
     <profiles>
         <profile>
@@ -538,16 +529,4 @@
             </build>
         </profile>
     </profiles>
-    <distributionManagement>
-        <repository>
-            <id>atlassian-m2-repository</id>
-            <name>Atlassian Public Repository</name>
-            <url>https://maven.atlassian.com/public</url>
-        </repository>
-        <snapshotRepository>
-            <id>atlassian-m2-snapshot-repository</id>
-            <name>Atlassian Public Snapshot Repository</name>
-            <url>https://maven.atlassian.com/public-snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
