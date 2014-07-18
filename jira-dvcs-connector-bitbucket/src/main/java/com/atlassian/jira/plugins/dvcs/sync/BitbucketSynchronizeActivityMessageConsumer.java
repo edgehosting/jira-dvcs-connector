@@ -34,6 +34,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
@@ -65,7 +66,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public static final String KEY = BitbucketSynchronizeActivityMessage.class.getCanonicalName();
     private static final String REVIEWER_ROLE = "REVIEWER";
     private static final int COMMITS_REQUEST_LIMIT = 100;
-    private final String BITBUCKET_COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.bitbucket.fallback";
+    private static final String BITBUCKET_COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.bitbucket.fallback";
 
     @Resource
     private MessagingService messagingService;
