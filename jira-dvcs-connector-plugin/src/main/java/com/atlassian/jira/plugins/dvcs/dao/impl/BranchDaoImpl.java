@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
@@ -25,6 +15,14 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.ObjectArrays;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BranchDaoImpl implements BranchDao
 {
@@ -133,13 +131,15 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
+                log.debug("deleting branch mapping for branch with name {} and repository with id = [ {} ]", new Object[] { branch.getName(), repositoryId });
+
                 // delete association issues - branch
                 Query query = Query.select()
                         .from(IssueToBranchMapping.class)
                         .alias(IssueToBranchMapping.class, "mapping")
                         .alias(BranchMapping.class, "branch")
                         .join(BranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
-                        .where("branch." + BranchMapping.NAME + " = ?", branch.getName());
+                        .where("branch." + BranchMapping.NAME + " = ? and branch." + BranchMapping.REPOSITORY_ID + " = ?", branch.getName(), repositoryId);
 
                 ActiveObjectsUtils.delete(activeObjects, IssueToBranchMapping.class, query);
 
@@ -151,8 +151,6 @@ public class BranchDaoImpl implements BranchDao
                 return null;
             }
         });
-
-
     }
 
     @Override
