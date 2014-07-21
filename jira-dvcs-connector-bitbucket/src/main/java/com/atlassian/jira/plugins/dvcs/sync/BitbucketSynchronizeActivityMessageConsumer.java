@@ -34,10 +34,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -449,9 +449,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         });
 
         // removing deleted commits
-        LOGGER.debug("Removing commits in pull request {}", savedPullRequest.getID());
-        dao.unlinkCommits(repo, savedPullRequest, remainingCommitsToDelete);
-        dao.removeCommits(remainingCommitsToDelete);
+        if (!CollectionUtils.isEmpty(remainingCommitsToDelete))
+        {
+            LOGGER.debug("Removing commits in pull request {}", savedPullRequest.getID());
+            dao.unlinkCommits(repo, savedPullRequest, remainingCommitsToDelete);
+            dao.removeCommits(remainingCommitsToDelete);
+        }
 }
 
     private Iterable<BitbucketPullRequestCommit> getCommits(Repository repo, BitbucketPullRequest remotePullRequest, PullRequestRemoteRestpoint pullRestpoint)

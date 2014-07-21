@@ -8,7 +8,6 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
-import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessage;
 import org.apache.commons.lang.StringUtils;
@@ -101,9 +100,6 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
 
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
-
-    @Mock
-    private SyncDisabledHelper syncDisabledHelper;
 
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;

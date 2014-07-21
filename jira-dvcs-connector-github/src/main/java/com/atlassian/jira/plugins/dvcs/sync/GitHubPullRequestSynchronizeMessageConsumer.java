@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -259,9 +260,12 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
             }
         }
 
-        LOGGER.debug("Removing commit in pull request {}", localPullRequest.getID());
-        repositoryPullRequestDao.unlinkCommits(repository, localPullRequest, remainingCommitsToDelete);
-        repositoryPullRequestDao.removeCommits(remainingCommitsToDelete);
+        if (!CollectionUtils.isEmpty(remainingCommitsToDelete))
+        {
+            LOGGER.debug("Removing commit in pull request {}", localPullRequest.getID());
+            repositoryPullRequestDao.unlinkCommits(repository, localPullRequest, remainingCommitsToDelete);
+            repositoryPullRequestDao.removeCommits(remainingCommitsToDelete);
+        }
     }
 
     /**

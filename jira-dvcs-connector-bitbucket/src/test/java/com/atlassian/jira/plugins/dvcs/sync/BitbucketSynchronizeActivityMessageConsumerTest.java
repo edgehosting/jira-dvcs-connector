@@ -264,7 +264,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(source.getRepository()).thenReturn(Mockito.mock(BitbucketPullRequestRepository.class));
         when(source.getBranch()).thenReturn(null);
         when(bitbucketPullRequest.getSource()).thenReturn(source);
-
         when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
@@ -280,7 +279,6 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(source.getRepository()).thenReturn(null);
         when(source.getBranch()).thenReturn(null);
         when(bitbucketPullRequest.getSource()).thenReturn(source);
-
         when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
