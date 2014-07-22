@@ -94,10 +94,9 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             }
         });
 
-        final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + RepositoryPullRequestToCommitMapping.COMMIT, "IN", "OR", commitIds);
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator(RepositoryPullRequestToCommitMapping.COMMIT, "IN", "OR", commitIds);
 
-        Query query = Query.select();
-        query.where(RepositoryPullRequestToCommitMapping.REQUEST_ID + " = ? AND "
+        Query query = Query.select().where(RepositoryPullRequestToCommitMapping.REQUEST_ID + " = ? AND "
                 + baseWhereClause, ObjectArrays.concat(request.getID(), Iterables.toArray(commitIds, Object.class)));
         ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestToCommitMapping.class, query);
     }
