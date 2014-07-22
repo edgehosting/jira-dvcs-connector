@@ -14,6 +14,9 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     private String executedBy;
     private String sourceBranch;
     private String destinationBranch;
+    private Date updatedOn;
+    private String name;
+    private RepositoryCommitMapping[] commits = new RepositoryCommitMapping[0];
 
     @Override
     public Long getRemoteId()
@@ -30,7 +33,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public String getName()
     {
-        return null;
+        return name;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public Date getUpdatedOn()
     {
-        return null;
+        return updatedOn;
     }
 
     @Override
@@ -78,7 +81,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public RepositoryCommitMapping[] getCommits()
     {
-        return new RepositoryCommitMapping[0];
+        return commits;
     }
 
     @Override
@@ -120,7 +123,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public void setName(final String name)
     {
-
+        this.name = name;
     }
 
     @Override
@@ -156,7 +159,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public void setUpdatedOn(final Date date)
     {
-
+        this.updatedOn = date;
     }
 
     @Override
@@ -235,5 +238,10 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     public Class getEntityType()
     {
         return RepositoryPullRequestMapping.class;
+    }
+
+    public void setCommits(final RepositoryCommitMapping[] commits)
+    {
+        this.commits = commits;
     }
 }
