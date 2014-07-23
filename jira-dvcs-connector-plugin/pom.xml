@@ -278,6 +278,11 @@
                         </testGroup>
                     </testGroups>
                     <instructions>
+                        <!--
+                            Set the default version range on an import to open ended current version up. Without this, the default
+                            is only to the next major version, which is too aggressive for platform modules.
+                        -->
+                        <_consumer-policy>$(version;==;$(@))</_consumer-policy>
                         <Export-Package>
                             <!--
                                 Explicit declaration of the packages to export externally
@@ -394,7 +399,7 @@
             <id>dev-postgres</id>
             <properties>
                 <!-- Default: Postgres properties values feel free to customize it via 
-					-Dpostgres.xxx=xxx -->
+                    -Dpostgres.xxx=xxx -->
                 <postgres.host>localhost</postgres.host>
                 <postgres.port>5432</postgres.port>
                 <postgres.database>jira</postgres.database>
@@ -440,7 +445,7 @@
             <id>dev-oracle</id>
             <properties>
                 <!-- Default: Oracle properties values feel free to customize it via 
-					-Doracle.xxx=xxx -->
+                    -Doracle.xxx=xxx -->
                 <oracle.host>localhost</oracle.host>
                 <oracle.port>1521</oracle.port>
                 <oracle.database>jira</oracle.database>
@@ -486,7 +491,7 @@
             <id>dev-mssql</id>
             <properties>
                 <!-- Default: MS SQL properties values feel free to customize it via
-					-Dmssql.xxx=xxx -->
+                    -Dmssql.xxx=xxx -->
                 <mssql.host>localhost</mssql.host>
                 <mssql.port>1433</mssql.port>
                 <mssql.database>jira</mssql.database>
