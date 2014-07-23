@@ -25,6 +25,10 @@
         <system>JIRA</system>
         <url>https://jira.atlassian.com/browse/DCON</url>
     </issueManagement>
+    <ciManagement>
+        <system>Bamboo</system>
+        <url>https://jira-bamboo.internal.atlassian.com/browse/DCON</url>
+    </ciManagement>
 
     <modules>
         <module>bitbucket-client</module>
