@@ -30,8 +30,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -44,6 +42,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -139,23 +139,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
 
-        when(pullRequestService.createPullRequest(savePullRequestCaptor.capture())).thenAnswer(new Answer<RepositoryPullRequestMapping>()
-        {
-            @Override
-            public RepositoryPullRequestMapping answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return (RepositoryPullRequestMapping)invocation.getArguments()[0];
-            }
-        });
+        when(pullRequestService.createPullRequest(savePullRequestCaptor.capture())).thenAnswer(returnsFirstArg());
 
-        when(pullRequestService.updatePullRequest(eq(pullRequestMapping.getID()), savePullRequestCaptor.capture())).thenAnswer(new Answer<RepositoryPullRequestMapping>()
-        {
-            @Override
-            public RepositoryPullRequestMapping answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return (RepositoryPullRequestMapping)invocation.getArguments()[1];
-            }
-        });
+        when(pullRequestService.updatePullRequest(eq(pullRequestMapping.getID()), savePullRequestCaptor.capture())).thenAnswer(returnsSecondArg());
 
         target = new RepositoryPullRequestMappingMock();
         when(repositoryPullRequestDao.createPullRequest()).thenReturn(target);

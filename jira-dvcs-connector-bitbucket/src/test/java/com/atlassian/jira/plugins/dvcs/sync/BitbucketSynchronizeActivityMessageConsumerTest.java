@@ -56,6 +56,8 @@ import java.util.Map;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.DECLINED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.MERGED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -241,23 +243,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(payload.getRepository()).thenReturn(repository);
         when(payload.getPageNum()).thenReturn(1);
 
-        when(pullRequestService.createPullRequest(savePullRequestCaptor.capture())).thenAnswer(new Answer<RepositoryPullRequestMapping>()
-        {
-            @Override
-            public RepositoryPullRequestMapping answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return (RepositoryPullRequestMapping)invocation.getArguments()[0];
-            }
-        });
+        when(pullRequestService.createPullRequest(savePullRequestCaptor.capture())).thenAnswer(returnsFirstArg());
 
-        when(pullRequestService.updatePullRequest(eq(pullRequestMapping.getID()), savePullRequestCaptor.capture())).thenAnswer(new Answer<RepositoryPullRequestMapping>()
-        {
-            @Override
-            public RepositoryPullRequestMapping answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return (RepositoryPullRequestMapping)invocation.getArguments()[1];
-            }
-        });
+        when(pullRequestService.updatePullRequest(eq(pullRequestMapping.getID()), savePullRequestCaptor.capture())).thenAnswer(returnsSecondArg());
 
         BitbucketLinks links = mockLinks();
         when(bitbucketPullRequest.getLinks()).thenReturn(links);
@@ -347,6 +335,18 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         testedClass.onReceive(message, payload);
 
         assertNull(savePullRequestCaptor.getValue().getAuthor());
+    }
+
+    @Test
+    public void testEmptyTitle()
+    {
+        when(bitbucketPullRequest.getTitle()).thenReturn("");
+        // to save new value instead update
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        testedClass.onReceive(message, payload);
+
+        assertEquals(savePullRequestCaptor.getValue().getName(), "");
     }
 
     @Test
