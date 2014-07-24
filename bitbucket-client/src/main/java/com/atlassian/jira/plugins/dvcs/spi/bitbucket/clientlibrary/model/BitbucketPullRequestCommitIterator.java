@@ -17,6 +17,11 @@ public class BitbucketPullRequestCommitIterator extends BitbucketPageIterator<Bi
         super(requestor, urlIncludingApi);
     }
 
+    public BitbucketPullRequestCommitIterator(RemoteRequestor requestor, String urlIncludingApi, int requestLimit)
+    {
+        super(requestor, urlIncludingApi, requestLimit);
+    }
+
     @Override
     protected BitbucketPullRequestPage<BitbucketPullRequestCommit> transformFromJson(final RemoteResponse response)
     {

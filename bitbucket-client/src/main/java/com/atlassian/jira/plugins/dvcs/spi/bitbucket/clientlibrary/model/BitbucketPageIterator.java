@@ -10,9 +10,9 @@ import java.util.NoSuchElementException;
 
 public abstract class BitbucketPageIterator<T> implements Iterator<T>, Iterable<T>
 {
+    public static final int REQUEST_LIMIT = 30;
 
     // configs
-	private final int requestLimit = 30;
     private BitbucketPullRequestPage<T> currentPage = null;
 
     // services
@@ -23,6 +23,11 @@ public abstract class BitbucketPageIterator<T> implements Iterator<T>, Iterable<
      * @param urlIncludingApi
      */
     public BitbucketPageIterator(RemoteRequestor requestor, String urlIncludingApi)
+    {
+        this(requestor, urlIncludingApi, REQUEST_LIMIT);
+    }
+
+    public BitbucketPageIterator(RemoteRequestor requestor, String urlIncludingApi, int requestLimit)
     {
         this.requestor = requestor;
         this.urlIncludingApi = urlIncludingApi + "?pagelen=" + requestLimit;

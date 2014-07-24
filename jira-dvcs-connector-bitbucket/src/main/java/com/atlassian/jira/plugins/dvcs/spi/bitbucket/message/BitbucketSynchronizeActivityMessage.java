@@ -42,6 +42,9 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
         this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate, syncAuditId, webHookSync);
     }
 
+    /**
+     * @return set of pull requests that were processed during synchronization
+     */
     public Set<Integer> getProcessedPullRequests()
     {
         return processedPullRequests;
@@ -52,6 +55,9 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
         return pageNum;
     }
 
+    /**
+     * @return set of pull requests for which commits were updated
+     */
     public Set<Integer> getProcessedPullRequestsLocal()
     {
         return processedPullRequestsLocal;
