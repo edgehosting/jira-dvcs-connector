@@ -83,6 +83,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             }
         }
 
+        // sorting by update date to be able to stop for soft sync an by creation date when full sync to avoid page shifting
         PageIterator<PullRequest> pullRequestsPages = softSync ?
                 pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, page, pagelen) :
                 pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);

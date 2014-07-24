@@ -65,7 +65,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
     private Synchronizer synchronizer;
 
     @Resource
-    MessagingService messagingService;
+    private MessagingService messagingService;
 
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
@@ -99,10 +99,9 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
-        boolean forcePRListSynchronization = false;
+        boolean forcePRListSynchronization = true;
         for (final Event event : Iterables.concat(events))
         {
-            forcePRListSynchronization = true;
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
@@ -152,9 +151,9 @@ public class GitHubEventServiceImpl implements GitHubEventService
             gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, latestEventGitHubId));
         }
 
-        if (forcePRListSynchronization && !syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+        if (forcePRListSynchronization && latestEventGitHubId != null && !syncDisabledHelper.isGitHubUsePullRequestListDisabled())
         {
-            // there could be other updates, lets fetch them form PR list API
+            // there could be other updates, lets fetch them from PR list API
 
             Progress progress = synchronizer.getProgress(repository.getId());
 

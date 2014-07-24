@@ -11,7 +11,6 @@ import org.eclipse.egit.github.core.event.Event;
  */
 public interface GitHubEventService
 {
-
     /**
      * Removes all events for provided repository.
      * 
