@@ -19,6 +19,8 @@ public class SyncDisabledHelper
     private static final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
     private static final String DISABLE_GITHUB_USE_PR_LIST_FEATURE = "dvcs.connector.pr-synchronization.github.use-pr-list.disabled";
 
+    private final String COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.fallback";
+
     @Resource
     private FeatureManager featureManager;
 
@@ -55,5 +57,10 @@ public class SyncDisabledHelper
     public boolean isGitHubUsePullRequestListDisabled()
     {
         return featureManager.isEnabled(DISABLE_GITHUB_USE_PR_LIST_FEATURE);
+    }
+
+    public boolean isPullRequestCommitsFallback()
+    {
+        return featureManager.isEnabled(COMMITS_FALLBACK_FEATURE);
     }
 }

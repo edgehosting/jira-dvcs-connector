@@ -98,7 +98,6 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             throw new RuntimeException(e);
         }
-
     }
 
     /**

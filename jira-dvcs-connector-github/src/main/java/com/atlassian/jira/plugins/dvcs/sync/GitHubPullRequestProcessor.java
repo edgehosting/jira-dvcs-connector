@@ -7,6 +7,10 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
+import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitComment;
 import org.eclipse.egit.github.core.PullRequest;
@@ -27,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 /**
@@ -105,7 +110,6 @@ public class GitHubPullRequestProcessor
             // let's return prematurely
             return;
         }
-        updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
@@ -128,8 +132,10 @@ public class GitHubPullRequestProcessor
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
     {
+        boolean shouldUpdateCommits = false;
         if (localPullRequest == null)
         {
+            shouldUpdateCommits = true;
             Map<String, Object> activity = new HashMap<String, Object>();
             map(activity, repository, remotePullRequest);
             localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
@@ -138,6 +144,8 @@ public class GitHubPullRequestProcessor
         {
             String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
             String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
+
+            shouldUpdateCommits = shouldCommitsBeLoaded(remotePullRequest, localPullRequest);
 
             localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
                     sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
@@ -148,7 +156,32 @@ public class GitHubPullRequestProcessor
         addParticipant(participantIndex, remotePullRequest.getMergedBy(), Participant.ROLE_REVIEWER);
         addParticipant(participantIndex, remotePullRequest.getAssignee(), Participant.ROLE_REVIEWER);
 
+        if (shouldUpdateCommits)
+        {
+            updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
+        }
+
         return localPullRequest;
+    }
+
+    private boolean shouldCommitsBeLoaded(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return hasStatusChanged(remote, local) || hasSourceChanged(remote, local) || hasDestinationChanged(remote, local);
+    }
+
+    private boolean hasStatusChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !resolveStatus(remote).name().equals(local.getLastStatus());
+    }
+
+    private boolean hasSourceChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getSourceBranch(), getBranchName(remote.getHead(), local.getSourceBranch()))
+                || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getHead().getRepo()));
+    }
+    private boolean hasDestinationChanged(PullRequest remote, RepositoryPullRequestMapping local)
+    {
+        return !Objects.equal(local.getDestinationBranch(), getBranchName(remote.getBase(), local.getDestinationBranch()));
     }
 
     private String checkNotNull(String branch, String object)
@@ -192,9 +225,18 @@ public class GitHubPullRequestProcessor
         Set<RepositoryCommitMapping> remainingCommitsToDelete = new HashSet<RepositoryCommitMapping>(Arrays.asList(localPullRequest
                 .getCommits()));
 
+        final Map<String, RepositoryCommitMapping> commitsIndex = Maps.uniqueIndex(remainingCommitsToDelete, new Function<RepositoryCommitMapping, String>()
+        {
+            @Override
+            public String apply(@Nullable final RepositoryCommitMapping repositoryCommitMapping)
+            {
+                return repositoryCommitMapping.getNode();
+            }
+        });
+
         for (RepositoryCommit remoteCommit : remoteCommits)
         {
-            RepositoryCommitMapping commit = repositoryPullRequestDao.getCommitByNode(repository, remoteCommit.getSha());
+            RepositoryCommitMapping commit = commitsIndex.get(getSha(remoteCommit));
             if (commit == null)
             {
                 Map<String, Object> commitData = new HashMap<String, Object>();
@@ -207,9 +249,11 @@ public class GitHubPullRequestProcessor
             }
         }
 
-        for (RepositoryCommitMapping commit : remainingCommitsToDelete)
+        if (!CollectionUtils.isEmpty(remainingCommitsToDelete))
         {
-            repositoryPullRequestDao.unlinkCommit(repository, localPullRequest, commit);
+            LOGGER.debug("Removing commit in pull request {}", localPullRequest.getID());
+            repositoryPullRequestDao.unlinkCommits(repository, localPullRequest, remainingCommitsToDelete);
+            repositoryPullRequestDao.removeCommits(remainingCommitsToDelete);
         }
     }
 
@@ -334,8 +378,14 @@ public class GitHubPullRequestProcessor
     {
         target.put(RepositoryCommitMapping.RAW_AUTHOR, source.getCommit().getAuthor().getName());
         target.put(RepositoryCommitMapping.MESSAGE, source.getCommit().getMessage());
-        target.put(RepositoryCommitMapping.NODE, source.getCommit().getSha());
+        target.put(RepositoryCommitMapping.NODE, getSha(source));
         target.put(RepositoryCommitMapping.DATE, source.getCommit().getAuthor().getDate());
+        target.put(RepositoryCommitMapping.MERGE, source.getParents() != null && source.getParents().size() > 1);
+    }
+
+    private String getSha(final RepositoryCommit source)
+    {
+        return source.getSha() != null ? source.getSha() : source.getCommit().getSha();
     }
 
     private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
