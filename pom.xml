@@ -67,7 +67,9 @@
         <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdkLevel>1.7</jdkLevel>
+        <!-- DOG and PRD are still running jdk6
+             leaving it to the base pom -->
+        <!--<jdkLevel>1.7</jdkLevel>-->
         <amps.version>4.2.20</amps.version>
     </properties>
 
