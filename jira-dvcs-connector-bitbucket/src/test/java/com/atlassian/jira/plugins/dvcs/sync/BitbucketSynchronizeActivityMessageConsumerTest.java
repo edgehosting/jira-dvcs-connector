@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
@@ -10,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
@@ -33,6 +35,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
+import org.hamcrest.collection.IsMapContaining;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -55,6 +59,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
@@ -127,6 +132,12 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
 
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
+
+    @Mock
+    private FeatureManager featureManager;
+
     private class BuilderAnswer implements Answer<Object>
     {
         private boolean cached;
@@ -160,8 +171,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(repository.getSlug()).thenReturn("repo");
         when(bitbucketPullRequest.getId()).thenReturn(1L);
         when(bitbucketPullRequest.getUpdatedOn()).thenReturn(new Date());
-        BitbucketPullRequestHead sourceBranch = mockRef("branch");
-        BitbucketPullRequestHead destinationBranch = mockRef("master");
+        BitbucketPullRequestHead sourceBranch = mockRef("sourceBranch", "sourceRepo");
+        BitbucketPullRequestHead destinationBranch = mockRef("destinationBranch");
         when(bitbucketPullRequest.getSource()).thenReturn(sourceBranch);
         when(bitbucketPullRequest.getDestination()).thenReturn(destinationBranch);
 
@@ -183,6 +194,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
         long remoteId = bitbucketPullRequest.getId();
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
+        when(pullRequestMapping.getSourceBranch()).thenReturn("sourceBranch");
+        when(pullRequestMapping.getSourceRepo()).thenReturn("sourceRepo");
+        when(pullRequestMapping.getDestinationBranch()).thenReturn("destinationBranch");
 
         BitbucketPullRequestActivityInfo activityInfo = Mockito.mock(BitbucketPullRequestActivityInfo.class);
 
@@ -203,15 +217,10 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
                 .thenReturn(pullRequestMapping);
 
-        final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
-        when(commit.getHash()).thenReturn("aaa");
-        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
-        BitbucketUser user = mock(BitbucketUser.class);
-        when(commitAuthor.getUser()).thenReturn(user);
+        BitbucketPullRequestCommit remoteCommit = mockBitbucketPullRequestCommit("aaa");
 
-        when(commit.getAuthor()).thenReturn(commitAuthor);
         BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
-        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(commit));
+        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(remoteCommit));
 
         when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
 
@@ -237,6 +246,17 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(bitbucketPullRequest.getLinks()).thenReturn(links);
     }
 
+    private BitbucketPullRequestCommit mockBitbucketPullRequestCommit(String node)
+    {
+        BitbucketPullRequestCommit remoteCommit = mock(BitbucketPullRequestCommit.class);
+        when(remoteCommit.getHash()).thenReturn(node);
+        BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
+        BitbucketUser user = mock(BitbucketUser.class);
+        when(commitAuthor.getUser()).thenReturn(user);
+        when(remoteCommit.getAuthor()).thenReturn(commitAuthor);
+        return remoteCommit;
+    }
+
     @Test
     public void testSourceBranchDeleted()
     {
@@ -244,6 +264,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(source.getRepository()).thenReturn(Mockito.mock(BitbucketPullRequestRepository.class));
         when(source.getBranch()).thenReturn(null);
         when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -254,7 +275,11 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testSourceRepositoryDeleted()
     {
-        when(bitbucketPullRequest.getSource()).thenReturn(null);
+        BitbucketPullRequestHead source = Mockito.mock(BitbucketPullRequestHead.class);
+        when(source.getRepository()).thenReturn(null);
+        when(source.getBranch()).thenReturn(null);
+        when(bitbucketPullRequest.getSource()).thenReturn(source);
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.onReceive(message, payload);
 
@@ -395,6 +420,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testCommit()
     {
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
         final BitbucketPullRequestCommit commit = mock(BitbucketPullRequestCommit.class);
         when(commit.getHash()).thenReturn("aaa");
         BitbucketPullRequestCommitAuthor commitAuthor = mock(BitbucketPullRequestCommitAuthor.class);
@@ -408,14 +435,14 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
 
         testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
-
-        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
     }
 
     @Test
     public void testMaxCommits()
     {
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
         List<BitbucketPullRequestCommit> commits = new ArrayList<BitbucketPullRequestCommit>();
         for (int i = 0; i < 100; i++)
         {
@@ -448,18 +475,96 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     @Test
     public void testUpdateCommit()
     {
-        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
-        when(commitMapping.getNode()).thenReturn("original");
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        RepositoryCommitMapping commitMapping = mockRepositoryCommitMapping("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
 
         testedClass.onReceive(message, payload);
-        verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
 
-        assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+    }
 
-        // TODO uncomment after BBC-763 is merged
-//        verify(repositoryPullRequestDao).unlinkCommit(eq(repository), eq(pullRequestMapping), eq(commitMapping));
-//        verify(repositoryPullRequestDao).removeCommit(eq(commitMapping));
+    @Test
+    public void testUpdateCommitNoChange()
+    {
+        RepositoryCommitMapping commitMapping = mockRepositoryCommitMapping("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), anyMap());
+
+        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), any(Iterable.class));
+        verify(repositoryPullRequestDao, never()).removeCommits(any(Iterable.class));
+    }
+
+    @Test
+    public void testUpdateCommitRetargeted()
+    {
+        BitbucketPullRequestHead destinationBranch = mockRef("destinationBranch2");
+        when(bitbucketPullRequest.getDestination()).thenReturn(destinationBranch);
+
+        RepositoryCommitMapping commitMapping = mockRepositoryCommitMapping("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
+
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+    }
+
+    @Test
+    public void testUpdateCommitStatusChanged()
+    {
+        when(bitbucketPullRequest.getState()).thenReturn("merged");
+
+        RepositoryCommitMapping commitMapping = mockRepositoryCommitMapping("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
+
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+    }
+
+    @Test
+    public void testUpdateCommitFallback()
+    {
+        when(syncDisabledHelper.isPullRequestCommitsFallback()).thenReturn(true);
+
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        BitbucketPullRequestCommit remoteCommit1 =mockBitbucketPullRequestCommit("bbb");
+
+        BitbucketPullRequestCommit remoteCommit2 = mockBitbucketPullRequestCommit("aaa");
+
+        BitbucketPullRequestPage<BitbucketPullRequestCommit> commitsPage = mock(BitbucketPullRequestPage.class);
+        when(commitsPage.getValues()).thenReturn(Lists.newArrayList(remoteCommit1, remoteCommit2));
+
+        when(requestor.get(startsWith("commitsLink"), anyMap(), any(ResponseCallback.class))).thenReturn(commitsPage);
+
+        RepositoryCommitMapping commitMapping1 = mockRepositoryCommitMapping("aaa");
+        RepositoryCommitMapping commitMapping2 = mockRepositoryCommitMapping("original");
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping1, commitMapping2 });
+
+        testedClass.onReceive(message, payload);
+        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "aaa")));
+        verify(repositoryPullRequestDao, never()).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "original")));
+        verify(repositoryPullRequestDao).saveCommit(eq(repository), (Map) argThat(IsMapContaining.hasEntry(RepositoryCommitMapping.NODE, "bbb")));
+
+        verify(repositoryPullRequestDao, never()).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping2)));
+        verify(repositoryPullRequestDao, never()).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping2)));
+    }
+
+    private RepositoryCommitMapping mockRepositoryCommitMapping(String node)
+    {
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn(node);
+        return commitMapping;
     }
 
     private BitbucketLinks mockLinks()
@@ -480,10 +585,17 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     private BitbucketPullRequestHead mockRef(String branchName)
     {
+        return mockRef(branchName, null);
+    }
+
+    private BitbucketPullRequestHead mockRef(String branchName, String repositoryName)
+    {
         BitbucketPullRequestHead source = Mockito.mock(BitbucketPullRequestHead.class);
         BitbucketBranch bitbucketBranch = new BitbucketBranch();
         bitbucketBranch.setName(branchName);
-        when(source.getRepository()).thenReturn(Mockito.mock(BitbucketPullRequestRepository.class));
+        BitbucketPullRequestRepository repository = Mockito.mock(BitbucketPullRequestRepository.class);
+        when(repository.getFullName()).thenReturn(repositoryName);
+        when(source.getRepository()).thenReturn(repository);
         when(source.getBranch()).thenReturn(bitbucketBranch);
 
         return source;

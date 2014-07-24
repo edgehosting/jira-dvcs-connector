@@ -31,7 +31,9 @@ public interface RepositoryPullRequestDao
 
     void linkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit);
 
-    void unlinkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit);
+    void unlinkCommits(Repository domain, RepositoryPullRequestMapping request, Iterable<? extends RepositoryCommitMapping> commits);
+
+    void removeCommits(Iterable<? extends RepositoryCommitMapping> commits);
 
     // R
 
