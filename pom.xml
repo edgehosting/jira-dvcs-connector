@@ -51,7 +51,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>7.0-20140619.151101-wo-issueutilsbean</jira.compile.version>
+        <jira.compile.version>6.4-OD-02-003</jira.compile.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
