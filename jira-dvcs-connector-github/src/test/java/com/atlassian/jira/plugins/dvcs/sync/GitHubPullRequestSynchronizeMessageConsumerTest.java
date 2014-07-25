@@ -100,6 +100,7 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     @Mock
     private IssueService issueService;
 
+    //TODO Some of the tests here should be moved to another Test class for GitHubPullRequestProcessor
     @InjectMocks
     private GitHubPullRequestProcessor gitHubPullRequestProcessor;
 
