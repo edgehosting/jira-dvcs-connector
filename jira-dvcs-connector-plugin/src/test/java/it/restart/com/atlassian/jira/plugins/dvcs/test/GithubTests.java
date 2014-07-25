@@ -145,7 +145,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
 
-        RepositoryDiv createdOrganisation = organisation.findRepository("public-hg-repo");
+        RepositoryDiv createdOrganisation = organisation.findRepository("test-project");
         if (createdOrganisation != null)
         {
             githubServiceConfigUrlPath += createdOrganisation.getRepositoryId() + "/sync";
