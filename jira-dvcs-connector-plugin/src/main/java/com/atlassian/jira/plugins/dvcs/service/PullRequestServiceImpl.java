@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 public class PullRequestServiceImpl implements PullRequestService
 {
     @Resource
-    private RepositoryPullRequestDao pulLRequestDao;
+    private RepositoryPullRequestDao pullRequestDao;
 
     private PullRequestTransformer transformer;
 
@@ -44,13 +44,13 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys));
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys));
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
     }
 
     private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
@@ -79,13 +79,13 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public void updatePullRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
     {
-        PullRequestParticipantMapping[] oldParticipants = pulLRequestDao.getParticipants(pullRequestId);
+        PullRequestParticipantMapping[] oldParticipants = pullRequestDao.getParticipants(pullRequestId);
         for (PullRequestParticipantMapping participantMapping : oldParticipants)
         {
             Participant participant = participantIndex.remove(participantMapping.getUsername());
             if (participant == null)
             {
-                pulLRequestDao.removeParticipant(participantMapping);
+                pullRequestDao.removeParticipant(participantMapping);
             } else
             {
                 boolean markedForSave = false;
@@ -104,7 +104,7 @@ public class PullRequestServiceImpl implements PullRequestService
 
                 if (markedForSave)
                 {
-                    pulLRequestDao.saveParticipant(participantMapping);
+                    pullRequestDao.saveParticipant(participantMapping);
                 }
             }
         }
@@ -112,7 +112,7 @@ public class PullRequestServiceImpl implements PullRequestService
         for (String username : participantIndex.keySet())
         {
             Participant participant = participantIndex.get(username);
-            pulLRequestDao.createParticipant(pullRequestId, repositoryId, participant);
+            pullRequestDao.createParticipant(pullRequestId, repositoryId, participant);
         }
     }
 }
