@@ -193,8 +193,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         if (!servicesConfig.contains(syncUrl))
         {
             // retrying once more
-            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+            GetMethod retriedConfigGET = new GetMethod(bitbucketServiceConfigUrl);
+            servicesConfig = HttpSenderUtils.makeHttpRequest(retriedConfigGET,
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+            assertThat(retriedConfigGET.getStatusCode()).isEqualTo(200);
         }
 
         assertThat(servicesConfig).contains(syncUrl);

@@ -24,6 +24,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -151,23 +152,24 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
             githubServiceConfigUrlPath += createdOrganisation.getRepositoryId() + "/sync";
         }
 
-        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
-        jira.getTester().gotoUrl(hooksURL);
-        String hooksPage = jira.getTester().getDriver().getPageSource();
+        String hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
         if (!hooksPage.contains(githubServiceConfigUrlPath))
         {
             // let's retry once more
-            jira.getTester().gotoUrl(hooksURL);
-            hooksPage = jira.getTester().getDriver().getPageSource();
+            GetMethod retriedConfigGET = new GetMethod(hooksUrl);
+            hooksPage = HttpSenderUtils.makeHttpRequest(retriedConfigGET,
+                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+            assertThat(retriedConfigGET.getStatusCode()).isEqualTo(200);
         }
 
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
         // check that postcommit hook is removed
-        jira.getTester().gotoUrl(hooksURL);
-        hooksPage = jira.getTester().getDriver().getPageSource();
+        hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
 
