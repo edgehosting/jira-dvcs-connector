@@ -133,7 +133,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
     @Test
     @Override
-    public void testPostCommitHookAdded()
+    public void testPostCommitHookAddedAndRemoved()
     {
         // remove existing hooks
         String hooksUrl = "https://api.github.com/repos/jirabitbucketconnector/test-project/hooks";
@@ -158,10 +158,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         if (!hooksPage.contains(githubServiceConfigUrlPath))
         {
             // let's retry once more
-            GetMethod retriedConfigGET = new GetMethod(hooksUrl);
-            hooksPage = HttpSenderUtils.makeHttpRequest(retriedConfigGET,
+            hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-            assertThat(retriedConfigGET.getStatusCode()).isEqualTo(200);
         }
 
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);

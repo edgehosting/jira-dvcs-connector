@@ -168,7 +168,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     @Test
     @Override
-    public void testPostCommitHookAdded()
+    public void testPostCommitHookAddedAndRemoved()
     {
         // remove existing
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
@@ -193,10 +193,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         if (!servicesConfig.contains(syncUrl))
         {
             // retrying once more
-            GetMethod retriedConfigGET = new GetMethod(bitbucketServiceConfigUrl);
-            servicesConfig = HttpSenderUtils.makeHttpRequest(retriedConfigGET,
+            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-            assertThat(retriedConfigGET.getStatusCode()).isEqualTo(200);
         }
 
         assertThat(servicesConfig).contains(syncUrl);
