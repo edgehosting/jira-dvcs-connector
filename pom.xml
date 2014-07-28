@@ -80,6 +80,10 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>1.7</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5</version>
+                </plugin>
                 <!-- remove these when we could run mvn 3 -->
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
