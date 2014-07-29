@@ -381,7 +381,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     }
                     String thisHostAndRest = applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
                     String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                    if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest))
+                    if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest) && !StringUtils.startsWith("http://localhost:", thisHostAndRest))
                     {
                         gitHubRESTClient.deleteHook(repository, hook);
                     }
