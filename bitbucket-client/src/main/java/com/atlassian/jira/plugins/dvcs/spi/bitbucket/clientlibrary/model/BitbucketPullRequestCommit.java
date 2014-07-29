@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -24,7 +25,8 @@ public class BitbucketPullRequestCommit implements Serializable
     private String hash;
     // Used in BitbucketPullRequestBaseActivity.source.commit
     private String sha;
-    
+    private List<BitbucketNewChangeset> parents;
+
     public BitbucketPullRequestCommit()
     {
         super();
@@ -86,6 +88,16 @@ public class BitbucketPullRequestCommit implements Serializable
     public void setSha(final String sha)
     {
         this.sha = sha;
+    }
+
+    public List<BitbucketNewChangeset> getParents()
+    {
+        return parents;
+    }
+
+    public void setParents(final List<BitbucketNewChangeset> parents)
+    {
+        this.parents = parents;
     }
 }
 

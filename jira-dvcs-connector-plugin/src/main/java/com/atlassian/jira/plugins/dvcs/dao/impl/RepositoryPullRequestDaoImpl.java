@@ -83,12 +83,28 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
      * {@inheritDoc}
      */
     @Override
-    public void unlinkCommit(Repository domain, RepositoryPullRequestMapping request, RepositoryCommitMapping commit)
+    public void unlinkCommits(Repository domain, RepositoryPullRequestMapping request, Iterable<? extends RepositoryCommitMapping> commits)
     {
-        Query query = Query.select();
-        query.where(RepositoryPullRequestToCommitMapping.REQUEST_ID + " = ? AND "
-                + RepositoryPullRequestToCommitMapping.COMMIT + " = ? ", request.getID(), commit.getID());
+        Iterable<Integer> commitIds = Iterables.transform(commits, new Function<RepositoryCommitMapping, Integer>()
+        {
+            @Override
+            public Integer apply(final RepositoryCommitMapping repositoryCommitMapping)
+            {
+                return repositoryCommitMapping.getID();
+            }
+        });
+
+        final String baseWhereClause = ActiveObjectsUtils.renderListOperator(RepositoryPullRequestToCommitMapping.COMMIT, "IN", "OR", commitIds);
+
+        Query query = Query.select().where(RepositoryPullRequestToCommitMapping.REQUEST_ID + " = ? AND "
+                + baseWhereClause, ObjectArrays.concat(request.getID(), Iterables.toArray(commitIds, Object.class)));
         ActiveObjectsUtils.delete(activeObjects, RepositoryPullRequestToCommitMapping.class, query);
+    }
+
+    @Override
+    public void removeCommits(Iterable<? extends RepositoryCommitMapping> commits)
+    {
+        activeObjects.delete(Iterables.toArray(commits, RepositoryCommitMapping.class));
     }
 
     @Override
@@ -111,7 +127,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             RepositoryPullRequestMapping.Status status, Date updatedOn, String sourceRepo, final int commentCount)
     {
       final RepositoryPullRequestMapping request = findRequestById(localId);
-      request.setName(name);
+      request.setName(ActiveObjectsUtils.stripToLimit(name, 255));
       request.setSourceBranch(sourceBranch);
       request.setDestinationBranch(dstBranch);
       request.setLastStatus(status.name());
@@ -145,7 +161,10 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         // commits
         for (RepositoryCommitMapping commit : repositoryPullRequestMapping.getCommits())
         {
-            currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            if (!commit.isMerge())
+            {
+                currentIssueKeys.addAll(IssueKeyExtractor.extractIssueKeys(commit.getMessage()));
+            }
         }
 
         // updates information to reflect current state

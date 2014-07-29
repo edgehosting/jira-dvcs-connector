@@ -379,7 +379,6 @@
 
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
-    <component key="postponeOndemandPrSyncListener" class="com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener" />
 
 	 <!-- Messaging -->
     <component key="messageDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageDaoImpl">

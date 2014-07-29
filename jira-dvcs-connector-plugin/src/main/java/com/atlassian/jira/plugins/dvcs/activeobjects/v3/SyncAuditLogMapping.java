@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
@@ -29,6 +30,7 @@ public interface SyncAuditLogMapping extends Entity
     String SYNC_TYPE = "SYNC_TYPE"; // hard, soft
     String TOTAL_ERRORS  = "TOTAL_ERRORS";
 
+    @Indexed
     int getRepoId();
     Date getStartDate();
     Date getEndDate();

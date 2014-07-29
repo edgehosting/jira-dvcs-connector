@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
@@ -17,6 +18,7 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     String MESSAGE = "MESSAGE";
     String DATE = "DATE";
     String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
+    String MERGE = "MERGE";
 
     /**
      * @return Author's full name of the commit, useful if the {@link #getAuthor()} username is not available.
@@ -37,6 +39,7 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     /**
      * @return SHA/commit ID/hash ID of the commit.
      */
+    @Indexed
     String getNode();
 
     /**
@@ -44,6 +47,11 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
      */
     @NotNull
     Date getDate();
+
+    /**
+     * @return <i>true</i> if it is merge commit, <i>false</i> otherwise
+     */
+    boolean isMerge();
 
     /**
      * @return Author's avatar URL, useful if the {@link #getAuthor()} username is not available. Can be null, then internal resolver will
@@ -64,4 +72,5 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
 
     void setAuthorAvatarUrl(String authorAvatarUrl);
 
+    void setMerge(boolean merge);
 }

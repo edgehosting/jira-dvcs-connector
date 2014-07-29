@@ -4,6 +4,7 @@ import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 import net.java.ao.Preload;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
@@ -45,14 +46,17 @@ public interface ChangesetMapping extends Entity
     @OneToMany(reverse = "getChangeset")
     IssueToChangesetMapping[] getIssues();
 
+    @Indexed
     String getNode();
 
     String getRawAuthor();
 
+    @Indexed
     String getAuthor();
 
     Date getDate();
 
+    @Indexed
     String getRawNode();
 
     String getBranch();
@@ -66,6 +70,7 @@ public interface ChangesetMapping extends Entity
 
     String getAuthorEmail();
 
+    @Indexed
     Boolean isSmartcommitAvailable();
 
     /**

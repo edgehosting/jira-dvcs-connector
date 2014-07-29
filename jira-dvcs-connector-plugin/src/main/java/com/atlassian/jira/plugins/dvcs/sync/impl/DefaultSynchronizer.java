@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -56,9 +55,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
     @Resource
     private RepositoryPullRequestDao repositoryPullRequestDao;
-
-    @Resource
-    private PostponeOndemandPrSyncListener postponePrSyncHelper;
 
     @Resource
     private SyncAuditLogDao syncAudit;
@@ -169,7 +165,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime() || syncDisabledHelper.isPullRequestSynchronizationDisabled())
+                if (syncDisabledHelper.isPullRequestSynchronizationDisabled())
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
