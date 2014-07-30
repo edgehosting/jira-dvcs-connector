@@ -11,6 +11,7 @@ import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
@@ -569,6 +570,52 @@ public class GitHubTestResource
 
         }
 
+    }
+
+    /**
+     * Gets pull request
+     *
+     * @param owner of repository
+     * @param repositoryName repository name
+     * @param pullRequestId pull request id
+     * @return pull request
+     */
+    public PullRequest getPullRequest(String owner, String repositoryName, int pullRequestId)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        try
+        {
+            return pullRequestService.getPullRequest(bySlug.repository, pullRequestId);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
+    }
+
+    /**
+     * Gets pull request commits
+     *
+     * @param owner of repository
+     * @param repositoryName repository name
+     * @param pullRequestId pull request id
+     * @return pull request commits
+     */
+    public List<RepositoryCommit> getPullRequestCommits(String owner, String repositoryName, int pullRequestId)
+    {
+        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        try
+        {
+            return pullRequestService.getCommits(bySlug.repository, pullRequestId);
+
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+
+        }
     }
 
     /**

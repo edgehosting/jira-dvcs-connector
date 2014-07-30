@@ -14,6 +14,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -175,12 +176,12 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public void synchronize()
     {
         syncAndWaitForFinish();
-        if (!getSyncErrors().isEmpty())
+        if (StringUtils.isNotBlank(getSyncError()))
         {
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertTrue(getSyncErrors().isEmpty(), "Synchronization failed");
+        Assert.assertFalse(StringUtils.isBlank(getSyncError()), "Synchronization failed");
     }
 
     public void synchronize(final Predicate<Void> finishPredicate)
@@ -194,7 +195,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
                 @Override
                 public Boolean apply(@Nullable final WebDriver input)
                 {
-                    if (getSyncErrors().isEmpty() && finishPredicate.apply(null))
+                    if (StringUtils.isBlank(getSyncError()) && finishPredicate.apply(null))
                     {
                         return true;
                     }
@@ -211,7 +212,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // nop
         }
 
-        Assert.assertTrue(getSyncErrors().isEmpty(), "Synchronization failed");
+        Assert.assertFalse(StringUtils.isBlank(getSyncError()), "Synchronization failed");
     }
 
     private void syncAndWaitForFinish()
@@ -241,11 +242,27 @@ public class AccountsPageAccountRepository extends WebDriverElement
         List<String> errors = new ArrayList<String>();
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
         for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && repository.getSync().getError() != null) {
+            if (repository.getSync() != null && repository.getSync().getError() != null)
+            {
                 errors.add(repository.getSync().getError());
             }
         }
         return errors;
+    }
+
+    private String getSyncError()
+    {
+        return getSyncError(getId());
+    }
+
+    private String getSyncError(int repositoryId)
+    {
+        Repository repository = new RepositoriesLocalRestpoint().getRepository(repositoryId);
+        if (repository.getSync() != null && repository.getSync().getError() != null)
+        {
+            return repository.getSync().getError();
+        }
+        return null;
     }
 
     public void synchronizeWithNoWait()

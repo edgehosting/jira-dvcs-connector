@@ -29,6 +29,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccou
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.RepositoryCommit;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.openqa.selenium.WebDriver;
@@ -478,7 +479,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
     @Test
     public void testUpdatePullRequest()
     {
-        String pullRequestName = issueKey + ": Open PR";
+        final String pullRequestName = issueKey + ": Open PR";
         String[] commitNodeOpen = new String[2];
         String[] commitNodeUpdate = new String[2];
 
@@ -552,12 +553,22 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         gitResource.push(repositoryName, GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, fixBranchName);
 
-        sleep(1000);
-
         gitHubResource.updatePullRequest(pullRequest, GitHubTestResource.USER, repositoryName, pullRequestName + " updated",
                 "Open PR description", "master");
 
         final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment", GitHubTestResource.OTHER_USER);
+
+        // we need to change status to force reloading of commits
+        gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
+
+        waitUntil(GitHubTestResource.USER, repositoryName, pullRequest, new Predicate<PullRequest>()
+        {
+            @Override
+            public boolean apply(@Nullable final PullRequest pullRequest)
+            {
+                return pullRequest != null && (pullRequestName + " updated").equals(pullRequest.getTitle()) && "closed".equals(pullRequest.getState());
+            }
+        }, 30000);
 
         sleep(1000);
 
@@ -573,7 +584,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         actualPullRequest = restPrRepository.getPullRequests().get(0);
 
-        assertPullRequestInfo(actualPullRequest, "OPEN", pullRequestName + " updated", pullRequest.getHtmlUrl());
+        assertPullRequestInfo(actualPullRequest, "DECLINED", pullRequestName + " updated", pullRequest.getHtmlUrl());
 
         assertRestRef(actualPullRequest.getSource(), GitHubTestResource.USER, repositoryName, fixBranchName);
         assertRestRef(actualPullRequest.getDestination(), GitHubTestResource.USER, repositoryName, "master");
@@ -602,6 +613,30 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
                 return restPrCommit.getNode();
             }
         }), Matchers.containsInAnyOrder(ObjectArrays.concat(commitNodeOpen, commitNodeUpdate, String.class)));
+    }
+
+    private void waitUntil(String owner, String repositoryName, PullRequest originalPullRequest, Predicate<PullRequest> predicate, long timeout)
+    {
+        long startTime = System.currentTimeMillis();
+
+        do
+        {
+            try
+            {
+                PullRequest pullRequest = gitHubResource.getPullRequest(owner, repositoryName, originalPullRequest.getNumber());
+                if (predicate.apply(pullRequest))
+                {
+                    break;
+                }
+            }
+            catch (RuntimeException e)
+            {
+
+            }
+
+            sleep(5000);
+        }
+        while ((System.currentTimeMillis() - startTime) < timeout);
     }
 
     /**
