@@ -597,14 +597,16 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
         restCommits = restPullRequest.getCommits();
-        MatcherAssert.assertThat(Lists.transform(restCommits, new Function<RestPrCommit, String>()
+        List<String> commits = Lists.transform(restCommits, new Function<RestPrCommit, String>()
         {
             @Override
             public String apply(@Nullable final RestPrCommit restPrCommit)
             {
                 return restPrCommit.getNode();
             }
-        }), Matchers.containsInAnyOrder(ObjectArrays.concat(expectedCommitNodeOpen, expectedCommitNodeUpdate, String.class)));
+        });
+        commits.remove(stableCommit);
+        MatcherAssert.assertThat(commits, Matchers.containsInAnyOrder(ObjectArrays.concat(expectedCommitNodeOpen, expectedCommitNodeUpdate, String.class)));
         Assert.assertEquals(restPullRequest.getParticipants().size(), 1);
         Assert.assertEquals(restPullRequest.getParticipants().get(0).getUser().getUsername(), FORK_ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getParticipants().get(0).getRole(), "REVIEWER");

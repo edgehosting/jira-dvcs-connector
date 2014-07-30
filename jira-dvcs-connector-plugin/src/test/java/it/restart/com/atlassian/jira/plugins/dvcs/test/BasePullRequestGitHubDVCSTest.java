@@ -508,7 +508,10 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
         account.refresh();
-        account.synchronizeRepository(repositoryName);
+
+        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
+        repository.enable();
+        repository.synchronize(getFinishPredicate());
 
         RestDevResponse<RestPrRepository> response = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(response.getRepositories().size(), 1);
@@ -555,6 +558,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
                 "Open PR description", "master");
 
         final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment", GitHubTestResource.OTHER_USER);
+
+        sleep(1000);
 
         account.synchronizeRepository(repositoryName);
 
