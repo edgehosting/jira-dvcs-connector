@@ -12,7 +12,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,15 +156,7 @@ public class RepositoriesPage implements Page
     public List<OrganizationDiv> getOrganizations()
     {
         List<OrganizationDiv> list = new ArrayList<OrganizationDiv>();
-        List<PageElement> organizationElements = null;
-        try
-        {
-            organizationElements = organizationsElement.findAll(By.className("dvcs-orgdata-container"));
-        } catch (NoSuchElementException e){
-            logger.warn("failed to look up the organizationsElement from page, will try again before failing");
-            organizationElements = organizationsElement.findAll(By.className("dvcs-orgdata-container"));
-        }
-        for (PageElement orgContainer : organizationElements)
+        for (PageElement orgContainer : organizationsElement.findAll(By.className("dvcs-orgdata-container")))
         {
             Poller.waitUntilTrue(orgContainer.find(By.className("dvcs-org-container")).timed().isVisible());
             list.add(pageBinder.bind(OrganizationDiv.class, orgContainer));
