@@ -181,7 +181,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertFalse(StringUtils.isBlank(getSyncError()), "Synchronization failed");
+        Assert.assertTrue(StringUtils.isBlank(getSyncError()), "Synchronization failed");
     }
 
     public void synchronize(final Predicate<Void> finishPredicate)
@@ -212,7 +212,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // nop
         }
 
-        Assert.assertFalse(StringUtils.isBlank(getSyncError()), "Synchronization failed");
+        Assert.assertTrue(StringUtils.isBlank(getSyncError()), "Synchronization failed");
     }
 
     private void syncAndWaitForFinish()
