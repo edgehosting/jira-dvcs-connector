@@ -66,7 +66,13 @@ public class PullRequestGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
         gitHubClient2.setCredentials(GitHubTestResource.OTHER_USER, GitHubTestResource.OTHER_USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.OTHER_USER, gitHubClient2);
     }
-    
+
+    @Override
+    protected String getGitHubUrl()
+    {
+        return GitHubTestResource.URL;
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -54,7 +54,6 @@ public abstract class AbstractGitHubRESTClientImpl
         ClientConfig clientConfig = new DefaultClientConfig();
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         client = Client.create(clientConfig);
-
     }
 
     /**

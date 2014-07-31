@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestRef;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestUser;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.GitHubEventsChangeTracker;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Function;
@@ -29,7 +30,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccou
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.RepositoryCommit;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.openqa.selenium.WebDriver;
@@ -134,7 +134,12 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
      * @param gitHubTestResource
      */
     protected abstract void setupGitHubResource(GitHubTestResource gitHubTestResource);
-    
+
+    /**
+     * @return GitHub url
+     */
+    protected abstract String getGitHubUrl();
+
     /**
      * @return Type of GitHub account, which is tested.
      */
@@ -514,6 +519,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         repository.enable();
         repository.synchronize(getFinishPredicate());
 
+        final GitHubEventsChangeTracker gitHubEventsChangeTracker = new GitHubEventsChangeTracker(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, repositoryName, getGitHubUrl());
+
         RestDevResponse<RestPrRepository> response = pullRequestLocalRestpoint.getPullRequest(issueKey);
         Assert.assertEquals(response.getRepositories().size(), 1);
 
@@ -558,19 +565,12 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment", GitHubTestResource.OTHER_USER);
 
+        gitHubEventsChangeTracker.markState();
+
         // we need to change status to force reloading of commits
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
-        waitUntil(GitHubTestResource.USER, repositoryName, pullRequest, new Predicate<PullRequest>()
-        {
-            @Override
-            public boolean apply(@Nullable final PullRequest pullRequest)
-            {
-                return pullRequest != null && (pullRequestName + " updated").equals(pullRequest.getTitle()) && "closed".equals(pullRequest.getState());
-            }
-        }, 30000);
-
-        sleep(1000);
+        waitUntilModified(gitHubEventsChangeTracker, 30000);
 
         account.synchronizeRepository(repositoryName);
 
@@ -615,18 +615,18 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         }), Matchers.containsInAnyOrder(ObjectArrays.concat(commitNodeOpen, commitNodeUpdate, String.class)));
     }
 
-    private void waitUntil(String owner, String repositoryName, PullRequest originalPullRequest, Predicate<PullRequest> predicate, long timeout)
+    private void waitUntilModified(GitHubEventsChangeTracker gitHubEventsChangeTracker, long timeout)
     {
         long startTime = System.currentTimeMillis();
+        long sleepTime = timeout / 5;
 
         do
         {
             try
             {
-                PullRequest pullRequest = gitHubResource.getPullRequest(owner, repositoryName, originalPullRequest.getNumber());
-                if (predicate.apply(pullRequest))
+                if (gitHubEventsChangeTracker.isModified())
                 {
-                    break;
+                    return;
                 }
             }
             catch (RuntimeException e)
@@ -634,7 +634,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
             }
 
-            sleep(5000);
+            sleep(sleepTime);
         }
         while ((System.currentTimeMillis() - startTime) < timeout);
     }
@@ -702,19 +702,30 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         account.refresh();
         account.synchronizeRepository(repositoryName);
 
+        final GitHubEventsChangeTracker gitHubEventsChangeTracker = new GitHubEventsChangeTracker(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD, repositoryName, getGitHubUrl());
+
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch1,
                 "Open PR description", branch1, "master");
+
+        waitUntilModified(gitHubEventsChangeTracker, 5000);
 
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch2,
                 "Open PR description", branch2, "master");
 
+        waitUntilModified(gitHubEventsChangeTracker, 5000);
+
         PullRequest pullRequest3 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch3,
                 "Open PR description", branch3, "master");
 
+        waitUntilModified(gitHubEventsChangeTracker, 5000);
+
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest2, null);
+
+        waitUntilModified(gitHubEventsChangeTracker, 5000);
+
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest3);
 
-        sleep(5000);
+        waitUntilModified(gitHubEventsChangeTracker, 30000);
 
         account.synchronizeRepository(repositoryName);
 

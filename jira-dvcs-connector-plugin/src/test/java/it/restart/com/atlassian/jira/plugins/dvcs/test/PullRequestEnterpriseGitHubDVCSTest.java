@@ -74,7 +74,13 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
         gitHubClient2.setCredentials(GitHubTestResource.OTHER_USER, GitHubTestResource.OTHER_USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.OTHER_USER, gitHubClient2);
     }
-    
+
+    @Override
+    protected String getGitHubUrl()
+    {
+        return GIT_HUB_BASE_URL;
+    }
+
     /**
      * {@inheritDoc}
      */
