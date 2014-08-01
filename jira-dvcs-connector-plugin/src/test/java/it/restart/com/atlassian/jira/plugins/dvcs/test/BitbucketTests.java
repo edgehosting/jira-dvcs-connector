@@ -169,8 +169,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
         HttpSenderUtils.removeJsonElementsUsingIDs(bitbucketServiceConfigUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
-        // add organization
-        OrganizationDiv organisation = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
         String baseUrl = jira.getProductInstance().getBaseUrl();
@@ -194,8 +194,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         assertThat(servicesConfig).contains(syncUrl);
 
         // delete repository
-
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
 
         // check that postcommit hook is removed
@@ -208,8 +206,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testActivityPresentedForQA5()
     {
-        // add organization
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // Activity streams gadget expected at dashboard page!
         DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
@@ -238,7 +236,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         page.checkIssueActivityPresentedForQA5();
 
         // delete repository
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
 
         page = jira.visit(DashboardActivityStreamsPage.class);
