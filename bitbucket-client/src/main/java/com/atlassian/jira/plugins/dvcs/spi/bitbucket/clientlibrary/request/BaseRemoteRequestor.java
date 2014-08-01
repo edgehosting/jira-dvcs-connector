@@ -259,9 +259,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
             return callback.onResponse(response);
 
-        } catch (BitbucketRequestException e)
-        {
-            throw e; // Unauthorized or NotFound exceptions will be rethrown
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
@@ -297,9 +294,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
             return callback.onResponse(response);
 
-        } catch (BitbucketRequestException e)
-        {
-            throw e; // Unauthorized or NotFound exceptions will be rethrown
         } catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);

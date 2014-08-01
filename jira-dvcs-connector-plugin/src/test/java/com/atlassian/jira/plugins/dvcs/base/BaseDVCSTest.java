@@ -9,7 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
 /**
- * Represents base class for all tests, which need AspectJ weaving.
+ * Represents base class for all tests
  * 
  * @author Stanislav Dvorscak
  * 
