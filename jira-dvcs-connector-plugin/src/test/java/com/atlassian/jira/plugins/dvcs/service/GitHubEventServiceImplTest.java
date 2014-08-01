@@ -39,6 +39,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -190,6 +191,42 @@ public class GitHubEventServiceImplTest
         verify(events, times(10)).next();
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
         verify(messagingService).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
+    }
+
+    @Test
+    public void testForcePRListSynchronization_withDarkFeature()
+    {
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(true);
+
+        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
+        List<Event> allEvents = new ArrayList<Event>();
+        for (int i = 1; i <= 300; i++)
+        {
+            allEvents.add(mockEvent(i + "", i));
+        }
+        List<List<Event>> eventPages = Lists.partition(Lists.reverse(allEvents), 30);
+        Iterator<List<Event>> eventPagesIterator = eventPages.iterator();
+
+        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(300));
+        when(savePointEvent.getCreatedAt()).thenReturn(new Date(0));
+        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("300"))).thenReturn(newSavePointEvent);
+        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("0"))).thenReturn(savePointEvent);
+
+        when(events.iterator()).thenReturn(events);
+        Boolean[] hasNextValues = new Boolean[eventPages.size()];
+        for (int i = 0; i < eventPages.size() - 1 ; i++)
+        {
+            hasNextValues[i] = true;
+        }
+        hasNextValues[eventPages.size() - 1] = false;
+
+        when(events.hasNext()).thenReturn(true, hasNextValues);
+        when(events.next()).thenReturn(eventPagesIterator.next(), Iterators.toArray(eventPagesIterator, List.class));
+
+        gitHubEventService.synchronize(repository, true, new String[]{});
+        verify(events, times(10)).next();
+        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
+        verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
     }
 
     private Event mockEvent(String id, long date)
