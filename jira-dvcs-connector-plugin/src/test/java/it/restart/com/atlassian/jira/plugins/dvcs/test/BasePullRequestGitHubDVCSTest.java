@@ -1194,6 +1194,38 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         assertRestUser(actualPullRequest.getParticipants().get(0).getUser(), GitHubTestResource.USER, GitHubTestResource.NAME);
     }
 
+    /**
+     * Tests "Fullsync Pull Request" with many GitHub events
+     */
+    @Test
+    public void testFullSyncManyGitHubEvents()
+    {
+        String fullSyncTestRepository = "repo1";
+        String  fullSyncTestIssueKey = "TST-1";
+
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), GitHubTestResource.USER);
+        account.fullSynchronizeRepository(fullSyncTestRepository);
+
+        RestDevResponse<RestPrRepository> response = pullRequestLocalRestpoint.getPullRequest(fullSyncTestIssueKey);
+        Assert.assertEquals(response.getRepositories().size(), 0, "If BBC-828 has been merged, update the assertion");
+//TODO change to this when BBC-828 is merged
+//        Assert.assertEquals(response.getRepositories().size(), 1);
+//        RestPrRepository restPrRepository = response.getRepositories().get(0);
+//        Assert.assertEquals(restPrRepository.getSlug(), fullSyncTestRepository);
+//        Assert.assertEquals(restPrRepository.getPullRequests().size(), 2);
+//        List<RestPullRequest> pullRequests = restPrRepository.getPullRequests();
+//        MatcherAssert.assertThat(Lists.transform(pullRequests, new Function<RestPullRequest, String>()
+//        {
+//            @Override
+//            public String apply(final RestPullRequest pullRequest)
+//            {
+//                return pullRequest.getTitle();
+//            }
+//        }), Matchers.containsInAnyOrder("TST-1 PR","TST-1 PR 2"));
+    }
+
+
     private void assertPullRequest(final String owner, final String user, final String userName, final String repositoryName, final PullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
     {
         assertPullRequestInfo(restPullRequest, status.toString(), pullRequestTitle, pullRequest.getHtmlUrl());
