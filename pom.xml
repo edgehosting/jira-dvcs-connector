@@ -39,7 +39,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.2.6</jira.compile.version>
+        <jira.compile.version>6.2.7</jira.compile.version>
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
 
