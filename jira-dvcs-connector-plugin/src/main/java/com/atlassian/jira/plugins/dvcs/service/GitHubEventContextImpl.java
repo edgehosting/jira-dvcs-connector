@@ -54,4 +54,9 @@ public class GitHubEventContextImpl implements GitHubEventContext
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),
                 message, synchronizationTags);
     }
+
+    public Set<Long> getProcessedPullRequests()
+    {
+        return processedPullRequests;
+    }
 }

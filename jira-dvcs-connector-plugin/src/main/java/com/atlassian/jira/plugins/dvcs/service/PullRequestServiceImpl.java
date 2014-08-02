@@ -14,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * Implementation of {@link PullRequestService}
@@ -22,29 +24,33 @@ import java.util.Map;
  */
 public class PullRequestServiceImpl implements PullRequestService
 {
-    private final RepositoryPullRequestDao pulLRequestDao;
+    @Resource
+    private RepositoryPullRequestDao pullRequestDao;
 
-    private final PullRequestTransformer transformer;
+    private PullRequestTransformer transformer;
 
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    public PullRequestServiceImpl(final RepositoryPullRequestDao pulLRequestDao, final RepositoryService repositoryService, final DvcsCommunicatorProvider dvcsCommunicatorProvider)
+    @Resource
+    private RepositoryService repositoryService;
+
+    @PostConstruct
+    public void init()
     {
-        this.pulLRequestDao = pulLRequestDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
         transformer = new PullRequestTransformer(repositoryService);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys));
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys));
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pulLRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
+        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
     }
 
     private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
@@ -73,13 +79,13 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public void updatePullRequestParticipants(final int pullRequestId, final int repositoryId, final Map<String, Participant> participantIndex)
     {
-        PullRequestParticipantMapping[] oldParticipants = pulLRequestDao.getParticipants(pullRequestId);
+        PullRequestParticipantMapping[] oldParticipants = pullRequestDao.getParticipants(pullRequestId);
         for (PullRequestParticipantMapping participantMapping : oldParticipants)
         {
             Participant participant = participantIndex.remove(participantMapping.getUsername());
             if (participant == null)
             {
-                pulLRequestDao.removeParticipant(participantMapping);
+                pullRequestDao.removeParticipant(participantMapping);
             } else
             {
                 boolean markedForSave = false;
@@ -98,7 +104,7 @@ public class PullRequestServiceImpl implements PullRequestService
 
                 if (markedForSave)
                 {
-                    pulLRequestDao.saveParticipant(participantMapping);
+                    pullRequestDao.saveParticipant(participantMapping);
                 }
             }
         }
@@ -106,7 +112,7 @@ public class PullRequestServiceImpl implements PullRequestService
         for (String username : participantIndex.keySet())
         {
             Participant participant = participantIndex.get(username);
-            pulLRequestDao.createParticipant(pullRequestId, repositoryId, participant);
+            pullRequestDao.createParticipant(pullRequestId, repositoryId, participant);
         }
     }
 }

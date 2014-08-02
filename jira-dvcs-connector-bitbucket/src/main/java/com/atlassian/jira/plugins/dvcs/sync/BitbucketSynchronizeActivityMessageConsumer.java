@@ -66,7 +66,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public static final String KEY = BitbucketSynchronizeActivityMessage.class.getCanonicalName();
     private static final String REVIEWER_ROLE = "REVIEWER";
     private static final int COMMITS_REQUEST_LIMIT = 100;
-    private static final String BITBUCKET_COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.bitbucket.fallback";
+    static final String BITBUCKET_COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.bitbucket.fallback";
 
     @Resource
     private MessagingService messagingService;
