@@ -13,7 +13,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageM
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.PageIterator;
@@ -129,6 +128,7 @@ public class GitHubEventServiceImplTest
         when(events.hasNext()).thenReturn(true, true, false);
         Collection<Event> firstPage = Lists.newArrayList(event1, event2, mockEvent("2",2));
         Collection<Event> secondPage = Lists.newArrayList(mockEvent("1", 1), mockEvent("0", 0));
+        //noinspection unchecked
         when(events.next()).thenReturn(firstPage, secondPage);
 
         gitHubEventService.synchronize(repository, true, new String[]{});
@@ -152,6 +152,7 @@ public class GitHubEventServiceImplTest
         Collection<Event> firstPage = Lists.newArrayList(event1, event2);
         Collection<Event> secondPage = Lists.newArrayList(mockEvent("2", 2), mockEvent("1", 1));
         Collection<Event> thirdPage = Lists.newArrayList(mockEvent("0", 0));
+        //noinspection unchecked
         when(events.next()).thenReturn(firstPage, secondPage, thirdPage);
 
         gitHubEventService.synchronize(repository, true, new String[]{});
@@ -162,30 +163,7 @@ public class GitHubEventServiceImplTest
     @Test
     public void testForcePRListSynchronization()
     {
-        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
-        List<Event> allEvents = new ArrayList<Event>();
-        for (int i = 1; i <= 300; i++)
-        {
-            allEvents.add(mockEvent(i + "", i));
-        }
-        List<List<Event>> eventPages = Lists.partition(Lists.reverse(allEvents), 30);
-        Iterator<List<Event>> eventPagesIterator = eventPages.iterator();
-
-        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(300));
-        when(savePointEvent.getCreatedAt()).thenReturn(new Date(0));
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("300"))).thenReturn(newSavePointEvent);
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("0"))).thenReturn(savePointEvent);
-
-        when(events.iterator()).thenReturn(events);
-        Boolean[] hasNextValues = new Boolean[eventPages.size()];
-        for (int i = 0; i < eventPages.size() - 1 ; i++)
-        {
-            hasNextValues[i] = true;
-        }
-        hasNextValues[eventPages.size() - 1] = false;
-
-        when(events.hasNext()).thenReturn(true, hasNextValues);
-        when(events.next()).thenReturn(eventPagesIterator.next(), Iterators.toArray(eventPagesIterator, List.class));
+        mock300Events();
 
         gitHubEventService.synchronize(repository, true, new String[]{});
         verify(events, times(10)).next();
@@ -196,8 +174,18 @@ public class GitHubEventServiceImplTest
     @Test
     public void testForcePRListSynchronization_withDarkFeature()
     {
+        mock300Events();
+
         when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(true);
 
+        gitHubEventService.synchronize(repository, true, new String[]{});
+        verify(events, times(10)).next();
+        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
+        verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
+    }
+
+    private void mock300Events()
+    {
         when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
         List<Event> allEvents = new ArrayList<Event>();
         for (int i = 1; i <= 300; i++)
@@ -205,7 +193,7 @@ public class GitHubEventServiceImplTest
             allEvents.add(mockEvent(i + "", i));
         }
         List<List<Event>> eventPages = Lists.partition(Lists.reverse(allEvents), 30);
-        Iterator<List<Event>> eventPagesIterator = eventPages.iterator();
+        final Iterator<List<Event>> eventPagesIterator = eventPages.iterator();
 
         when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(300));
         when(savePointEvent.getCreatedAt()).thenReturn(new Date(0));
@@ -221,12 +209,14 @@ public class GitHubEventServiceImplTest
         hasNextValues[eventPages.size() - 1] = false;
 
         when(events.hasNext()).thenReturn(true, hasNextValues);
-        when(events.next()).thenReturn(eventPagesIterator.next(), Iterators.toArray(eventPagesIterator, List.class));
-
-        gitHubEventService.synchronize(repository, true, new String[]{});
-        verify(events, times(10)).next();
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
-        verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
+        when(events.next()).thenAnswer(new Answer<Collection<Event>>()
+        {
+            @Override
+            public Collection<Event> answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return eventPagesIterator.next();
+            }
+        });
     }
 
     private Event mockEvent(String id, long date)
