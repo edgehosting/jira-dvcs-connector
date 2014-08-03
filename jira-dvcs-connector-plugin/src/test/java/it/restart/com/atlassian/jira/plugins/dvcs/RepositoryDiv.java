@@ -27,4 +27,18 @@ public class RepositoryDiv
         return rootElement.find(By.xpath("td[4]//span"));
     }
 
+    public String getElementId()
+    {
+        return rootElement.getAttribute("id");
+    }
+
+    public String getRepositoryId()
+    {
+        return parseRepositoryId(getElementId());
+    }
+
+    public String parseRepositoryId(String elementId)
+    {
+        return elementId.substring(elementId.lastIndexOf("-") + 1);
+    }
 }

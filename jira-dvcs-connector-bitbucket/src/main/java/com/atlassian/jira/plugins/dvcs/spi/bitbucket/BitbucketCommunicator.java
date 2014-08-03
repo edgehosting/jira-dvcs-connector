@@ -460,7 +460,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     {
                         found = true;
                     }
-                    else
+                    // If the hook is on localhost then we don't clean up as otherwise the tests mess with each other
+                    else if(!serviceField.getValue().startsWith("http://localhost:"))
                     {
                         servicesRest.deleteService(repository.getOrgName(), repository.getSlug(), bitbucketServiceEnvelope.getId());
                     }

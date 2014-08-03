@@ -15,6 +15,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -23,6 +24,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -131,7 +133,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
     @Test
     @Override
-    public void testPostCommitHookAdded()
+    public void testPostCommitHookAddedAndRemoved()
     {
         // remove existing hooks
         String hooksUrl = "https://api.github.com/repos/jirabitbucketconnector/test-project/hooks";
@@ -139,27 +141,33 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organisation = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
-        String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
-        jira.getTester().gotoUrl(hooksURL);
-        String hooksPage = jira.getTester().getDriver().getPageSource();
+
+        RepositoryDiv createdOrganisation = organisation.findRepository("test-project");
+        if (createdOrganisation != null)
+        {
+            githubServiceConfigUrlPath += createdOrganisation.getRepositoryId() + "/sync";
+        }
+
+        String hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
         if (!hooksPage.contains(githubServiceConfigUrlPath))
         {
             // let's retry once more
-            jira.getTester().gotoUrl(hooksURL);
-            hooksPage = jira.getTester().getDriver().getPageSource();
+            hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
+                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         }
 
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
         // check that postcommit hook is removed
-        jira.getTester().gotoUrl(hooksURL);
-        hooksPage = jira.getTester().getDriver().getPageSource();
+        hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
     }
 
