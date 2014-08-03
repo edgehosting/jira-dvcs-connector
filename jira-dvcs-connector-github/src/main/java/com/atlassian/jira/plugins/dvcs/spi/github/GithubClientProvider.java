@@ -12,7 +12,6 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.EventService;
 import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
@@ -95,9 +94,9 @@ public class GithubClientProvider
         return new RepositoryService(createClient(organization));
     }
 
-    public PullRequestService getPullRequestService(Repository repository)
+    public CustomPullRequestService getPullRequestService(Repository repository)
     {
-        return new PullRequestService(createClient(repository));
+        return new CustomPullRequestService(createClient(repository));
     }
     
     public IssueService getIssueService(Repository repository) {

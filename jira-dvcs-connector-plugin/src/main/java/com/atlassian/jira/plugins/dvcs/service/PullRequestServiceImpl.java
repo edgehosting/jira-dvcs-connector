@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
 
@@ -30,20 +32,24 @@ import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
  */
 public class PullRequestServiceImpl implements PullRequestService
 {
-    private final RepositoryPullRequestDao pullRequestDao;
-    private final PullRequestTransformer transformer;
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-    private final ThreadEvents threadEvents;
+    @Resource
+    private RepositoryPullRequestDao pullRequestDao;
 
-    public PullRequestServiceImpl(final RepositoryPullRequestDao pullRequestDao,
-            final RepositoryService repositoryService,
-            final DvcsCommunicatorProvider dvcsCommunicatorProvider,
-            final ThreadEvents threadEvents)
+    private PullRequestTransformer transformer;
+
+    @Resource
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    @Resource
+    private RepositoryService repositoryService;
+
+    @Resource
+    private ThreadEvents threadEvents;
+
+    @PostConstruct
+    public void init()
     {
-        this.pullRequestDao = pullRequestDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.threadEvents = threadEvents;
-        this.transformer = new PullRequestTransformer(repositoryService);
+        transformer = new PullRequestTransformer(repositoryService);
     }
 
     @Override

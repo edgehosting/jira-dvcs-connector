@@ -8,9 +8,15 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.util.collect.MapBuilder;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -40,6 +46,7 @@ import org.testng.collections.Lists;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -81,6 +88,12 @@ public class GithubCommunicatorTest
     private ApplicationProperties applicationPropertiesMock;
     @Captor
     private ArgumentCaptor<GitHubRepositoryHook> hookCaptor;
+    @Mock
+    private SyncDisabledHelper syncDisabledHelper;
+    @Mock
+    private MessagingService messagingService;
+    @Mock
+    private GitHubEventService gitHubEventService;
 
     // tested object
     private GithubCommunicator communicator;
@@ -199,6 +212,9 @@ public class GithubCommunicatorTest
         communicator = new GithubCommunicator(mock(OAuthStore.class), githubClientProviderMock);
         communicator.setGitHubRESTClient(gitHubRESTClient);
         ReflectionTestUtils.setField(communicator, "applicationProperties", applicationPropertiesMock);
+        ReflectionTestUtils.setField(communicator, "syncDisabledHelper", syncDisabledHelper);
+        ReflectionTestUtils.setField(communicator, "messagingService", messagingService);
+        ReflectionTestUtils.setField(communicator, "gitHubEventService", gitHubEventService);
 
         when(githubClientProviderMock.getRepositoryService(repositoryMock)).thenReturn(repositoryServiceMock);
         when(githubClientProviderMock.getUserService(repositoryMock)).thenReturn(userServiceMock);
@@ -281,7 +297,7 @@ public class GithubCommunicatorTest
         when(repositoryMock.getSlug())   .thenReturn("SLUG");
         when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
-        when(commitServiceMock.getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString())).thenReturn(repositoryCommit);
+        when(commitServiceMock.getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString())).thenReturn(repositoryCommit);
         Commit commit = mock(Commit.class);
         when(repositoryCommit.getCommit()).thenReturn(commit);
         when(commit.getMessage()).thenReturn("ABC-123 fix");
@@ -322,6 +338,28 @@ public class GithubCommunicatorTest
                 new ChangesetFileDetail(CustomStringUtils.getChangesetFileAction(file.getStatus()), file.getFilename(), file.getAdditions(), file.getDeletions())
         ));
         assertEquals(changesetFileDetailsEnvelope.getCount(), 1);
+    }
+
+    @Test
+    public void testPRFullSyncWithDarkFeature()
+    {
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(true);
+
+        communicator.startSynchronisation(repositoryMock, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS), 0);
+
+        verify(gitHubEventService).synchronize(eq(repositoryMock), eq(false), any(String[].class), eq(false));
+        verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
+    }
+
+    @Test
+    public void testPRFullSyncWithoutDarkFeature()
+    {
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(false);
+
+        communicator.startSynchronisation(repositoryMock, EnumSet.of(SynchronizationFlag.SYNC_PULL_REQUESTS), 0);
+
+        verify(gitHubEventService, never()).synchronize(eq(repositoryMock), eq(false), any(String[].class), eq(false));
+        verify(messagingService).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
     }
 }
 

@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 
 import static java.util.concurrent.TimeUnit.MINUTES;

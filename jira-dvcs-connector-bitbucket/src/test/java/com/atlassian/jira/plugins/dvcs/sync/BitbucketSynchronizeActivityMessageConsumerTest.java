@@ -20,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketLinks;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPageIterator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestActivityInfo;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestCommit;
@@ -624,6 +625,18 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         when(remote.getState()).thenReturn("merged");
         when(local.getLastStatus()).thenReturn("OPEN");
         assertTrue(testedClass.hasStatusChanged(remote, local));
+    }
+
+    public void testUpdateCommitsNumberFallback()
+    {
+        when(featureManager.isEnabled(eq(BitbucketSynchronizeActivityMessageConsumer.BITBUCKET_COMMITS_FALLBACK_FEATURE))).thenReturn(true);
+
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+
+        testedClass.onReceive(message, payload);
+        verify(requestor).get(Mockito.contains("pagelen=" + BitbucketPageIterator.REQUEST_LIMIT), anyMap(), any(ResponseCallback.class));
     }
 
     private RepositoryCommitMapping mockRepositoryCommitMapping(String node)

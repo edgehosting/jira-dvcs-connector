@@ -356,7 +356,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final Function<String, Project> projectKeyToProject = new Function<String, Project>()
     {
         @Override
-        public Project apply(@Nullable String from)
+        public Project apply(String from)
         {
             return projectManager.getProjectObjByKey(from);
         }

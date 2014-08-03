@@ -404,6 +404,12 @@
     <component key="gitHubPullRequestSynchronizeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessageSerializer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
+    <component key="gitHubPullRequestPageMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="gitHubPullRequestPageeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessageSerializer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
 
     <issue-tabpanel key="dvcs-commits-tabpanel" name="Dvcs Changesets Tab Panel"
                     class="com.atlassian.jira.plugins.dvcs.webwork.DvcsTabPanel">

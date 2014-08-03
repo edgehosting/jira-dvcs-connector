@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.service;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import org.eclipse.egit.github.core.event.Event;
 
 /**
  * Business layer related to GitHub events.
@@ -10,7 +11,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
  */
 public interface GitHubEventService
 {
-
     /**
      * Removes all events for provided repository.
      * 
@@ -30,4 +30,15 @@ public interface GitHubEventService
      */
     void synchronize(Repository repository, boolean isSoftSync, String[] synchronizationTags, boolean webHookSync);
 
+    /**
+     * Stores provided {@link Event} locally. If the event with the same id exists, then it is not saved again.
+     *
+     * @param repository
+     *            over of event
+     * @param event
+     *            GitHub event which was proceed
+     * @param savePoint
+     *            true if it is save point, false otherwise
+     */
+    void saveEvent(Repository repository, Event event, boolean savePoint);
 }

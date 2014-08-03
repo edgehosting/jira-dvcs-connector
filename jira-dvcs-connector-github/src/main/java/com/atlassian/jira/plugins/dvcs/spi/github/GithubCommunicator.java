@@ -18,9 +18,11 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -38,6 +40,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -67,6 +70,7 @@ public class GithubCommunicator implements DvcsCommunicator
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
+    public static final int PULLREQUEST_PAGE_SIZE = 30;
 
     @Resource
     private MessagingService messagingService;
@@ -640,7 +644,19 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         if (pullRequestSync)
         {
-            gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
+            if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+            {
+                gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
+            }
+            else
+            {
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
+                MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
+                        GitHubPullRequestPageMessage.class,
+                        GitHubPullRequestPageMessageConsumer.ADDRESS
+                );
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+            }
         }
     }
 
