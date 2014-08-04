@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>2.0.5</version>
+        <version>3.0.29</version>
     </parent>
 
     <groupId>com.atlassian.jira.plugins</groupId>
@@ -69,7 +69,7 @@
         <!-- DOG and PRD are still running jdk6
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
-        <amps.version>4.2.20</amps.version>
+        <amps.version>5.0.4-m2</amps.version>
     </properties>
 
     <build>
@@ -84,7 +84,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.0</version>
                 </plugin>
-                <!-- remove these when we could run mvn 3 -->
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-amps-dispatcher-plugin</artifactId>
@@ -150,8 +149,8 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <message>This project requires Maven 2.1.0, see FUSE-1095</message>
-                                    <version>[2.1.0]</version>
+                                    <message>This project requires Maven 3.2.1 and above, see BBC-860</message>
+                                    <version>3.2.1</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -196,6 +195,18 @@
                         <artifactId>atlassian-scheduler</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.atlassian.beehive</groupId>
+                        <artifactId>beehive-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.google.collections</groupId>
                         <artifactId>google-collections</artifactId>
                     </exclusion>
@@ -211,6 +222,10 @@
                 <version>${ao.version}</version>
                 <scope>provided</scope>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.gson</groupId>
+                        <artifactId>gson</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>net.java.dev.activeobjects</groupId>
                         <artifactId>activeobjects</artifactId>
