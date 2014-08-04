@@ -236,6 +236,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         page.checkIssueActivityPresentedForQA5();
 
         // delete repository
+        rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
 
         page = jira.visit(DashboardActivityStreamsPage.class);
