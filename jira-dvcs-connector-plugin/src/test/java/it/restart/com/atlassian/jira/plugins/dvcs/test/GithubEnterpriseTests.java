@@ -172,7 +172,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
     @Override
     @Test
-    public void testPostCommitHookAdded()
+    public void testPostCommitHookAddedAndRemoved()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
