@@ -65,6 +65,7 @@ public class PullRequestServiceImplTest
     @BeforeMethod
     public void setUp() throws Exception
     {
+        service.init();
         when(repository.getOrgHostUrl()).thenReturn("https://bitbucket.org/fusiontestaccount");
         when(repositoryService.get(REPO_ID)).thenReturn(repository);
 
