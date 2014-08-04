@@ -70,6 +70,8 @@
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
         <amps.version>5.0.4-m2</amps.version>
+
+        <apache.httpclient.version>4.2.6</apache.httpclient.version>
     </properties>
 
     <build>
@@ -260,6 +262,12 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>2.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpclient.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

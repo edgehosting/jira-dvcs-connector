@@ -125,6 +125,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- httpclient is explicitly excluded in the pageobjects dependency to avoid it being bundled, due to maven bug
+             we add it here with test scope so that it could still be included in test -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
