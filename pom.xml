@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>2.0.5</version>
+        <version>3.0.29</version>
     </parent>
 
     <groupId>com.atlassian.jira.plugins</groupId>
@@ -69,7 +69,9 @@
         <!-- DOG and PRD are still running jdk6
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
-        <amps.version>4.2.20</amps.version>
+        <amps.version>5.0.3</amps.version>
+
+        <apache.httpclient.version>4.2.6</apache.httpclient.version>
     </properties>
 
     <build>
@@ -84,7 +86,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.0</version>
                 </plugin>
-                <!-- remove these when we could run mvn 3 -->
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-amps-dispatcher-plugin</artifactId>
@@ -109,6 +110,11 @@
                 </configuration>
                 -->
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>it/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -137,25 +143,6 @@
                         </resources>
                      </configuration>
                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <message>This project requires Maven 2.1.0, see FUSE-1095</message>
-                                    <version>[2.1.0]</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -196,6 +183,18 @@
                         <artifactId>atlassian-scheduler</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.atlassian.beehive</groupId>
+                        <artifactId>beehive-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.google.collections</groupId>
                         <artifactId>google-collections</artifactId>
                     </exclusion>
@@ -211,6 +210,10 @@
                 <version>${ao.version}</version>
                 <scope>provided</scope>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.gson</groupId>
+                        <artifactId>gson</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>net.java.dev.activeobjects</groupId>
                         <artifactId>activeobjects</artifactId>
@@ -245,6 +248,12 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>2.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpclient.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

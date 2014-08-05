@@ -2,6 +2,11 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -43,7 +48,7 @@ public class FileDataTest
         when(changeset.getFiles()).thenReturn(files);
         when(changeset.getFileDetails()).thenReturn(null);
 
-        assertThat(FileData.toJSON(changeset), equalTo(filesJson));
+        assertThat(FileData.toJSON(changeset), jsonEqualTo(filesJson));
     }
 
     @Test
@@ -53,7 +58,7 @@ public class FileDataTest
         when(changeset.getFiles()).thenReturn(files);
         when(changeset.getFileDetails()).thenReturn(fileDetails);
 
-        assertThat(FileData.toJSON(changeset), equalTo("{\"count\":2}"));
+        assertThat(FileData.toJSON(changeset), jsonEqualTo("{\"count\":2}"));
     }
 
     @Test
@@ -72,5 +77,26 @@ public class FileDataTest
         when(changesetMapping.getFileDetailsJson()).thenReturn(null);
 
         assertThat(FileData.from(changesetMapping), equalTo(new FileData(files, 2, false)));
+    }
+
+    private static Matcher<String> jsonEqualTo(final String expected)
+    {
+        return new TypeSafeMatcher<String>()
+        {
+            @Override
+            protected boolean matchesSafely(final String item)
+            {
+                JsonParser parser = new JsonParser();
+                JsonElement itemElem = parser.parse(item);
+                JsonElement expectedElem = parser.parse(expected);
+                return itemElem.equals(expectedElem);
+            }
+
+            @Override
+            public void describeTo(final Description description)
+            {
+                description.appendValue(expected);
+            }
+        };
     }
 }
