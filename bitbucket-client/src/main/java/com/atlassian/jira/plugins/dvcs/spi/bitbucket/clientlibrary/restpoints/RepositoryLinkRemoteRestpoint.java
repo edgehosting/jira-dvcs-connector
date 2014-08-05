@@ -98,7 +98,7 @@ public class RepositoryLinkRemoteRestpoint
         });
     }
 
-    BitbucketRepositoryLink getRepositoryLink(String owner, String slug, int id)
+    public BitbucketRepositoryLink getRepositoryLink(String owner, String slug, int id)
     {
         String getRepositoryLinkUrl = URLPathFormatter.format("/repositories/%s/%s/links/%s", owner, slug, "" + id);
 
