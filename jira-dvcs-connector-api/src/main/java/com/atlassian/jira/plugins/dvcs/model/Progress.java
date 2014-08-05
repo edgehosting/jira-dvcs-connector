@@ -138,4 +138,7 @@ public interface Progress
     boolean isSoftsync();
 
     void setSoftsync(boolean softsync);
+
+    boolean isWebHookSync();
+    void setWebHookSync(boolean webHookSync);
 }

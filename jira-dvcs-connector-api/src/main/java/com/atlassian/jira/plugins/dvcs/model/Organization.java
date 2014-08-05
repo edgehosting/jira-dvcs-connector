@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Organization
+public class Organization implements Serializable
 {
 	public static final String GROUP_SLUGS_SEPARATOR = ";";
 

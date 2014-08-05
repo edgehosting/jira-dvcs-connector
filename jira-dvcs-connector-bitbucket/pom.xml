@@ -5,16 +5,22 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.0.11-SNAPSHOT</version>
+        <version>2.1.21-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-bitbucket</artifactId>
-    <version>2.0.11-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Jira DVCS Connector Bitbucket module</name>
     <description>Jira DVCS Connector Bitbucket module</description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.scribe</groupId>
@@ -52,26 +58,20 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.sal</groupId>
-            <artifactId>sal-api</artifactId>
-            <version>2.1.0</version>
-            <scope>provided</scope>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-		    <artifactId>jira-core</artifactId>
-		    <version>${jira.compile.version}</version>
-            <scope>provided</scope>
-        </dependency>
-         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
         </dependency>
         <dependency>
-        	<groupId>org.springframework</groupId>
-        	<artifactId>spring-beans</artifactId>
-        	<version>2.5.6.SEC01</version>
-        	<scope>provided</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.beehive</groupId>
+            <artifactId>beehive-compat</artifactId>
         </dependency>
     </dependencies>
 </project>

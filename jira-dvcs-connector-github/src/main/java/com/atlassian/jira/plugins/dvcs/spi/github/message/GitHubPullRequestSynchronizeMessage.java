@@ -21,7 +21,7 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
 
     /**
      * Constructor.
-     * 
+     *
      * @param progress
      *            {@link #getProgress()}
      * @param syncAuditId
@@ -32,11 +32,13 @@ public class GitHubPullRequestSynchronizeMessage extends BaseProgressEnabledMess
      *            {@link #getRepository()}
      * @param pullRequestNumber
      *            {@link #getPullRequestNumber()}
+     * @param webHookSync
+     *            whether this sync was triggered by a web hook
      */
     public GitHubPullRequestSynchronizeMessage(Progress progress, int syncAuditId, boolean softSync, Repository repository,
-            int pullRequestNumber)
+            int pullRequestNumber, boolean webHookSync)
     {
-        super(progress, syncAuditId, softSync, repository);
+        super(progress, syncAuditId, softSync, repository, webHookSync);
         this.pullRequestNumber = pullRequestNumber;
     }
 

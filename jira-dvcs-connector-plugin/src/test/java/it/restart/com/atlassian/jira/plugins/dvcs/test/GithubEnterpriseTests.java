@@ -116,7 +116,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "I_AM_SURE_THIS_ACCOUNT_IS_INVALID",
-                new OAuthCredentials(oAuth.key, oAuth.secret), false);
+                getOAuthCredentials(), false, true);
     }
     
     @Override
@@ -125,7 +125,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "https://nonexisting.org/someaccount",
-                getOAuthCredentials(), false);
+                getOAuthCredentials(), false, true);
     }
 
     @Override
@@ -133,11 +133,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
-                new OAuthCredentials("xxx", "yyy"), true);
-        
-        assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
+                new OAuthCredentials("xxx", "yyy"), true, true);
     }
 
     @Test
@@ -175,7 +172,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
     @Override
     @Test
-    public void testPostCommitHookAdded()
+    public void testPostCommitHookAddedAndRemoved()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);

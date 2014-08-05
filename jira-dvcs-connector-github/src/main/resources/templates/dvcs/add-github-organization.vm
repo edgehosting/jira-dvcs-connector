@@ -70,9 +70,8 @@
 	
 	      <div id="aui-message-bar">
 	        #foreach ($errorMessage in $action.getErrorMessages())
-	        <div class="aui-message error">
+	        <div class="aui-message aui-message-error">
 	            <p class="title">
-	                <span class="aui-icon icon-error"></span>
 	                <strong>Error!</strong>
 	            </p>
 	            <p>$errorMessage</p>

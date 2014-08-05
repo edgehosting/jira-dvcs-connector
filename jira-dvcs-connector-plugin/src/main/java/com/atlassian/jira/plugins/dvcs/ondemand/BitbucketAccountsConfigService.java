@@ -9,9 +9,7 @@ import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
 import com.atlassian.util.concurrent.ThreadFactories;
-import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -20,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,20 +46,20 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
     private final AccountsConfigProvider configProvider;
     private final OrganizationService organizationService;
-    private final PluginScheduler pluginScheduler;
+    private final BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob;
     private final PluginController pluginController;
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
-            PluginScheduler pluginScheduler, PluginController pluginController, PluginAccessor pluginAccessor)
+            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob, PluginController pluginController, PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
-        this.pluginScheduler = pluginScheduler;
+        this.bitbucketAccountsReloadJob = bitbucketAccountsReloadJob;
         this.pluginController = pluginController;
         this.pluginAccessor = pluginAccessor;
-        this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("BitbucketAccountsConfigService"));
+        this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnector.BitbucketAccountsConfigService"));
     }
     
     /**
@@ -90,12 +86,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             return;
         }
 
-        Map<String, Object> data = Maps.newHashMap();
-        data.put("bitbucketAccountsConfigService", this);
-        data.put("pluginScheduler", pluginScheduler);
-
-        pluginScheduler.scheduleJob(BitbucketAccountsReloadJob.JOB_NAME, BitbucketAccountsReloadJob.class, data, new Date(),
-                TimeUnit.HOURS.toMillis(1));
+        bitbucketAccountsReloadJob.schedule();
     }
     
     /**
@@ -151,12 +142,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
                     doNewAccount(configuration);
                 } else
                 {
-                    log.debug("No integrated account found in provided configration.");
+                    log.debug("No integrated account found in provided configuration.");
                 }
             } else
             {
                 // probably not ondemand instance
-                log.debug("No integrated account found and no configration is provided.");
+                log.debug("No integrated account found and no configuration is provided.");
             }
         } else
         { // integrated account found
@@ -177,13 +168,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         enableAppSwitcherLink(info.accountName);
 
         Organization userAddedAccount = getUserAddedAccount(info);
-        Organization newOrganization = null;
 
         if (userAddedAccount == null)
         {
             // create brand new
             log.info("Creating new integrated account.");
-            newOrganization = createNewOrganization(info);
+            final Organization newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
         } else
         {
@@ -291,7 +281,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     }
 
     /**
-     * @param configuration
+     * @param configuration the configuration to check
      * @return True if there is an integrated account
      */
     private boolean hasIntegratedAccount(AccountsConfig configuration)
@@ -350,7 +340,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         //
         // try to find configuration, otherwise assuming it is deletion of the integrated account
         //
-        Links links = null;
+        Links links;
         try
         {
             links = configuration.getSysadminApplicationLinks().get(0);

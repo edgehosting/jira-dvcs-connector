@@ -132,10 +132,10 @@ function updateSyncStatus(repo) {
         var errorSmrtcmmtIcon = AJS.$("#error_smrtcmmt_icon_" + repo.id);
         // show error icon if smart commit has error
         if (repo.sync.smartCommitErrors.length > 0) {
-            errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-error");
+            errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error dvcs-color-red");
             var tooltip = registerInlineDialogTooltip(errorSmrtcmmtIcon, dvcs.connector.plugin.soy.smartCommitErrors({'smartCommitErrors':repo.sync.smartCommitErrors}));
         } else {
-            errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-error")
+            errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error dvcs-color-red")
         }
 
     }
@@ -729,7 +729,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 
                     // show warning icon if not already shown
                     var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
-                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
+                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow");
                     registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
                 }
 
@@ -751,7 +751,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 
     ).error(function (err) {
             var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
-            errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
+            errorStatusIcon.removeClass("admin_permission aui-iconfont-warning dvcs-color-yellow").addClass("aui-icon aui-icon-small aui-iconfont-error dvcs-color-red");
             var response = AJS.$.parseJSON(err.responseText);
             var message = "";
             if (response) {

@@ -64,7 +64,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
         include = collectionFromString(json.optString("include"));
         nodesToBranches = asMap(json.optJSONObject("nodesToBranches"));
 
-        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, nodesToBranches, false, 0);
+        return new BitbucketSynchronizeChangesetMessage(null, refreshAfterSynchronizedAt, null, include, exclude, page, nodesToBranches, false, 0, false);
     }
 
     protected Map<String, String> asMap(JSONObject object)

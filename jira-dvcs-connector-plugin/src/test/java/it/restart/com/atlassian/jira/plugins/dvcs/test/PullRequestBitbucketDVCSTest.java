@@ -1,6 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrCommit;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
@@ -141,7 +141,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -203,7 +203,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(updatedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -265,7 +265,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.DECLINED.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.DECLINED.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -322,7 +322,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -382,7 +382,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.MERGED.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.MERGED.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -429,7 +429,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), FORK_ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), getDefaultBranchName());
@@ -488,7 +488,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getCommentCount(), 2);
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -541,7 +541,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(expectedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -589,7 +589,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
         restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getTitle(), expectedPullRequestName + " updated");
-        Assert.assertEquals(restPullRequest.getStatus(), RepositoryPullRequestMapping.Status.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
         Assert.assertTrue(updatedPullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
@@ -692,9 +692,9 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
             }
         }).sortedCopy(restPrRepository.getPullRequests());
 
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPullRequests.get(0), expectedPullRequestName + " " + branch1, branch1Commits, branch1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest2, restPullRequests.get(1), expectedPullRequestName + " " + branch2, branch2Commits, branch2, RepositoryPullRequestMapping.Status.MERGED);
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest3, restPullRequests.get(2), expectedPullRequestName + " " + branch3, branch3Commits, branch3, RepositoryPullRequestMapping.Status.DECLINED);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPullRequests.get(0), expectedPullRequestName + " " + branch1, branch1Commits, branch1, PullRequestStatus.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest2, restPullRequests.get(1), expectedPullRequestName + " " + branch2, branch2Commits, branch2, PullRequestStatus.MERGED);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest3, restPullRequests.get(2), expectedPullRequestName + " " + branch3, branch3Commits, branch3, PullRequestStatus.DECLINED);
     }
 
     /**
@@ -760,13 +760,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, PullRequestStatus.OPEN);
 
         restPrRepository = response.getRepositories().get(1);
         Assert.assertEquals(restPrRepository.getSlug(), anotherRepositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(ACCOUNT_NAME, anotherRepositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, anotherRepositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, PullRequestStatus.OPEN);
     }
 
     /**
@@ -834,13 +834,13 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, PullRequestStatus.OPEN);
 
         restPrRepository = response.getRepositories().get(1);
         Assert.assertEquals(restPrRepository.getSlug(), anotherRepositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(FORK_ACCOUNT_NAME, anotherRepositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(FORK_ACCOUNT_NAME, anotherRepositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, PullRequestStatus.OPEN);
     }
 
     /**
@@ -880,7 +880,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, PullRequestStatus.OPEN);
 
         // another PR
         switchBranch(ACCOUNT_NAME, repositoryName, getDefaultBranchName());
@@ -908,11 +908,11 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 2);
 
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(1), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName2, expectedCommitNodes2, fixBranchName2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest1, restPrRepository.getPullRequests().get(1), expectedPullRequestName + fixBranchName1, expectedCommitNodes1, fixBranchName1, PullRequestStatus.OPEN);
+        assertPullRequest(ACCOUNT_NAME, repositoryName, expectedPullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranchName2, expectedCommitNodes2, fixBranchName2, PullRequestStatus.OPEN);
     }
 
-    private void assertPullRequest(final String account, final String repositoryName, final BitbucketPullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
+    private void assertPullRequest(final String account, final String repositoryName, final BitbucketPullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final PullRequestStatus status)
     {
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestTitle);
         Assert.assertEquals(restPullRequest.getStatus(), status.toString());

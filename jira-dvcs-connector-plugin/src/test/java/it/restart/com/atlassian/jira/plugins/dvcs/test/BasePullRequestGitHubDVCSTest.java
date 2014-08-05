@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.base.BaseDVCSTest;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitTestResource;
 import com.atlassian.jira.plugins.dvcs.base.resource.JiraTestResource;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestParticipant;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrCommit;
@@ -746,9 +747,9 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             }
         }).sortedCopy(restPrRepository.getPullRequests());
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), pullRequestName + " " + branch1, branch1Commits, branch1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), pullRequestName + " " + branch2, branch2Commits, branch2, RepositoryPullRequestMapping.Status.MERGED);
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest3, restPullRequests.get(2), pullRequestName + " " + branch3, branch3Commits, branch3, RepositoryPullRequestMapping.Status.DECLINED);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), pullRequestName + " " + branch1, branch1Commits, branch1, PullRequestStatus.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), pullRequestName + " " + branch2, branch2Commits, branch2, PullRequestStatus.MERGED);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest3, restPullRequests.get(2), pullRequestName + " " + branch3, branch3Commits, branch3, PullRequestStatus.DECLINED);
     }
 
     /**
@@ -847,9 +848,9 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             }
         }).sortedCopy(restPrRepository.getPullRequests());
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), pullRequestName + " " + branch1, branch1Commits, branch1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), pullRequestName + " " + branch2, branch2Commits, branch2, RepositoryPullRequestMapping.Status.MERGED);
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest3, restPullRequests.get(2), pullRequestName + " " + branch3, branch3Commits, branch3, RepositoryPullRequestMapping.Status.DECLINED);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), pullRequestName + " " + branch1, branch1Commits, branch1, PullRequestStatus.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), pullRequestName + " " + branch2, branch2Commits, branch2, PullRequestStatus.MERGED);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest3, restPullRequests.get(2), pullRequestName + " " + branch3, branch3Commits, branch3, PullRequestStatus.DECLINED);
     }
 
     /**
@@ -940,14 +941,14 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, PullRequestStatus.OPEN);
 
         // Assert second repository
         restPrRepository = restPrRepositories.get(1);
         Assert.assertEquals(restPrRepository.getSlug(), anotherRepositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME,  anotherRepositoryName, pullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME,  anotherRepositoryName, pullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, PullRequestStatus.OPEN);
     }
 
     /**
@@ -1041,14 +1042,14 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + repositoryName, repository1Commits, fixBranch1, PullRequestStatus.OPEN);
 
         // Assert second repository
         restPrRepository = restPrRepositories.get(1);
         Assert.assertEquals(restPrRepository.getSlug(), anotherRepositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(GitHubTestResource.ORGANIZATION, GitHubTestResource.USER, GitHubTestResource.NAME, anotherRepositoryName, pullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.ORGANIZATION, GitHubTestResource.USER, GitHubTestResource.NAME, anotherRepositoryName, pullRequest2, restPrRepository.getPullRequests().get(0), expectedPullRequestName + anotherRepositoryName, repository2Commits, fixBranch2, PullRequestStatus.OPEN);
     }
 
     /**
@@ -1094,7 +1095,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPrRepository.getPullRequests().get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, PullRequestStatus.OPEN);
 
         // another PR
         String fixBranch2 = "fixbranch2";
@@ -1134,8 +1135,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
             }
         }).sortedCopy(restPrRepository.getPullRequests());
 
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, RepositoryPullRequestMapping.Status.OPEN);
-        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), expectedPullRequestName + fixBranch2, expectedCommitNodes2, fixBranch2, RepositoryPullRequestMapping.Status.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest1, restPullRequests.get(0), expectedPullRequestName + fixBranch1, expectedCommitNodes1, fixBranch1, PullRequestStatus.OPEN);
+        assertPullRequest(GitHubTestResource.USER, GitHubTestResource.USER, GitHubTestResource.NAME, repositoryName, pullRequest2, restPullRequests.get(1), expectedPullRequestName + fixBranch2, expectedCommitNodes2, fixBranch2, PullRequestStatus.OPEN);
     }
 
     /**
@@ -1226,7 +1227,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
     }
 
 
-    private void assertPullRequest(final String owner, final String user, final String userName, final String repositoryName, final PullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final RepositoryPullRequestMapping.Status status)
+    private void assertPullRequest(final String owner, final String user, final String userName, final String repositoryName, final PullRequest pullRequest, final RestPullRequest restPullRequest, final String pullRequestTitle, final String[] commits, final String sourceBranch, final PullRequestStatus status)
     {
         assertPullRequestInfo(restPullRequest, status.toString(), pullRequestTitle, pullRequest.getHtmlUrl());
 

@@ -14,8 +14,7 @@
 </script>
 
 <div id="configureGroupsContent">
-    <div class="aui-message info">
-        <span class="aui-icon icon-info"></span>
+    <div class="aui-message">
         <span style="background:url('../../../images/icons/wait.gif') no-repeat right center;padding-right:25px;min-height:25px">$i18n.getText("com.atlassian.jira.plugins.dvcs.adduser.loading")</span>
     </div>
 </div>

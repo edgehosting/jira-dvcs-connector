@@ -21,15 +21,14 @@ public interface GitHubEventService
 
     /**
      * Synchronizes all events for a provided repository.
-     * 
-     * @param repository
+     *  @param repository
      *            for which one
      * @param isSoftSync
      *            is current synchronization soft?
      * @param synchronizationTags
-     *            synchronization tags which are used by synchronization over messaging
+     * @param webHookSync
      */
-    void synchronize(Repository repository, boolean isSoftSync, String[] synchronizationTags);
+    void synchronize(Repository repository, boolean isSoftSync, String[] synchronizationTags, boolean webHookSync);
 
     /**
      * Stores provided {@link Event} locally. If the event with the same id exists, then it is not saved again.

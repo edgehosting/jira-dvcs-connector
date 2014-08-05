@@ -6,41 +6,43 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.0.11-SNAPSHOT</version>
+        <version>2.1.21-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
-    <version>2.0.11-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Jira DVCS Connector Api</name>
-    <description>Jira DVCS Connector Api</description>
+    <name>Jira DVCS Connector API</name>
+    <description>Jira DVCS Connector API</description>
 
     <dependencies>
-        <dependency>
-            <groupId>com.atlassian.sal</groupId>
-            <artifactId>sal-api</artifactId>
-            <version>2.1.0</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
-		    <artifactId>jira-core</artifactId>
-		    <version>${jira.compile.version}</version>
-            <scope>provided</scope>
+            <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
         	<groupId>com.atlassian.activeobjects</groupId>
         	<artifactId>activeobjects-plugin</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.atlassian.analytics</groupId>
-            <artifactId>analytics-api</artifactId>
-            <version>${analytics.version}</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <!-- Note: We need to re-use some common test classes in other modules and this plugin will make tests shareable -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

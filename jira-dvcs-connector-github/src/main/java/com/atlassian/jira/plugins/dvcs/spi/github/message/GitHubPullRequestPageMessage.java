@@ -17,9 +17,9 @@ public class GitHubPullRequestPageMessage extends BaseProgressEnabledMessage
     private final int pagelen;
     private final Set<Long> processedPullRequests;
 
-    public GitHubPullRequestPageMessage(final Progress progress, final int syncAuditId, final boolean softSync, final Repository repository, final int page, final int pagelen, final Set<Long> processedPullRequests)
+    public GitHubPullRequestPageMessage(final Progress progress, final int syncAuditId, final boolean softSync, final Repository repository, final int page, final int pagelen, final Set<Long> processedPullRequests, boolean webHookSync)
     {
-        super(progress, syncAuditId, softSync, repository);
+        super(progress, syncAuditId, softSync, repository, webHookSync);
         this.page = page;
         this.pagelen = pagelen;
         this.processedPullRequests = processedPullRequests;

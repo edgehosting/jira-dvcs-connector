@@ -26,10 +26,7 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     String UPDATED_ON = "UPDATED_ON";
     String PARTICIPANTS = "PARTICIPANTS";
     String COMMENT_COUNT = "COMMENT_COUNT";
-
-    public enum Status {
-        OPEN, DECLINED, MERGED
-    }
+    String EXECUTED_BY = "EXECUTED_BY";
 
     //
     // getters
@@ -74,12 +71,22 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
 
     int getCommentCount();
 
+    /**
+     * Pull requests can be declined, merged or reopened by some user that is not the author.
+     * In Github/Githube for PR declined and reopened the user will be null because it would be expensive to find out
+     * the actor.
+     *
+     * @return actor who created, merged, declined or reopened the pull request.
+     *
+     */
+    String getExecutedBy();
+
     //
     // setters
     //
     void setRemoteId(Long id);
 
-    void setToRepoId(int repoId);
+    void setToRepositoryId(int repoId);
 
     void setName(String name);
 
@@ -100,4 +107,6 @@ public interface RepositoryPullRequestMapping extends RepositoryDomainMapping
     void setSourceRepo(String sourceRepo);
 
     void setCommentCount(int commentCount);
+
+    void setExecutedBy(String user);
 }

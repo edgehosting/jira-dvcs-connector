@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.codehaus.jackson.annotate.JsonCreator;
 
 import java.util.Collections;
 import java.util.Date;
@@ -38,6 +39,9 @@ public class Changeset
     private ImmutableList<ChangesetFileDetail> fileDetails = null;
 
     private Integer version;
+
+    @JsonCreator
+    private Changeset() {}
 
     public Changeset(int repositoryId, String node, String message, Date timestamp)
     {
@@ -179,9 +183,9 @@ public class Changeset
         return files;
     }
 
-    public void setFiles(List<ChangesetFile> files)
+    public void setFiles(List<? extends ChangesetFile> files)
     {
-        this.files = files;
+        this.files = files != null ? ImmutableList.copyOf(files) : null;
     }
 
     public int getAllFileCount()
@@ -297,8 +301,14 @@ public class Changeset
      *
      * @param fileDetails a list of ChangesetFileDetail
      */
-    public void setFileDetails(List<ChangesetFileDetail> fileDetails)
+    public void setFileDetails(List<? extends ChangesetFileDetail> fileDetails)
     {
         this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Changeset{repositoryId=" + repositoryId + ", node='" + node + '\'' + '}';
     }
 }

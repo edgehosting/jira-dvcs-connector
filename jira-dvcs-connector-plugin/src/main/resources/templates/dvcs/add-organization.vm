@@ -75,9 +75,8 @@
         #end
 		<div id="aui-message-bar-global"></div>
         #foreach ($errorMessage in $action.getErrorMessages())
-                <div class="aui-message error shadowed">
+                <div class="aui-message aui-message-error">
                     <p class="title">
-                        <span class="aui-icon icon-error"></span>
                         <strong>Error!</strong>
                     </p>
                     <p>$errorMessage</p>
@@ -223,10 +222,10 @@
                 
                 <td class="dvcs-org-reponame">
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
-					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow#end">&nbsp;</span>
 
 
-                    <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-error#end">&nbsp;</span>
+                    <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error dvcs-color-red#end">&nbsp;</span>
 				</td>
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">

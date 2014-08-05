@@ -28,7 +28,7 @@ public class GitHubPullRequestPageMessageSerializer extends AbstractMessagePaylo
             throws Exception
     {
         Set<Long> processedPullRequests = asSet(json.optJSONArray("processedPullRequests"));
-        return new GitHubPullRequestPageMessage(null, 0, false, null, json.getInt("page"), json.getInt("pagelen"), processedPullRequests);
+        return new GitHubPullRequestPageMessage(null, 0, false, null, json.getInt("page"), json.getInt("pagelen"), processedPullRequests, false);
     }
 
     @Override

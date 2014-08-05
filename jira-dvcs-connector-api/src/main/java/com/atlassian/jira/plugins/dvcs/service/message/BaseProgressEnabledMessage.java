@@ -10,16 +10,18 @@ public class BaseProgressEnabledMessage implements HasProgress
     int syncAuditId;
 
     boolean softSync;
+    boolean webHookSync;
 
     Repository repository;
 
-    protected BaseProgressEnabledMessage(Progress progress, int syncAuditId, boolean softSync, Repository repository)
+    protected BaseProgressEnabledMessage(Progress progress, int syncAuditId, boolean softSync, Repository repository, boolean webHookSync)
     {
         super();
         this.progress = progress;
         this.syncAuditId = syncAuditId;
         this.softSync = softSync;
         this.repository = repository;
+        this.webHookSync = webHookSync;
     }
 
     public Progress getProgress()
@@ -42,4 +44,8 @@ public class BaseProgressEnabledMessage implements HasProgress
         return repository;
     }
 
+    public boolean isWebHookSync()
+    {
+        return webHookSync;
+    }
 }

@@ -3,11 +3,13 @@ package com.atlassian.jira.plugins.dvcs.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.Serializable;
+
 /**
  * Used for handle DVCS groups.
  *
  */
-public class Group
+public class Group implements Serializable
 {
     private final String slug;
     private String niceName;

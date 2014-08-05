@@ -6,11 +6,10 @@
 	<parent>
 		<groupId>com.atlassian.jira.plugins</groupId>
 		<artifactId>jira-dvcs-connector-parent</artifactId>
-		<version>2.0.11-SNAPSHOT</version>
+		<version>2.1.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jira-dvcs-connector-github-enterprise</artifactId>
-    <version>2.0.11-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Jira DVCS Connector GitHub Enterprise module</name>
 	<description>Jira DVCS Connector GitHub Enterprise module</description>
@@ -29,7 +28,6 @@
 		<dependency>
 			<groupId>org.eclipse.mylyn.github</groupId>
 			<artifactId>org.eclipse.egit.github.core</artifactId>
-			<version>2.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>

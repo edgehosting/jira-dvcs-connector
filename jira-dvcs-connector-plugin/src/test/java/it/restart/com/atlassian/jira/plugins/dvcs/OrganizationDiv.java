@@ -85,16 +85,19 @@ public class OrganizationDiv
 
     public boolean containsRepository(String name)
     {
-        List<RepositoryDiv> repositories = getRepositories();
-        for (RepositoryDiv repositoryDiv : repositories)
+        return findRepository(name) != null;
+    }
+
+    public RepositoryDiv findRepository(String name)
+    {
+        for (RepositoryDiv repositoryDiv : getRepositories())
         {
             if (name.equals(repositoryDiv.getRepositoryName()))
             {
-                return true;
+                return repositoryDiv;
             }
         }
-
-        return false;
+        return null;
     }
     
     public String getOrganizationType()

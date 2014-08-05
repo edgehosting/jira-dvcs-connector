@@ -16,11 +16,12 @@ import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
  */
-public class SmartcommitOperation implements Runnable
+public class SmartcommitOperation implements Callable<Void>
 {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(SmartcommitOperation.class);
@@ -50,11 +51,8 @@ public class SmartcommitOperation implements Runnable
         this.changesetService = changesetService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void run()
+    public Void call()
     {
         try
         {
@@ -110,6 +108,8 @@ public class SmartcommitOperation implements Runnable
         {
             log.warn("Failed to process smartcommit operation. Cause = " + e.getClass() + " : " + e.getMessage());
         }
+
+        return null;
     }
 
 }

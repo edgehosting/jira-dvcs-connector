@@ -10,6 +10,7 @@ import org.openqa.selenium.By;
 import java.util.List;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -33,7 +34,7 @@ public class GreenHopperBoardPage implements Page
 
     public void goToQABoardPlan()
     {
-        Poller.waitUntilTrue(boardPlanToggleViewButton.timed().isVisible());
+        Poller.waitUntil(boardPlanToggleViewButton.timed().isVisible(), is(true), by(15, SECONDS));
         boardPlanToggleViewButton.click();
     }
 

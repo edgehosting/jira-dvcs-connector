@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.java.ao.Query;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
@@ -25,6 +15,14 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.ObjectArrays;
+import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BranchDaoImpl implements BranchDao
 {
@@ -75,15 +73,13 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
-                log.debug("adding branch {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
+                log.debug("adding branch {} for repository with id = [ {} ]", new Object[] { branch, repositoryId });
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(BranchMapping.REPOSITORY_ID, repositoryId);
                 map.put(BranchMapping.NAME, ActiveObjectsUtils.stripToLimit(branch.getName(), 255));
 
                 BranchMapping branchMapping = activeObjects.create(BranchMapping.class, map);
-
                 associateBranchToIssue(branchMapping, issueKeys);
-
                 return null;
             }
         });
@@ -97,14 +93,13 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
-                log.debug("adding branch head {} for repository with id = [ {} ]", new Object[]{branchHead, repositoryId});
+                log.debug("adding branch head {} for repository with id = [ {} ]", new Object[] { branchHead, repositoryId });
                 final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
                 map.put(BranchHeadMapping.REPOSITORY_ID, repositoryId);
                 map.put(BranchHeadMapping.BRANCH_NAME, ActiveObjectsUtils.stripToLimit(branchHead.getName(), 255));
                 map.put(BranchHeadMapping.HEAD, branchHead.getHead());
 
                 activeObjects.create(BranchHeadMapping.class, map);
-
                 return null;
             }
         });
@@ -118,10 +113,10 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
-                log.debug("deleting branch head {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
+                log.debug("deleting branch head {} for repository with id = [ {} ]", new Object[] { branch, repositoryId });
                 Query query = Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ? AND "
-                                                    + BranchHeadMapping.BRANCH_NAME + " = ? AND "
-                                                    + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead());
+                        + BranchHeadMapping.BRANCH_NAME + " = ? AND "
+                        + BranchHeadMapping.HEAD + " = ?", repositoryId, branch.getName(), branch.getHead());
                 ActiveObjectsUtils.delete(activeObjects, BranchHeadMapping.class, query);
                 return null;
             }
@@ -136,17 +131,19 @@ public class BranchDaoImpl implements BranchDao
             @Override
             public Void doInTransaction()
             {
+                log.debug("deleting branch mapping for branch with name {} and repository with id = [ {} ]", new Object[] { branch.getName(), repositoryId });
+
                 // delete association issues - branch
                 Query query = Query.select()
                         .from(IssueToBranchMapping.class)
                         .alias(IssueToBranchMapping.class, "mapping")
                         .alias(BranchMapping.class, "branch")
                         .join(BranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
-                        .where("branch." + BranchMapping.NAME + " = ?", branch.getName());
+                        .where("branch." + BranchMapping.NAME + " = ? and branch." + BranchMapping.REPOSITORY_ID + " = ?", branch.getName(), repositoryId);
 
                 ActiveObjectsUtils.delete(activeObjects, IssueToBranchMapping.class, query);
 
-                log.debug("deleting branch {} for repository with id = [ {} ]", new Object[]{branch, repositoryId});
+                log.debug("deleting branch {} for repository with id = [ {} ]", new Object[] { branch, repositoryId });
                 query = Query.select().where(BranchMapping.REPOSITORY_ID + " = ? AND "
                         + BranchMapping.NAME + " = ?", repositoryId, branch.getName());
                 ActiveObjectsUtils.delete(activeObjects, BranchMapping.class, query);
@@ -154,8 +151,6 @@ public class BranchDaoImpl implements BranchDao
                 return null;
             }
         });
-
-
     }
 
     @Override
@@ -308,7 +303,7 @@ public class BranchDaoImpl implements BranchDao
     private void associateBranchToIssue(BranchMapping branchMapping, Set<String> extractedIssues)
     {
         // remove all assoc issues-branch
-        Query query = Query.select().where( IssueToBranchMapping.BRANCH_ID + " = ? ", branchMapping);
+        Query query = Query.select().where(IssueToBranchMapping.BRANCH_ID + " = ? ", branchMapping);
         ActiveObjectsUtils.delete(activeObjects, IssueToBranchMapping.class, query);
 
         // insert all

@@ -34,6 +34,8 @@ import static org.mockito.Mockito.when;
 
 public final class TestSmartcommitsOnGithubMessageConsumer
 {
+    static final String NODE = "node";
+
     @Mock
     private Repository repositoryMock;
 
@@ -76,6 +78,12 @@ public final class TestSmartcommitsOnGithubMessageConsumer
     private void initializeMocks()
     {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @BeforeMethod
+    public void setUp() throws Exception
+    {
+        when(payloadMock.getNode()).thenReturn(NODE);
     }
 
     @Test
@@ -128,7 +136,7 @@ public final class TestSmartcommitsOnGithubMessageConsumer
 
     private Changeset changesetWithMessage(final String msg)
     {
-        return new Changeset(0, "node", msg, new Date());
+        return new Changeset(0, NODE, msg, new Date());
     }
 
 }

@@ -1,13 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.google.common.collect.Lists;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -19,6 +20,9 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -37,6 +41,9 @@ public class BranchServiceImplTest
 
     @Mock
     private Repository repository;
+
+    @Mock
+    private ThreadEvents threadEvents;
 
     @InjectMocks
     private BranchServiceImpl branchService = new BranchServiceImpl();
@@ -118,7 +125,7 @@ public class BranchServiceImplTest
         verify(branchDao, times(2)).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
         verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
 
-        Assert.assertThat(removeBranchArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranches.toArray(new Branch[] { })));
+        assertThat(removeBranchArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranches.toArray(new Branch[] { })));
         assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
     }
 
@@ -144,6 +151,24 @@ public class BranchServiceImplTest
 
         assertEquals(removeBranchArgumentCaptor.getValue().getName(), "branch2");
         assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
+    }
+
+    @Test
+    public void testUpdateBranchesShouldBroadcastEvent()
+    {
+        List<Branch> newBranches = Lists.newArrayList(
+                new Branch(0, "branch3", repository.getId())
+        );
+
+        when(branchDao.getBranches(repository.getId())).thenReturn(new ArrayList<Branch>());
+        branchService.updateBranches(repository, newBranches);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(threadEvents).broadcast(eventCaptor.capture());
+
+        assertThat(eventCaptor.getValue(), instanceOf(BranchCreatedEvent.class));
+        BranchCreatedEvent event = (BranchCreatedEvent) eventCaptor.getValue();
+        assertThat(event.getBranch().getName(), equalTo("branch3"));
     }
 
     @Test
@@ -224,7 +249,7 @@ public class BranchServiceImplTest
         verify(branchDao, times(2)).removeBranchHead(eq(repository.getId()), removeBranchHeadArgumentCaptor.capture());
         verify(branchDao).createBranchHead(eq(repository.getId()), branchHeadArgumentCaptor.capture());
 
-        Assert.assertThat(removeBranchHeadArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranchHeads.toArray(new BranchHead[] { })));
+        assertThat(removeBranchHeadArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranchHeads.toArray(new BranchHead[] { })));
         assertEquals(branchHeadArgumentCaptor.getValue().getName(), "branch");
         assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node3");
     }

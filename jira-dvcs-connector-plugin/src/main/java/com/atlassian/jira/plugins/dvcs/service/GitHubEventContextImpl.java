@@ -23,16 +23,18 @@ public class GitHubEventContextImpl implements GitHubEventContext
     private final Repository repository;
     private final boolean isSoftSync;
     private final String[] synchronizationTags;
+    private final boolean webHookSync;
 
     private final Set<Long> processedPullRequests = new HashSet<Long>();
 
-    public GitHubEventContextImpl(final Synchronizer synchronizer, final MessagingService messagingService, final Repository repository, final boolean softSync, final String[] synchronizationTags)
+    public GitHubEventContextImpl(final Synchronizer synchronizer, final MessagingService messagingService, final Repository repository, final boolean softSync, final String[] synchronizationTags, boolean webHookSync)
     {
         this.synchronizer = synchronizer;
         this.messagingService = messagingService;
         this.repository = repository;
         isSoftSync = softSync;
         this.synchronizationTags = synchronizationTags;
+        this.webHookSync = webHookSync;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class GitHubEventContextImpl implements GitHubEventContext
 
         Progress progress = synchronizer.getProgress(repository.getId());
         GitHubPullRequestSynchronizeMessage message = new GitHubPullRequestSynchronizeMessage(progress, progress.getAuditLogId(),
-                isSoftSync, repository, pullRequest.getNumber());
+                isSoftSync, repository, pullRequest.getNumber(), webHookSync);
 
         messagingService.publish(
                 messagingService.get(GitHubPullRequestSynchronizeMessage.class, GitHubPullRequestSynchronizeMessageConsumer.ADDRESS),

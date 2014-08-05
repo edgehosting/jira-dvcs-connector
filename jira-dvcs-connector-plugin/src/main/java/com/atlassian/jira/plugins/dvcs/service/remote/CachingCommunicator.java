@@ -1,5 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheException;
+import com.atlassian.cache.CacheLoader;
+import com.atlassian.cache.CacheManager;
+import com.atlassian.cache.CacheSettings;
+import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -10,18 +16,18 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.google.common.base.Function;
-import com.google.common.collect.ComputationException;
-import com.google.common.collect.MapMaker;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent
@@ -29,12 +35,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
-    private DvcsCommunicator delegate;
-
-    private class UserKey
+    @VisibleForTesting
+    static class UserKey implements Serializable
     {
-        Repository repository;
-        String username;
+        private final Repository repository;
+        private final String username;
 
         public UserKey(Repository repository, String username)
         {
@@ -64,7 +69,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
 
     }
 
-    private class OrganisationKey
+    @VisibleForTesting
+    static class OrganisationKey implements Serializable
     {
         private final Organization organization;
 
@@ -96,29 +102,17 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         }
     }
 
-    private final Map<UserKey, DvcsUser> usersCache = new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(
-            new Function<UserKey, DvcsUser>()
-            {
-                @Override
-                public DvcsUser apply(UserKey key)
-                {
-                    return delegate.getUser(key.repository, key.username);
-                }
-            });
+    private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().expireAfterWrite(30, MINUTES).build();
 
-    private final Map<OrganisationKey, List<Group>> groupsCache =
-            new MapMaker().expiration(30, TimeUnit.MINUTES).makeComputingMap(new Function<OrganisationKey, List<Group>>()
-                    {
-                        @Override
-                        public List<Group> apply(OrganisationKey key)
-                        {
-                            return delegate.getGroupsForOrganization(key.organization);
-                        }
+    private final Cache<UserKey, DvcsUser> usersCache;
+    private final Cache<OrganisationKey, List<Group>> groupsCache;
+    private DvcsCommunicator delegate;
 
-                    });
-    
-    public CachingCommunicator()
+    public CachingCommunicator(final CacheManager cacheManager)
     {
+        // self-loading caches returned from getCache are always clean/empty
+        usersCache = cacheManager.getCache(getClass().getName() + ".usersCache", new UserLoader(), CACHE_SETTINGS);
+        groupsCache = cacheManager.getCache(getClass().getName() + ".groupsCache", new GroupLoader(), CACHE_SETTINGS);
     }
     
     public void setDelegate(DvcsCommunicator delegate)
@@ -132,16 +126,16 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return usersCache.get(new UserKey(repository, username));
-        } catch (ComputationException e)
+        } catch (CacheException e)
         {
             throw unrollException(e);
         }
     }
 
-    private SourceControlException unrollException(ComputationException e)
+    private SourceControlException unrollException(final Throwable e)
     {
-        return e.getCause() instanceof SourceControlException ? (SourceControlException) e.getCause() : new SourceControlException(
-                e.getCause());
+        return e.getCause() instanceof SourceControlException ?
+                (SourceControlException) e.getCause() : new SourceControlException(e.getCause());
     }
 
     @Override
@@ -150,7 +144,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return groupsCache.get(new OrganisationKey(organization));
-        } catch (ComputationException e)
+        } catch (CacheException e)
         {
             throw unrollException(e);
         }
@@ -177,7 +171,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     @Override
     public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
     {
-        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
+        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
     }
 
     @Override
@@ -277,5 +271,23 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     public DvcsCommunicator getDelegate()
     {
         return delegate;
+    }
+
+    private class UserLoader implements CacheLoader<UserKey, DvcsUser>
+    {
+        @Override
+        public DvcsUser load(@Nonnull final UserKey key)
+        {
+            return delegate.getUser(key.repository, key.username);
+        }
+    }
+
+    private class GroupLoader implements CacheLoader<OrganisationKey, List<Group>>
+    {
+        @Override
+        public List<Group> load(@Nonnull final OrganisationKey key)
+        {
+            return delegate.getGroupsForOrganization(key.organization);
+        }
     }
 }

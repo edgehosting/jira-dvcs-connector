@@ -120,7 +120,8 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
                 payload.getRepository(),
                 nextPage,
                 payload.getPagelen(),
-                proccessedPullRequests);
+                proccessedPullRequests,
+                payload.isWebHookSync());
         messagingService.publish(getAddress(), nextMessage, message.getTags());
     }
 

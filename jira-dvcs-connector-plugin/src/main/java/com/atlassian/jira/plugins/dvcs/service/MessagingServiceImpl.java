@@ -1,6 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.cache.Cache;
+import com.atlassian.cache.CacheLoader;
+import com.atlassian.cache.CacheManager;
+import com.atlassian.cache.CacheSettings;
+import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
@@ -8,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.dao.MessageDao;
 import com.atlassian.jira.plugins.dvcs.dao.MessageQueueItemDao;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
 import com.atlassian.jira.plugins.dvcs.model.Message;
@@ -25,14 +31,19 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.util.concurrent.Promise;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.FutureCallback;
 import net.java.ao.DBParam;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
@@ -46,20 +57,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.xml.transform.Source;
 
 /**
  * A {@link MessagingService} implementation.
  *
  * @author Stanislav Dvorscak
- *
  */
 public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
-
-    private static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
+    @VisibleForTesting
+    static final String SYNCHRONIZATION_REPO_TAG_PREFIX = "synchronization-repository-";
     private static final String SYNCHRONIZATION_AUDIT_TAG_PREFIX = "audit-id-";
 
     /**
@@ -127,12 +137,15 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Resource
     private HttpClientProvider httpClientProvider;
 
-    private final Object endProgressLock = new Object();
+    @Resource
+    private CarefulEventService eventService;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
      */
-    private final Map<String, MessageAddress<?>> idToMessageAddress = new ConcurrentHashMap<String, MessageAddress<?>>();
+    private final Cache<IdKey<?>, MessageAddress<?>> idToMessageAddress;
+
+    private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().local().build();
 
     /**
      * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
@@ -153,6 +166,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Contains all tags which are currently paused.
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
+
+    @SuppressWarnings("unchecked")
+    public MessagingServiceImpl(final CacheManager cacheManager)
+    {
+        // altassian-cache 2.0.8 or later will auto clear a local cache
+        idToMessageAddress = cacheManager.getCache(
+                getClass().getName() + ".idToMessageAddress", new MessageAddressLoader(), CACHE_SETTINGS);
+    }
 
     /**
      * Initializes been.
@@ -335,7 +356,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     }
 
                 });
-                
+
                 int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
                 if (syncAuditId != 0)
                 {
@@ -583,33 +604,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Override
     public <P extends HasProgress> MessageAddress<P> get(final Class<P> payloadType, final String id)
     {
-        MessageAddress<P> result;
-
-        synchronized (idToMessageAddress)
-        {
-            result = (MessageAddress<P>) idToMessageAddress.get(id);
-            if (result == null)
-            {
-                idToMessageAddress.put(id, result = new MessageAddress<P>()
-                {
-
-                    @Override
-                    public String getId()
-                    {
-                        return id;
-                    }
-
-                    @Override
-                    public Class<P> getPayloadType()
-                    {
-                        return payloadType;
-                    }
-
-                });
-            }
-        }
-
-        return (MessageAddress<P>) result;
+        final IdKey<P> key = new IdKey<P>(id, payloadType);
+        return (MessageAddress<P>) idToMessageAddress.get(key);
     }
 
     /**
@@ -626,7 +622,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     {
         return SYNCHRONIZATION_AUDIT_TAG_PREFIX + id;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -749,15 +745,15 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Re-maps provided data to {@link MessageQueueItemMapping} parameters.
      *
-     * @param messageId
-     *            {@link Message#getId()}
-     * @param queue
-     * @param state
+     * @param messageId {@link Message#getId()}
+     * @param queue the queue
+     * @param state the message state
+     * @param stateInfo ?
      * @return mapped entity
      */
     private Map<String, Object> messageQueueItemToMap(int messageId, String queue, MessageState state, String stateInfo)
     {
-        Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<String, Object>();
 
         result.put(MessageQueueItemMapping.MESSAGE, messageId);
         result.put(MessageQueueItemMapping.QUEUE, queue);
@@ -766,7 +762,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         result.put(MessageQueueItemMapping.RETRIES_COUNT, 0);
 
         return result;
-
     }
 
     @Override
@@ -804,22 +799,21 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }
     }
 
-    private boolean endProgress(Repository repository, Progress progress)
+    /**
+     * Ends the progress if there are no more messages currently queued for the given repository.
+     *
+     * @param repository
+     * @param progress
+     * @return a boolean indicating whether sync progress was ended
+     */
+    private boolean endProgress(final Repository repository, Progress progress)
     {
-        int queuedCount;
-        synchronized(endProgressLock)
-        {
-            queuedCount = getQueuedCount(getTagForSynchronization(repository));
-        }
+        final int queuedCount = getQueuedCount(getTagForSynchronization(repository));
         if (queuedCount == 0)
         {
             try
             {
-                // TODO error could be in PR synchronization and thus we can process smartcommits
-                if (progress == null || progress.getError() == null)
-                {
-                    smartcCommitsProcessor.startProcess(progress, repository, changesetService);
-                }
+                final Optional<Promise<Void>> smartCommitsPromise = startSmartCommitsProcessor(repository, progress);
                 if (progress != null && !progress.isFinished())
                 {
                     progress.finish();
@@ -839,6 +833,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                             // ignoring
                         }
                     }
+                }
+
+                // dispatch the repository's events once smart commits processing is done
+                if (smartCommitsPromise.isPresent())
+                {
+                    smartCommitsPromise.get().then(new DispatchAllRepoEvents(repository));
                 }
 
                 return true;
@@ -870,11 +870,116 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }, "WaitForAO").start();
     }
 
+    /**
+     * Kicks off asynchronous execution of smart commits processing for the given Repository if {@code progress} does
+     * not contain any errors. The returned Optional will contain the smart commits promise if smart commits processing
+     * was attempted.
+     *
+     * @param repository
+     * @param progress
+     * @return an Promise that completes when smart commits processing is done
+     */
+    @Nonnull
+    private Optional<Promise<Void>> startSmartCommitsProcessor(Repository repository, Progress progress)
+    {
+        // TODO error could be in PR synchronization and thus we can process smartcommits
+        if (progress == null || progress.getError() == null)
+        {
+            return Optional.of(smartcCommitsProcessor.startProcess(progress, repository, changesetService));
+        }
+
+        // smart commits did not run
+        return Optional.absent();
+    }
+
     private volatile boolean stop = false;
 
     @Override
     public void destroy() throws Exception
     {
         stop = true;
+    }
+
+    private static class IdKey<P extends HasProgress> implements Serializable
+    {
+        private final String id;
+        private final Class<P> payloadType;
+
+        private IdKey(final String id, final Class<P> payloadType) {
+            this.id = id;
+            this.payloadType = payloadType;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return id.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj)
+        {
+            //noinspection unchecked
+            return (this == obj) ||
+                    (obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>)obj).id));
+        }
+    }
+
+    /**
+     * Loads the <code>idToMessageAddress</code> cache upon a miss.
+     *
+     * @param <P> the type of payload
+     */
+    private static class MessageAddressLoader<P extends HasProgress> implements CacheLoader<IdKey<P>, MessageAddress<P>>
+    {
+        @Override
+        public MessageAddress<P> load(@Nonnull final IdKey<P> key)
+        {
+            log.debug("idToMessageAddress loading new item for key id: {} payloadType: {} ", key.id, key.payloadType);
+            return new MessageAddress<P>()
+            {
+                @Override
+                public String getId()
+                {
+                    return key.id;
+                }
+
+                @Override
+                public Class<P> getPayloadType()
+                {
+                    return key.payloadType;
+                }
+            };
+        }
+    }
+
+    /**
+     * Dispatches all events for the given repository.
+     */
+    private class DispatchAllRepoEvents implements FutureCallback<Void>
+    {
+        private final Repository repository;
+
+        public DispatchAllRepoEvents(Repository repository)
+        {
+            this.repository = repository;
+        }
+
+        @Override
+        public void onSuccess(@Nonnull Void result)
+        {
+            doFinally();
+        }
+
+        @Override
+        public void onFailure(@Nonnull Throwable t)
+        {
+            doFinally();
+        }
+
+        private void doFinally()
+        {
+            eventService.dispatchEvents(repository);
+        }
     }
 }

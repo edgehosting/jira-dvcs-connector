@@ -1,8 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -27,14 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
 public class ChangesetServiceImpl implements ChangesetService
 {
     private static final Logger logger = LoggerFactory.getLogger(ChangesetServiceImpl.class);
-    private final ConcurrencyService concurrencyService;
 
     private final ChangesetDao changesetDao;
+    private final ClusterLockService clusterLockService;
 
     @Resource
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -42,25 +47,39 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private RepositoryDao repositoryDao;
 
-    public ChangesetServiceImpl(ConcurrencyService concurrencyService, ChangesetDao changesetDao)
+    @Resource
+    private ThreadEvents threadEvents;
+
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
-        this.concurrencyService = concurrencyService;
         this.changesetDao = changesetDao;
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
     }
 
     @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
-        return concurrencyService.synchronizedBlock(new ConcurrencyService.SynchronizedBlock<Changeset, RuntimeException>()
+        final String lockName = Changeset.class.getName() + changeset.getRawNode();
+        final Lock createLock = clusterLockService.getLockForName(lockName);
+        createLock.lock();
+        try
         {
-
-            @Override
-            public Changeset perform() throws RuntimeException
+            if (changesetDao.createOrAssociate(changeset, extractedIssues))
             {
-                return changesetDao.create(changeset, extractedIssues);
+                broadcastChangesetCreatedEvent(changeset, extractedIssues);
             }
 
-        }, Changeset.class, changeset.getRawNode());
+            return changeset;
+        }
+        finally
+        {
+            createLock.unlock();
+        }
+    }
+
+    private void broadcastChangesetCreatedEvent(Changeset changeset, Set<String> issueKeys)
+    {
+        threadEvents.broadcast(new ChangesetCreatedEvent(changeset, issueKeys));
     }
 
     @Override
@@ -163,7 +182,7 @@ public class ChangesetServiceImpl implements ChangesetService
         {
             DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-            for (int i = 0;  i < changeset.getFiles().size(); i++)
+            for (int i = 0; i < changeset.getFiles().size(); i++)
             {
                 ChangesetFile changesetFile = changeset.getFiles().get(i);
                 String fileCommitUrl = communicator.getFileCommitUrl(repository, changeset, changesetFile.getFile(), i);
@@ -182,10 +201,11 @@ public class ChangesetServiceImpl implements ChangesetService
         return Sets.newHashSet(changesets);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private List<Changeset> checkChangesetVersion(List<Changeset> changesets)
     {
-        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer() {
+        return (List<Changeset>) CollectionUtils.collect(changesets, new Transformer()
+        {
 
             @Override
             public Object transform(Object input)
@@ -198,8 +218,8 @@ public class ChangesetServiceImpl implements ChangesetService
     }
 
     /**
-     * Checks if changeset has latest version. If not it will be updated from remote DVCS and stored to DB.
-     * Updated version will return back.
+     * Checks if changeset has latest version. If not it will be updated from remote DVCS and stored to DB. Updated
+     * version will return back.
      *
      * @param changeset changeset on which we check version
      * @return updated changeset
@@ -233,11 +253,11 @@ public class ChangesetServiceImpl implements ChangesetService
         return changeset;
     }
 
-	@Override
-	public void markSmartcommitAvailability(int id, boolean available)
-	{
-		changesetDao.markSmartcommitAvailability(id, available);
-	}
+    @Override
+    public void markSmartcommitAvailability(int id, boolean available)
+    {
+        changesetDao.markSmartcommitAvailability(id, available);
+    }
 
     @Override
     public Set<String> findReferencedProjects(int repositoryId)
@@ -245,5 +265,9 @@ public class ChangesetServiceImpl implements ChangesetService
         return changesetDao.findReferencedProjects(repositoryId);
     }
 
-
+    @Override
+    public Set<String> findEmails(int repositoryId, String author)
+    {
+        return changesetDao.findEmails(repositoryId, author);
+    }
 }

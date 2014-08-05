@@ -58,6 +58,9 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
     {
         MockitoAnnotations.initMocks(this);
 
+        when(repository.getOrgName()).thenReturn("org");
+        when(repository.getSlug()).thenReturn("repo");
+
         when(payload.getProgress()).thenReturn(progress);
         when(payload.getRepository()).thenReturn(repository);
 
@@ -115,5 +118,4 @@ public class GitHubPullRequestSynchronizeMessageConsumerTest
             assertEquals(((RequestException) e.getCause()).getStatus(), 500);
         }
     }
-
 }

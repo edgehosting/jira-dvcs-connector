@@ -47,6 +47,9 @@ public class BitbucketAccountsConfigServiceTest
     @Mock
     private WebFragmentModuleDescriptor webFragmentModuleDescriptor;
 
+    @Mock
+    private BitbucketAccountsReloadJobScheduler mockBitbucketAccountsReloadJobScheduler;
+
     @Captor
     ArgumentCaptor<Organization> organizationCaptor;
 
@@ -62,7 +65,8 @@ public class BitbucketAccountsConfigServiceTest
     {
         MockitoAnnotations.initMocks(this);
 
-        testedService = new BitbucketAccountsConfigService(configProvider, organizationService, pluginScheduler, pluginController, pluginAccessor);
+        testedService = new BitbucketAccountsConfigService(configProvider, organizationService,
+                mockBitbucketAccountsReloadJobScheduler, pluginController, pluginAccessor);
 
         when(configProvider.supportsIntegratedAccounts()).thenReturn(true);
         when(pluginAccessor.getEnabledPluginModule(anyString())).thenReturn(webFragmentModuleDescriptor);

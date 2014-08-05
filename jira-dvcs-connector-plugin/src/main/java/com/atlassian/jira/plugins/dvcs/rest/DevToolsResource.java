@@ -213,7 +213,7 @@ public class DevToolsResource
             restPullRequest.setId(pullRequest.getRemoteId());
             restPullRequest.setUrl(pullRequest.getUrl());
             restPullRequest.setUpdatedOn(pullRequest.getUpdatedOn().getTime());
-            restPullRequest.setStatus(pullRequest.getStatus());
+            restPullRequest.setStatus(pullRequest.getStatus().name());
             restPullRequest.setSource(createRef(pullRequest.getSource()));
             restPullRequest.setDestination(createRef(pullRequest.getDestination()));
             restPullRequests.add(restPullRequest);

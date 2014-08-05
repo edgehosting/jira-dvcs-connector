@@ -4,11 +4,15 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.codehaus.jackson.annotate.JsonCreator;
 
 public class BranchHead
 {
     private String branchName;
     private String head;
+
+    @JsonCreator
+    private BranchHead() {}
 
     public BranchHead(String name, String node)
     {
@@ -26,7 +30,7 @@ public class BranchHead
         return head;
     }
 
-    public void setBranchName(String branchName)
+    public void setName(String branchName)
     {
         this.branchName = branchName;
     }

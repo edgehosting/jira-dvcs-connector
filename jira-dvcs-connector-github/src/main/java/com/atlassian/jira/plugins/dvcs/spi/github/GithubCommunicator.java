@@ -320,6 +320,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
+    @SuppressWarnings("unused")
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
@@ -330,7 +331,11 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library is encoding parameters using ISO-8859-1. Lets trick it and encode UTF-8 instead
+     * The git library encodes parameters using ISO-8859-1. Let's trick it and
+     * encode using UTF-8 instead.
+     * 
+     * @param branch the branch name to encode as UTF-8
+     * @return the UTF-8 encoded branch name
      */
     private String doTheUtfEncoding(String branch)
     {
@@ -380,7 +385,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     }
                     String thisHostAndRest = applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
                     String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                    if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest))
+                    if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest) && !StringUtils.startsWith(thisHostAndRest, "http://localhost:"))
                     {
                         gitHubRESTClient.deleteHook(repository, hook);
                     }
@@ -608,9 +613,10 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
-        boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
-        boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-        boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+        final boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+        final boolean webHookSync = flags.contains(SynchronizationFlag.WEBHOOK_SYNC);
+        final boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+        final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
         String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
         if (changestesSync)
@@ -624,7 +630,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
                             branch.getName(), branchHead.getHead(), //
                             synchronizationStartedAt, //
-                            null, softSync, auditId);
+                            null, softSync, auditId, webHookSync);
                     MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
                             SynchronizeChangesetMessage.class, //
                             GithubSynchronizeChangesetMessageConsumer.ADDRESS //
@@ -640,11 +646,11 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
             {
-                gitHubEventService.synchronize(repo, softSync, synchronizationTags);
+                gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
             }
             else
             {
-                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null);
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
                 MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
                         GitHubPullRequestPageMessage.class,
                         GitHubPullRequestPageMessageConsumer.ADDRESS
@@ -662,17 +668,11 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private String getRef(String slug, String branch)
     {
-        String ref = null;
         if (slug != null)
         {
-            ref = slug + ":" + branch;
+            return slug + ":" + branch;
         }
-        else
-        {
-            ref = branch;
-        }
-
-        return ref;
+        return branch;
     }
 
     @Override
@@ -686,5 +686,4 @@ public class GithubCommunicator implements DvcsCommunicator
     {
 
     }
-
 }

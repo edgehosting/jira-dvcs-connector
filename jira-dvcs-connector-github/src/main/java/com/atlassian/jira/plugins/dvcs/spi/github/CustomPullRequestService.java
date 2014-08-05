@@ -5,10 +5,8 @@ import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.PagedRequest;
-import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

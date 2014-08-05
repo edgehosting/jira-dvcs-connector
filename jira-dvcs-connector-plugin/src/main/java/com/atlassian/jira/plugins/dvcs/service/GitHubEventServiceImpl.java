@@ -86,7 +86,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
      * {@inheritDoc}
      */
     @Override
-    public void synchronize(final Repository repository, final boolean isSoftSync, final String[] synchronizationTags)
+    public void synchronize(final Repository repository, final boolean isSoftSync, final String[] synchronizationTags, boolean webHookSync)
     {
         EventService eventService = githubClientProvider.getEventService(repository);
 
@@ -96,7 +96,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventMapping lastGitHubEventSavePoint = gitHubEventDAO.getLastSavePoint(repository);
 
         String latestEventGitHubId = null;
-        final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags);
+        final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync, synchronizationTags, webHookSync);
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
         boolean forcePRListSynchronization = true;
@@ -157,7 +157,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
             Progress progress = synchronizer.getProgress(repository.getId());
 
-            GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, progress.getAuditLogId(), progress.isSoftsync(), repository, PagedRequest.PAGE_FIRST, GithubCommunicator.PULLREQUEST_PAGE_SIZE, context.getProcessedPullRequests());
+            GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, progress.getAuditLogId(), progress.isSoftsync(), repository, PagedRequest.PAGE_FIRST, GithubCommunicator.PULLREQUEST_PAGE_SIZE, context.getProcessedPullRequests(), webHookSync);
             MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
                     GitHubPullRequestPageMessage.class,
                     GitHubPullRequestPageMessageConsumer.ADDRESS

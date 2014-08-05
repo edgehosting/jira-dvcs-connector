@@ -40,9 +40,8 @@
     {/if}
 
     {if $errors and length($errors) > 0}
-        <div class="aui-message warning">
+        <div class="aui-message aui-message-warning">
             <p class="title">
-                <span class="aui-icon icon-warning"></span>
                 <strong>{getText('com.atlassian.jira.plugins.dvcs.adduser.accounts.failed')}</strong>
             </p>
             <p>

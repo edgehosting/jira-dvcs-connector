@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
-import org.apache.commons.lang.StringUtils;
+import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitComment;
@@ -37,11 +37,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -53,10 +54,14 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
 /**
- * GitHub pull requests synchronization test
+ * GitHubPullRequestProcessor test
+ *
  */
 public class GitHubPullRequestProcessorTest
 {
+    private static final String AUTHOR = "joe";
+    private static final String USER = "anna";
+
     @InjectMocks
     private GitHubPullRequestProcessor testedClass;
 
@@ -82,7 +87,7 @@ public class GitHubPullRequestProcessorTest
     private PullRequest pullRequest;
 
     @Captor
-    private ArgumentCaptor<Map<String, Object>> savePullRequestCaptor;
+    private ArgumentCaptor<RepositoryPullRequestMapping> savePullRequestCaptor;
 
     @Mock
     private IssueService issueService;
@@ -95,6 +100,13 @@ public class GitHubPullRequestProcessorTest
 
     @Captor
     private ArgumentCaptor<Map<String, Object>> saveCommitCaptor;
+
+    private PullRequest source;
+
+    private RepositoryPullRequestMappingMock target;
+
+    @Mock
+    private RepositoryPullRequestMapping localPullRequest;
 
     @BeforeMethod
     private void init() throws IOException
@@ -125,10 +137,75 @@ public class GitHubPullRequestProcessorTest
         when(pullRequestMapping.getSourceBranch()).thenReturn("sourceBranch");
         when(pullRequestMapping.getSourceRepo()).thenReturn("owner/sourceRepo");
         when(pullRequestMapping.getDestinationBranch()).thenReturn("destinationBranch");
-        when(repositoryPullRequestDao.savePullRequest(eq(repository), savePullRequestCaptor.capture())).thenReturn(pullRequestMapping);
+
         when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(pullRequestMapping);
-        when(repositoryPullRequestDao.updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt()))
-                .thenReturn(pullRequestMapping);
+
+        when(pullRequestService.createPullRequest(savePullRequestCaptor.capture())).thenAnswer(returnsFirstArg());
+
+        when(pullRequestService.updatePullRequest(eq(pullRequestMapping.getID()), savePullRequestCaptor.capture())).thenAnswer(returnsSecondArg());
+
+        target = new RepositoryPullRequestMappingMock();
+        when(repositoryPullRequestDao.createPullRequest()).thenReturn(target);
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeAuthorForPullRequestOpened()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setState("open");
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertEquals(AUTHOR, prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestMerged()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setMergedBy(createUser(USER));
+        source.setMergedAt(new Date());
+        source.setState("closed");
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertEquals(USER, prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
+    @Test
+    public void toDaoModelPullRequest_fieldExecutedByShouldBeUserForPullRequestDeclined()
+    {
+        toDaoModelPullRequest_setup();
+
+        source.setMergedBy(null);
+        source.setMergedAt(null);
+        source.setState("closed");
+
+        RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(repository, source, localPullRequest);
+
+        assertNull(prMapping.getExecutedBy());
+        assertEquals(AUTHOR, prMapping.getAuthor());
+    }
+
+    private void toDaoModelPullRequest_setup()
+    {
+        source = new PullRequest();
+        source.setUser(createUser(AUTHOR));
+
+        target = new RepositoryPullRequestMappingMock();
+        when(localPullRequest.getSourceBranch()).thenReturn("source-branch");
+        when(localPullRequest.getDestinationBranch()).thenReturn("dest-branch");
+        when(repository.getId()).thenReturn(1);
+    }
+
+    private User createUser(String login)
+    {
+        User user = new User();
+        user.setLogin(login);
+        return user;
     }
 
     @Test
@@ -143,7 +220,7 @@ public class GitHubPullRequestProcessorTest
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), anyMap());
     }
 
@@ -157,7 +234,7 @@ public class GitHubPullRequestProcessorTest
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), anyString(), anyString(), anyString(), any(RepositoryPullRequestMapping.Status.class), any(Date.class), anyString(), anyInt());
+        verify(repositoryPullRequestDao, never()).updatePullRequestInfo(anyInt(), any(RepositoryPullRequestMapping.class));
         verify(repositoryPullRequestDao, never()).savePullRequest(eq(repository), any(Map.class));
     }
 
@@ -165,48 +242,40 @@ public class GitHubPullRequestProcessorTest
     public void testNoAuthor()
     {
         when(pullRequest.getUser()).thenReturn(null);
-        // to save new value instead update
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.AUTHOR));
+        assertNull(savePullRequestCaptor.getValue().getAuthor());
     }
 
     @Test
     public void testEmptyTitle()
     {
         when(pullRequest.getTitle()).thenReturn("");
-        // to save new value instead update
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), "");
+        assertEquals(savePullRequestCaptor.getValue().getName(), "");
     }
 
     @Test
     public void testNullTitle()
     {
         when(pullRequest.getTitle()).thenReturn(null);
-        // to save new value instead update
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        assertNull(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME));
+        assertNull(savePullRequestCaptor.getValue().getName());
     }
 
     @Test
     public void testMaxTitle()
     {
-        when(pullRequest.getTitle()).thenReturn(StringUtils.leftPad("title ", 1000, "long "));
-        // to save new value instead update
-        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+        when(pullRequest.getTitle()).thenReturn(org.apache.commons.lang3.StringUtils.leftPad("title ", 1000, "long "));
 
         testedClass.processPullRequest(repository, pullRequest);
 
-        assertEquals(savePullRequestCaptor.getValue().get(RepositoryPullRequestMapping.NAME), StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
+        assertEquals(savePullRequestCaptor.getValue().getName(), org.apache.commons.lang3.StringUtils.leftPad("title ", 1000, "long ").substring(0, 255));
     }
 
     @Test
@@ -334,6 +403,7 @@ public class GitHubPullRequestProcessorTest
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+        target.setCommits(new RepositoryCommitMapping[] { commitMapping });
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
@@ -342,7 +412,7 @@ public class GitHubPullRequestProcessorTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
@@ -352,6 +422,7 @@ public class GitHubPullRequestProcessorTest
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+        target.setCommits(new RepositoryCommitMapping[] { commitMapping });
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
@@ -372,6 +443,7 @@ public class GitHubPullRequestProcessorTest
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+        target.setCommits(new RepositoryCommitMapping[] { commitMapping });
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
@@ -380,7 +452,7 @@ public class GitHubPullRequestProcessorTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
@@ -392,6 +464,7 @@ public class GitHubPullRequestProcessorTest
         RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
         when(commitMapping.getNode()).thenReturn("original");
         when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { commitMapping });
+        target.setCommits(new RepositoryCommitMapping[] { commitMapping });
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
@@ -400,7 +473,7 @@ public class GitHubPullRequestProcessorTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
 
-        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(pullRequestMapping), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
     }
 
@@ -435,5 +508,4 @@ public class GitHubPullRequestProcessorTest
         }
         return ref;
     }
-
 }

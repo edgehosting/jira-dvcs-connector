@@ -13,45 +13,23 @@ import java.io.StringWriter;
 import java.util.Map;
 
 /**
- * This panel extends user-add form in JIRA. It appends configured bitbucket
- * accounts with theirs groups so administrator can choose to which goups should
- * be currently added user invited.
+ * This panel extends the "add user" form in JIRA. It appends configured bitbucket
+ * accounts with their groups so administrator can choose to which groups the
+ * user being added should be invited.
  * 
- * Error during rendering this panel has no effect to final add-user form.
- * 
- * <br />
- * <br />
- * Created on 21.6.2012, 15:40:43 <br />
- * <br />
+ * An error rendering this panel will have no effect on the final "add user" form.
  * 
  * @author jhocman@atlassian.com
- * 
  */
 public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 {
-
-    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
 
-    /** The template renderer. */
+    private final ApplicationProperties appProperties;
+    private final PluginFeatureDetector featuresDetector;
+    private final OrganizationService organizationService;
     private final TemplateRenderer templateRenderer;
 
-    private final ApplicationProperties appProperties;
-
-    private final PluginFeatureDetector featuresDetector;
-    
-    private final OrganizationService organizationService;
-
-    /**
-     * Instantiates a new adds the user dvcs extension web panel.
-     * 
-     * @param templateRenderer
-     *            the template renderer
-     * @param organizationService
-     *            the organization service
-     * @param communicatorProvider
-     *            the communicator provider
-     */
     public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, TemplateRenderer templateRenderer,
             ApplicationProperties appProperties, PluginFeatureDetector featuresDetector, OrganizationService organizationService)
     {

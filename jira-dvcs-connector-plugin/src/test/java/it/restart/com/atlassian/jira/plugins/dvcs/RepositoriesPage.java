@@ -176,7 +176,7 @@ public class RepositoriesPage implements Page
 
     public void assertThatErrorMessage(Matcher<String> matcher)
     {
-        Poller.waitUntil(messageBarDiv.find(By.className("error")).timed().getText(), matcher);
+        Poller.waitUntil(messageBarDiv.find(By.className("aui-message-error")).timed().getText(), matcher);
     }
 
     protected void waitFormBecomeVisible()
@@ -195,7 +195,7 @@ public class RepositoriesPage implements Page
         // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(messageBarDiv);
 
-        return messageBarDiv.find(By.className("error")).timed().getText().by(1000l);
+        return messageBarDiv.find(By.className("aui-message-error")).timed().getText().by(1000l);
     }
 
     public boolean containsRepositoryWithName(String askedRepositoryName)

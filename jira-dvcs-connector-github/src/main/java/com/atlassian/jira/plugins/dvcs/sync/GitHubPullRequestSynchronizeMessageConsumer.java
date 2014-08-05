@@ -76,6 +76,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Repository repository = payload.getRepository();
 
         PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
+
         gitHubPullRequestProcessor.processPullRequest(repository, remotePullRequest);
     }
 
@@ -94,7 +95,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         {
             PullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
             return pullRequestService.getPullRequest(RepositoryId.createFromUrl(repository.getRepositoryUrl()), number);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

@@ -131,7 +131,7 @@ public class GitHubEventServiceImplTest
         //noinspection unchecked
         when(events.next()).thenReturn(firstPage, secondPage);
 
-        gitHubEventService.synchronize(repository, true, new String[]{});
+        gitHubEventService.synchronize(repository, true, new String[]{}, false);
         verify(events, times(1)).next();
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
     }
@@ -155,7 +155,7 @@ public class GitHubEventServiceImplTest
         //noinspection unchecked
         when(events.next()).thenReturn(firstPage, secondPage, thirdPage);
 
-        gitHubEventService.synchronize(repository, true, new String[]{});
+        gitHubEventService.synchronize(repository, true, new String[]{}, false);
         verify(events, times(2)).next();
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
     }
@@ -165,7 +165,7 @@ public class GitHubEventServiceImplTest
     {
         mock300Events();
 
-        gitHubEventService.synchronize(repository, true, new String[]{});
+        gitHubEventService.synchronize(repository, true, new String[]{}, false);
         verify(events, times(10)).next();
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
         verify(messagingService).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
@@ -178,7 +178,7 @@ public class GitHubEventServiceImplTest
 
         when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(true);
 
-        gitHubEventService.synchronize(repository, true, new String[]{});
+        gitHubEventService.synchronize(repository, true, new String[]{}, false);
         verify(events, times(10)).next();
         verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
         verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());

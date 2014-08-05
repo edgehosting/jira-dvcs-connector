@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.cache.CacheManager;
+import com.atlassian.cache.CachedReference;
+import com.atlassian.cache.Supplier;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -11,10 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import javax.annotation.Resource;
+
+import static com.atlassian.activeobjects.spi.DatabaseType.ORACLE;
 
 /**
  * An implementation of {@link QueryHelper}.
@@ -39,53 +43,42 @@ public class QueryHelperImpl implements QueryHelper
     @Resource
     private DataSourceProvider dataSourceProvider;
 
-    /**
-     * @see DataSourceProvider#getSchema()
-     */
-    private String schema;
+    private final CachedReference<DataSourceMetaData> dataSourceMetaData;
 
-    /**
-     * @see DatabaseMetaData#getIdentifierQuoteString()
-     */
-    private String quote;
-
-    /**
-     * @see #init()
-     */
-    private boolean initialized;
-
-    /**
-     * Lazy initialization of information provided by connection.
-     */
-    private synchronized void init()
+    public QueryHelperImpl(final CacheManager cacheManager)
     {
-        if (!initialized)
+        dataSourceMetaData = cacheManager.getCachedReference(getClass().getName() + ".dataSourceMetaData",
+                new Supplier<DataSourceMetaData>()
         {
-            Connection connection = null;
-            try
+            @Override
+            public DataSourceMetaData get()
             {
-                this.schema = dataSourceProvider.getSchema();
-                
-                connection = dataSourceProvider.getDataSource().getConnection();
-                this.quote = connection.getMetaData().getIdentifierQuoteString();
-                initialized = true;
+                Connection connection = null;
+                try
+                {
+                    connection = dataSourceProvider.getDataSource().getConnection();
+                    final DatabaseType databaseType = dataSourceProvider.getDatabaseType();
+                    final String schema = dataSourceProvider.getSchema();
+                    final String quote = connection.getMetaData().getIdentifierQuoteString();
+                    return new DataSourceMetaData(databaseType, schema, quote);
 
-            } catch (SQLException e)
-            {
-                throw new RuntimeException(e);
-                
-            } finally {
-                if (connection != null) {
-                    try
-                    {
-                        connection.close();
-                    } catch (SQLException e)
-                    {
-                        LOGGER.error("Unable to close connection!", e);
+                } catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+
+                } finally {
+                    if (connection != null) {
+                        try
+                        {
+                            connection.close();
+                        } catch (SQLException e)
+                        {
+                            LOGGER.error("Unable to close connection!", e);
+                        }
                     }
                 }
             }
-        }
+        });
     }
 
     /**
@@ -94,16 +87,15 @@ public class QueryHelperImpl implements QueryHelper
     @Override
     public String getAlias(String plainAlias)
     {
-        init();
         // TODO: BUG inside AO in case of ORACLE:
         // AO does not quote aliases except of group by clause
         // mixed quoted and unquoted aliases are problems, because oracle does automatically upper case of unquoted aliases
         // this workaround does that all aliases in case of oracle will be upper-cased, regardless if it is quoted or not.
-        if (DatabaseType.ORACLE.equals(dataSourceProvider.getDatabaseType())) {
+        if (ORACLE.equals(dataSourceMetaData.get().databaseType))
+        {
             return plainAlias.toUpperCase();
-        } else {
-            return plainAlias; 
         }
+        return plainAlias;
     }
 
     /**
@@ -112,20 +104,20 @@ public class QueryHelperImpl implements QueryHelper
     @Override
     public String getSqlTableName(String plainTableName)
     {
-        init();
+        final DataSourceMetaData dataSourceMetaData = this.dataSourceMetaData.get();
 
         String result = "";
 
         // add schema if necessary
-        if (StringUtils.isNotBlank(schema))
+        if (StringUtils.isNotBlank(dataSourceMetaData.schema))
         {
-            result += schema + ".";
+            result += dataSourceMetaData.schema + ".";
         }
 
         // quotes if necessary
-        if (StringUtils.isNotBlank(quote))
+        if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
-            result += quote + plainTableName + quote;
+            result += dataSourceMetaData.quote + plainTableName + dataSourceMetaData.quote;
         } else
         {
             result += plainTableName;
@@ -140,17 +132,16 @@ public class QueryHelperImpl implements QueryHelper
     @Override
     public String getSqlColumnName(String plainColumnName)
     {
-        init();
+        final DataSourceMetaData dataSourceMetaData = this.dataSourceMetaData.get();
 
         // quotes if necessary
-        if (StringUtils.isNotBlank(quote))
+        if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
-            return quote + plainColumnName + quote;
+            return dataSourceMetaData.quote + plainColumnName + dataSourceMetaData.quote;
         } else
         {
             return plainColumnName;
         }
-
     }
 
     /**
@@ -248,4 +239,17 @@ public class QueryHelperImpl implements QueryHelper
         return true;
     }
 
+    private static class DataSourceMetaData {
+
+        private final DatabaseType databaseType;
+        private final String schema;
+        private final String quote;
+
+        private DataSourceMetaData(final DatabaseType databaseType, final String schema, final String quote)
+        {
+            this.databaseType = databaseType;
+            this.schema = schema;
+            this.quote = quote;
+        }
+    }
 }

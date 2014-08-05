@@ -1,14 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.testng.annotations.Test;
-
-import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
-import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class TestGlobalFilterQueryWhereClauseBuilder
 {

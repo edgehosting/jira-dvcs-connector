@@ -27,18 +27,19 @@ public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMess
                                                Set<Integer> processedPullRequests,
                                                Set<Integer> processedPullRequestsLocal,
                                                Date lastSyncDate,
-                                               int syncAuditId)
+                                               int syncAuditId,
+                                               boolean webHookSync)
     {
-        super(progress, syncAuditId, softSync, repository);
+        super(progress, syncAuditId, softSync, repository, webHookSync);
         this.pageNum = pageNum;
         this.processedPullRequests = processedPullRequests;
         this.processedPullRequestsLocal = processedPullRequestsLocal;
         this.lastSyncDate = lastSyncDate;
     }
 
-    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate, int syncAuditId)
+    public BitbucketSynchronizeActivityMessage(Repository repository, boolean softSync, Date lastSyncDate, int syncAuditId, boolean webHookSync)
     {
-        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate, syncAuditId);
+        this(repository, null, softSync, 1, new HashSet<Integer>(), new HashSet<Integer>(), lastSyncDate, syncAuditId, webHookSync);
     }
 
     /**

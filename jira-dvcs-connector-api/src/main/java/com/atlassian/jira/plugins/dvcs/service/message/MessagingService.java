@@ -172,7 +172,8 @@ public interface MessagingService
     int getSynchronizationAuditIdFromTags(String[] tags);
 
     /**
-     * Ends progress if no messages left for repository
+     * Ends progress if no messages left for repository. This includes kicking off smart commits for the repository if
+     * necessary and dispatching any synchronisation-related events.
      *
      * @param repo
      * @param progress

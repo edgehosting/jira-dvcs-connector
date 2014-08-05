@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -7,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "smartCommitError")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SmartCommitError
+public class SmartCommitError implements Serializable
 {
 
     @XmlAttribute

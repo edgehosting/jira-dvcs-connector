@@ -4,9 +4,11 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
@@ -136,20 +138,12 @@ public class GitHubPullRequestProcessor
         if (localPullRequest == null)
         {
             shouldUpdateCommits = true;
-            Map<String, Object> activity = new HashMap<String, Object>();
-            map(activity, repository, remotePullRequest);
-            localPullRequest = repositoryPullRequestDao.savePullRequest(repository, activity);
+            localPullRequest = pullRequestService.createPullRequest(toDaoModelPullRequest(repository, remotePullRequest, null));
         }
         else
         {
-            String sourceBranch = checkNotNull(getBranchName(remotePullRequest.getHead(), localPullRequest.getSourceBranch()), "Source branch");
-            String dstBranch = checkNotNull(getBranchName(remotePullRequest.getBase(), localPullRequest.getDestinationBranch()), "Destination branch");
-
             shouldUpdateCommits = shouldCommitsBeLoaded(remotePullRequest, localPullRequest);
-
-            localPullRequest = repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), remotePullRequest.getTitle(),
-                    sourceBranch, dstBranch, resolveStatus(remotePullRequest), remotePullRequest
-                            .getUpdatedAt(), getRepositoryFullName(remotePullRequest.getHead().getRepo()), remotePullRequest.getComments());
+            localPullRequest = pullRequestService.updatePullRequest(localPullRequest.getID(), toDaoModelPullRequest(repository, remotePullRequest, localPullRequest));
         }
 
         addParticipant(participantIndex, remotePullRequest.getUser(), Participant.ROLE_PARTICIPANT);
@@ -177,7 +171,7 @@ public class GitHubPullRequestProcessor
     private boolean hasSourceChanged(PullRequest remote, RepositoryPullRequestMapping local)
     {
         return !Objects.equal(local.getSourceBranch(), getBranchName(remote.getHead(), local.getSourceBranch()))
-                || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getHead().getRepo()));
+                || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getHead()));
     }
     private boolean hasDestinationChanged(PullRequest remote, RepositoryPullRequestMapping local)
     {
@@ -243,7 +237,8 @@ public class GitHubPullRequestProcessor
                 map(commitData, remoteCommit);
                 commit = repositoryPullRequestDao.saveCommit(repository, commitData);
                 repositoryPullRequestDao.linkCommit(repository, localPullRequest, commit);
-            } else
+            }
+            else
             {
                 remainingCommitsToDelete.remove(commit);
             }
@@ -272,7 +267,8 @@ public class GitHubPullRequestProcessor
         try
         {
             return pullRequestService.getCommits(RepositoryId.createFromUrl(repository.getRepositoryUrl()), remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -296,7 +292,8 @@ public class GitHubPullRequestProcessor
         try
         {
             pullRequestComments = issueService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -327,7 +324,8 @@ public class GitHubPullRequestProcessor
         try
         {
             pullRequestReviewComments = pullRequestService.getComments(repositoryId, remotePullRequest.getNumber());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -342,36 +340,48 @@ public class GitHubPullRequestProcessor
 
     private void updateCommentsCount(PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
     {
-        int commentsCount = remotePullRequest.getComments() + remotePullRequest.getReviewComments();
+        localPullRequest.setCommentCount(remotePullRequest.getComments() + remotePullRequest.getReviewComments());
+
         // updates count
-        repositoryPullRequestDao.updatePullRequestInfo(localPullRequest.getID(), localPullRequest.getName(),
-                localPullRequest.getSourceBranch(), localPullRequest.getDestinationBranch(),
-                RepositoryPullRequestMapping.Status.valueOf(localPullRequest.getLastStatus()), localPullRequest.getUpdatedOn(),
-                localPullRequest.getSourceRepo(), commentsCount);
+        pullRequestService.updatePullRequest(localPullRequest.getID(), localPullRequest);
     }
 
-    private void map(Map<String, Object> target, Repository repository, PullRequest source)
+    @VisibleForTesting
+    RepositoryPullRequestMapping toDaoModelPullRequest(Repository repository, PullRequest source, RepositoryPullRequestMapping localPullRequest)
     {
-        String sourceBranch = checkNotNull(getBranchName(source.getHead(), null), "Source branch");
-        String dstBranch = checkNotNull(getBranchName(source.getBase(), null), "Destination branch");
+        String sourceBranch = checkNotNull(getBranchName(source.getHead(), localPullRequest != null ? localPullRequest.getSourceBranch() : null), "Source branch");
+        String dstBranch = checkNotNull(getBranchName(source.getBase(), localPullRequest != null ? localPullRequest.getDestinationBranch() : null), "Destination branch");
 
-        target.put(RepositoryPullRequestMapping.REMOTE_ID, Long.valueOf(source.getNumber()));
-        target.put(RepositoryPullRequestMapping.NAME, ActiveObjectsUtils.stripToLimit(source.getTitle(), 255));
+        PullRequestStatus prStatus = resolveStatus(source);
 
-        target.put(RepositoryPullRequestMapping.URL, source.getHtmlUrl());
-        target.put(RepositoryPullRequestMapping.TO_REPO_ID, repository.getId());
+        RepositoryPullRequestMapping target = repositoryPullRequestDao.createPullRequest();
+        target.setDomainId(repository.getId());
+        target.setRemoteId((long) source.getNumber());
+        target.setName(ActiveObjectsUtils.stripToLimit(source.getTitle(), 255));
 
-        if (source.getUser() != null)
+        target.setUrl(source.getHtmlUrl());
+        target.setToRepositoryId(repository.getId());
+
+        target.setAuthor(source.getUser() != null ? source.getUser().getLogin() : null);
+        target.setCreatedOn(source.getCreatedAt());
+        target.setUpdatedOn(source.getUpdatedAt());
+        target.setSourceRepo(getRepositoryFullName(source.getHead()));
+        target.setSourceBranch(sourceBranch);
+        target.setDestinationBranch(dstBranch);
+        target.setLastStatus(prStatus.name());
+        target.setCommentCount(source.getComments());
+
+        if (prStatus == PullRequestStatus.OPEN)
         {
-            target.put(RepositoryPullRequestMapping.AUTHOR, source.getUser().getLogin());
+            target.setExecutedBy(target.getAuthor());
         }
-        target.put(RepositoryPullRequestMapping.CREATED_ON, source.getCreatedAt());
-        target.put(RepositoryPullRequestMapping.UPDATED_ON, source.getUpdatedAt());
-        target.put(RepositoryPullRequestMapping.SOURCE_REPO, getRepositoryFullName(source.getHead().getRepo()));
-        target.put(RepositoryPullRequestMapping.SOURCE_BRANCH, sourceBranch);
-        target.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, dstBranch);
-        target.put(RepositoryPullRequestMapping.LAST_STATUS, resolveStatus(source).name());
-        target.put(RepositoryPullRequestMapping.COMMENT_COUNT, source.getComments());
+        else
+        {
+            // Note: PullRequest.mergedBy will have the user who merged the PR but will miss who closed or reopened.
+            target.setExecutedBy(source.getMergedBy() != null ? source.getMergedBy().getLogin() : null);
+        }
+
+        return target;
     }
 
     private void map(Map<String, Object> target, RepositoryCommit source)
@@ -388,24 +398,27 @@ public class GitHubPullRequestProcessor
         return source.getSha() != null ? source.getSha() : source.getCommit().getSha();
     }
 
-    private RepositoryPullRequestMapping.Status resolveStatus(PullRequest pullRequest)
+    private PullRequestStatus resolveStatus(PullRequest pullRequest)
     {
-        if ("open".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return RepositoryPullRequestMapping.Status.OPEN;
-        } else if ("closed".equalsIgnoreCase(pullRequest.getState()))
-        {
-            return pullRequest.getMergedAt() != null ? RepositoryPullRequestMapping.Status.MERGED
-                    : RepositoryPullRequestMapping.Status.DECLINED;
-        } else
+        PullRequestStatus githubStatus = PullRequestStatus.fromGithubStatus(pullRequest.getState(), pullRequest.getMergedAt());
+
+        if (githubStatus == null)
         {
             LOGGER.warn("Unable to parse Status of GitHub Pull Request, unknown GH state: " + pullRequest.getState());
-            return RepositoryPullRequestMapping.Status.OPEN;
+            return PullRequestStatus.OPEN;
         }
+
+        return githubStatus;
     }
 
-    private String getRepositoryFullName(org.eclipse.egit.github.core.Repository gitHubRepository)
+    private String getRepositoryFullName(PullRequestMarker pullRequestMarker)
     {
+        if (pullRequestMarker == null)
+        {
+            return null;
+        }
+
+        final org.eclipse.egit.github.core.Repository gitHubRepository = pullRequestMarker.getRepo();
         if (gitHubRepository == null || gitHubRepository.getOwner() == null)
         {
             return null;

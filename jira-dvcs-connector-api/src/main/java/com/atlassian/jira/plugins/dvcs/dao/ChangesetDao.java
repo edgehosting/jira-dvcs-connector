@@ -20,14 +20,22 @@ public interface ChangesetDao
     void removeAllInRepository(int repositoryId);
 
     /**
+     * Calls {@link #createOrAssociate(com.atlassian.jira.plugins.dvcs.model.Changeset, java.util.Set)}.
+     * @deprecated Use {@link #createOrAssociate} instead.
+     */
+    @Deprecated
+    Changeset create(Changeset changeset, Set<String> extractedIssues);
+
+    /**
      * create Changeset and save to storage. If it's new object (without ID) after this operation it will have it assigned.
      * it's create alse all associations (repository- changeset, issues-changest)
      *
      * @param changeset
      * @param extractedIssues
-     * @return
+     * @return true if the changeset was created, false if it was updated
+     * @since 2.1.17
      */
-    Changeset create(Changeset changeset, Set<String> extractedIssues);
+    boolean createOrAssociate(Changeset changeset, Set<String> extractedIssues);
 
     /**
      * update properties of changeset which is already saved in DB
@@ -102,6 +110,8 @@ public interface ChangesetDao
      * @return number of changesets
      */
     public int getChangesetCount(final int repositoryId);
+
+    Set<String> findEmails(int repositoryId, String author);
 
     /**
      *

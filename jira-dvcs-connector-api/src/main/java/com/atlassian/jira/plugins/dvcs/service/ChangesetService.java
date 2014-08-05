@@ -64,4 +64,6 @@ public interface ChangesetService
      * @since 2.0.0
      */
     List<Changeset> getChangesetsWithFileDetails(List<Changeset> changesets);
+
+    Set<String> findEmails(int repositoryId, String author);
 }
