@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.0.11</version>
+        <version>2.0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-bitbucket</artifactId>
-    <version>2.0.11</version>
+    <version>2.0.12-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Jira DVCS Connector Bitbucket module</name>
     <description>Jira DVCS Connector Bitbucket module</description>
