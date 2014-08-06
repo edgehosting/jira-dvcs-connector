@@ -144,7 +144,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
                 request.put(RepositoryDomainMapping.DOMAIN, repositoryId);
                 return activeObjects.create(RepositoryPullRequestMapping.class, request);
             }
-
         });
     }
 
@@ -493,6 +492,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         attributes.put(RepositoryPullRequestMapping.URL, mapping.getUrl());
         attributes.put(RepositoryPullRequestMapping.TO_REPO_ID, mapping.getToRepositoryId());
         attributes.put(RepositoryPullRequestMapping.AUTHOR, mapping.getAuthor());
+        attributes.put(RepositoryPullRequestMapping.EXECUTED_BY, mapping.getExecutedBy());
         attributes.put(RepositoryPullRequestMapping.CREATED_ON, mapping.getCreatedOn());
         attributes.put(RepositoryPullRequestMapping.UPDATED_ON, mapping.getUpdatedOn());
         attributes.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, mapping.getDestinationBranch());

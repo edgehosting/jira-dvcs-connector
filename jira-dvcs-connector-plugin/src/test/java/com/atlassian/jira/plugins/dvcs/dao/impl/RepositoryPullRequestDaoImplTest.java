@@ -2,12 +2,10 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import net.java.ao.Query;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
@@ -21,10 +19,11 @@ import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.isSelect;
 import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereParamsThat;
 import static com.atlassian.jira.plugins.dvcs.matchers.QueryMatchers.withWhereThat;
 import static com.google.common.collect.Iterables.toArray;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -44,9 +43,6 @@ public class RepositoryPullRequestDaoImplTest
     @Mock
     Repository repository;
 
-    @Mock
-    RepositoryPullRequestMapping repositoryPullRequestMapping;
-
     @InjectMocks
     RepositoryPullRequestDaoImpl repositoryPullRequestDao;
 
@@ -63,8 +59,9 @@ public class RepositoryPullRequestDaoImplTest
 
         Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
 
-        assertNotNull("Result should be never null", result);
-        assertEquals(ImmutableSet.of("ISSUE-1", "ISSUE-2", "ISSUE-3"), result);
+        assertThat("Result should be never null", result, notNullValue());
+        assertThat("Result should contain 3 items", result, hasSize(3));
+        assertThat(result, containsInAnyOrder("ISSUE-1", "ISSUE-2", "ISSUE-3"));
         verify(activeObjects).find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
                 isSelect(),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
@@ -81,8 +78,8 @@ public class RepositoryPullRequestDaoImplTest
 
         Set<String> result = repositoryPullRequestDao.getIssueKeys(1, 1);
 
-        assertNotNull("Result should be never null", result);
-        assertTrue("Result should be empty", result.isEmpty());
+        assertThat("Result should be never null", result, notNullValue());
+        assertThat("Result should be empty", result, hasSize(0));
         verify(activeObjects).find(eq(RepositoryPullRequestIssueKeyMapping.class), argThat(Matchers.<Query>allOf(
                 isSelect(),
                 withWhereThat(containsString(RepositoryPullRequestIssueKeyMapping.DOMAIN)),
