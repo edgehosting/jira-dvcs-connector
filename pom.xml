@@ -311,6 +311,16 @@
         </dependency>
     </dependencies>
     <profiles>
+        <!--
+            For freezer plan template Publish build, which uses the -P release,release-profile profiles.
+            We want to skip integration test as the Publish build is triggered by a green CI build.
+        -->
+        <profile>
+            <id>release</id>
+            <properties>
+                <skipITs>true</skipITs>
+            </properties>
+        </profile>
         <profile>
             <id>jira52</id>
             <properties>
