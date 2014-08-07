@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.1.22-SNAPSHOT</version>
+        <version>2.1.22-D20140807T081831</version>
     </parent>
 
     <artifactId>bitbucket-client</artifactId>
