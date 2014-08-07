@@ -267,9 +267,6 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
-        // wait until pull request will be established
-        sleep(5000);
-
         final Comment comment = gitHubResource.commentPullRequest(GitHubTestResource.USER, repositoryName, pullRequest, issueKey + ": General Pull Request Comment");
 
         jiraTestedProduct.getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
@@ -287,7 +284,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
                     return false;
                 }
             }
-        }, 10000);
+        }, 10);
 
         sleep(1000);
 
@@ -352,9 +349,6 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
 
-        // gives such time for pull request creation
-        sleep(5000);
-
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
@@ -403,9 +397,6 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
 
         PullRequest pullRequest = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName,
                 "Open PR description", fixBranchName, "master");
-
-        // gives such time for pull request creation
-        sleep(5000);
 
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest, null);
 
@@ -571,7 +562,7 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         // we need to change status to force reloading of commits
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest);
 
-        waitUntilModified(gitHubEventsChangeTracker, 30000);
+        waitUntilModified(gitHubEventsChangeTracker, 10000);
 
         account.synchronizeRepository(repositoryName);
 
@@ -708,12 +699,8 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         PullRequest pullRequest1 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch1,
                 "Open PR description", branch1, "master");
 
-        waitUntilModified(gitHubEventsChangeTracker, 5000);
-
         PullRequest pullRequest2 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch2,
                 "Open PR description", branch2, "master");
-
-        waitUntilModified(gitHubEventsChangeTracker, 5000);
 
         PullRequest pullRequest3 = gitHubResource.openPullRequest(GitHubTestResource.USER, repositoryName, pullRequestName + " " + branch3,
                 "Open PR description", branch3, "master");
@@ -721,12 +708,9 @@ public abstract class BasePullRequestGitHubDVCSTest extends BaseDVCSTest
         waitUntilModified(gitHubEventsChangeTracker, 5000);
 
         gitHubResource.mergePullRequest(GitHubTestResource.USER, repositoryName, pullRequest2, null);
-
-        waitUntilModified(gitHubEventsChangeTracker, 5000);
-
         gitHubResource.closePullRequest(GitHubTestResource.USER, repositoryName, pullRequest3);
 
-        waitUntilModified(gitHubEventsChangeTracker, 30000);
+        waitUntilModified(gitHubEventsChangeTracker, 5000);
 
         account.synchronizeRepository(repositoryName);
 

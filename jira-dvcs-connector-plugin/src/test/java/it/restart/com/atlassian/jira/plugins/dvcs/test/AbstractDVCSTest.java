@@ -15,8 +15,6 @@ import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
 import com.atlassian.pageobjects.TestedProductFactory;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.CreateIssueDialog;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.dashboard.DashboardPage;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
@@ -112,12 +110,6 @@ public abstract class AbstractDVCSTest
     {
         // creates issue for testing
         final IssueCreateResponse issue = testKit.issues().createIssue(projectKey, issueSummary, JiraLoginPage.USER_ADMIN);
-
-        DashboardPage dashboardPage = getJiraTestedProduct().visit(DashboardPage.class);
-        dashboardPage.createIssue();
-        CreateIssueDialog issueDialog = dashboardPage.getCreateIssueDialog();
-        issueDialog.fill(issueSummary);
-        issueDialog.create();
 
         String result = issue.key();
 

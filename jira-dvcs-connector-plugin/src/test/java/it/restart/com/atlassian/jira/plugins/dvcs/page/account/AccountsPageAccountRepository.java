@@ -163,7 +163,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
     {
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
         for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && !repository.getSync().isFinished()) {
+            if (repository.getId() == getId() && repository.getSync() != null && !repository.getSync().isFinished()) {
                 return true;
             }
         }
@@ -199,13 +199,12 @@ public class AccountsPageAccountRepository extends WebDriverElement
                     {
                         return true;
                     }
-
                     // retrying synchronization
                     syncAndWaitForFinish();
 
                     return false;
                 }
-            }, 15000);
+            }, 15);
         }
         catch (TimeoutException e)
         {
@@ -218,13 +217,6 @@ public class AccountsPageAccountRepository extends WebDriverElement
     private void syncAndWaitForFinish()
     {
         synchronizationButton.click();
-        try
-        {
-            Thread.sleep(200l);
-        } catch (InterruptedException e)
-        {
-            // ignore
-        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 
@@ -275,26 +267,11 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public void fullSynchronize()
     {
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e)
-        {
-            //nop
-        }
         String script = synchronizationButton.getAttribute("onclick");
         script = script.replace("event", "{shiftKey: true}");
         synchronizationButton.javascript().execute(script);
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
-        try
-        {
-            Thread.sleep(1000l);
-        } catch (InterruptedException e)
-        {
-            // ignore
-        }
         new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
         {
 

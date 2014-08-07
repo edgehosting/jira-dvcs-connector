@@ -30,11 +30,10 @@ import javax.annotation.Nullable;
  * Pull request Bitbucket related tests.
  *
  * @author Miroslav Stencel
- *
  */
 public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
 {
-    @Factory(dataProvider = "dvcs")
+    @Factory (dataProvider = "dvcs")
     public PullRequestBitbucketDVCSTest(Dvcs dvcs)
     {
         super(dvcs);
@@ -125,7 +124,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         try
         {
             Thread.sleep(1000);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nop
         }
@@ -247,7 +247,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         try
         {
             Thread.sleep(1000);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nop
         }
@@ -304,7 +305,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         try
         {
             Thread.sleep(2000);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nop
         }
@@ -364,7 +366,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         try
         {
             Thread.sleep(1000);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nop
         }
@@ -468,7 +471,8 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         try
         {
             Thread.sleep(1000);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nop
         }
@@ -661,7 +665,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, branch3, true);
 
         BitbucketPullRequest expectedPullRequest1 = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName + " " + branch1, "Open PR description", branch1,
-            getDefaultBranchName());
+                getDefaultBranchName());
 
         BitbucketPullRequest expectedPullRequest2 = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, expectedPullRequestName + " " + branch2, "Open PR description", branch2,
                 getDefaultBranchName());
@@ -917,7 +921,7 @@ public class PullRequestBitbucketDVCSTest extends AbstractBitbucketDVCSTest
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestTitle);
         Assert.assertEquals(restPullRequest.getStatus(), status.toString());
         Assert.assertTrue(pullRequest.getLinks().getHtml().getHref().startsWith(restPullRequest.getUrl()));
-        Assert.assertEquals(restPullRequest.getAuthor().getUsername(),  account);
+        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), account);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), sourceBranch);
         Assert.assertEquals(restPullRequest.getSource().getRepository(), account + "/" + repositoryName);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), getDefaultBranchName());

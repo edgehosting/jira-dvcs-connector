@@ -355,7 +355,7 @@ public abstract class AbstractGitHubDVCSTest extends AbstractDVCSTest
             {
                 try
                 {
-                    Thread.sleep(5000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e)
                 {
                     // nothing to do

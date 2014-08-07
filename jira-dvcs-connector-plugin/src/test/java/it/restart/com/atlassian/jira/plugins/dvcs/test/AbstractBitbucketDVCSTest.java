@@ -216,7 +216,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
             {
                 return isRepositoryExists(forkAccount, repositoryName, forkRepositoryService);
             }
-        }, 5000);
+        }, 5);
 
         // waiting for fork repository to be available
         try
@@ -393,7 +393,7 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
 
     private String getRepositoriUri(BitbucketRepository repository)
     {
-        return getUriKey(repository.getOwner() , repository.getSlug());
+        return getUriKey(repository.getOwner(), repository.getSlug());
     }
 
     /**
