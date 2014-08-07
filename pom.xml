@@ -58,7 +58,7 @@
         <ao.version>0.23.7</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.5.0-20140622T050634-r6996702</greenhopper.version>
+        <greenhopper.version>6.5.20-D20140805T054926</greenhopper.version>
         <testkit.version>6.0.41</testkit.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
