@@ -15,6 +15,8 @@ import com.google.common.collect.Ordering;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.testng.Assert;

@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.test;
+package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 
 public interface Dvcs

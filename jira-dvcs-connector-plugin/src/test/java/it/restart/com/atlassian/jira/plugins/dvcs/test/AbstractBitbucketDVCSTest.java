@@ -15,6 +15,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
