@@ -125,7 +125,6 @@ public abstract class AbstractBitbucketDVCSTest extends AbstractDVCSTest
     @BeforeClass
     public void onTestsEnvironmentSetup()
     {
-
         super.onTestsEnvironmentSetup();
 
         new MagicVisitor(getJiraTestedProduct()).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);

@@ -18,16 +18,14 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
  * Abstract test for all DVCS tests.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 public abstract class AbstractDVCSTest
 {
@@ -37,11 +35,7 @@ public abstract class AbstractDVCSTest
      */
     private JiraTestedProduct jiraTestedProduct;
 
-    /**
-     * Holds information about created test issues.
-     */
-    private Map<String, Map<String, String>> projectKeyAndIssueSummaryToIssueKey = new HashMap<String, Map<String, String>>();
-
+    private Collection<String> createdIssueKeys = new ArrayList<String>();
 
     protected OAuth oAuth;
 
@@ -50,10 +44,10 @@ public abstract class AbstractDVCSTest
     /**
      * Prepares common test environment.
      */
-    @BeforeClass
+    @BeforeClass()
     public void onTestsEnvironmentSetup()
     {
-        testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(),"."));
+        testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
         jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
         new JiraLoginPageController(jiraTestedProduct).login();
     }
@@ -61,16 +55,12 @@ public abstract class AbstractDVCSTest
     /**
      * Destroys test environment.
      */
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod (alwaysRun = true)
     public void onTestCleanUp()
     {
-        for (Entry<String, Map<String, String>> byProjectKey : projectKeyAndIssueSummaryToIssueKey.entrySet())
+        for (String createdIssueKey : createdIssueKeys)
         {
-            String projectKey = byProjectKey.getKey();
-            for (String issueSummary : byProjectKey.getValue().keySet())
-            {
-                deleteTestIssue(projectKey, issueSummary);
-            }
+            testKit.issues().deleteIssue(createdIssueKey, true);
         }
     }
 
@@ -84,26 +74,22 @@ public abstract class AbstractDVCSTest
 
     /**
      * Adds test issue with provided informations.
-     * 
-     * @param projectKey
-     *            project key, to which will be assigned issue
-     * @param issueSummary
-     *            summary of created issue e.g.: name of test class, or something unique
+     *
+     * @param projectKey project key, to which will be assigned issue
+     * @param issueSummary summary of created issue e.g.: name of test class, or something unique
      * @return key of created issue
      */
     protected String addTestIssue(String projectKey, String issueSummary)
     {
-        deleteTestIssue(projectKey, issueSummary);
+        deleteIssuesBySummary(issueSummary);
         return createTestIssue(projectKey, issueSummary);
     }
 
     /**
      * Creates test issue with provided information.
-     * 
-     * @param projectKey
-     *            project key, to which will be assigned issue
-     * @param issueSummary
-     *            summary of created issue e.g.: name of test class, or something unique
+     *
+     * @param projectKey project key, to which will be assigned issue
+     * @param issueSummary summary of created issue e.g.: name of test class, or something unique
      * @return key of created issue
      */
     private String createTestIssue(String projectKey, String issueSummary)
@@ -111,42 +97,22 @@ public abstract class AbstractDVCSTest
         // creates issue for testing
         final IssueCreateResponse issue = testKit.issues().createIssue(projectKey, issueSummary, JiraLoginPage.USER_ADMIN);
 
-        String result = issue.key();
+        String createdIssueKey = issue.key();
+        createdIssueKeys.add(createdIssueKey);
 
-        Map<String, String> byProjectKey = projectKeyAndIssueSummaryToIssueKey.get(projectKey);
-        if (byProjectKey == null)
-        {
-            projectKeyAndIssueSummaryToIssueKey.put(projectKey, byProjectKey = new HashMap<String, String>());
-        }
-        byProjectKey.put(issueSummary, result);
-        return result;
+        return createdIssueKey;
     }
 
     /**
-     * Deletes provided test issue
-     * 
-     * @param projectKey
-     *            project key, to which will be assigned issue
-     * @param issueSummary
-     *            summary of created issue e.g.: name of test class, or something unique
+     * Delete any issues whose summary is the same
      */
-    private void deleteTestIssue(String projectKey, String issueSummary)
+    private void deleteIssuesBySummary(String issueSummary)
     {
-        // deletes obsolete test issues
         final SearchResult search = testKit.search().getSearch(new SearchRequest().jql("summary ~ \"" + issueSummary + "\""));
         for (Issue issue : search.issues)
         {
+            createdIssueKeys.remove(issue.key);
             testKit.issues().deleteIssue(issue.key, true);
-        }
-
-        Map<String, String> byProjectKey = projectKeyAndIssueSummaryToIssueKey.get(projectKey);
-        if (byProjectKey != null)
-        {
-            byProjectKey.remove(issueSummary);
-            if (byProjectKey.isEmpty())
-            {
-                projectKeyAndIssueSummaryToIssueKey.clear();
-            }
         }
     }
 
