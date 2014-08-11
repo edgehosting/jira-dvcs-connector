@@ -12,17 +12,18 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Re
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Abstract, common implementation for all GitHub tests.
- * 
+ *
  * @author Miroslav Stencel
- * 
  */
 public class MercurialDvcs implements Dvcs
 {
@@ -32,9 +33,7 @@ public class MercurialDvcs implements Dvcs
     private Map<String, Repository> uriToLocalRepository = new HashMap<String, Repository>();
 
     /**
-     * @param repositoryUri
-     *            e.g.: owner/name
-     * @return local repository for provided repository uri
+     * Retrieve the local repo for that name from the local map of repositories that this instance knows about
      */
     private Repository getLocalRepository(String owner, String repositoryName)
     {
@@ -43,20 +42,19 @@ public class MercurialDvcs implements Dvcs
 
     /**
      * Clones repository
-     * 
-     * @param cloneUrl
-     * 
-     * returns local repository
+     *
+     * @param cloneUrl returns local repository
      */
     private Repository clone(String cloneUrl)
     {
         RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration();
         configureHgBin(repositoryConfiguration);
+        configureHgRc(repositoryConfiguration);
 
         return Repository.clone(repositoryConfiguration, Files.createTempDir(), cloneUrl);
     }
 
-    
+
     /* (non-Javadoc)
      * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#createBranch(java.lang.String, java.lang.String, java.lang.String)
      */
@@ -95,7 +93,8 @@ public class MercurialDvcs implements Dvcs
             FileOutputStream output = new FileOutputStream(targetFile);
             output.write(content);
             output.close();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -113,7 +112,7 @@ public class MercurialDvcs implements Dvcs
         commitCommand.message(message);
         commitCommand.user(String.format("%s <%s>", authorName, authorEmail));
         Changeset changeset = commitCommand.execute();
-        
+
         return changeset.getNode();
     }
 
@@ -125,7 +124,7 @@ public class MercurialDvcs implements Dvcs
     {
         push(owner, repositoryName, username, password, null, false);
     }
-    
+
     private String generateCloneUrl(String owner, String repositorySlug, String username, String password)
     {
         return String.format("https://%s:%s@bitbucket.org/%s/%s", username, password, owner, repositorySlug);
@@ -142,16 +141,17 @@ public class MercurialDvcs implements Dvcs
         {
             pushCommand.newBranch();
         }
-        
+
         if (reference != null)
         {
             pushCommand.branch(reference);
         }
-        
+
         try
         {
             pushCommand.execute(generateCloneUrl(owner, repositoryName, username, password));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             new RuntimeException(e);
         }
@@ -165,7 +165,7 @@ public class MercurialDvcs implements Dvcs
     {
         push(owner, repositoryName, username, password, reference, false);
     }
-    
+
     /* (non-Javadoc)
      * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#createTestLocalRepository(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -175,7 +175,7 @@ public class MercurialDvcs implements Dvcs
         Repository localRepository = clone(generateCloneUrl(owner, repositoryName, username, password));
         uriToLocalRepository.put(getUriKey(owner, repositoryName), localRepository);
     }
-    
+
     /* (non-Javadoc)
      * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#deleteTestRepository(java.lang.String)
      */
@@ -190,13 +190,32 @@ public class MercurialDvcs implements Dvcs
             {
                 FileUtils.deleteDirectory(localRepository.getDirectory());
 
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
         }
     }
-    
+
+    @Override
+    public void deleteAllRepositories()
+    {
+        for (Repository repository : uriToLocalRepository.values())
+        {
+            repository.close();
+            try
+            {
+                FileUtils.deleteDirectory(repository.getDirectory());
+
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private void configureHgBin(RepositoryConfiguration repositoryConfiguration)
     {
         Process process;
@@ -204,12 +223,54 @@ public class MercurialDvcs implements Dvcs
         {
             process = new ProcessBuilder(repositoryConfiguration.getHgBin(), "--version").start();
             process.waitFor();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             repositoryConfiguration.setHgBin("/usr/local/bin/hg");
         }
     }
-    
+
+    /**
+     * The Bitbucket SHA fingerprint appears to be a bit messed up, we create a temp file to use as the .hgrc and put
+     * the Bitbucket fingerprint in it
+     */
+    private void configureHgRc(RepositoryConfiguration repositoryConfiguration)
+    {
+        File tempDir = Files.createTempDir();
+        BufferedWriter writer = null;
+        try
+        {
+            File hgRc = new File(tempDir.getCanonicalPath() + ".hgrc");
+            writer = new BufferedWriter(new FileWriter(hgRc));
+            writer.write("[hostfingerprints]");
+            writer.newLine();
+            writer.write("bitbucket.org = 45:ad:ae:1a:cf:0e:73:47:06:07:e0:88:f5:cc:10:e5:fa:1c:f7:99");
+            writer.flush();
+
+            final String hgRcPath = hgRc.getCanonicalPath();
+            repositoryConfiguration.setHgrcPath(hgRcPath);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            if (writer != null)
+            {
+                try
+                {
+                    writer.close();
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+    }
+
     private String getUriKey(String owner, String slug)
     {
         return owner + "/" + slug;
@@ -220,7 +281,7 @@ public class MercurialDvcs implements Dvcs
     {
         return RepositoryRemoteRestpoint.ScmType.HG;
     }
-    
+
     @Override
     public String getDefaultBranchName()
     {

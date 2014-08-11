@@ -114,4 +114,9 @@ public interface Dvcs
     public void createTestLocalRepository(String owner, String repositoryName, String username, String password);
 
     public void deleteTestRepository(String repositoryUri);
+
+    /**
+     * Delete all repositories that this DVCS client knows about
+     */
+    void deleteAllRepositories();
 }

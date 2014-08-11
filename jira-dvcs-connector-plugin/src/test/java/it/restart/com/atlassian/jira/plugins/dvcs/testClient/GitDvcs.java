@@ -314,7 +314,13 @@ public class GitDvcs implements Dvcs
             }
         }
     }
-    
+
+    @Override
+    public void deleteAllRepositories()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     private String getUriKey(String owner, String slug)
     {
         return owner + "/" + slug;
