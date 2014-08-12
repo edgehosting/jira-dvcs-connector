@@ -1,42 +1,30 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
-import org.testng.annotations.AfterClass;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class BitbucketPRTest extends PullRequestTestCases
 {
-private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
+    private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
 
     @Factory (dataProvider = "dvcs")
-    public BitbucketPRTest(final Dvcs dvcs)
+    public BitbucketPRTest(final Dvcs dvcs, final PullRequestClient pullRequestClient)
     {
-        super(dvcs);
+        super(dvcs, pullRequestClient);
     }
 
     /**
@@ -47,44 +35,9 @@ private Collection<BitbucketRepository> testRepositories = new ArrayList<Bitbuck
     {
         return new Object[][]
                 {
-                        new Object[] { new MercurialDvcs() }
+                        new Object[] { new MercurialDvcs(), new BitbucketPRClient() }
 //                        new Object[] { new GitDvcs() }
                 };
-    }
-
-    @Override
-    protected String openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
-    {
-        PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
-        List<String> reviewersList = reviewers == null ? null : Arrays.asList(reviewers);
-
-        BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base, reviewersList);
-
-        return pullRequest.getLinks().getHtml().getHref();
-    }
-
-    private PullRequestRemoteRestpoint getPullRequestRemoteRestpoint(String owner, String password)
-    {
-        BitbucketClientBuilderFactory bitbucketClientBuilderFactory = new DefaultBitbucketClientBuilderFactory(new Encryptor()
-        {
-
-            @Override
-            public String encrypt(final String input, final String organizationName, final String hostUrl)
-            {
-                return input;
-            }
-
-            @Override
-            public String decrypt(final String input, final String organizationName, final String hostUrl)
-            {
-                return input;
-            }
-        }, "DVCS Connector Tests", new HttpClientProvider());
-        Credential credential = new Credential();
-        credential.setAdminUsername(owner);
-        credential.setAdminPassword(password);
-        BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", null, credential).apiVersion(2).build();
-        return bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
     }
 
     @Override

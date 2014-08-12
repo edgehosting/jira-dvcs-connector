@@ -10,6 +10,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -49,6 +50,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
 
     protected final Dvcs dvcs;
+    protected final PullRequestClient pullRequestClient;
 
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
 
@@ -59,15 +61,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
     protected String repositoryName;
 
-    public PullRequestTestCases(Dvcs dvcs)
+    public PullRequestTestCases(Dvcs dvcs, PullRequestClient pullRequestClient)
     {
         this.dvcs = dvcs;
+        this.pullRequestClient = pullRequestClient;
     }
-
-    /**
-     * Open a Pull Request to the appropriate provider and return the URL for the Pull RequestØ
-     */
-    protected abstract String openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers);
 
     protected abstract String getTestIssueSummary();
 
@@ -103,7 +101,8 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected abstract void initLocalTestRepository();
 
     @AfterMethod
-    protected void afterEachPullRequestTest(){
+    protected void afterEachPullRequestTest()
+    {
         cleanupLocalTestRepository();
     }
 
@@ -150,7 +149,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
         dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
 
-        String pullRequestLocation = openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, dvcs.getDefaultBranchName());
+        String pullRequestLocation = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, dvcs.getDefaultBranchName());
 
         // Wait for remote system after creation of pullRequest
         sleep(1000);

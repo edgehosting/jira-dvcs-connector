@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
  */
 public interface PullRequestClient
 {
-    BitbucketPullRequest openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers);
+    String openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers);
 
     BitbucketPullRequest updatePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String title, String description, String base);
 

@@ -15,14 +15,14 @@ import java.util.List;
 public class BitbucketPRClient implements PullRequestClient
 {
     @Override
-    public BitbucketPullRequest openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
+    public String openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
         List<String> reviewersList = reviewers == null? null : Arrays.asList(reviewers);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base, reviewersList);
 
-        return pullRequest;
+        return pullRequest.getLinks().getHtml().getHref();
     }
 
     @Override
