@@ -18,7 +18,6 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     String MESSAGE = "MESSAGE";
     String DATE = "DATE";
     String AUTHOR_AVATAR_URL = "AUTHOR_AVATAR_URL";
-    String MERGE = "MERGE";
 
     /**
      * @return Author's full name of the commit, useful if the {@link #getAuthor()} username is not available.
@@ -49,11 +48,6 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     Date getDate();
 
     /**
-     * @return <i>true</i> if it is merge commit, <i>false</i> otherwise
-     */
-    boolean isMerge();
-
-    /**
      * @return Author's avatar URL, useful if the {@link #getAuthor()} username is not available. Can be null, then internal resolver will
      *         be used, otherwise it has precedence.
      */
@@ -71,6 +65,4 @@ public interface RepositoryCommitMapping extends RepositoryDomainMapping
     void setDate(Date date);
 
     void setAuthorAvatarUrl(String authorAvatarUrl);
-
-    void setMerge(boolean merge);
 }
