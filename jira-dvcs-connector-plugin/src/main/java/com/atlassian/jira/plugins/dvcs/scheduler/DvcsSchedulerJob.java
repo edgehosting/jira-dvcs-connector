@@ -46,7 +46,7 @@ public class DvcsSchedulerJob implements JobHandler
     }
 
     /**
-     * Cleans orphan repositories - repositories mark as deleted with not existing organization.
+     * Cleans orphan repositories - repositories with no existing organization.
      */
     private void cleanOrphanRepositories()
     {
