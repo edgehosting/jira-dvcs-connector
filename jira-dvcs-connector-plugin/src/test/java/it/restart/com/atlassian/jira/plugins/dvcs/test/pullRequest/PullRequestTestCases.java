@@ -1,14 +1,13 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.test;
+package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
-import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
-import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
 import org.testng.Assert;
@@ -53,6 +52,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected final PullRequestClient pullRequestClient;
 
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
+    protected final DvcsPRTestHelper dvcsPRTestHelper;
 
     /**
      * Issue key used for testing.
@@ -65,6 +65,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     {
         this.dvcs = dvcs;
         this.pullRequestClient = pullRequestClient;
+        this.dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
     }
 
     protected abstract String getTestIssueSummary();
@@ -72,7 +73,8 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected abstract String getRepositoryNameSuffix();
 
     /**
-     * Setup the Organisation links in JIRA
+     * Setup the Organisation links in JIRA, called once per test class.
+     * @see #beforeEachPullRequestTestClass()
      */
     protected abstract void addOrganizations();
 
@@ -98,6 +100,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
         issueKey = addTestIssue(TEST_PROJECT_KEY, getTestIssueSummary());
     }
 
+    /**
+     * Initialise the local repository for testing, called before each method
+     *
+     * @see #beforeEachPullRequestTest()
+     */
     protected abstract void initLocalTestRepository();
 
     @AfterMethod
@@ -106,6 +113,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
         cleanupLocalTestRepository();
     }
 
+    /**
+     * Called after each test method, clean up any test repositories
+     *
+     * @see #afterEachPullRequestTest()
+     */
     protected abstract void cleanupLocalTestRepository();
 
     protected AccountsPageAccount refreshAccount(final String accountName)
@@ -133,23 +145,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
-        String[] commitNodeOpen = new String[2];
+        String[] commitResults = dvcsPRTestHelper.createBranchAndCommits(ACCOUNT_NAME, repositoryName, COMMIT_AUTHOR,
+                COMMIT_AUTHOR_EMAIL, PASSWORD, fixBranchName, issueKey, 2);
 
-        dvcs.addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
-        dvcs.commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
-
-        dvcs.createBranch(ACCOUNT_NAME, repositoryName, fixBranchName);
-
-        dvcs.addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix {}".getBytes());
-        commitNodeOpen[0] = dvcs.commit(ACCOUNT_NAME, repositoryName, "Fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        dvcs.addFile(ACCOUNT_NAME, repositoryName, issueKey + "_fix.txt", "Virtual fix \n{\n}".getBytes());
-        commitNodeOpen[1] = dvcs.commit(ACCOUNT_NAME, repositoryName, "Formatting fix", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-
-        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, fixBranchName, true);
-
-        String pullRequestLocation = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description", fixBranchName, dvcs.getDefaultBranchName());
+        String pullRequestLocation = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+                fixBranchName, dvcs.getDefaultBranchName());
 
         // Wait for remote system after creation of pullRequest
         sleep(1000);
@@ -161,16 +161,10 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-        Assert.assertEquals(restPrRepository.getSlug(), repositoryName);
-        Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
-        RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
-        Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
-        Assert.assertTrue(pullRequestLocation.startsWith(restPullRequest.getUrl()));
-        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), ACCOUNT_NAME);
-        Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
-        Assert.assertEquals(restPullRequest.getDestination().getBranch(), dvcs.getDefaultBranchName());
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), ACCOUNT_NAME + "/" + repositoryName);
+
+        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
+                fixBranchName, dvcs.getDefaultBranchName());
+
+        asserter.assertBasicPullRequestConfiguration(restPrRepository);
     }
 }

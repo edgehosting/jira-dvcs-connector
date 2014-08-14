@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.test;
+package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
