@@ -65,9 +65,15 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     {
     }
 
-    protected abstract String getTestIssueSummary();
+    protected String getTestIssueSummary()
+    {
+        return this.getClass().getCanonicalName();
+    }
 
-    protected abstract String getRepositoryNameSuffix();
+    protected String getRepositoryNameSuffix()
+    {
+        return this.getClass().getSimpleName().toLowerCase();
+    }
 
     /**
      * Retrieve the Dvcs to use for this test run

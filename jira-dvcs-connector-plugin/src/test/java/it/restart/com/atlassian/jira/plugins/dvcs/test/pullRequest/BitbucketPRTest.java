@@ -25,18 +25,6 @@ public class BitbucketPRTest extends PullRequestTestCases
     }
 
     @Override
-    protected String getTestIssueSummary()
-    {
-        return BitbucketPRTest.class.getCanonicalName();
-    }
-
-    @Override
-    protected String getRepositoryNameSuffix()
-    {
-        return BitbucketPRTest.class.getSimpleName().toLowerCase();
-    }
-
-    @Override
     protected Dvcs getDvcs()
     {
         // Git Dvcs appears broken so we only use mercurial at this point
