@@ -48,11 +48,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
      */
     protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
 
-    protected final Dvcs dvcs;
-    protected final PullRequestClient pullRequestClient;
+    protected Dvcs dvcs;
+    protected PullRequestClient pullRequestClient;
 
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
-    protected final DvcsPRTestHelper dvcsPRTestHelper;
+    protected DvcsPRTestHelper dvcsPRTestHelper;
 
     /**
      * Issue key used for testing.
@@ -61,11 +61,8 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
     protected String repositoryName;
 
-    public PullRequestTestCases(Dvcs dvcs, PullRequestClient pullRequestClient)
+    public PullRequestTestCases()
     {
-        this.dvcs = dvcs;
-        this.pullRequestClient = pullRequestClient;
-        this.dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
     }
 
     protected abstract String getTestIssueSummary();
@@ -73,7 +70,22 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected abstract String getRepositoryNameSuffix();
 
     /**
+     * Retrieve the Dvcs to use for this test run
+     *
+     * @see #beforeEachPullRequestTestClass()
+     */
+    protected abstract Dvcs getDvcs();
+
+    /**
+     * Retrieve the pull request client to use for this test run
+     *
+     * @see #beforeEachPullRequestTestClass()
+     */
+    protected abstract PullRequestClient getPullRequestClient();
+
+    /**
      * Setup the Organisation links in JIRA, called once per test class.
+     *
      * @see #beforeEachPullRequestTestClass()
      */
     protected abstract void addOrganizations();
@@ -82,6 +94,11 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     public void beforeEachPullRequestTestClass()
     {
         new JiraLoginPageController(getJiraTestedProduct()).login();
+
+        dvcs = getDvcs();
+        dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
+        pullRequestClient = getPullRequestClient();
+
         addOrganizations();
     }
 
@@ -123,11 +140,16 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected AccountsPageAccount refreshAccount(final String accountName)
     {
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, accountName);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), accountName);
         account.refresh();
 
         return account;
     }
+
+    /**
+     * The type of account we should look for when refreshing
+     */
+    protected abstract AccountsPageAccount.AccountType getAccountType();
 
     protected void sleep(final long millis)
     {
@@ -145,7 +167,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
-        String[] commitResults = dvcsPRTestHelper.createBranchAndCommits(ACCOUNT_NAME, repositoryName, COMMIT_AUTHOR,
+        dvcsPRTestHelper.createBranchAndCommits(ACCOUNT_NAME, repositoryName, COMMIT_AUTHOR,
                 COMMIT_AUTHOR_EMAIL, PASSWORD, fixBranchName, issueKey, 2);
 
         String pullRequestLocation = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",

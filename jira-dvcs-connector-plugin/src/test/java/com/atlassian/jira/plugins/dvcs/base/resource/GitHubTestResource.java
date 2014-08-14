@@ -29,9 +29,8 @@ import java.util.Map;
 
 /**
  * Provides GitHub test resource related functionality.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 public class GitHubTestResource
 {
@@ -80,9 +79,8 @@ public class GitHubTestResource
 
     /**
      * Lifetime of generated repository.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
      */
     public enum Lifetime
     {
@@ -91,9 +89,8 @@ public class GitHubTestResource
 
     /**
      * Context infomration related to generated {@link OAuth}.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
      */
     private static class OAuthContext
     {
@@ -111,9 +108,8 @@ public class GitHubTestResource
 
     /**
      * Context information related to generated repositories.
-     * 
+     *
      * @author Stanislav Dvorscak
-     * 
      */
     private static class RepositoryContext
     {
@@ -130,11 +126,9 @@ public class GitHubTestResource
 
         /**
          * Constructor.
-         * 
-         * @param owner
-         *            {@link #owner}
-         * @param repository
-         *            {@link #repository}
+         *
+         * @param owner {@link #owner}
+         * @param repository {@link #repository}
          */
         public RepositoryContext(String owner, Repository repository)
         {
@@ -155,7 +149,7 @@ public class GitHubTestResource
 
     /**
      * Registered owners.
-     * 
+     *
      * @see #addOwner(String, GitHubClient)
      */
     private Map<String, GitHubClient> gitHubClientByOwner = new HashMap<String, GitHubClient>();
@@ -167,22 +161,25 @@ public class GitHubTestResource
 
     /**
      * Created repositories.
-     * 
+     *
      * @see #addRepository(String, String, Lifetime, int)
      */
     private Map<Lifetime, List<RepositoryContext>> repositoryByLifetime = new HashMap<Lifetime, List<RepositoryContext>>();
 
     /**
      * Created repositories by slug.
-     * 
+     *
      * @see #addRepository(String, String, Lifetime, int)
      */
     private Map<String, RepositoryContext> repositoryBySlug = new HashMap<String, RepositoryContext>();
 
+    public GitHubTestResource(final MagicVisitor magicVisitor)
+    {
+        this.magicVisitor = magicVisitor;
+    }
+
     /**
      * Constructor.
-     * 
-     * @param testListenerDelegate
      */
     public GitHubTestResource(TestListenerDelegate testListenerDelegate, MagicVisitor magicVisitor)
     {
@@ -274,11 +271,8 @@ public class GitHubTestResource
 
     /**
      * Adds {@link OAuth} for provided GitHub information.
-     * 
-     * @param gitHubURL
-     *            URL for GitHub
-     * @param callbackURL
-     * @param lifetime
+     *
+     * @param gitHubURL URL for GitHub
      * @return OAuth
      */
     public OAuth addOAuth(String gitHubURL, String callbackURL, Lifetime lifetime)
@@ -293,11 +287,9 @@ public class GitHubTestResource
 
     /**
      * Removes provided {@link OAuth}.
-     * 
-     * @param gitHubURL
-     *            url of GitHub
-     * @param oAuth
-     *            to remove
+     *
+     * @param gitHubURL url of GitHub
+     * @param oAuth to remove
      * @see #addOAuth(String, String, Lifetime)
      */
     private void removeOAuth(String gitHubURL, OAuth oAuth)
@@ -310,11 +302,9 @@ public class GitHubTestResource
 
     /**
      * Registers owner, which will be used by GitHub communication.
-     * 
-     * @param owner
-     *            name of owner
-     * @param gitHubClient
-     *            appropriate GitHub client
+     *
+     * @param owner name of owner
+     * @param gitHubClient appropriate GitHub client
      */
     public void addOwner(String owner, GitHubClient gitHubClient)
     {
@@ -323,21 +313,22 @@ public class GitHubTestResource
 
     /**
      * Adds repository under provided owner, with random generated name based on provided name prefix.
-     * 
-     * @param owner
-     *            of created repository
-     * @param namePrefix
-     *            of repository
-     * @param lifetime
-     *            validity of repository (when it should be clean up)
-     * @param expirationDuration
-     *            duration (expiration time), when can be removed the repository, even by some other test (if cleaning of repository failed,
-     *            this can be used by cleaning retry)
+     *
+     * @param owner of created repository
+     * @param namePrefix of repository
+     * @param lifetime validity of repository (when it should be clean up)
+     * @param expirationDuration duration (expiration time), when can be removed the repository, even by some other test
+     * (if cleaning of repository failed, this can be used by cleaning retry)
      * @return name of created repository
      */
     public String addRepository(String owner, String namePrefix, Lifetime lifetime, int expirationDuration)
     {
         String repositoryName = timestampNameTestResource.randomName(namePrefix, expirationDuration);
+        return addRepositoryByName(owner, repositoryName, lifetime, expirationDuration);
+    }
+
+    public String addRepositoryByName(String owner, String repositoryName, Lifetime lifetime, int expirationDuration)
+    {
         Repository repository = createRepository(owner, repositoryName);
 
         RepositoryContext repositoryContext = new RepositoryContext(owner, repository);
@@ -348,16 +339,12 @@ public class GitHubTestResource
     }
 
     /**
-     * Forks provided repository into the {@link #ORGANIZATION}. The forked repository will be automatically destroyed after test finished.
-     * 
-     * @param owner
-     * @param repositoryOwner
-     * @param repositoryName
-     * @param lifetime
-     *            validity of repository (when it should be clean up)
-     * @param expirationDuration
-     *            duration (expiration time), when can be removed the repository, even by some other test (if cleaning of repository failed,
-     *            this can be used by cleaning retry)
+     * Forks provided repository into the {@link #ORGANIZATION}. The forked repository will be automatically destroyed
+     * after test finished.
+     *
+     * @param lifetime validity of repository (when it should be clean up)
+     * @param expirationDuration duration (expiration time), when can be removed the repository, even by some other test
+     * (if cleaning of repository failed, this can be used by cleaning retry)
      */
     public void fork(String owner, String repositoryOwner, String repositoryName, Lifetime lifetime, int expirationDuration)
     {
@@ -373,12 +360,14 @@ public class GitHubTestResource
             do
             {
                 sleep(5000);
-            } while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
+            }
+            while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
 
             RepositoryContext repositoryContext = new RepositoryContext(owner, repository);
             repositoryByLifetime.get(lifetime).add(repositoryContext);
             repositoryBySlug.put(getSlug(owner, repositoryName), repositoryContext);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -386,11 +375,9 @@ public class GitHubTestResource
 
     /**
      * Returns repository for provided name.
-     * 
-     * @param owner
-     *            of repository
-     * @param name
-     *            of repository
+     *
+     * @param owner of repository
+     * @param name of repository
      * @return resolved repository
      */
     public Repository getRepository(String owner, String name)
@@ -401,19 +388,13 @@ public class GitHubTestResource
 
     /**
      * Open pull request over provided repository, head and base information.
-     * 
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     *            on which repository
-     * @param title
-     *            title of Pull request
-     * @param description
-     *            description of Pull request
-     * @param head
-     *            from which head e.g.: master or organization:master
-     * @param base
-     *            to which base
+     *
+     * @param owner of repository
+     * @param repositoryName on which repository
+     * @param title title of Pull request
+     * @param description description of Pull request
+     * @param head from which head e.g.: master or organization:master
+     * @param base to which base
      * @return created EGit pull request
      */
     public PullRequest openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
@@ -462,16 +443,11 @@ public class GitHubTestResource
     /**
      * Update pull request over provided repository, head and base information.
      *
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     *            on which repository
-     * @param title
-     *            title of Pull request
-     * @param description
-     *            description of Pull request
-     * @param base
-     *            to which base
+     * @param owner of repository
+     * @param repositoryName on which repository
+     * @param title title of Pull request
+     * @param description description of Pull request
+     * @param base to which base
      * @return created EGit pull request
      */
     public PullRequest updatePullRequest(PullRequest pullRequest, String owner, String repositoryName, String title, String description, String base)
@@ -507,10 +483,6 @@ public class GitHubTestResource
 
     /**
      * Returns slug for provided representation.
-     * 
-     * @param owner
-     * @param repositoryName
-     * @return
      */
     public String getSlug(String owner, String repositoryName)
     {
@@ -520,14 +492,10 @@ public class GitHubTestResource
     /**
      * Merges provided pull request.
      *
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     *            pull request owner
-     * @param pullRequest
-     *            to close
+     * @param owner of repository
+     * @param repositoryName pull request owner
+     * @param pullRequest to close
      * @param commitMessage the message that will be used got the merge commit
-     *
      */
     public void mergePullRequest(String owner, String repositoryName, PullRequest pullRequest, String commitMessage)
     {
@@ -537,7 +505,8 @@ public class GitHubTestResource
         {
             pullRequestService.merge(bySlug.repository, pullRequest.getNumber(), commitMessage);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -547,13 +516,10 @@ public class GitHubTestResource
 
     /**
      * Closes provided pull request.
-     * 
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     *            pull request owner
-     * @param pullRequest
-     *            to close
+     *
+     * @param owner of repository
+     * @param repositoryName pull request owner
+     * @param pullRequest to close
      */
     public void closePullRequest(String owner, String repositoryName, PullRequest pullRequest)
     {
@@ -564,7 +530,8 @@ public class GitHubTestResource
             pullRequest.setState("CLOSED");
             pullRequestService.editPullRequest(bySlug.repository, pullRequest);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -588,7 +555,8 @@ public class GitHubTestResource
         {
             return pullRequestService.getCommits(bySlug.repository, pullRequestId);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -597,14 +565,10 @@ public class GitHubTestResource
 
     /**
      * Adds comment to provided pull request.
-     * 
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     * @param pullRequest
-     *            pull request owner
-     * @param comment
-     *            message
+     *
+     * @param owner of repository
+     * @param pullRequest pull request owner
+     * @param comment message
      * @return created remote comment
      */
     public Comment commentPullRequest(String owner, String repositoryName, PullRequest pullRequest, String comment)
@@ -617,7 +581,8 @@ public class GitHubTestResource
             return issueService.createComment(bySlug.repository,
                     pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -627,15 +592,9 @@ public class GitHubTestResource
     /**
      * Adds comment to provided pull request as author.
      *
-     * @param owner
-     *            of repository
-     * @param repositoryName
-     * @param pullRequest
-     *            pull request owner
-     * @param comment
-     *            message
-     * @param
-     *            author
+     * @param owner of repository
+     * @param pullRequest pull request owner
+     * @param comment message
      * @return created remote comment
      */
     public Comment commentPullRequest(String owner, String repositoryName, PullRequest pullRequest, String comment, String author)
@@ -648,7 +607,8 @@ public class GitHubTestResource
             return issueService.createComment(bySlug.repository,
                     pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -672,7 +632,8 @@ public class GitHubTestResource
         {
             return issueService.getComment(owner, bySlug.repository.getName(), commentId);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
 
@@ -681,9 +642,8 @@ public class GitHubTestResource
 
     /**
      * Resolves GitHub client.
-     * 
-     * @param owner
-     *            of repository
+     *
+     * @param owner of repository
      * @return gitHubClient if exists or {@link RuntimeException}
      */
     private GitHubClient getGitHubClient(String owner)
@@ -698,11 +658,9 @@ public class GitHubTestResource
 
     /**
      * Creates repository for provided name and appropriate owner.
-     * 
-     * @param owner
-     *            of repository
-     * @param name
-     *            of repository
+     *
+     * @param owner of repository
+     * @param name of repository
      * @return created repository
      */
     private Repository createRepository(String owner, String name)
@@ -718,12 +676,14 @@ public class GitHubTestResource
             if (gitHubClient.getUser().equals(owner))
             {
                 return repositoryService.createRepository(repository);
-            } else
+            }
+            else
             {
                 return repositoryService.createRepository(owner, repository);
             }
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -731,11 +691,9 @@ public class GitHubTestResource
 
     /**
      * Removes repository for provided name by provided owner.
-     * 
-     * @param owner
-     *            of repository
-     * @param name
-     *            of repository
+     *
+     * @param owner of repository
+     * @param name of repository
      */
     private void removeRepository(String owner, String name)
     {
@@ -743,7 +701,8 @@ public class GitHubTestResource
         {
             // removes repository itself
             getGitHubClient(owner).delete("/repos/" + owner + "/" + name);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -751,9 +710,8 @@ public class GitHubTestResource
 
     /**
      * Removes all expired repository for provided owner.
-     * 
-     * @param owner
-     *            of repositories
+     *
+     * @param owner of repositories
      * @see #addRepository(String, String, Lifetime, int)
      */
     private void removeExpiredRepository(String owner)
@@ -765,7 +723,8 @@ public class GitHubTestResource
         try
         {
             repositories = repositoryService.getRepositories(owner);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -777,18 +736,21 @@ public class GitHubTestResource
                 try
                 {
                     gitHubClient.delete("/repos/" + owner + "/" + repository.getName());
-                } catch (RequestException e)
+                }
+                catch (RequestException e)
                 {
                     if (e.getStatus() == HttpStatus.SC_NOT_FOUND)
                     {
                         // Old GitHub Enterprise caches list of repositories and if this repository was already removed, it can be still
                         // presented in this list
                         logger.warn("Can not remove repository: " + owner + "/" + repository.getName() + ", because it was not found!", e);
-                    } else
+                    }
+                    else
                     {
                         throw new RuntimeException(e);
                     }
-                } catch (IOException e)
+                }
+                catch (IOException e)
                 {
                     throw new RuntimeException(e);
                 }
@@ -801,7 +763,8 @@ public class GitHubTestResource
         try
         {
             Thread.sleep(millis);
-        } catch (InterruptedException e)
+        }
+        catch (InterruptedException e)
         {
             // nothing to do
         }

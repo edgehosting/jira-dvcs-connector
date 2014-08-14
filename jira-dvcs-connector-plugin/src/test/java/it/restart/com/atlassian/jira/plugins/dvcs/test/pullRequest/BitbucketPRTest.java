@@ -7,12 +7,11 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,23 +20,8 @@ public class BitbucketPRTest extends PullRequestTestCases
 {
     private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
 
-    @Factory (dataProvider = "dvcs")
-    public BitbucketPRTest(final Dvcs dvcs, final PullRequestClient pullRequestClient)
+    public BitbucketPRTest()
     {
-        super(dvcs, pullRequestClient);
-    }
-
-    /**
-     * Git appears broken for the moment, commented out
-     */
-    @DataProvider
-    public static Object[][] dvcs()
-    {
-        return new Object[][]
-                {
-                        new Object[] { new MercurialDvcs(), new BitbucketPRClient() }
-//                        new Object[] { new GitDvcs() }
-                };
     }
 
     @Override
@@ -50,6 +34,19 @@ public class BitbucketPRTest extends PullRequestTestCases
     protected String getRepositoryNameSuffix()
     {
         return BitbucketPRTest.class.getSimpleName().toLowerCase();
+    }
+
+    @Override
+    protected Dvcs getDvcs()
+    {
+        // Git Dvcs appears broken so we only use mercurial at this point
+        return new MercurialDvcs();
+    }
+
+    @Override
+    protected PullRequestClient getPullRequestClient()
+    {
+        return new BitbucketPRClient();
     }
 
     @Override
@@ -91,8 +88,9 @@ public class BitbucketPRTest extends PullRequestTestCases
         dvcs.deleteAllRepositories();
     }
 
-    private String getUriKey(String owner, String slug)
+    @Override
+    protected AccountsPageAccount.AccountType getAccountType()
     {
-        return owner + "/" + slug;
+        return AccountsPageAccount.AccountType.BITBUCKET;
     }
 }
