@@ -1,17 +1,16 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.pageobjects.TestedProductFactory;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
-
 import org.eclipse.egit.github.core.client.GitHubClient;
-
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.pageobjects.TestedProductFactory;
+import org.testng.annotations.Test;
 
 /**
  * Pull request GitHub related tests.
@@ -89,4 +88,10 @@ public class PullRequestGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
         new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogout();
     }
 
+    @Override
+    @Test (enabled = false)
+    public void testFullSyncManyGitHubEvents()
+    {
+        super.testFullSyncManyGitHubEvents();
+    }
 }

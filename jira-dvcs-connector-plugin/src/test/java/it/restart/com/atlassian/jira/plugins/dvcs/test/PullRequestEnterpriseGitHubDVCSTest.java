@@ -1,29 +1,27 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
-
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
 import com.atlassian.pageobjects.TestedProductFactory;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.testng.annotations.Test;
 
 /**
  * Pull request GitHub related tests.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 @Test
 public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDVCSTest
 {
+    private final String GITHUB_ENTERPRISE_USER_AGENT = "jira-dvcs-plugin-test";
 
     /**
      * Base URL of GitHub server.
@@ -65,12 +63,12 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
     @Override
     protected void setupGitHubResource(GitHubTestResource gitHubTestResource)
     {
-        GitHubClient gitHubClient = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, "jira-dvcs-plugin-test");
+        GitHubClient gitHubClient = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, GITHUB_ENTERPRISE_USER_AGENT);
         gitHubClient.setCredentials(GitHubTestResource.USER, GitHubTestResource.USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.USER, gitHubClient);
         gitHubTestResource.addOwner(GitHubTestResource.ORGANIZATION, gitHubClient);
 
-        GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, "jira-dvcs-plugin-test");
+        GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GIT_HUB_BASE_URL, GITHUB_ENTERPRISE_USER_AGENT);
         gitHubClient2.setCredentials(GitHubTestResource.OTHER_USER, GitHubTestResource.OTHER_USER_PASSWORD);
         gitHubTestResource.addOwner(GitHubTestResource.OTHER_USER, gitHubClient2);
     }
@@ -96,4 +94,38 @@ public class PullRequestEnterpriseGitHubDVCSTest extends BasePullRequestGitHubDV
         new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class, GIT_HUB_BASE_URL).doLogout();
     }
 
+    @Override
+    @Test (enabled = false)
+    public void testMultiplePullRequestsSoftSync()
+    {
+        super.testMultiplePullRequestsSoftSync();
+    }
+
+    @Override
+    @Test (enabled = false)
+    public void testMerge()
+    {
+        super.testMerge();
+    }
+
+    @Override
+    @Test (enabled = false)
+    public void testMultiplePullRequestsFullSync()
+    {
+        super.testMultiplePullRequestsFullSync();
+    }
+
+    @Override
+    @Test (enabled = false)
+    public void testDecline()
+    {
+        super.testDecline();
+    }
+
+    @Override
+    @Test (enabled = false)
+    public void testFullSyncManyGitHubEvents()
+    {
+        super.testFullSyncManyGitHubEvents();
+    }
 }
