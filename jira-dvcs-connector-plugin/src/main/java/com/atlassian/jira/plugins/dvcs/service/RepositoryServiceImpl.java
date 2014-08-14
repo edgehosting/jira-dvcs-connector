@@ -619,7 +619,6 @@ public class RepositoryServiceImpl implements RepositoryService
                 repository.setLinked(false);
                 repositoryDao.save(repository);
             }
-
         }
     }
 
