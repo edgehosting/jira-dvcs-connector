@@ -348,15 +348,15 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     {
         Query query = Query
                 .select("ID, *")
-                .alias(RepositoryCommitMapping.class, "COMMIT")
-                .alias(RepositoryPullRequestToCommitMapping.class, "PR_TO_COMMIT")
+                .alias(RepositoryCommitMapping.class, "cm")
+                .alias(RepositoryPullRequestToCommitMapping.class, "pr2cm")
                 .alias(RepositoryPullRequestMapping.class, "PR")
                 .join(RepositoryPullRequestToCommitMapping.class,
-                        "COMMIT.ID = PR_TO_COMMIT." + RepositoryPullRequestToCommitMapping.COMMIT)
+                        "cm.ID = pr2cm." + RepositoryPullRequestToCommitMapping.COMMIT)
                 .join(RepositoryPullRequestMapping.class,
-                        "PR_TO_COMMIT." + RepositoryPullRequestToCommitMapping.REQUEST_ID + " = PR.ID")
-                .where("COMMIT." + RepositoryDomainMapping.DOMAIN + " = ? AND PR.ID"
-                        + " = ? AND COMMIT." + RepositoryCommitMapping.NODE
+                        "pr2cm." + RepositoryPullRequestToCommitMapping.REQUEST_ID + " = PR.ID")
+                .where("cm." + RepositoryDomainMapping.DOMAIN + " = ? AND PR.ID"
+                        + " = ? AND cm." + RepositoryCommitMapping.NODE
                         + " = ?", domain.getId(), pullRequestId, node);
 
         RepositoryCommitMapping[] found = activeObjects.find(RepositoryCommitMapping.class, query);
