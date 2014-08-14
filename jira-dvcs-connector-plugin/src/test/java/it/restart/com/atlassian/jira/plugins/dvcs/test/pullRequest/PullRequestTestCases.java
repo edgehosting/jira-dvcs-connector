@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
@@ -75,38 +76,22 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
         return this.getClass().getSimpleName().toLowerCase();
     }
 
-    /**
-     * Retrieve the Dvcs to use for this test run
-     *
-     * @see #beforeEachPullRequestTestClass()
-     */
-    protected abstract Dvcs getDvcs();
-
-    /**
-     * Retrieve the pull request client to use for this test run
-     *
-     * @see #beforeEachPullRequestTestClass()
-     */
-    protected abstract PullRequestClient getPullRequestClient();
-
-    /**
-     * Setup the Organisation links in JIRA, called once per test class.
-     *
-     * @see #beforeEachPullRequestTestClass()
-     */
-    protected abstract void addOrganizations();
-
     @BeforeClass
     public void beforeEachPullRequestTestClass()
     {
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
-        dvcs = getDvcs();
-        dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
-        pullRequestClient = getPullRequestClient();
+        beforeEachTestInitialisation(getJiraTestedProduct());
 
-        addOrganizations();
+        dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
     }
+
+    /**
+     * Setup prior to running a test case, implementing classes <b>MUST</b> associate the organisations in JIRA
+     * <b>AND</b> initialise the following member variables on the parent: <ul> <li>PullRequestTestCases#dvcs</li>
+     * <li>PullRequestTestCases#pullRequestClient</li> </ul>
+     */
+    protected abstract void beforeEachTestInitialisation(JiraTestedProduct jiraTestedProduct);
 
     @AfterClass (alwaysRun = true)
     public void afterEachPullRequestTestClass()

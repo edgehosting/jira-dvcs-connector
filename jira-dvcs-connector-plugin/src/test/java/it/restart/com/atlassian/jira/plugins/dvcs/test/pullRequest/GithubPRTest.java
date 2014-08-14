@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -7,10 +8,8 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.AfterClass;
 
@@ -23,30 +22,26 @@ public class GithubPRTest extends PullRequestTestCases
     }
 
     @Override
-    protected Dvcs getDvcs()
+    protected void beforeEachTestInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
-        gitHubTestResource = new GitHubTestResource(new MagicVisitor(getJiraTestedProduct()));
+        gitHubTestResource = new GitHubTestResource(new MagicVisitor(jiraTestedProduct));
         gitHubTestResource.beforeClass();
         setupGitHubTestResource(gitHubTestResource);
 
-        return new GitHubDvcs(gitHubTestResource);
+        dvcs = new GitHubDvcs(gitHubTestResource);
+        pullRequestClient = new GitHubPullRequestClient(gitHubTestResource);
+
+        addOrganizations(jiraTestedProduct);
     }
 
-    @Override
-    protected PullRequestClient getPullRequestClient()
+    private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
     {
-        return new GitHubPullRequestClient(gitHubTestResource);
-    }
-
-    @Override
-    protected void addOrganizations()
-    {
-        OAuth oAuth = gitHubTestResource.addOAuth(GitHubTestResource.URL, getJiraTestedProduct().getProductInstance().getBaseUrl(),
+        OAuth oAuth = gitHubTestResource.addOAuth(GitHubTestResource.URL, jiraTestedProduct.getProductInstance().getBaseUrl(),
                 GitHubTestResource.Lifetime.DURING_CLASS);
 
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubLoginPage.class).doLogin();
+        new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogin();
         OAuthCredentials oAuthCredentials = new OAuthCredentials(oAuth.key, oAuth.secret);
-        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
+        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
         repositoriesPageController.getPage().deleteAllOrganizations();
         repositoriesPageController.addOrganization(RepositoriesPageController.AccountType.GITHUB, ACCOUNT_NAME,
                 oAuthCredentials, false);
