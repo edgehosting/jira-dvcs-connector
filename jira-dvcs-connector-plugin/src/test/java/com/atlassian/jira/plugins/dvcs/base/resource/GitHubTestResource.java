@@ -499,11 +499,16 @@ public class GitHubTestResource
      */
     public void mergePullRequest(String owner, String repositoryName, PullRequest pullRequest, String commitMessage)
     {
+        mergePullRequest(owner, repositoryName, pullRequest.getNumber(), commitMessage);
+    }
+
+    public void mergePullRequest(String owner, String repositoryName, int pullRequestNumber, String commitMessage)
+    {
         RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
         PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
         try
         {
-            pullRequestService.merge(bySlug.repository, pullRequest.getNumber(), commitMessage);
+            pullRequestService.merge(bySlug.repository, pullRequestNumber, commitMessage);
 
         }
         catch (IOException e)
@@ -511,7 +516,6 @@ public class GitHubTestResource
             throw new RuntimeException(e);
 
         }
-
     }
 
     /**
