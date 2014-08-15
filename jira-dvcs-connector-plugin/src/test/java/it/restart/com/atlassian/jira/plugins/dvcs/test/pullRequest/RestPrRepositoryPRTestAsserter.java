@@ -42,4 +42,12 @@ public class RestPrRepositoryPRTestAsserter
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), destinationBranchName);
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), expectedRepositorySlug);
     }
+
+    public void assertPullRequestApproved(final RestPullRequest restPullRequest)
+    {
+
+        Assert.assertEquals(restPullRequest.getParticipants().size(), 1);
+        Assert.assertEquals(restPullRequest.getParticipants().get(0).getUser().getUsername(), username);
+        Assert.assertTrue(restPullRequest.getParticipants().get(0).isApproved());
+    }
 }

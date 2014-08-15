@@ -14,22 +14,22 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public String openPullRequest(final String owner, final String repositoryName, final String password,
+    public PullRequestDetails openPullRequest(final String owner, final String repositoryName, final String password,
             final String title, final String description, final String head, final String base, final String... reviewers)
     {
         PullRequest pullRequest = gitHubTestResource.openPullRequest(owner, repositoryName, title, description, head, base);
 
-        return pullRequest.getHtmlUrl();
+        return new PullRequestDetails(pullRequest.getHtmlUrl(), new Long(pullRequest.getNumber()));
     }
 
     @Override
-    public BitbucketPullRequest updatePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest, final String title, final String description, final String base)
+    public PullRequestDetails updatePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest, final String title, final String description, final String base)
     {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public BitbucketPullRequest openForkPullRequest(final String owner, final String repositoryName, final String title, final String description, final String head, final String base, final String forkOwner, final String forkPassword)
+    public PullRequestDetails openForkPullRequest(final String owner, final String repositoryName, final String title, final String description, final String head, final String base, final String forkOwner, final String forkPassword)
     {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -41,15 +41,16 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public void approvePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest)
+    public void approvePullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId)
     {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void mergePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest)
+    public void mergePullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId)
     {
-        throw new UnsupportedOperationException("Not implemented");
+        final int pullRequestNumber = pullRequestId.intValue();
+        gitHubTestResource.mergePullRequest(owner, repositoryName, pullRequestNumber, "Merge Message");
     }
 
     @Override

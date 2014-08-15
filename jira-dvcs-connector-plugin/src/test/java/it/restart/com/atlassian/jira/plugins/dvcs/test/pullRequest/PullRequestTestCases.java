@@ -2,6 +2,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
@@ -154,18 +155,49 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     }
 
     @Test (groups = { "PRTestCases" })
-    public void testOpenPullRequestBranch()
+    public void testOpenPullRequestApproveAndMerge()
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
         dvcsPRTestHelper.createBranchAndCommits(ACCOUNT_NAME, repositoryName, COMMIT_AUTHOR,
                 COMMIT_AUTHOR_EMAIL, PASSWORD, fixBranchName, issueKey, 2);
 
-        String pullRequestLocation = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+        PullRequestClient.PullRequestDetails pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
+        String pullRequestLocation = pullRequestDetails.getLocation();
 
         // Wait for remote system after creation of pullRequest
         sleep(1000);
+
+        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
+                fixBranchName, dvcs.getDefaultBranchName());
+
+        asserter.assertBasicPullRequestConfiguration(restPrRepository);
+
+        if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
+        {
+            pullRequestClient.approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
+
+            sleep(500);
+
+            restPrRepository = refreshSyncAndGetFirstPrRepository();
+            asserter.assertPullRequestApproved(restPrRepository.getPullRequests().get(0));
+        }
+
+        pullRequestClient.mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
+
+        sleep(1000);
+
+        refreshAccount(ACCOUNT_NAME).synchronizeRepository(repositoryName);
+        restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        Assert.assertEquals(restPrRepository.getPullRequests().get(0).getStatus(), PullRequestStatus.MERGED.toString());
+    }
+
+    private RestPrRepository refreshSyncAndGetFirstPrRepository()
+    {
 
         AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
         account.synchronizeRepository(repositoryName);
@@ -174,10 +206,6 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
-
-        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
-                fixBranchName, dvcs.getDefaultBranchName());
-
-        asserter.assertBasicPullRequestConfiguration(restPrRepository);
+        return restPrRepository;
     }
 }

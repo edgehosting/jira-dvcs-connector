@@ -15,34 +15,34 @@ import java.util.List;
 public class BitbucketPRClient implements PullRequestClient
 {
     @Override
-    public String openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
+    public PullRequestDetails openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
-        List<String> reviewersList = reviewers == null? null : Arrays.asList(reviewers);
+        List<String> reviewersList = reviewers == null ? null : Arrays.asList(reviewers);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, head, base, reviewersList);
 
-        return pullRequest.getLinks().getHtml().getHref();
+        return new PullRequestDetails(pullRequest.getLinks().getHtml().getHref(), pullRequest.getId());
     }
 
     @Override
-    public BitbucketPullRequest updatePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String title, String description, String base)
+    public PullRequestDetails updatePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String title, String description, String base)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
         BitbucketPullRequest updatedPullRequest = pullRequestRemoteRestpoint.updatePullRequest(owner, repositoryName, pullRequest, title, description, base);
 
-        return updatedPullRequest;
+        return new PullRequestDetails(updatedPullRequest.getLinks().getHtml().getHref(), updatedPullRequest.getId());
     }
 
     @Override
-    public BitbucketPullRequest openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner, String forkPassword)
+    public PullRequestDetails openForkPullRequest(String owner, String repositoryName, String title, String description, String head, String base, String forkOwner, String forkPassword)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(forkOwner, forkPassword);
 
         BitbucketPullRequest pullRequest = pullRequestRemoteRestpoint.createPullRequest(owner, repositoryName, title, description, forkOwner, repositoryName, head, base);
 
-        return pullRequest;
+        return new PullRequestDetails(pullRequest.getLinks().getHtml().getHref(), pullRequest.getId());
     }
 
     @Override
@@ -54,19 +54,19 @@ public class BitbucketPRClient implements PullRequestClient
     }
 
     @Override
-    public void approvePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
+    public void approvePullRequest(String owner, String repositoryName, String password, Long pullRequestId)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
-        pullRequestRemoteRestpoint.approvePullRequest(owner, repositoryName, pullRequest.getId());
+        pullRequestRemoteRestpoint.approvePullRequest(owner, repositoryName, pullRequestId);
     }
 
     @Override
-    public void mergePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
+    public void mergePullRequest(String owner, String repositoryName, String password, Long pullRequestId)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
-        pullRequestRemoteRestpoint.mergePullRequest(owner, repositoryName, pullRequest.getId(), "Merge message", true);
+        pullRequestRemoteRestpoint.mergePullRequest(owner, repositoryName, pullRequestId, "Merge message", true);
     }
 
     @Override
