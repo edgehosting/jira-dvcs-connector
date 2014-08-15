@@ -35,7 +35,7 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public void declinePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest)
+    public void declinePullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId)
     {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -54,7 +54,7 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public void commentPullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest, final String comment)
+    public void commentPullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId, final String comment)
     {
         throw new UnsupportedOperationException("Not implemented");
     }

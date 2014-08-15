@@ -2,6 +2,11 @@ package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 
+/**
+ * This interface provides a Facade for common pull request operations on our supported repository hosts - Bitbucket and
+ * Github. Not all the parameters are necessarily used by all the implementations, implementations need to do enough to
+ * support testing.
+ */
 public interface PullRequestClient
 {
     PullRequestDetails openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers);
@@ -15,9 +20,9 @@ public interface PullRequestClient
      *
      * @param owner repository owner
      * @param repositoryName repository name
-     * @param pullRequest pull request to close
+     * @param pullRequestId pull request to close
      */
-    void declinePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest);
+    void declinePullRequest(String owner, String repositoryName, String password, Long pullRequestId);
 
     /**
      * Approves pull request
@@ -40,11 +45,11 @@ public interface PullRequestClient
     /**
      * Adds comment to provided pull request.
      *
-     * @param pullRequest pull request
+     * @param pullRequestId pull request on which we are commenting
      * @param comment message
      * @return created remote comment
      */
-    void commentPullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String comment);
+    void commentPullRequest(String owner, String repositoryName, String password, Long pullRequestId, String comment);
 
     public static class PullRequestDetails
     {

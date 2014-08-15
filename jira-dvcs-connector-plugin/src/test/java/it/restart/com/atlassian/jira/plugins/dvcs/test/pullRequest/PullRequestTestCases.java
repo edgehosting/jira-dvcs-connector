@@ -20,7 +20,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
- * Base class that contains the test cases for the PullRequest scenarios
+ * Base class that contains the test cases for the PullRequest scenarios.
+ *
+ * Implementors will need to override the abstract methods as required. If necessary you may need to provide a
+ * custom implementation of {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs} or
+ * {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient}.
+ *
+ * Also due to the coupling between this class and its implementors you should be wary of relying on the state
+ * of parent member variables like {@link #dvcs} or {@link #getJiraTestedProduct()} which should be intialised
+ * during {@link #beforeEachPullRequestTest()}.
  */
 public abstract class PullRequestTestCases extends AbstractDVCSTest
 {
@@ -143,17 +151,6 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
      */
     protected abstract AccountsPageAccount.AccountType getAccountType();
 
-    protected void sleep(final long millis)
-    {
-        try
-        {
-            Thread.sleep(millis);
-        }
-        catch (InterruptedException e)
-        {
-        }
-    }
-
     @Test (groups = { "PRTestCases" })
     public void testOpenPullRequestApproveAndMerge()
     {
@@ -207,5 +204,16 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
         Assert.assertEquals(response.getRepositories().size(), 1);
         RestPrRepository restPrRepository = response.getRepositories().get(0);
         return restPrRepository;
+    }
+
+    protected void sleep(final long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        }
+        catch (InterruptedException e)
+        {
+        }
     }
 }

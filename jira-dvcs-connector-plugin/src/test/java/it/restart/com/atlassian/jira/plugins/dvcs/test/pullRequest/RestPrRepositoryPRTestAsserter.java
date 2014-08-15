@@ -5,6 +5,9 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import org.testng.Assert;
 
+/**
+ * Utility class that wraps up some of the common assertions in {@link it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest.PullRequestTestCases}
+ */
 public class RestPrRepositoryPRTestAsserter
 {
     private String repositoryName;
@@ -27,8 +30,6 @@ public class RestPrRepositoryPRTestAsserter
 
     public void assertBasicPullRequestConfiguration(final RestPrRepository restPrRepository)
     {
-        boolean result = repositoryName.equals(restPrRepository.getSlug());
-
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);

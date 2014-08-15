@@ -46,11 +46,11 @@ public class BitbucketPRClient implements PullRequestClient
     }
 
     @Override
-    public void declinePullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest)
+    public void declinePullRequest(String owner, String repositoryName, String password, Long pullRequestId)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
 
-        pullRequestRemoteRestpoint.declinePullRequest(owner, repositoryName, pullRequest.getId(), null);
+        pullRequestRemoteRestpoint.declinePullRequest(owner, repositoryName, pullRequestId, null);
     }
 
     @Override
@@ -70,10 +70,10 @@ public class BitbucketPRClient implements PullRequestClient
     }
 
     @Override
-    public void commentPullRequest(String owner, String repositoryName, String password, BitbucketPullRequest pullRequest, String comment)
+    public void commentPullRequest(String owner, String repositoryName, String password, Long pullRequestId, String comment)
     {
         PullRequestRemoteRestpoint pullRequestRemoteRestpoint = getPullRequestRemoteRestpoint(owner, password);
-        pullRequestRemoteRestpoint.commentPullRequest(owner, repositoryName, pullRequest.getId(), comment);
+        pullRequestRemoteRestpoint.commentPullRequest(owner, repositoryName, pullRequestId, comment);
     }
 
 

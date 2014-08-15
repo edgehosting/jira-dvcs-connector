@@ -1,6 +1,9 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
-
+/**
+ * Interface that represents a Dvcs that we are testing, basically enables common operations on Dvcs repositories such
+ * as commit, clone, branch and merge.ß
+ */
 public interface Dvcs
 {
     /**
@@ -35,74 +38,14 @@ public interface Dvcs
      */
     public void switchBranch(String owner, String repositoryName, String branchName);
 
-    /**
-     * Creates and adds file to repository - git add.
-     * 
-     * @param repositoryUri
-     *            for which repository
-     * @param filePath
-     *            repository relative path of file, parents directories will be automatically created
-     * @param content
-     *            of new file
-     */
     public void addFile(String owner, String repositoryName, String filePath, byte[] content);
 
-    /**
-     * Commits current changes.
-     * 
-     * @param repositoryUri
-     *            for which repository
-     * @param message
-     *            commit message
-     * 
-     * @param authorName
-     *            name of author
-     * @param authorEmail
-     *            email of author
-     * @return SHA-1 commit id
-     */
     public String commit(String owner, String repositoryName, String message, String authorName, String authorEmail);
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
-     */
     public void push(String owner, String repositoryName, String username, String password);
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
-     * @param reference
-     *            e.g.: name of branch
-     * @param newBranch
-     *               whether new branch is being pushed
-     */
     public void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch);
 
-    /**
-     * Push current state to remote repository.
-     * 
-     * @param repositoryUri
-     *            e.g. owner/name
-     * @param username
-     *            committer username
-     * @param password
-     *            committer password
-     * @param reference
-     *            e.g.: name of branch
-     */
     public void push(String owner, String repositoryName, String username, String password, String reference);
 
     /**
@@ -116,7 +59,7 @@ public interface Dvcs
     public void deleteTestRepository(String repositoryUri);
 
     /**
-     * Delete all repositories that this DVCS client knows about
+     * Delete all local copies of repositories that this DVCS client knows about
      */
     void deleteAllRepositories();
 }

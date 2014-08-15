@@ -2,6 +2,10 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 
+/**
+ * Helper class that can be used to populate a local repository in a common way for {@link
+ * it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest.PullRequestTestCases}
+ */
 public class DvcsPRTestHelper
 {
     private final Dvcs dvcs;
