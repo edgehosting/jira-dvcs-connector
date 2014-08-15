@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.0.12-SNAPSHOT</version>
+        <version>2.0.12</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-github</artifactId>
-    <version>2.0.12-SNAPSHOT</version>
+    <version>2.0.12</version>
     <packaging>jar</packaging>
     <name>Jira DVCS Connector GitHub module</name>
     <description>Jira DVCS Connector GitHub module</description>
