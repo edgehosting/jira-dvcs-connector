@@ -508,7 +508,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryCommitMapping.NODE, commit.getHash());
         ret.put(RepositoryCommitMapping.DATE, commit.getDate());
-        ret.put(RepositoryCommitMapping.MERGE, commit.getParents() != null && commit.getParents().size() > 1);
 
         return ret;
     }
