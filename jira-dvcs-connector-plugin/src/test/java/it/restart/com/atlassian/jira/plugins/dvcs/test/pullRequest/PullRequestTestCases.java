@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
@@ -19,18 +20,21 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * Base class that contains the test cases for the PullRequest scenarios.
- *
- * Implementors will need to override the abstract methods as required. If necessary you may need to provide a
- * custom implementation of {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs} or
- * {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient}.
- *
- * Also due to the coupling between this class and its implementors you should be wary of relying on the state
- * of parent member variables like {@link #dvcs} or {@link #getJiraTestedProduct()} which should be intialised
- * during {@link #beforeEachPullRequestTest()}.
+ * <p/>
+ * Implementors will need to override the abstract methods as required. If necessary you may need to provide a custom
+ * implementation of {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs} or {@link
+ * it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient}.
+ * <p/>
+ * Also due to the coupling between this class and its implementors you should be wary of relying on the state of parent
+ * member variables like {@link #dvcs} or {@link #getJiraTestedProduct()} which should be intialised during {@link
+ * #beforeEachPullRequestTest()}.
  */
-public abstract class PullRequestTestCases extends AbstractDVCSTest
+public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 {
     protected static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
     protected static final String TEST_PROJECT_KEY = "TST";
@@ -59,7 +63,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
     protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
 
     protected Dvcs dvcs;
-    protected PullRequestClient pullRequestClient;
+    protected PullRequestClient<T> pullRequestClient;
 
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
     protected DvcsPRTestHelper dvcsPRTestHelper;
@@ -92,7 +96,7 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
         beforeEachTestInitialisation(getJiraTestedProduct());
 
-        dvcsPRTestHelper = new DvcsPRTestHelper(dvcs);
+        dvcsPRTestHelper = new DvcsPRTestHelper(dvcs, ACCOUNT_NAME, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, PASSWORD);
     }
 
     /**
@@ -137,41 +141,39 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
      */
     protected abstract void cleanupLocalTestRepository();
 
-    protected AccountsPageAccount refreshAccount(final String accountName)
-    {
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), accountName);
-        account.refresh();
-
-        return account;
-    }
-
     /**
      * The type of account we should look for when refreshing
      */
     protected abstract AccountsPageAccount.AccountType getAccountType();
 
-    @Test (groups = { "PRTestCases" })
-    public void testOpenPullRequestApproveAndMerge()
+    @Test
+    public void testOpenPullRequestUpdateApproveAndMerge()
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
-        dvcsPRTestHelper.createBranchAndCommits(ACCOUNT_NAME, repositoryName, COMMIT_AUTHOR,
-                COMMIT_AUTHOR_EMAIL, PASSWORD, fixBranchName, issueKey, 2);
+        Collection<String> firstRoundCommits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
-        PullRequestClient.PullRequestDetails pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+        PullRequestClient.PullRequestDetails<T> pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
         String pullRequestLocation = pullRequestDetails.getLocation();
 
         // Wait for remote system after creation of pullRequest
-        sleep(1000);
+        sleep(500);
 
         RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
 
-        asserter.assertBasicPullRequestConfiguration(restPrRepository);
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, firstRoundCommits);
+
+        // We will check up on these later once there has been a status change and a full sync of the PR
+        Collection<String> secondRoundCommits = dvcsPRTestHelper.addMoreCommitsAndPush(repositoryName, fixBranchName, issueKey, 2);
+
+        final String updatedPullRequestName = pullRequestName + "updated";
+        pullRequestDetails = pullRequestClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
+                updatedPullRequestName, "updated desc", dvcs.getDefaultBranchName());
+        pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
 
         if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
         {
@@ -187,23 +189,40 @@ public abstract class PullRequestTestCases extends AbstractDVCSTest
 
         sleep(1000);
 
-        refreshAccount(ACCOUNT_NAME).synchronizeRepository(repositoryName);
         restPrRepository = refreshSyncAndGetFirstPrRepository();
 
-        Assert.assertEquals(restPrRepository.getPullRequests().get(0).getStatus(), PullRequestStatus.MERGED.toString());
+        final RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.MERGED.toString());
+        Assert.assertEquals(restPullRequest.getTitle(), updatedPullRequestName);
+
+        // Comments are not critical so let us just check them at the end rather than having a separate refresh and wait
+        Assert.assertEquals(restPullRequest.getCommentCount(), 1);
+
+        // Commits should be pulled in now that we have merged
+        Collection<String> allCommits = new ArrayList<String>(firstRoundCommits);
+        allCommits.addAll(secondRoundCommits);
+
+        asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), allCommits);
     }
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-
         AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
         account.synchronizeRepository(repositoryName);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
         Assert.assertEquals(response.getRepositories().size(), 1);
-        RestPrRepository restPrRepository = response.getRepositories().get(0);
-        return restPrRepository;
+        return response.getRepositories().get(0);
+    }
+
+    protected AccountsPageAccount refreshAccount(final String accountName)
+    {
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), accountName);
+        account.refresh();
+
+        return account;
     }
 
     protected void sleep(final long millis)

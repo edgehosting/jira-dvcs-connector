@@ -12,10 +12,11 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccou
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.AfterClass;
 
-public class GithubEnterprisePRTest extends PullRequestTestCases
+public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
 {
     private static final String GITHUB_ENTERPRISE_USER_AGENT = "jira-dvcs-plugin-test";
 

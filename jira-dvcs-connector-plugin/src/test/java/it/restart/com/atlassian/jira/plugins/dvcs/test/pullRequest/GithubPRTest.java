@@ -10,10 +10,11 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.AfterClass;
 
-public class GithubPRTest extends PullRequestTestCases
+public class GithubPRTest extends PullRequestTestCases<PullRequest>
 {
     private GitHubTestResource gitHubTestResource;
 

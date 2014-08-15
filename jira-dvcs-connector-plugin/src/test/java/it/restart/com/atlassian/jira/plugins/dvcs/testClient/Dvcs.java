@@ -2,7 +2,19 @@ package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 /**
  * Interface that represents a Dvcs that we are testing, basically enables common operations on Dvcs repositories such
- * as commit, clone, branch and merge.ß
+ * as commit, clone, branch and merge.
+ *
+ * This Interface attempts to cover up some of the differences between our Dvcs repositories and their remote
+ * origins. Some of the semantics of the underlying Dvcs and host will make this difficult but it is mostly ok
+ * for testing.
+ *
+ * Generally the way this class should be used is to checkout a repository then switch to a branch. Subsequent
+ * operations should be performed against this branch although this is a bit implementation dependent. When used
+ * for Pull Request tests try to use {@link #push(String, String, String, String, String)} as it will try to
+ * use the specified branch.
+ *
+ * Usually Git implementations will 'remember' what branch they are on and mercurial should be explicitly told the
+ * branch to use.
  */
 public interface Dvcs
 {

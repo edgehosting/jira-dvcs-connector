@@ -1,9 +1,18 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
+import com.atlassian.jira.plugins.dvcs.model.dev.RestPrCommit;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.testng.Assert;
+
+import java.util.Collection;
+import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Utility class that wraps up some of the common assertions in {@link it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest.PullRequestTestCases}
@@ -28,7 +37,7 @@ public class RestPrRepositoryPRTestAsserter
         this.destinationBranchName = destinationBranchName;
     }
 
-    public void assertBasicPullRequestConfiguration(final RestPrRepository restPrRepository)
+    public void assertBasicPullRequestConfiguration(final RestPrRepository restPrRepository, final Collection<String> commits)
     {
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
@@ -42,6 +51,24 @@ public class RestPrRepositoryPRTestAsserter
         Assert.assertEquals(restPullRequest.getSource().getRepository(), expectedRepositorySlug);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), destinationBranchName);
         Assert.assertEquals(restPullRequest.getDestination().getRepository(), expectedRepositorySlug);
+
+        assertCommitsMatch(restPullRequest, commits);
+    }
+
+    public void assertCommitsMatch(final RestPullRequest restPullRequest, final Collection<String> commits)
+    {
+        List<RestPrCommit> restCommits = restPullRequest.getCommits();
+
+        List<String> actualCommits = Lists.transform(restCommits, new Function<RestPrCommit, String>()
+        {
+            @Override
+            public String apply(@Nullable final RestPrCommit restPrCommit)
+            {
+                return restPrCommit.getNode();
+            }
+        });
+
+        MatcherAssert.assertThat(actualCommits, Matchers.containsInAnyOrder(commits.toArray()));
     }
 
     public void assertPullRequestApproved(final RestPullRequest restPullRequest)

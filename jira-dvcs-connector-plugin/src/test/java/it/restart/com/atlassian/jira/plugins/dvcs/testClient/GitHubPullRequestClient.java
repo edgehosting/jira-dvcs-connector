@@ -1,10 +1,9 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import org.eclipse.egit.github.core.PullRequest;
 
-public class GitHubPullRequestClient implements PullRequestClient
+public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
 {
     private final GitHubTestResource gitHubTestResource;
 
@@ -14,22 +13,27 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public PullRequestDetails openPullRequest(final String owner, final String repositoryName, final String password,
+    public PullRequestDetails<PullRequest> openPullRequest(final String owner, final String repositoryName, final String password,
             final String title, final String description, final String head, final String base, final String... reviewers)
     {
         PullRequest pullRequest = gitHubTestResource.openPullRequest(owner, repositoryName, title, description, head, base);
 
-        return new PullRequestDetails(pullRequest.getHtmlUrl(), new Long(pullRequest.getNumber()));
+        return new PullRequestDetails(pullRequest.getHtmlUrl(), new Long(pullRequest.getNumber()), pullRequest);
     }
 
     @Override
-    public PullRequestDetails updatePullRequest(final String owner, final String repositoryName, final String password, final BitbucketPullRequest pullRequest, final String title, final String description, final String base)
+    public PullRequestDetails<PullRequest> updatePullRequest(final String owner, final String repositoryName,
+            final String password, final PullRequest pullRequest, final String title, final String description, final String base)
     {
-        throw new UnsupportedOperationException("Not implemented");
+
+        PullRequest updatedPullRequest = gitHubTestResource.updatePullRequest(pullRequest, GitHubTestResource.USER, repositoryName, title,
+                description, base);
+
+        return new PullRequestDetails(updatedPullRequest.getHtmlUrl(), new Long(updatedPullRequest.getNumber()), updatedPullRequest);
     }
 
     @Override
-    public PullRequestDetails openForkPullRequest(final String owner, final String repositoryName, final String title, final String description, final String head, final String base, final String forkOwner, final String forkPassword)
+    public PullRequestDetails<PullRequest> openForkPullRequest(final String owner, final String repositoryName, final String title, final String description, final String head, final String base, final String forkOwner, final String forkPassword)
     {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -54,8 +58,8 @@ public class GitHubPullRequestClient implements PullRequestClient
     }
 
     @Override
-    public void commentPullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId, final String comment)
+    public void commentPullRequest(final String owner, final String repositoryName, final String password, final PullRequest pullRequest, final String comment)
     {
-        throw new UnsupportedOperationException("Not implemented");
+        gitHubTestResource.commentPullRequest(owner, repositoryName, pullRequest, comment);
     }
 }

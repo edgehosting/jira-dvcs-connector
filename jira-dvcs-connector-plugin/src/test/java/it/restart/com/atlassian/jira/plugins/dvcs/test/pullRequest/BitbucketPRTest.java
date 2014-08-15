@@ -2,6 +2,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
@@ -15,7 +16,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class BitbucketPRTest extends PullRequestTestCases
+public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
     private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
 
