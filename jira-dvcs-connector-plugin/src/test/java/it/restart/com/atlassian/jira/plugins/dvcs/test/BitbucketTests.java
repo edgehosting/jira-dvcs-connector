@@ -18,7 +18,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -173,14 +172,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String baseUrl = jira.getProductInstance().getBaseUrl();
-        String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
-
-        RepositoryDiv createdOrganisation = organisation.findRepository("public-hg-repo");
-        if (createdOrganisation != null)
-        {
-            syncUrl += createdOrganisation.getRepositoryId() + "/sync";
-        }
+        String syncUrl = getRepositoryUrl(organisation, jira.getProductInstance(), "test-project");
 
         String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));

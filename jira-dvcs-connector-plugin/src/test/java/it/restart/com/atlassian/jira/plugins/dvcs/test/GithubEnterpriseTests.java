@@ -175,11 +175,11 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void testPostCommitHookAddedAndRemoved()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organisation = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        // check that it created postcommit hook
-        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
-        String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
+        String githubServiceConfigUrlPath = getRepositoryUrl(organisation, jira.getProductInstance(), "test-project");
+
+        String hooksURL = GITHUB_ENTERPRISE_URL + "/api/v3/jirabitbucketconnector/test-project/admin/hooks";
         jira.getTester().gotoUrl(hooksURL);
         String hooksPage = jira.getTester().getDriver().getPageSource();
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);

@@ -15,7 +15,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -144,13 +143,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organisation = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check that it created postcommit hook
-        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
-
-        RepositoryDiv createdOrganisation = organisation.findRepository("test-project");
-        if (createdOrganisation != null)
-        {
-            githubServiceConfigUrlPath += createdOrganisation.getRepositoryId() + "/sync";
-        }
+        String githubServiceConfigUrlPath = getRepositoryUrl(organisation, jira.getProductInstance(), "test-project");
 
         String hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
