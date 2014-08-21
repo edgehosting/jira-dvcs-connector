@@ -4,6 +4,8 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
@@ -18,6 +20,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -179,9 +182,10 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
         String githubServiceConfigUrlPath = getRepositoryUrl(organisation, jira.getProductInstance(), "test-project");
 
-        String hooksURL = GITHUB_ENTERPRISE_URL + "/api/v3/jirabitbucketconnector/test-project/admin/hooks";
-        jira.getTester().gotoUrl(hooksURL);
-        String hooksPage = jira.getTester().getDriver().getPageSource();
+        String hooksURL = GITHUB_ENTERPRISE_URL + "/api/v3/repos/jirabitbucketconnector/test-project/hooks";
+
+        String hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksURL),
+                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
