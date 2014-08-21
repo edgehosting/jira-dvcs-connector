@@ -425,7 +425,20 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                                 remainingCommitsToDelete.clear();
                                 break;
                             }
-                            remainingCommitsToDelete.remove(localCommit);
+                            // handle the case of upgrading from 2.0.12 and the MERGE column not being there
+                            //  we need to make sure that merge commits sync-ed previously will now have the correct value of MERGE
+                            // only do this when not in fallback mode
+                            if (localCommit.isMerge() != isMergeCommit(commit))
+                            {
+                                // create a new commit that should have the correct MERGE flag
+                                //  and keep the old one in remainingCommitsToDelete so that it gets deleted later
+                                final RepositoryCommitMapping newLocalCommit = saveCommit(repo, commit);
+                                linkCommit(repo, newLocalCommit, savedPullRequest);
+                            }
+                            else
+                            {
+                                remainingCommitsToDelete.remove(localCommit);
+                            }
                         }
                     }
                 } catch(BitbucketRequestException.NotFound_404 e)
@@ -497,9 +510,14 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryCommitMapping.NODE, commit.getHash());
         ret.put(RepositoryCommitMapping.DATE, commit.getDate());
-        ret.put(RepositoryCommitMapping.MERGE, commit.getParents() != null && commit.getParents().size() > 1);
+        ret.put(RepositoryCommitMapping.MERGE, isMergeCommit(commit));
 
         return ret;
+    }
+
+    private boolean isMergeCommit(final BitbucketPullRequestCommit commit)
+    {
+        return commit.getParents() != null && commit.getParents().size() > 1;
     }
 
 
