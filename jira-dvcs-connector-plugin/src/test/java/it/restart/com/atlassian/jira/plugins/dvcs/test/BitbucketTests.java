@@ -172,7 +172,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String syncUrl = getRepositoryUrl(organisation, jira.getProductInstance(), "test-project");
+        String syncUrl = getRepositoryUrl(organisation, jira.getProductInstance(), "public-hg-repo");
 
         String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
