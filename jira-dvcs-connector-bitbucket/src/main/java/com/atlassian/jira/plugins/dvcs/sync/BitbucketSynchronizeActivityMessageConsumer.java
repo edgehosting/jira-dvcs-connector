@@ -426,7 +426,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                                 break;
                             }
                             // handle the case of upgrading from 2.0.12 and the MERGE column not being there
-                            //  we need to make sure that merge commits
+                            //  we need to make sure that merge commits sync-ed previously will now have the correct value of MERGE
                             // only do this when not in fallback mode
                             if (localCommit.isMerge() != isMergeCommit(commit))
                             {
