@@ -119,7 +119,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -127,7 +127,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -136,15 +136,12 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true);
-
-        assertThat(organization).isNotNull();
-        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test
