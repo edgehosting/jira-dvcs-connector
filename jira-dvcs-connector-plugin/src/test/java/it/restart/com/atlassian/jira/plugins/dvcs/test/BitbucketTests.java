@@ -110,21 +110,21 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         addOrganization(AccountType.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
     public void addOrganizationInvalidOAuth()
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true, true);
@@ -164,9 +164,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        // remove existing
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
-        HttpSenderUtils.removeJsonElementsUsingIDs(bitbucketServiceConfigUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
@@ -293,9 +291,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // move issue from QA project to BBC project
         JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
         movingPage.stepOne_typeProjectName("Bitbucket Connector")
-                  .clickNext()
-                  .clickNext()
-                  .submit();
+                .clickNext()
+                .clickNext()
+                .submit();
 
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
