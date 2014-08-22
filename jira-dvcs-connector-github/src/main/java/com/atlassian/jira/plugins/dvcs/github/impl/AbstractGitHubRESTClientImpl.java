@@ -126,7 +126,6 @@ public abstract class AbstractGitHubRESTClientImpl
 
     protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType)
     {
-        webResource.header("Authorization", "Basic ");
         return getAll(webResource, entityType, null);
     }
 
