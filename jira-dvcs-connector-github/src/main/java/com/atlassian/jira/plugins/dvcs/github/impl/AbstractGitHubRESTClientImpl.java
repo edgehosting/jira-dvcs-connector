@@ -9,12 +9,11 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.core.header.LinkHeader;
 import com.sun.jersey.core.header.LinkHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
 import java.net.MalformedURLException;
@@ -128,7 +127,7 @@ public abstract class AbstractGitHubRESTClientImpl
     protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType)
     {
         webResource.header("Authorization", "Basic ");
-        return getAll(webResource, entityType, null, null);
+        return getAll(webResource, entityType, null);
     }
 
     /**
@@ -138,21 +137,18 @@ public abstract class AbstractGitHubRESTClientImpl
      * @param entityType type of entities
      * @return union
      */
-    protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType, String username, String password)
+    protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType, ClientFilter filter)
     {
         List<T> result = new LinkedList<T>();
 
         WebResource cursor = webResource;
         do
         {
-            WebResource.Builder builder = cursor.accept(MediaType.APPLICATION_JSON_TYPE);
-
-            if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
+            if (filter != null)
             {
-                String usernamePassword = username + ":" + password;
-                usernamePassword = new String(Base64.encodeBase64(usernamePassword.getBytes()));
-                builder = builder.header("Authorization", "Basic " + usernamePassword);
+                cursor.addFilter(filter);
             }
+            WebResource.Builder builder = cursor.accept(MediaType.APPLICATION_JSON_TYPE);
 
             ClientResponse clientResponse = builder.get(ClientResponse.class);
 

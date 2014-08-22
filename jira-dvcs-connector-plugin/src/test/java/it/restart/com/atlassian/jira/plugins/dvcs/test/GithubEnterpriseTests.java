@@ -4,7 +4,6 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
@@ -178,7 +177,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organisation = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        List<String> actualHookUrls = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project", ACCOUNT_NAME, PasswordUtil.getPassword(ACCOUNT_NAME));
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project");
         String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "test-project");
 
         assertThat(actualHookUrls).contains(jiraCallbackUrl);
@@ -186,7 +185,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
 
-        List<String> hookUrlsPostDelete = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project", ACCOUNT_NAME, PasswordUtil.getPassword(ACCOUNT_NAME));
+        List<String> hookUrlsPostDelete = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project");
         // check that postcommit hook is removed
         assertThat(hookUrlsPostDelete).doesNotContain(jiraCallbackUrl);
     }
