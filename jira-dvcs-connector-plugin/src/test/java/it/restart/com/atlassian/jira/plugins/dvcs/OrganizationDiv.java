@@ -6,6 +6,8 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountControlsDialog;
 import org.openqa.selenium.By;
 
@@ -25,13 +27,13 @@ public class OrganizationDiv
 
     @Inject
     private PageElementFinder elementFinder;
-    
+
     private final PageElement rootElement;
     private final PageElement repositoriesTable;
     private final PageElement organizationType;
     private final PageElement organizationName;
     private PageElement controlsButton;
-  
+
     public OrganizationDiv(PageElement row)
     {
         this.rootElement = row;
@@ -52,7 +54,7 @@ public class OrganizationDiv
         String dropDownMenuId = ddButton.getAttribute("aria-owns");
         PageElement deleteLink = elementFinder.find(By.id(dropDownMenuId)).find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
-        
+
         ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
         dialog.confirm();
         dialog.waitUntilVisible();
@@ -79,6 +81,19 @@ public class OrganizationDiv
         return list;
     }
 
+    public List<String> getRepositoryNames()
+    {
+
+        return Lists.transform(getRepositories(true), new Function<RepositoryDiv, String>()
+        {
+            @Override
+            public String apply(final RepositoryDiv repositoryDiv)
+            {
+                return repositoryDiv.getRepositoryName();
+            }
+        });
+    }
+
     public boolean containsRepository(String name)
     {
         List<RepositoryDiv> repositories = getRepositories();
@@ -92,13 +107,13 @@ public class OrganizationDiv
 
         return false;
     }
-    
+
     public String getOrganizationType()
     {
         // <h4 class="aui bitbucketLogo">
         return organizationType.getAttribute("class").replaceAll(".*aui (.*)Logo.*", "$1");
     }
-    
+
     public String getOrganizationName()
     {
         return organizationName.getText();
@@ -124,5 +139,5 @@ public class OrganizationDiv
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
         return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
     }
-    
+
 }

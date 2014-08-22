@@ -24,11 +24,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.getGHEAccountType;
-import static it.restart.com.atlassian.jira.plugins.dvcs.test.matchers.OrganizationRepositoryMatcher.expectedRepositoryMatcher;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
@@ -37,7 +37,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
-    private static final String[] BASE_REPOSITORY_NAMES = new String[] { "missingcommits", "repo1", "test", "test-project", "noauthor" };
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "test", "test-project", "noauthor" });
     
     @BeforeClass
     public void beforeClass()
@@ -92,7 +92,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test
@@ -104,7 +105,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -138,7 +139,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 new OAuthCredentials("xxx", "yyy"), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test

@@ -30,17 +30,17 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
-import static it.restart.com.atlassian.jira.plugins.dvcs.test.matchers.OrganizationRepositoryMatcher.expectedRepositoryMatcher;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.matchers.OrganizationRepositoryMessageMatcher.expectedRepositoryMatcher;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    private static final String[] BASE_REPOSITORY_NAMES = new String[] { "missingcommits", "repo1", "noauthor", "test-project" };
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "noauthor", "test-project" });
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
 
@@ -84,7 +84,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
 
@@ -133,7 +133,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 new OAuthCredentials("xxx", "yyy"), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test

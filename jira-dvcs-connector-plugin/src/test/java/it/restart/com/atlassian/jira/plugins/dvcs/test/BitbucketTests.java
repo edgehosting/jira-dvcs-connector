@@ -35,10 +35,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
-import static it.restart.com.atlassian.jira.plugins.dvcs.test.matchers.OrganizationRepositoryMatcher.expectedRepositoryMatcher;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
@@ -46,7 +46,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
-    private static final String[] BASE_REPOSITORY_NAMES = new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" };
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" });
 
     @BeforeClass
     public void beforeClass()
@@ -88,7 +88,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
@@ -103,7 +103,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
         final String repositoryName = "public-hg-repo";
         final String expectedMessage = "Fri Mar 02 2012";
         org.hamcrest.MatcherAssert.assertThat(organization, OrganizationRepositoryMessageMatcher.expectedRepositoryMatcher(repositoryName, expectedMessage));
@@ -136,7 +136,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
 
         assertThat(organization).isNotNull();
-        org.hamcrest.MatcherAssert.assertThat(organization, expectedRepositoryMatcher(BASE_REPOSITORY_NAMES));
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test
