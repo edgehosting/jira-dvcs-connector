@@ -18,6 +18,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -25,7 +26,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
-import it.restart.com.atlassian.jira.plugins.dvcs.test.matchers.OrganizationRepositoryMessageMatcher;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
@@ -85,7 +86,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), false);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -100,13 +101,23 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
         final String repositoryName = "public-hg-repo";
         final String expectedMessage = "Fri Mar 02 2012";
-        org.hamcrest.MatcherAssert.assertThat(organization, OrganizationRepositoryMessageMatcher.expectedRepositoryMatcher(repositoryName, expectedMessage));
+        List<RepositoryDiv> repository = organization.getRepositories();
+        boolean found = false;
+        for (RepositoryDiv repositoryDiv : repository)
+        {
+            if (repositoryName.equals(repositoryDiv.getRepositoryName()))
+            {
+                assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
+                found = true;
+            }
+        }
+        assertThat(found).isTrue();
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -133,7 +144,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -144,7 +155,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
@@ -180,7 +191,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
         String baseUrl = jira.getProductInstance().getBaseUrl();
@@ -213,7 +224,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // Activity streams gadget expected at dashboard page!
         DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
@@ -256,7 +267,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         setupAnonymousAccessAllowed();
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // Activity streams gadget expected at dashboard page!
         DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
@@ -290,7 +301,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoardPlan();
@@ -302,7 +313,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // move issue from QA project to BBC project
         JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
@@ -337,10 +348,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void linkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), false);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
         AccountsPageAccountRepository repository = account.enableRepository("private-git-repo", false);
 
         // check that repository is enabled
@@ -369,10 +380,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void autoLinkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, IntegrationTestUserDetails.ACCOUNT_NAME);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());

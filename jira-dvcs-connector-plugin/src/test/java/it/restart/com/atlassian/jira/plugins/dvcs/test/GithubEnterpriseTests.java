@@ -29,6 +29,7 @@ import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.getGHEAccountType;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
@@ -88,7 +89,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), IntegrationTestUserDetails.ACCOUNT_NAME,
+        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization).isNotNull();
@@ -101,7 +102,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), IntegrationTestUserDetails.ACCOUNT_NAME,
+        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
 
         assertThat(organization).isNotNull();
@@ -135,7 +136,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), IntegrationTestUserDetails.ACCOUNT_NAME,
+        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true);
 
         assertThat(organization).isNotNull();
@@ -147,7 +148,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), IntegrationTestUserDetails.ACCOUNT_NAME,
+        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
         
         // QA-2
@@ -180,7 +181,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void testPostCommitHookAdded()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check that it created postcommit hook
         String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
@@ -217,10 +218,10 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        rpc.addOrganization(accountType, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), false);
+        rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, IntegrationTestUserDetails.ACCOUNT_NAME);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
         AccountsPageAccountRepository repository = account.enableRepository("test-project", false);
 
         // check that repository is enabled
@@ -249,10 +250,10 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        rpc.addOrganization(accountType, IntegrationTestUserDetails.ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, IntegrationTestUserDetails.ACCOUNT_NAME);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
 
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {
