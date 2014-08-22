@@ -144,7 +144,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true);
     }
 
     @Test

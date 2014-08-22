@@ -140,7 +140,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME,
+        rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true);
     }
 

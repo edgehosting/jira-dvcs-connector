@@ -136,7 +136,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
+        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true);
     }
 
