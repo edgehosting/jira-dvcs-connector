@@ -172,18 +172,18 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String syncUrl = getRepositoryUrl(organisation, jira.getProductInstance(), "public-hg-repo");
+        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "public-hg-repo");
 
         String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        if (!servicesConfig.contains(syncUrl))
+        if (!servicesConfig.contains(jiraCallbackUrl))
         {
             // retrying once more
             servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         }
 
-        assertThat(servicesConfig).contains(syncUrl);
+        assertThat(servicesConfig).contains(jiraCallbackUrl);
 
         // delete repository
         rpc.getPage().deleteAllOrganizations();
@@ -191,7 +191,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // check that postcommit hook is removed
         servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(servicesConfig).doesNotContain(syncUrl);
+        assertThat(servicesConfig).doesNotContain(jiraCallbackUrl);
     }
 
     @Test

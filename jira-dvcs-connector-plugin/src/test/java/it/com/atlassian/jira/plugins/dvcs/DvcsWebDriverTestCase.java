@@ -14,9 +14,8 @@ import org.testng.annotations.Listeners;
 @Listeners ({ WebDriverScreenshotListener.class })
 public abstract class DvcsWebDriverTestCase
 {
-    protected String getRepositoryUrl(OrganizationDiv organisation, ProductInstance productInstance, String repositoryName)
+    protected String getJiraCallbackUrlForRepository(OrganizationDiv organisation, ProductInstance productInstance, String repositoryName)
     {
-
         // Always on the path bitbucket
         String repositoryUrl = productInstance.getBaseUrl() + "/rest/bitbucket/1.0/repository/";
 

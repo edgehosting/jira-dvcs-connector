@@ -49,4 +49,9 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
         return getAll(hooksWebResource, GitHubRepositoryHook[].class);
     }
 
+    public List<GitHubRepositoryHook> getHooks(Repository repository, String username, String password)
+    {
+        WebResource hooksWebResource = resource(repository, "/hooks");
+        return getAll(hooksWebResource, GitHubRepositoryHook[].class, username, password);
+    }
 }
