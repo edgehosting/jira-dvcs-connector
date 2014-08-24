@@ -110,6 +110,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
             {
                 assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
                 found = true;
+                break;
             }
         }
         assertThat(found).isTrue();
