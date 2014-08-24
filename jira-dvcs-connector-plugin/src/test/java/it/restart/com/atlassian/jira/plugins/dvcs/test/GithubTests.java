@@ -5,8 +5,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntr
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
@@ -15,7 +13,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -24,7 +21,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -135,40 +131,21 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        // remove existing hooks
-        String hooksUrl = "https://api.github.com/repos/jirabitbucketconnector/test-project/hooks";
-        HttpSenderUtils.removeJsonElementsUsingIDs(hooksUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-
         // add organization
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organisation = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check that it created postcommit hook
-        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", "test-project");
+        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "test-project");
 
-        RepositoryDiv createdOrganisation = organisation.findRepository("test-project");
-        if (createdOrganisation != null)
-        {
-            githubServiceConfigUrlPath += createdOrganisation.getRepositoryId() + "/sync";
-        }
+        assertThat(actualHookUrls).contains(jiraCallbackUrl);
 
-        String hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-
-        if (!hooksPage.contains(githubServiceConfigUrlPath))
-        {
-            // let's retry once more
-            hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
-                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        }
-
-        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
-        // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+
+        List<String> hookUrlsPostDelete = GithubTestHelper.getHookUrls("https://api.github.com", "test-project");
         // check that postcommit hook is removed
-        hooksPage = HttpSenderUtils.makeHttpRequest(new GetMethod(hooksUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
+        assertThat(hookUrlsPostDelete).doesNotContain(jiraCallbackUrl);
     }
 
     @Test
