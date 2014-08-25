@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -41,7 +42,14 @@ public class DvcsSchedulerJob implements JobHandler
     {
         for (final Organization organization : organizationService.getAll(false))
         {
+          try
+          {
             repositoryService.syncRepositoryList(organization);
+          } catch (SourceControlException.UnauthorisedException e)
+          {
+            LOG.info(String.format("Credential failure synching repository list for %s: %s",
+                organization, e.getMessage()), e);
+          }
         }
     }
 
