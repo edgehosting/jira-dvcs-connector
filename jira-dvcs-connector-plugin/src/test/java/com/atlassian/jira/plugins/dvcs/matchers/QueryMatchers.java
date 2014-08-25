@@ -1,12 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.matchers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import net.java.ao.Query;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
+import java.util.List;
 import javax.annotation.Nonnull;
+
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 
 /**
  * Hamcrest matchers for the {@link Query} object.
@@ -50,6 +55,23 @@ public class QueryMatchers
                 return actual.getWhereClause();
             }
         };
+    }
+
+    @Nonnull
+    public static Matcher<Query> withWhereOnColumn(@Nonnull String column)
+    {
+        return withWhereThat(containsString(column));
+    }
+
+    @Nonnull
+    public static Matcher<Query> withWhereOnColumns(@Nonnull String... columns)
+    {
+        List<Matcher<? super Query>> columnMatchers = Lists.newArrayListWithCapacity(columns.length);
+        for (String column : columns)
+        {
+            columnMatchers.add(withWhereOnColumn(column));
+        }
+        return allOf(columnMatchers);
     }
 
     @Nonnull

@@ -18,7 +18,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -111,21 +110,21 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         addOrganization(AccountType.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
     public void addOrganizationInvalidOAuth()
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true, true);
@@ -165,33 +164,24 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        // remove existing
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
-        HttpSenderUtils.removeJsonElementsUsingIDs(bitbucketServiceConfigUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check postcommit hook is there
-        String baseUrl = jira.getProductInstance().getBaseUrl();
-        String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
-
-        RepositoryDiv createdOrganisation = organisation.findRepository("public-hg-repo");
-        if (createdOrganisation != null)
-        {
-            syncUrl += createdOrganisation.getRepositoryId() + "/sync";
-        }
+        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "public-hg-repo");
 
         String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        if (!servicesConfig.contains(syncUrl))
+        if (!servicesConfig.contains(jiraCallbackUrl))
         {
             // retrying once more
             servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         }
 
-        assertThat(servicesConfig).contains(syncUrl);
+        assertThat(servicesConfig).contains(jiraCallbackUrl);
 
         // delete repository
         rpc.getPage().deleteAllOrganizations();
@@ -199,7 +189,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // check that postcommit hook is removed
         servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(servicesConfig).doesNotContain(syncUrl);
+        assertThat(servicesConfig).doesNotContain(jiraCallbackUrl);
     }
 
     @Test
@@ -301,9 +291,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // move issue from QA project to BBC project
         JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
         movingPage.stepOne_typeProjectName("Bitbucket Connector")
-                  .clickNext()
-                  .clickNext()
-                  .submit();
+                .clickNext()
+                .clickNext()
+                .submit();
 
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
