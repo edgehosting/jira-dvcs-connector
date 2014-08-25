@@ -28,9 +28,8 @@ import javax.ws.rs.core.UriBuilder;
 
 /**
  * Support for {@link GitHubRESTClientImpl}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 public abstract class AbstractGitHubRESTClientImpl
 {
@@ -58,8 +57,7 @@ public abstract class AbstractGitHubRESTClientImpl
     }
 
     /**
-     * @param repositoryService
-     *            injected {@link RepositoryService} dependency
+     * @param repositoryService injected {@link RepositoryService} dependency
      */
     public void setRepositoryService(RepositoryService repositoryService)
     {
@@ -68,9 +66,8 @@ public abstract class AbstractGitHubRESTClientImpl
 
     /**
      * Corrects {@link Repository#getOrgHostUrl()} to point to correct repository API URL.
-     * 
-     * @param repository
-     *            for which repository
+     *
+     * @param repository for which repository
      * @return resolved REST API URL for provided repository
      */
     private String getRepositoryAPIUrl(Repository repository)
@@ -80,7 +77,8 @@ public abstract class AbstractGitHubRESTClientImpl
         try
         {
             url = new URL(repository.getOrgHostUrl());
-        } catch (MalformedURLException e)
+        }
+        catch (MalformedURLException e)
         {
             throw new RuntimeException(e);
         }
@@ -89,10 +87,12 @@ public abstract class AbstractGitHubRESTClientImpl
         try
         {
             result = UriBuilder.fromUri(url.toURI());
-        } catch (IllegalArgumentException e)
+        }
+        catch (IllegalArgumentException e)
         {
             throw new RuntimeException(e);
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             throw new RuntimeException(e);
         }
@@ -103,7 +103,8 @@ public abstract class AbstractGitHubRESTClientImpl
         if (IGitHubConstants.HOST_DEFAULT.equals(host) || IGitHubConstants.HOST_GISTS.equals(host))
         {
             result.host(IGitHubConstants.HOST_API);
-        } else
+        }
+        else
         {
             result.path(IGitHubConstants.SEGMENT_V3_API);
         }
@@ -125,11 +126,9 @@ public abstract class AbstractGitHubRESTClientImpl
 
     /**
      * Goes over all GitHub pages and return all pages union.
-     * 
-     * @param webResource
-     *            of first page
-     * @param entityType
-     *            type of entities
+     *
+     * @param webResource of first page
+     * @param entityType type of entities
      * @return union
      */
     protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType)
@@ -154,25 +153,27 @@ public abstract class AbstractGitHubRESTClientImpl
             {
                 throw new UniformInterfaceException(clientResponse);
             }
-        } while (cursor != null);
+        }
+        while (cursor != null);
         return result;
     }
 
     /**
-     * TODO: workaround for bug - {@link ClientResponse} of jersey does not support comma separated multiple values headers
-     * 
-     * @param clientResponse
-     *            for processing
+     * TODO: workaround for bug - {@link ClientResponse} of jersey does not support comma separated multiple values
+     * headers
+     *
+     * @param clientResponse for processing
      * @return proceed links
      */
     private LinkHeaders getLinks(ClientResponse clientResponse)
     {
         // raw 'Link' headers values
         List<String> linksRaw = clientResponse.getHeaders().get("Link");
-        if (linksRaw == null) {
+        if (linksRaw == null)
+        {
             linksRaw = new LinkedList<String>();
         }
-        
+
         // proceed 'Link' values according to multiple values header policy
         List<String> links = new LinkedList<String>();
 
@@ -184,7 +185,7 @@ public abstract class AbstractGitHubRESTClientImpl
                 links.add(link.trim());
             }
         }
-        
+
         MultivaluedMapImpl headers = new MultivaluedMapImpl();
         headers.put("Link", links);
         return new LinkHeaders(headers);
@@ -192,11 +193,9 @@ public abstract class AbstractGitHubRESTClientImpl
 
     /**
      * Creates new {@link WebResource} without caching.
-     * 
-     * @param repository
-     *            over which reposiory
-     * @param uri
-     *            of resource
+     *
+     * @param repository over which reposiory
+     * @param uri of resource
      * @return created web resource
      */
     protected WebResource resource(Repository repository, String uri)
