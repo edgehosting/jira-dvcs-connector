@@ -100,18 +100,9 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         final String repositoryName = "test-project";
         final String expectedMessage = "Mon Feb 06 2012";
-        List<RepositoryDiv> repository = organization.getRepositories();
-        boolean found = false;
-        for (RepositoryDiv repositoryDiv : repository)
-        {
-            if (repositoryName.equals(repositoryDiv.getRepositoryName()))
-            {
-                assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
-                found = true;
-                break;
-            }
-        }
-        assertThat(found).isTrue();
+        RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
+        assertThat(repositoryDiv).isNotNull();
+        assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");

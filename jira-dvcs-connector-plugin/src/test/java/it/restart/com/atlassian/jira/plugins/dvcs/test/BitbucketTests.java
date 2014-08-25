@@ -107,18 +107,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
         final String repositoryName = "public-hg-repo";
         final String expectedMessage = "Fri Mar 02 2012";
-        List<RepositoryDiv> repository = organization.getRepositories();
-        boolean found = false;
-        for (RepositoryDiv repositoryDiv : repository)
-        {
-            if (repositoryName.equals(repositoryDiv.getRepositoryName()))
-            {
-                assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
-                found = true;
-                break;
-            }
-        }
-        assertThat(found).isTrue();
+
+        RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
+        assertThat(repositoryDiv).isNotNull();
+        assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
