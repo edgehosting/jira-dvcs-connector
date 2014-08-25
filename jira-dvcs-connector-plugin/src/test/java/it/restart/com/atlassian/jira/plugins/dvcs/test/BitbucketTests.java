@@ -18,6 +18,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
@@ -35,19 +36,20 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
-
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" });
 
     @BeforeClass
     public void beforeClass()
@@ -88,7 +90,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
@@ -102,8 +104,21 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
-        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
+        final String repositoryName = "public-hg-repo";
+        final String expectedMessage = "Fri Mar 02 2012";
+        List<RepositoryDiv> repository = organization.getRepositories();
+        boolean found = false;
+        for (RepositoryDiv repositoryDiv : repository)
+        {
+            if (repositoryName.equals(repositoryDiv.getRepositoryName()))
+            {
+                assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
+                found = true;
+                break;
+            }
+        }
+        assertThat(found).isTrue();
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -413,7 +428,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
     {
-
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync, expectError);
     }

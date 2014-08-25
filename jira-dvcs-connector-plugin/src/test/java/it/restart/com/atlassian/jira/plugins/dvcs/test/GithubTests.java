@@ -13,6 +13,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -28,17 +29,18 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "noauthor", "test-project" });
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
-
     private OAuth oAuth;
 
     @BeforeClass
@@ -81,7 +83,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Override
@@ -89,21 +91,34 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(),true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
 
-        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Mon Feb 06 2012");
+        final String repositoryName = "test-project";
+        final String expectedMessage = "Mon Feb 06 2012";
+        List<RepositoryDiv> repository = organization.getRepositories();
+        boolean found = false;
+        for (RepositoryDiv repositoryDiv : repository)
+        {
+            if (repositoryName.equals(repositoryDiv.getRepositoryName()))
+            {
+                assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
+                found = true;
+                break;
+            }
+        }
+        assertThat(found).isTrue();
 
         assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -111,7 +126,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -120,7 +135,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
