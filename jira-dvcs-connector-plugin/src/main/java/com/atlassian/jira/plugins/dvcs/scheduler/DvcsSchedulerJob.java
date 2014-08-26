@@ -47,8 +47,7 @@ public class DvcsSchedulerJob implements JobHandler
             repositoryService.syncRepositoryList(organization);
           } catch (SourceControlException.UnauthorisedException e)
           {
-            LOG.info(String.format("Credential failure synching repository list for %s: %s",
-                organization, e.getMessage()), e);
+            LOG.debug("Credential failure synching repository list for %s: %s", organization, e.getMessage());
           }
         }
     }
