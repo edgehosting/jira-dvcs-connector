@@ -42,13 +42,14 @@ public class DvcsSchedulerJob implements JobHandler
     {
         for (final Organization organization : organizationService.getAll(false))
         {
-          try
-          {
-            repositoryService.syncRepositoryList(organization);
-          } catch (SourceControlException.UnauthorisedException e)
-          {
-            LOG.debug("Credential failure synching repository list for " + organization + ": " + e.getMessage());
-          }
+            try
+            {
+                repositoryService.syncRepositoryList(organization);
+            }
+            catch (SourceControlException.UnauthorisedException e)
+            {
+                LOG.debug("Credential failure synching repository list for " + organization + ": " + e.getMessage());
+            }
         }
     }
 
