@@ -7,6 +7,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Date;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 /**
@@ -21,9 +22,10 @@ public class PullRequestUpdatedEvent extends PullRequestEvent
     @Nonnull
     private final PullRequest pullRequestBeforeUpdate;
 
-    public PullRequestUpdatedEvent(@Nonnull final PullRequest pullRequest, @Nonnull final PullRequest pullRequestBeforeUpdate)
+    public PullRequestUpdatedEvent(@Nonnull final PullRequest pullRequest, @Nonnull final PullRequest pullRequestBeforeUpdate,
+            @Nonnull final Set<String> issueKeys)
     {
-        super(pullRequest);
+        super(pullRequest, issueKeys);
         this.pullRequestBeforeUpdate = pullRequestBeforeUpdate;
     }
 
@@ -42,8 +44,10 @@ public class PullRequestUpdatedEvent extends PullRequestEvent
     }
 
     @JsonCreator
-    private static PullRequestUpdatedEvent fromJSON(@JsonProperty("pullRequest") PullRequest pullRequest, @JsonProperty("pullRequestBeforeUpdate") PullRequest pullRequestBeforeUpdate)
+    private static PullRequestUpdatedEvent fromJSON(@JsonProperty ("pullRequest") PullRequest pullRequest,
+            @JsonProperty ("pullRequestBeforeUpdate") PullRequest pullRequestBeforeUpdate,
+            @JsonProperty ("issueKeys") Set<String> issueKeys)
     {
-        return new PullRequestUpdatedEvent(pullRequest, pullRequestBeforeUpdate);
+        return new PullRequestUpdatedEvent(pullRequest, pullRequestBeforeUpdate, issueKeys);
     }
 }

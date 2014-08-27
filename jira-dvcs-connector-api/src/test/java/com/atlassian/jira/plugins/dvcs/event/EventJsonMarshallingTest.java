@@ -20,9 +20,10 @@ import java.io.IOException;
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
 
-public class EvenstJsonMarshallingTest
+public class EventJsonMarshallingTest
 {
     ObjectMapper objectMapper;
     ImmutableSet<String> issueKeys;
@@ -107,13 +108,16 @@ public class EvenstJsonMarshallingTest
     @Test
     public void pullRequestCreated() throws Exception
     {
-        assertThat(convertToJsonThenBackTo(new PullRequestCreatedEvent(pullRequest)), instanceOf(PullRequestCreatedEvent.class));
+        final Object transformed = convertToJsonThenBackTo(new PullRequestCreatedEvent(pullRequest, issueKeys));
+        assertThat(transformed, instanceOf(PullRequestCreatedEvent.class));
+        final PullRequestCreatedEvent createdEvent = (PullRequestCreatedEvent) transformed;
+        assertThat(createdEvent.getIssueKeys(), containsInAnyOrder(issueKeys.toArray()));
     }
 
     @Test
     public void pullRequestUpdated() throws Exception
     {
-        assertThat(convertToJsonThenBackTo(new PullRequestUpdatedEvent(pullRequest, pullRequest)), instanceOf(PullRequestUpdatedEvent.class));
+        assertThat(convertToJsonThenBackTo(new PullRequestUpdatedEvent(pullRequest, pullRequest, issueKeys)), instanceOf(PullRequestUpdatedEvent.class));
     }
 
     private <T> T convertToJsonThenBackTo(Object item) throws IOException

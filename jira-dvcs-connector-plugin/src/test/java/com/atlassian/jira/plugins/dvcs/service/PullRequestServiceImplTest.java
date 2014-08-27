@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.google.common.collect.ImmutableSet;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -40,6 +42,7 @@ public class PullRequestServiceImplTest
     static final Date UPDATED_ON = new Date();
     static final String SOURCE_REPO = "my_repo";
     static final int COMMENT_COUNT = 23;
+    static final ImmutableSet<String> ISSUE_KEYS = ImmutableSet.of("TEST-1", "TEST-2");
 
     @Mock
     RepositoryPullRequestDao dao;
@@ -68,9 +71,12 @@ public class PullRequestServiceImplTest
         service.init();
         when(repository.getOrgHostUrl()).thenReturn("https://bitbucket.org/fusiontestaccount");
         when(repositoryService.get(REPO_ID)).thenReturn(repository);
+        when(origPr.getToRepositoryId()).thenReturn(REPO_ID);
+        when(origPr.getID()).thenReturn(PR_ID);
 
         when(dao.findRequestById(PR_ID)).thenReturn(origPr);
         when(dao.savePullRequest(origPr)).thenReturn(origPr);
+        when(dao.getIssueKeys(REPO_ID, PR_ID)).thenReturn(ISSUE_KEYS);
 
         trainPullRequestMock(origPr);
         trainPullRequestMock(updatePr, origPr.getName() + "-UPDATED");
@@ -97,6 +103,7 @@ public class PullRequestServiceImplTest
 
         PullRequestCreatedEvent event = (PullRequestCreatedEvent) eventCaptor.getValue();
         assertThat(event.getPullRequest().getName(), equalTo(NAME));
+        assertThat(event.getIssueKeys().containsAll(ISSUE_KEYS), is(true));
     }
 
     @Test
@@ -113,13 +120,15 @@ public class PullRequestServiceImplTest
         assertThat(events.size(), equalTo(2));
 
         final Object firstEvent = events.get(0);
-        final Object secondEvent = events.get(1);
+        final Object secondEventObject = events.get(1);
         assertThat(firstEvent, instanceOf(PullRequestCreatedEvent.class));
-        assertThat(secondEvent, instanceOf(PullRequestUpdatedEvent.class));
+        assertThat(secondEventObject, instanceOf(PullRequestUpdatedEvent.class));
 
         assertThat(((PullRequestCreatedEvent) firstEvent).getPullRequest().getStatus(), equalTo(PullRequestStatus.OPEN));
-        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequestBeforeUpdate().getStatus(), equalTo(PullRequestStatus.OPEN));
-        assertThat(((PullRequestUpdatedEvent) secondEvent).getPullRequest().getStatus(), equalTo(currentStatus));
+        final PullRequestUpdatedEvent secondEvent = (PullRequestUpdatedEvent) secondEventObject;
+        assertThat(secondEvent.getPullRequestBeforeUpdate().getStatus(), equalTo(PullRequestStatus.OPEN));
+        assertThat(secondEvent.getPullRequest().getStatus(), equalTo(currentStatus));
+        assertThat(secondEvent.getIssueKeys().containsAll(ISSUE_KEYS), is(true));
     }
 
     @Test

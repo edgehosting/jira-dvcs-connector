@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A {@link com.atlassian.jira.plugins.dvcs.model.Branch} was created.
  */
 @SuppressWarnings ("UnusedDeclaration")
-@EventName("jira.dvcsconnector.sync.branch.created")
+@EventName ("jira.dvcsconnector.sync.branch.created")
 public final class BranchCreatedEvent implements SyncEvent, LimitedEvent
 {
     @Nonnull
@@ -54,8 +54,8 @@ public final class BranchCreatedEvent implements SyncEvent, LimitedEvent
     }
 
     /**
-     * Returns the branch creation date. Unfortunately we don't have a way to determine when a branch was created so
-     * we just return the date on which this event instance was created.
+     * Returns the branch creation date. Unfortunately we don't have a way to determine when a branch was created so we
+     * just return the date on which this event instance was created.
      *
      * @return the date on which this event was created
      */
@@ -81,7 +81,8 @@ public final class BranchCreatedEvent implements SyncEvent, LimitedEvent
     }
 
     @JsonCreator
-    private static BranchCreatedEvent fromJSON(@JsonProperty("branch") Branch branch, @JsonProperty("issueKeys") Set<String> issueKeys, @JsonProperty("date") Date date)
+    private static BranchCreatedEvent fromJSON(@JsonProperty ("branch") Branch branch,
+            @JsonProperty ("issueKeys") Set<String> issueKeys, @JsonProperty ("date") Date date)
     {
         return new BranchCreatedEvent(branch, issueKeys, date);
     }
