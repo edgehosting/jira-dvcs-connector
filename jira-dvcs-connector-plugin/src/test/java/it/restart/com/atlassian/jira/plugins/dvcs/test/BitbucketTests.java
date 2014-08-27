@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.google.common.util.concurrent.Uninterruptibles;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
@@ -39,13 +38,11 @@ import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.testng.Assert.fail;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
@@ -174,45 +171,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
+        testPostCommitHookAddedAndRemoved(AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
+    }
+
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
 
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
-
-        // check postcommit hook is there
-        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "public-hg-repo");
-
-        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+        String postDeleteServicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        if (!servicesConfig.contains(jiraCallbackUrl))
-        {
-            // retrying once more
-            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        }
-
-        assertThat(servicesConfig).contains(jiraCallbackUrl);
-
-        // delete repository
-        rpc.getPage().deleteAllOrganizations();
-
-        // check that postcommit hook is removed.
-        final long maxWaitTime = 10000;
-        final long sleepInterval = 100;
-        long totalWaitTime = 0;
-        do
-        {
-            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-            if (!servicesConfig.contains(jiraCallbackUrl)) {
-                // postcommit successfully removed
-                return;
-            }
-            Uninterruptibles.sleepUninterruptibly(sleepInterval, TimeUnit.MILLISECONDS);
-            totalWaitTime += sleepInterval;
-        } while (totalWaitTime <= maxWaitTime);
-
-        fail(String.format("Postcommit hook not removed after %d ms", totalWaitTime));
+        return postDeleteServicesConfig.contains(jiraCallbackUrl);
     }
 
     @Test

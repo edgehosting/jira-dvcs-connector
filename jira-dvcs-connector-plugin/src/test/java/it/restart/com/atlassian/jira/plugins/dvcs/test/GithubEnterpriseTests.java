@@ -37,6 +37,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
+    private static final String REPOSITORY_NAME = "test-project";
     private OAuth oAuth;
 
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "test", "test-project", "noauthor" });
@@ -177,20 +178,15 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Test
     public void testPostCommitHookAddedAndRemoved()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
+        RepositoriesPageController.AccountType gheAccountType = getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        testPostCommitHookAddedAndRemoved(gheAccountType, REPOSITORY_NAME, jira, getOAuthCredentials());
+    }
 
-        List<String> actualHookUrls = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project");
-        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "test-project");
-
-        assertThat(actualHookUrls).contains(jiraCallbackUrl);
-
-        // delete repository
-        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
-
-        List<String> hookUrlsPostDelete = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, "test-project");
-        // check that postcommit hook is removed
-        assertThat(hookUrlsPostDelete).doesNotContain(jiraCallbackUrl);
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, REPOSITORY_NAME);
+        return actualHookUrls.contains(jiraCallbackUrl);
     }
 
     @Test
@@ -218,7 +214,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("test-project", false);
+        AccountsPageAccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
