@@ -200,7 +200,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         final long maxWaitTime = 10000;
         final long sleepInterval = 100;
         long totalWaitTime = 0;
-        do {
+        do
+        {
             servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                     "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
             if (!servicesConfig.contains(jiraCallbackUrl)) {
