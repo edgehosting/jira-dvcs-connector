@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.google.common.util.concurrent.Uninterruptibles;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
@@ -38,11 +39,13 @@ import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.testng.Assert.fail;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
@@ -193,10 +196,22 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // delete repository
         rpc.getPage().deleteAllOrganizations();
 
-        // check that postcommit hook is removed
-        servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(servicesConfig).doesNotContain(jiraCallbackUrl);
+        // check that postcommit hook is removed.
+        final long maxWaitTime = 10000;
+        final long sleepInterval = 100;
+        long totalWaitTime = 0;
+        do {
+            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+            if (!servicesConfig.contains(jiraCallbackUrl)) {
+                // postcommit successfully removed
+                return;
+            }
+            Uninterruptibles.sleepUninterruptibly(sleepInterval, TimeUnit.MILLISECONDS);
+            totalWaitTime += sleepInterval;
+        } while (totalWaitTime <= maxWaitTime);
+
+        fail(String.format("Postcommit hook not removed after %d ms", totalWaitTime));
     }
 
     @Test
