@@ -22,7 +22,7 @@ import java.util.Date;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 
-public class EvenstJsonMarshallingTest
+public class EventsJsonMarshallingTest
 {
     ObjectMapper objectMapper;
     ImmutableSet<String> issueKeys;
