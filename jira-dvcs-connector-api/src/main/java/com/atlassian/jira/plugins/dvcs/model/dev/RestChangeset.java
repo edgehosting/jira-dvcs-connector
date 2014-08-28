@@ -1,9 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
-import com.google.gson.annotations.SerializedName;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -11,12 +10,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestChangeset
 {
     private RestUser author;
-    @SerializedName("authorTimestamp")
+    @XmlElement (name = "authorTimestamp")
     private long authorTimestamp;
-    @SerializedName("displayId")
+    @XmlElement(name = "displayId")
     private String displayId;
     private String id;
-    @SerializedName("fileCount")
+    @XmlElement(name = "fileCount")
     private int fileCount;
     private String message;
     private String url;

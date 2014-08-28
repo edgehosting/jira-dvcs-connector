@@ -1,14 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
-import org.apache.http.entity.ContentType;
-
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketBranch;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -22,21 +13,26 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewer;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequestReviewerIterator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketUser;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
 import com.google.gson.reflect.TypeToken;
+import org.apache.http.entity.ContentType;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
  * PullRequestRemoteRestpoint
+ * <p/>
+ * <p/>
+ * <br /><br /> Created on 11.12.2012, 13:14:31 <br /><br />
  *
- *
- * <br /><br />
- * Created on 11.12.2012, 13:14:31
- * <br /><br />
  * @author jhocman@atlassian.com
- *
  */
 public class PullRequestRemoteRestpoint
 {
@@ -50,7 +46,8 @@ public class PullRequestRemoteRestpoint
         this.requestor = requestor;
     }
 
-    public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> getRepositoryActivityPage(int page, String owner, String repoSlug, final Date upToDate) {
+    public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> getRepositoryActivityPage(int page, String owner, String repoSlug, final Date upToDate)
+    {
 
         String activityUrl = String.format("/repositories/%s/%s/pullrequests/activity?pagelen=%s&page=%s", owner, repoSlug, REPO_ACTIVITY_PAGESIZE, page);
         ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>> callback = new ResponseCallback<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
@@ -59,7 +56,9 @@ public class PullRequestRemoteRestpoint
             public BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> onResponse(RemoteResponse response)
             {
                 BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> remote =
-                        ClientUtils.fromJson(response.getResponse(),new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>(){}.getType() );
+                        ClientUtils.fromJson(response.getResponse(), new TypeToken<BitbucketPullRequestPage<BitbucketPullRequestActivityInfo>>()
+                        {
+                        }.getType());
 
                 if (remote != null && remote.getValues() != null && !remote.getValues().isEmpty())
                 {
@@ -159,7 +158,8 @@ public class PullRequestRemoteRestpoint
         return ClientUtils.fromJson(response.getResponse(),
                 new TypeToken<BitbucketPullRequestPage<?>>()
                 {
-                }.getType());
+                }.getType()
+        );
     }
 
     public BitbucketPullRequest createPullRequest(String owner, String repoSlug, String title, String description, String sourceBranch, String destinationBranch, List<String> reviewers)

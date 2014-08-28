@@ -1,17 +1,17 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
-import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestResource;
+import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitTestResource;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
 public class GitHubDvcs implements Dvcs
 {
     private GitTestResource gitTestResource;
-    private final GitHubTestResource gitHubTestResource;
+    private final GitHubTestSupport gitHubTestSupport;
 
-    public GitHubDvcs(GitHubTestResource gitHubTestResource)
+    public GitHubDvcs(GitHubTestSupport gitHubTestSupport)
     {
-        this.gitHubTestResource = gitHubTestResource;
+        this.gitHubTestSupport = gitHubTestSupport;
         gitTestResource = new GitTestResource();
     }
 
@@ -75,7 +75,7 @@ public class GitHubDvcs implements Dvcs
     {
         gitTestResource.addRepository(repositoryName);
 
-        gitTestResource.clone(repositoryName, gitHubTestResource.getRepository(owner, repositoryName).getCloneUrl(), username, password);
+        gitTestResource.clone(repositoryName, gitHubTestSupport.getRepository(owner, repositoryName).getCloneUrl(), username, password);
     }
 
     @Override

@@ -41,7 +41,8 @@ import com.google.gson.reflect.TypeToken;
 public class BitbucketRemoteClient
 {
     public static final String BITBUCKET_URL = "https://bitbucket.org";
-    
+    public static final String TEST_USER_AGENT = "jirabitbucketconnectortest";
+
     private AccountRemoteRestpoint accountRemoteRestpoint;
     private ChangesetRemoteRestpoint changesetRemoteRestpoint;
     private GroupRemoteRestpoint groupRemoteRestpoint;
@@ -56,7 +57,7 @@ public class BitbucketRemoteClient
     public BitbucketRemoteClient(String username, String password) {
 
         HttpClientProvider httpClientProvider = new HttpClientProvider();
-        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+        httpClientProvider.setUserAgent(TEST_USER_AGENT);
 
         // Bitbucket client setup
         AuthProvider authProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,

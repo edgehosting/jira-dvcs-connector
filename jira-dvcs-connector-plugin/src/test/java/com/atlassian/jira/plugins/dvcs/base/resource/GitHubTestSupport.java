@@ -32,13 +32,13 @@ import java.util.Map;
  *
  * @author Stanislav Dvorscak
  */
-public class GitHubTestResource
+public class GitHubTestSupport
 {
 
     /**
      * Logger for this class.
      */
-    private static Logger logger = LoggerFactory.getLogger(GitHubTestResource.class);
+    private static Logger logger = LoggerFactory.getLogger(GitHubTestSupport.class);
 
     /**
      * Base GitHub url.
@@ -157,7 +157,7 @@ public class GitHubTestResource
     /**
      * Created OAuths.
      */
-    private Map<Lifetime, List<OAuthContext>> oAuthByLifetime = new HashMap<GitHubTestResource.Lifetime, List<OAuthContext>>();
+    private Map<Lifetime, List<OAuthContext>> oAuthByLifetime = new HashMap<GitHubTestSupport.Lifetime, List<OAuthContext>>();
 
     /**
      * Created repositories.
@@ -173,7 +173,7 @@ public class GitHubTestResource
      */
     private Map<String, RepositoryContext> repositoryBySlug = new HashMap<String, RepositoryContext>();
 
-    public GitHubTestResource(final MagicVisitor magicVisitor)
+    public GitHubTestSupport(final MagicVisitor magicVisitor)
     {
         this.magicVisitor = magicVisitor;
     }
@@ -181,7 +181,7 @@ public class GitHubTestResource
     /**
      * Constructor.
      */
-    public GitHubTestResource(TestListenerDelegate testListenerDelegate, MagicVisitor magicVisitor)
+    public GitHubTestSupport(TestListenerDelegate testListenerDelegate, MagicVisitor magicVisitor)
     {
         testListenerDelegate.register(new AbstractTestListener()
         {
@@ -190,28 +190,28 @@ public class GitHubTestResource
             public void beforeClass()
             {
                 super.beforeClass();
-                GitHubTestResource.this.beforeClass();
+                GitHubTestSupport.this.beforeClass();
             }
 
             @Override
             public void beforeMethod()
             {
                 super.beforeMethod();
-                GitHubTestResource.this.beforeMethod();
+                GitHubTestSupport.this.beforeMethod();
             }
 
             @Override
             public void afterMethod()
             {
                 super.afterMethod();
-                GitHubTestResource.this.afterMethod();
+                GitHubTestSupport.this.afterMethod();
             }
 
             @Override
             public void afterClass()
             {
                 super.afterClass();
-                GitHubTestResource.this.afterClass();
+                GitHubTestSupport.this.afterClass();
             }
 
         });
@@ -405,13 +405,8 @@ public class GitHubTestResource
         request.setTitle(title);
         request.setBody(description);
 
-        PullRequestMarker headMarker = new PullRequestMarker();
-        headMarker.setLabel(head);
-        request.setHead(headMarker);
-
-        PullRequestMarker baseMarker = new PullRequestMarker();
-        baseMarker.setLabel(base);
-        request.setBase(baseMarker);
+        request.setHead(new PullRequestMarker().setLabel(head));
+        request.setBase(new PullRequestMarker().setLabel(base));
 
         PullRequest result = null;
 

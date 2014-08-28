@@ -34,7 +34,6 @@ public abstract class BaseDVCSTest implements TestListenerDelegate
         for (TestListener listener : listeners)
         {
             listener.beforeClass();
-            ;
         }
     }
 

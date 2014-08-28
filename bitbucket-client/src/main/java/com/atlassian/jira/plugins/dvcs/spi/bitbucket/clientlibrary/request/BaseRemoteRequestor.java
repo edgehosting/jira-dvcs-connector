@@ -49,10 +49,7 @@ import javax.annotation.Nullable;
  * BaseRemoteRequestor
  * <p/>
  * <p/>
- * <br />
- * <br />
- * Created on 13.7.2012, 10:25:24 <br />
- * <br />
+ * <br /> <br /> Created on 13.7.2012, 10:25:24 <br /> <br />
  *
  * @author jhocman@atlassian.com
  */
@@ -81,7 +78,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (parameters == null)
         {
             return null;
-        } else
+        }
+        else
         {
             return Maps.transformValues(parameters, STRING_TO_LIST_STRING);
         }
@@ -130,7 +128,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
 
     private <T> T getWithRetry(final String uri, final Map<String, List<String>> parameters,
-                               final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -144,7 +142,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T deleteWithRetry(final String uri, final Map<String, List<String>> parameters,
-                                  final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -158,7 +156,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T postWithRetry(final String uri, final Map<String, ? extends Object> parameters,
-                                final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -172,7 +170,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
-                               final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -239,7 +237,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         if (log.isDebugEnabled())
         {
-            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[]{method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders())});
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
         }
     }
 
@@ -259,15 +257,18 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
             return callback.onResponse(response);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
+        }
+        finally
         {
             closeResponse(response);
             SystemUtils.releaseConnection(method, httpResponse);
@@ -284,27 +285,36 @@ public class BaseRemoteRequestor implements RemoteRequestor
         HttpClient client = httpClientProvider.getHttpClient();
         RemoteResponse response = null;
 
+        HttpResponse httpResponse = null;
         try
         {
             createConnection(client, method, uri, null);
             setBody(method, body, contentType);
 
-            HttpResponse httpResponse = client.execute(method);
+            httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
+        }
+        finally
         {
             closeResponse(response);
+            SystemUtils.releaseConnection(method, httpResponse);
+            if (apiProvider.isCloseIdleConnections())
+            {
+                httpClientProvider.closeIdleConnections();
+            }
         }
     }
 
@@ -332,23 +342,27 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
             return callback.onResponse(response);
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
 
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
+        }
+        finally
         {
             closeResponse(response);
             SystemUtils.releaseConnection(method, httpResponse);
         }
     }
 
-    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
+    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse)
+            throws IOException
     {
 
         RemoteResponse response = new RemoteResponse();
@@ -373,7 +387,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                     toBeThrown = new BitbucketRequestException.Forbidden_403();
                     break;
                 case HttpStatus.SC_NOT_FOUND:
-                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI()+" content "+content);
+                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI() + " content " + content);
                     break;
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     toBeThrown = new BitbucketRequestException.InternalServerError_500(content);
@@ -392,7 +406,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return response;
     }
 
-    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
+    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode)
+            throws IOException
     {
         String responseAsString = null;
         if (httpResponse.getEntity() != null)
@@ -406,14 +421,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (log.isWarnEnabled())
         {
             log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
-                    new Object[]{method.getMethod(), method.getURI(), method.getParams(), statusCode});
+                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
         }
 
         if (log.isDebugEnabled())
         {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                    new Object[]{method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                            statusCode, responseAsString});
+                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                            statusCode, responseAsString }
+            );
         }
 
         return responseAsString;
@@ -447,7 +463,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             if (!urlAlreadyHasParams)
             {
                 queryStringBuilder.append("?");
-            } else
+            }
+            else
             {
                 queryStringBuilder.append("&");
             }
@@ -495,7 +512,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         try
         {
             return URLEncoder.encode(str, "UTF-8");
-        } catch (UnsupportedEncodingException e)
+        }
+        catch (UnsupportedEncodingException e)
         {
             throw new BitbucketRequestException("Required encoding not found", e);
         }
@@ -509,7 +527,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             remoteUrl = uri;
 
-        } else
+        }
+        else
         {
             String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
             remoteUrl = apiUrl + uri;
@@ -531,7 +550,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         void process(String key, String value);
     }
 
-    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, ? extends Object> params) throws IOException
+    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, ? extends Object> params)
+            throws IOException
     {
         if (params != null)
         {
@@ -579,7 +599,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
                         processParameter.process(entry.getKey(), v.toString());
                     }
                 }
-            } else
+            }
+            else
             {
                 if (value != null)
                 {

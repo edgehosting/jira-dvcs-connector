@@ -12,5 +12,4 @@ public interface GitHubEventContext
      */
 
     void savePullRequest(PullRequest pullRequest);
-
 }
