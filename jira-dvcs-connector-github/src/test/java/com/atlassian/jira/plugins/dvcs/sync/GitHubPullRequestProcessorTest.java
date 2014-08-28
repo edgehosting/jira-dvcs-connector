@@ -3,9 +3,11 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
@@ -43,6 +45,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -52,10 +55,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * GitHubPullRequestProcessor test
- *
  */
 public class GitHubPullRequestProcessorTest
 {
@@ -95,6 +98,9 @@ public class GitHubPullRequestProcessorTest
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
 
+    @Mock
+    private NotificationService notificationService;
+
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
 
@@ -132,7 +138,7 @@ public class GitHubPullRequestProcessorTest
         long remoteId = pullRequest.getId();
         when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOn);
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { });
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
         when(pullRequestMapping.getSourceBranch()).thenReturn("sourceBranch");
         when(pullRequestMapping.getSourceRepo()).thenReturn("owner/sourceRepo");
@@ -334,7 +340,7 @@ public class GitHubPullRequestProcessorTest
         assertEquals(participantsIndex.size(), 201);
 
         Participant participant = participantsIndexCaptor.getValue().get("user");
-        assertParticipant(participant,  "user");
+        assertParticipant(participant, "user");
 
         for (int i = 0; i < 100; i++)
         {
@@ -368,6 +374,10 @@ public class GitHubPullRequestProcessorTest
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(notificationService).broadcast(eventCaptor.capture());
+
+        assertTrue(eventCaptor.getValue() instanceof IssuesChangedEvent);
     }
 
     @Test
@@ -389,7 +399,7 @@ public class GitHubPullRequestProcessorTest
 
         assertEquals(saveCommitCaptor.getAllValues().size(), 100);
         int i = 0;
-        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+        for (Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
         }
@@ -414,6 +424,7 @@ public class GitHubPullRequestProcessorTest
 
         verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(notificationService).broadcast(anyObject());
     }
 
     @Test

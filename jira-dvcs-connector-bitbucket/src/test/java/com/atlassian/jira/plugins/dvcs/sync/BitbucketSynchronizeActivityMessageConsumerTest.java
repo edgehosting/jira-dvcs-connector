@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
@@ -70,6 +71,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMapOf;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -154,6 +156,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     @Mock
     private FeatureManager featureManager;
+
+    @Mock
+    private NotificationService notificationService;
 
     private RepositoryPullRequestMappingMock target;
     private BitbucketPullRequest source;
@@ -484,7 +489,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getAllValues().size(), 100);
         int i = 0;
-        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+        for (Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), COMMIT_NODE + i++);
         }
@@ -694,6 +699,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao).findRequestByRemoteId(eq(repository), anyLong());
         verify(repositoryPullRequestDao).createPullRequest();
         verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
+        verify(repositoryPullRequestDao).getIssueKeys(anyInt(), anyInt());
+        verify(notificationService).broadcast(anyObject());
 
         verifyNoMoreInteractions(repositoryPullRequestDao);
     }
@@ -814,8 +821,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     /**
-     * For saveCommit, returns a commit mapping that has the same NODE as in the input map.
-     * To be used in subsequent linkCommit calls.
+     * For saveCommit, returns a commit mapping that has the same NODE as in the input map. To be used in subsequent
+     * linkCommit calls.
      */
     private class SaveCommitAnswer implements Answer<Object>
     {
@@ -823,9 +830,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         public Object answer(final InvocationOnMock invocation) throws Throwable
         {
             //noinspection unchecked
-            final Map<String, Object> commitMap = (Map<String, Object>)invocation.getArguments()[1];
+            final Map<String, Object> commitMap = (Map<String, Object>) invocation.getArguments()[1];
             RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
-            when(commitMapping.getNode()).thenReturn((String)commitMap.get(RepositoryCommitMapping.NODE));
+            when(commitMapping.getNode()).thenReturn((String) commitMap.get(RepositoryCommitMapping.NODE));
             return commitMapping;
         }
     }

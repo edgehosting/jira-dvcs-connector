@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySetOf;
@@ -86,13 +88,15 @@ public class BranchServiceImplTest
     @Test
     public void testDuplicateOldBranches()
     {
+        String issueKey = "TST-1";
+        final String branchName = issueKey + " branch";
         List<Branch> newBranches = Lists.newArrayList(
-                new Branch(0, "branch", repository.getId())
+                new Branch(0, branchName, repository.getId())
         );
 
         List<Branch> oldBranches = Lists.newArrayList(
-                new Branch(1, "branch", repository.getId()),
-                new Branch(2, "branch", repository.getId())
+                new Branch(1, branchName, repository.getId()),
+                new Branch(2, branchName, repository.getId())
         );
 
         when(branchDao.getBranches(repository.getId())).thenReturn(oldBranches);
@@ -102,8 +106,19 @@ public class BranchServiceImplTest
         verify(branchDao).removeBranch(eq(repository.getId()), removeBranchArgumentCaptor.capture());
         verify(branchDao).createBranch(eq(repository.getId()), branchArgumentCaptor.capture(), anySetOf(String.class));
 
-        assertEquals(removeBranchArgumentCaptor.getValue().getName(), "branch");
-        assertEquals(branchArgumentCaptor.getValue().getName(), "branch");
+        assertEquals(removeBranchArgumentCaptor.getValue().getName(), branchName);
+        assertEquals(branchArgumentCaptor.getValue().getName(), branchName);
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(threadEvents, times(3)).broadcast(eventCaptor.capture());
+
+        assertThat(eventCaptor.getAllValues().get(0), instanceOf(IssuesChangedEvent.class));
+        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getValue();
+        assertThat(event.getIssueKeys().contains(issueKey), is(true));
+
+        // Subsquent issue keys will be same so just check the order
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(BranchCreatedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(2), instanceOf(IssuesChangedEvent.class));
     }
 
     @Test
@@ -114,8 +129,8 @@ public class BranchServiceImplTest
         );
 
         List<Branch> oldBranches = Lists.newArrayList(
-                new Branch(1, "branch1", repository.getId()),
-                new Branch(2, "branch2", repository.getId())
+                new Branch(1, "TST-1 branch1", repository.getId()),
+                new Branch(2, "TST-2 branch2", repository.getId())
         );
 
         when(branchDao.getBranches(repository.getId())).thenReturn(oldBranches);
@@ -127,6 +142,22 @@ public class BranchServiceImplTest
 
         assertThat(removeBranchArgumentCaptor.getAllValues(), Matchers.containsInAnyOrder(oldBranches.toArray(new Branch[] { })));
         assertEquals(branchArgumentCaptor.getValue().getName(), "branch3");
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(threadEvents, times(4)).broadcast(eventCaptor.capture());
+
+        assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
+
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(2), instanceOf(IssuesChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(3), instanceOf(IssuesChangedEvent.class));
+        List<String> expectedIssueKeys = new ArrayList<String>();
+        expectedIssueKeys.add("TST-1");
+        expectedIssueKeys.add("TST-2");
+        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getAllValues().get(2);
+        assertThat(expectedIssueKeys.containsAll(event.getIssueKeys()), is(true));
+        event = (IssuesChangedEvent) eventCaptor.getAllValues().get(3);
+        assertThat(expectedIssueKeys.containsAll(event.getIssueKeys()), is(true));
     }
 
     @Test
@@ -157,18 +188,21 @@ public class BranchServiceImplTest
     public void testUpdateBranchesShouldBroadcastEvent()
     {
         List<Branch> newBranches = Lists.newArrayList(
-                new Branch(0, "branch3", repository.getId())
+                new Branch(0, "TST-1 branch3", repository.getId())
         );
 
         when(branchDao.getBranches(repository.getId())).thenReturn(new ArrayList<Branch>());
         branchService.updateBranches(repository, newBranches);
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(threadEvents).broadcast(eventCaptor.capture());
+        verify(threadEvents, times(2)).broadcast(eventCaptor.capture());
 
-        assertThat(eventCaptor.getValue(), instanceOf(BranchCreatedEvent.class));
-        BranchCreatedEvent event = (BranchCreatedEvent) eventCaptor.getValue();
-        assertThat(event.getBranch().getName(), equalTo("branch3"));
+        assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
+        BranchCreatedEvent event = (BranchCreatedEvent) eventCaptor.getAllValues().get(0);
+        assertThat(event.getBranch().getName(), equalTo("TST-1 branch3"));
+        assertThat(event.getIssueKeys().contains("TST-1"), is(true));
+
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
     }
 
     @Test

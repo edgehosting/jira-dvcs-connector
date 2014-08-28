@@ -5,6 +5,7 @@ import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.google.common.collect.ImmutableSet;
@@ -17,12 +18,14 @@ import org.testng.annotations.Test;
 
 import java.util.Date;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,11 +70,15 @@ public class ChangesetServiceImplTest
         changesetService.create(changeset, ImmutableSet.of("DEV-1"));
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(threadEvents).broadcast(eventCaptor.capture());
+        verify(threadEvents, times(2)).broadcast(eventCaptor.capture());
 
-        assertThat(eventCaptor.getValue(), instanceOf(ChangesetCreatedEvent.class));
-        ChangesetCreatedEvent event = (ChangesetCreatedEvent) eventCaptor.getValue();
+        assertThat(eventCaptor.getAllValues().get(0), instanceOf(ChangesetCreatedEvent.class));
+        ChangesetCreatedEvent event = (ChangesetCreatedEvent) eventCaptor.getAllValues().get(0);
         assertThat(event.getChangeset(), is(changeset));
+
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
+        IssuesChangedEvent issuesChangedEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertThat(issuesChangedEvent.getIssueKeys(), contains("DEV-1"));
     }
 
     @Test

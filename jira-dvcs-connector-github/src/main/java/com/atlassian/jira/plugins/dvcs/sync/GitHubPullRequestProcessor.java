@@ -3,9 +3,11 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.annotations.VisibleForTesting;
@@ -38,7 +40,6 @@ import javax.annotation.Resource;
 
 /**
  * Processes GitHub PullRequest
- *
  */
 @Component
 public class GitHubPullRequestProcessor
@@ -63,14 +64,14 @@ public class GitHubPullRequestProcessor
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider} dependency.
      */
-    @Resource(name = "githubClientProvider")
+    @Resource (name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
+
+    @Resource
+    private NotificationService notificationService;
 
     /**
      * Updates pull request if update date differs
-     *
-     * @param repository
-     * @param remotePullRequest
      *
      * @return <i>true</i> if updated, <i>false</i> otherwise
      */
@@ -99,7 +100,7 @@ public class GitHubPullRequestProcessor
 
     public void processPullRequest(final Repository repository, final PullRequest remotePullRequest, RepositoryPullRequestMapping localPullRequest)
     {
-        Map<String, Participant> participantIndex = new HashMap<String,Participant>();
+        Map<String, Participant> participantIndex = new HashMap<String, Participant>();
 
         try
         {
@@ -119,16 +120,16 @@ public class GitHubPullRequestProcessor
         processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
 
         pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
+
+        Set<String> issueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
     }
 
     /**
      * Creates or updates local version of remote {@link PullRequest}.
      *
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request representation
-     * @param localPullRequest
+     * @param repository pull request owner
+     * @param remotePullRequest remote pull request representation
      * @return created/updated local pull request
      */
     private RepositoryPullRequestMapping updateLocalPullRequest(Repository repository, PullRequest remotePullRequest,
@@ -173,6 +174,7 @@ public class GitHubPullRequestProcessor
         return !Objects.equal(local.getSourceBranch(), getBranchName(remote.getHead(), local.getSourceBranch()))
                 || !Objects.equal(local.getSourceRepo(), getRepositoryFullName(remote.getHead()));
     }
+
     private boolean hasDestinationChanged(PullRequest remote, RepositoryPullRequestMapping local)
     {
         return !Objects.equal(local.getDestinationBranch(), getBranchName(remote.getBase(), local.getDestinationBranch()));
@@ -255,10 +257,8 @@ public class GitHubPullRequestProcessor
     /**
      * Loads remote commits for provided pull request.
      *
-     * @param repository
-     *            pull request owner
-     * @param remotePullRequest
-     *            remote pull request
+     * @param repository pull request owner
+     * @param remotePullRequest remote pull request
      * @return remote commits of pull request
      */
     private List<RepositoryCommit> getRemotePullRequestCommits(Repository repository, PullRequest remotePullRequest)
@@ -276,10 +276,6 @@ public class GitHubPullRequestProcessor
 
     /**
      * Processes comments of a Pull Request.
-     *
-     * @param repository
-     * @param remotePullRequest
-     * @param localPullRequest
      */
     private void processPullRequestComments(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
@@ -308,10 +304,6 @@ public class GitHubPullRequestProcessor
 
     /**
      * Processes review comments of a Pull Request.
-     *
-     * @param repository
-     * @param remotePullRequest
-     * @param localPullRequest
      */
     private void processPullRequestReviewComments(Repository repository, PullRequest remotePullRequest,
             RepositoryPullRequestMapping localPullRequest, Map<String, Participant> participantIndex)
