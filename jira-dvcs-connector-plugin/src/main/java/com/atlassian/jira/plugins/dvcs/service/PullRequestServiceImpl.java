@@ -82,7 +82,6 @@ public class PullRequestServiceImpl implements PullRequestService
     public RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping)
     {
         final RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
-        Set<String> issueKeys = pullRequestDao.getIssueKeys(createdMapping.getToRepositoryId(), createdMapping.getID());
         final PullRequest pullRequest = transformer.transform(createdMapping);
 
         // we know that pull requests always start off in the OPEN state so if that's not the current state we can
@@ -93,12 +92,12 @@ public class PullRequestServiceImpl implements PullRequestService
             final PullRequest createdPullRequest = transformer.transform(createdMapping);
             createdPullRequest.setStatus(OPEN);
 
-            threadEvents.broadcast(new PullRequestCreatedEvent(createdPullRequest, issueKeys));
-            threadEvents.broadcast(new PullRequestUpdatedEvent(pullRequest, createdPullRequest, issueKeys));
+            threadEvents.broadcast(new PullRequestCreatedEvent(createdPullRequest));
+            threadEvents.broadcast(new PullRequestUpdatedEvent(pullRequest, createdPullRequest));
         }
         else
         {
-            threadEvents.broadcast(new PullRequestCreatedEvent(pullRequest, issueKeys));
+            threadEvents.broadcast(new PullRequestCreatedEvent(pullRequest));
         }
 
         return createdMapping;
@@ -114,7 +113,6 @@ public class PullRequestServiceImpl implements PullRequestService
         }
 
         RepositoryPullRequestMapping mappingAfterUpdate = pullRequestDao.updatePullRequestInfo(pullRequestId, updatedPullRequestMapping);
-        Set<String> updatedIssueKeys = pullRequestDao.getIssueKeys(mappingAfterUpdate.getToRepositoryId(), mappingAfterUpdate.getID());
 
         // send both the before and after state of the PR in the event
         PullRequest prAfter = transformer.transform(mappingAfterUpdate);
@@ -125,7 +123,7 @@ public class PullRequestServiceImpl implements PullRequestService
             prAfter.setExecutedBy(null); // clear misleading author set in executedBy field for re-opened since it won't be available cheaply via Github api
         }
 
-        threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore, updatedIssueKeys));
+        threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
         return mappingAfterUpdate;
     }
 
