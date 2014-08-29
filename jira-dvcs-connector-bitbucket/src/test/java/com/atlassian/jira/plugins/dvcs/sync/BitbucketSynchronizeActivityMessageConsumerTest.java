@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsMapContaining;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -65,6 +66,7 @@ import java.util.Map;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.DECLINED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.MERGED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -680,13 +682,10 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(notificationService, times(2)).broadcast(eventCaptor.capture());
+        verify(notificationService).broadcast(eventCaptor.capture());
 
-        assertEquals(eventCaptor.getAllValues().size(), 2);
-        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(0);
-        assertTrue(firstEvent.getIssueKeys().contains("TST-1"));
-        IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
-        assertTrue(secondEvent.getIssueKeys().contains("TST-2"));
+        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getValue();
+        assertThat(firstEvent.getIssueKeys(), Matchers.containsInAnyOrder(new String[] { "TST-1", "TST-2" }));
     }
 
     @Test
@@ -738,7 +737,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao).createPullRequest();
         verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
         verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
-        verify(notificationService, times(2)).broadcast(anyObject());
+        verify(notificationService).broadcast(anyObject());
 
         verifyNoMoreInteractions(repositoryPullRequestDao);
     }

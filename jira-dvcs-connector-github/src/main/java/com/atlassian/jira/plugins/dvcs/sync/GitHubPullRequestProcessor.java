@@ -13,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.egit.github.core.Comment;
@@ -115,7 +116,6 @@ public class GitHubPullRequestProcessor
         }
 
         Set<String> oldIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
-        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), oldIssueKeys));
 
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
@@ -125,7 +125,8 @@ public class GitHubPullRequestProcessor
         pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
 
         Set<String> newIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
-        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), newIssueKeys));
+        ImmutableSet<String> allIssueKeys = ImmutableSet.<String>builder().addAll(newIssueKeys).addAll(oldIssueKeys).build();
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), allIssueKeys));
     }
 
     /**

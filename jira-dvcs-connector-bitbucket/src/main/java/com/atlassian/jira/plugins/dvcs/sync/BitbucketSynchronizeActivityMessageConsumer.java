@@ -40,6 +40,7 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -146,8 +147,9 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 final Set<String> oldIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
                 prIssueKeysCount = dao.updatePullRequestIssueKeys(repo, localPrId);
                 final Set<String> newIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
-                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), repo.getDvcsType(), oldIssueKeys));
-                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), repo.getDvcsType(), newIssueKeys));
+
+                ImmutableSet<String> allIssueKeys = ImmutableSet.<String>builder().addAll(newIssueKeys).addAll(oldIssueKeys).build();
+                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), repo.getDvcsType(), allIssueKeys));
             }
             catch (IllegalStateException e)
             {

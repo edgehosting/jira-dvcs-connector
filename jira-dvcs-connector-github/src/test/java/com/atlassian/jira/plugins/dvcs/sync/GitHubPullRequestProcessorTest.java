@@ -380,13 +380,10 @@ public class GitHubPullRequestProcessorTest
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(notificationService, times(2)).broadcast(eventCaptor.capture());
+        verify(notificationService, times(1)).broadcast(eventCaptor.capture());
 
-        assertEquals(eventCaptor.getAllValues().size(), 2);
-        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(0);
+        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getValue();
         assertThat(firstEvent.getIssueKeys(), contains(new String[] { issueKey }));
-        IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
-        assertThat(secondEvent.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
     @Test
@@ -433,7 +430,7 @@ public class GitHubPullRequestProcessorTest
 
         verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
-        verify(notificationService, times(2)).broadcast(anyObject());
+        verify(notificationService, times(1)).broadcast(anyObject());
     }
 
     @Test
