@@ -685,7 +685,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(notificationService).broadcast(eventCaptor.capture());
 
         DevSummaryChangedEvent firstEvent = (DevSummaryChangedEvent) eventCaptor.getValue();
-        assertThat(firstEvent.getIssueKeys(), Matchers.containsInAnyOrder(new String[] { "TST-1", "TST-2" }));
+        assertThat(firstEvent.getIssueKeys(), Matchers.containsInAnyOrder("TST-1", "TST-2"));
     }
 
     @Test
