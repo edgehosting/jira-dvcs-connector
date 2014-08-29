@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -61,7 +62,9 @@ public class ChangesetServiceImplTest
         when(clusterLockServiceFactory.getClusterLockService()).thenReturn(clusterLockService);
         when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
 
-        changesetService = new ChangesetServiceImpl(changesetDao, clusterLockServiceFactory, repositoryDao, threadEvents);
+        changesetService = new ChangesetServiceImpl(changesetDao, clusterLockServiceFactory);
+        ReflectionTestUtils.setField(changesetService, "repositoryDao", repositoryDao);
+        ReflectionTestUtils.setField(changesetService, "threadEvents", threadEvents);
     }
 
     @Test

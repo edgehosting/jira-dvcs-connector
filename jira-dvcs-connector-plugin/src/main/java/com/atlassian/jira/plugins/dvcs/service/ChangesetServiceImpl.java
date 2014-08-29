@@ -51,13 +51,10 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private ThreadEvents threadEvents;
 
-    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory,
-            RepositoryDao repositoryDao, ThreadEvents threadEvents)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
-        this.repositoryDao = repositoryDao;
-        this.threadEvents = threadEvents;
     }
 
     @Override
