@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
+import com.google.common.collect.ImmutableSet;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitComment;
@@ -39,6 +40,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.Matchers.any;
@@ -55,7 +58,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
 /**
  * GitHubPullRequestProcessor test
@@ -369,15 +371,22 @@ public class GitHubPullRequestProcessorTest
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+        final String issueKey = "TST-1";
+        final ImmutableSet<String> issueKeys = ImmutableSet.of(issueKey);
+        when(repositoryPullRequestDao.getIssueKeys(anyInt(), anyInt())).thenReturn(issueKeys);
 
         testedClass.processPullRequest(repository, pullRequest);
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(notificationService).broadcast(eventCaptor.capture());
+        verify(notificationService, times(2)).broadcast(eventCaptor.capture());
 
-        assertTrue(eventCaptor.getValue() instanceof IssuesChangedEvent);
+        assertEquals(eventCaptor.getAllValues().size(), 2);
+        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(0);
+        assertThat(firstEvent.getIssueKeys(), contains(new String[] { issueKey }));
+        IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertThat(secondEvent.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
     @Test
@@ -424,7 +433,7 @@ public class GitHubPullRequestProcessorTest
 
         verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
-        verify(notificationService).broadcast(anyObject());
+        verify(notificationService, times(2)).broadcast(anyObject());
     }
 
     @Test

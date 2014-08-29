@@ -65,9 +65,10 @@ public class ChangesetServiceImplTest
     {
         // int repositoryId, String node, String message, Date timestam
         Changeset changeset = new Changeset(1, "d11320d1e9321f4ea96f9b46ecae20027a85dc7b", "DEV-1: file changed", new Date());
-        when(changesetDao.createOrAssociate(changeset, ImmutableSet.of("DEV-1"))).thenReturn(true);
+        final String issueKey = "DEV-1";
+        when(changesetDao.createOrAssociate(changeset, ImmutableSet.of(issueKey))).thenReturn(true);
 
-        changesetService.create(changeset, ImmutableSet.of("DEV-1"));
+        changesetService.create(changeset, ImmutableSet.of(issueKey));
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
         verify(threadEvents, times(2)).broadcast(eventCaptor.capture());
@@ -78,7 +79,7 @@ public class ChangesetServiceImplTest
 
         assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
         IssuesChangedEvent issuesChangedEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
-        assertThat(issuesChangedEvent.getIssueKeys(), contains("DEV-1"));
+        assertThat(event.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
     @Test

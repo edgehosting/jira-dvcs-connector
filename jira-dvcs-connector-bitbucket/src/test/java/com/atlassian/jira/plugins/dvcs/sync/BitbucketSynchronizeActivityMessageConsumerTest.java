@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -40,6 +41,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.collection.IsMapContaining;
@@ -652,6 +654,42 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
+    public void testUpdateCommitTriggersChangedEvent()
+    {
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn(COMMIT_NODE_ORIGINAL);
+        setPRCommits(commitMapping);
+
+        final Integer repositoryId = 1;
+        when(repository.getId()).thenReturn(repositoryId);
+        final ImmutableSet<String> oldIssueKeys = ImmutableSet.of("TST-1");
+        final ImmutableSet<String> newIssueKeys = ImmutableSet.of("TST-2");
+        when(repositoryPullRequestDao.getIssueKeys(repository.getId(), 0)).thenReturn(oldIssueKeys).thenReturn(newIssueKeys);
+
+        testedClass.onReceive(message, payload);
+
+        verifyPRDaoSaveAndLinkCommit(COMMIT_NODE);
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(containsInAnyOrder(commitMapping)));
+
+        verify(repositoryPullRequestDao).findRequestByRemoteId(eq(repository), anyLong());
+        verify(repositoryPullRequestDao).createPullRequest();
+        verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
+        verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(notificationService, times(2)).broadcast(eventCaptor.capture());
+
+        assertEquals(eventCaptor.getAllValues().size(), 2);
+        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(0);
+        assertTrue(firstEvent.getIssueKeys().contains("TST-1"));
+        IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertTrue(secondEvent.getIssueKeys().contains("TST-2"));
+    }
+
+    @Test
     public void testStatusChanged()
     {
         BitbucketPullRequest remote = mock(BitbucketPullRequest.class);
@@ -699,8 +737,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao).findRequestByRemoteId(eq(repository), anyLong());
         verify(repositoryPullRequestDao).createPullRequest();
         verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
-        verify(repositoryPullRequestDao).getIssueKeys(anyInt(), anyInt());
-        verify(notificationService).broadcast(anyObject());
+        verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
+        verify(notificationService, times(2)).broadcast(anyObject());
 
         verifyNoMoreInteractions(repositoryPullRequestDao);
     }

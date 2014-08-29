@@ -75,9 +75,9 @@ public class BranchServiceImpl implements BranchService
         {
             if (!newBranchSet.contains(oldBranch))
             {
+                branchDao.removeBranch(repository.getId(), oldBranch);
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(oldBranch.getName());
                 threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
-                branchDao.removeBranch(repository.getId(), oldBranch);
             }
         }
     }
@@ -94,8 +94,6 @@ public class BranchServiceImpl implements BranchService
             log.info("Removing duplicate branches ({}) on repository '{}'", duplicates.toString(), repository.getName());
             for (Branch branch : duplicates)
             {
-                Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
-                threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
                 branchDao.removeBranch(repository.getId(), branch);
                 log.info("Branch {} removed", branch);
             }

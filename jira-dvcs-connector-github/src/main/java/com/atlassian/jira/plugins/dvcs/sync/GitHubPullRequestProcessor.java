@@ -114,6 +114,9 @@ public class GitHubPullRequestProcessor
             return;
         }
 
+        Set<String> oldIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), oldIssueKeys));
+
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
@@ -121,8 +124,8 @@ public class GitHubPullRequestProcessor
 
         pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
 
-        Set<String> issueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
-        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
+        Set<String> newIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), newIssueKeys));
     }
 
     /**

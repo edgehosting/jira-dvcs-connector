@@ -143,9 +143,11 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             try
             {
                 int localPrId = processActivity(payload, info, pullRestpoint);
+                final Set<String> oldIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
                 prIssueKeysCount = dao.updatePullRequestIssueKeys(repo, localPrId);
-                IssuesChangedEvent issuesChangedEvent = new IssuesChangedEvent(repo.getId(), dao.getIssueKeys(repo.getId(), localPrId));
-                notificationService.broadcast(issuesChangedEvent);
+                final Set<String> newIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
+                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), oldIssueKeys));
+                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), newIssueKeys));
             }
             catch (IllegalStateException e)
             {

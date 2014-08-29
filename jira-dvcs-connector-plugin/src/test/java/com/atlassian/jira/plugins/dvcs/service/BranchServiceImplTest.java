@@ -21,8 +21,10 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySetOf;
@@ -110,15 +112,13 @@ public class BranchServiceImplTest
         assertEquals(branchArgumentCaptor.getValue().getName(), branchName);
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(threadEvents, times(3)).broadcast(eventCaptor.capture());
-
-        assertThat(eventCaptor.getAllValues().get(0), instanceOf(IssuesChangedEvent.class));
-        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getValue();
-        assertThat(event.getIssueKeys().contains(issueKey), is(true));
+        verify(threadEvents, times(2)).broadcast(eventCaptor.capture());
 
         // Subsquent issue keys will be same so just check the order
-        assertThat(eventCaptor.getAllValues().get(1), instanceOf(BranchCreatedEvent.class));
-        assertThat(eventCaptor.getAllValues().get(2), instanceOf(IssuesChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
+        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertThat(event.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
     @Test
@@ -147,17 +147,13 @@ public class BranchServiceImplTest
         verify(threadEvents, times(4)).broadcast(eventCaptor.capture());
 
         assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
-
         assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
         assertThat(eventCaptor.getAllValues().get(2), instanceOf(IssuesChangedEvent.class));
         assertThat(eventCaptor.getAllValues().get(3), instanceOf(IssuesChangedEvent.class));
-        List<String> expectedIssueKeys = new ArrayList<String>();
-        expectedIssueKeys.add("TST-1");
-        expectedIssueKeys.add("TST-2");
-        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getAllValues().get(2);
-        assertThat(expectedIssueKeys.containsAll(event.getIssueKeys()), is(true));
-        event = (IssuesChangedEvent) eventCaptor.getAllValues().get(3);
-        assertThat(expectedIssueKeys.containsAll(event.getIssueKeys()), is(true));
+        final IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(2);
+        assertThat(firstEvent.getIssueKeys(), anyOf(contains(new String[] { "TST-1" }), contains(new String[] { "TST-2" })));
+        final IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(3);
+        assertThat(secondEvent.getIssueKeys(), anyOf(contains(new String[] { "TST-1" }), contains(new String[] { "TST-2" })));
     }
 
     @Test

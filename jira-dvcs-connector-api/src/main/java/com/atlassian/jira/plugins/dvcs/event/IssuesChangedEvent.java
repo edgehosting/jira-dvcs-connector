@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
-import com.atlassian.analytics.api.annotations.EventName;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -11,7 +10,6 @@ import javax.annotation.Nonnull;
 /**
  * A change was detected for the Issue Keys
  */
-@EventName ("jira.dvcsconnector.sync.issue.changed")
 public final class IssuesChangedEvent implements SyncEvent
 {
     @Nonnull
@@ -25,9 +23,7 @@ public final class IssuesChangedEvent implements SyncEvent
 
     public IssuesChangedEvent(@Nonnull final int repositoryId, final @Nonnull Set<String> issueKeys)
     {
-        this.issueKeys = issueKeys;
-        this.date = new Date();
-        this.repositoryId = repositoryId;
+        this(repositoryId, issueKeys, new Date());
     }
 
     public IssuesChangedEvent(@Nonnull final int repositoryId, @Nonnull final Set<String> issueKeys, @Nonnull final Date date)
