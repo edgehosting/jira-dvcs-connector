@@ -120,8 +120,8 @@ public class EventsJsonMarshallingTest
     @Test
     public void issuesChanged() throws Exception
     {
-        final IssuesChangedEvent issueChangedEvent = convertToJsonThenBackTo(new IssuesChangedEvent(1, "bitbucket", issueKeys));
-        assertThat(issueChangedEvent, instanceOf(IssuesChangedEvent.class));
+        final DevSummaryChangedEvent issueChangedEvent = convertToJsonThenBackTo(new DevSummaryChangedEvent(1, "bitbucket", issueKeys));
+        assertThat(issueChangedEvent, instanceOf(DevSummaryChangedEvent.class));
         assertThat(issueChangedEvent.getIssueKeys().containsAll(issueKeys), is(true));
         assertThat(issueChangedEvent.getRepositoryId(), is(1));
     }

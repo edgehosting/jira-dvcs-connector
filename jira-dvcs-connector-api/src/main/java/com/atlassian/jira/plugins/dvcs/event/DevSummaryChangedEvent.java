@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * A change was detected for the Issue Keys
  */
-public final class IssuesChangedEvent implements SyncEvent
+public final class DevSummaryChangedEvent implements SyncEvent
 {
     @Nonnull
     private final Date date;
@@ -24,12 +24,12 @@ public final class IssuesChangedEvent implements SyncEvent
     @Nonnull
     private final String dvcsType;
 
-    public IssuesChangedEvent(@Nonnull final int repositoryId, final String dvcsType, final @Nonnull Set<String> issueKeys)
+    public DevSummaryChangedEvent(@Nonnull final int repositoryId, final String dvcsType, final @Nonnull Set<String> issueKeys)
     {
         this(repositoryId, dvcsType, issueKeys, new Date());
     }
 
-    public IssuesChangedEvent(@Nonnull final int repositoryId, @Nonnull final String dvcsType, @Nonnull final Set<String> issueKeys, @Nonnull final Date date)
+    public DevSummaryChangedEvent(@Nonnull final int repositoryId, @Nonnull final String dvcsType, @Nonnull final Set<String> issueKeys, @Nonnull final Date date)
     {
         this.date = date;
         this.issueKeys = issueKeys;
@@ -63,10 +63,10 @@ public final class IssuesChangedEvent implements SyncEvent
     }
 
     @JsonCreator
-    private static IssuesChangedEvent fromJSON(@JsonProperty ("repositoryId") int repositoryId,
+    private static DevSummaryChangedEvent fromJSON(@JsonProperty ("repositoryId") int repositoryId,
             @JsonProperty ("dvcsType") String dvcsType, @JsonProperty ("issueKeys") Set<String> issueKeys,
             @JsonProperty ("date") Date date)
     {
-        return new IssuesChangedEvent(repositoryId, dvcsType, issueKeys, date);
+        return new DevSummaryChangedEvent(repositoryId, dvcsType, issueKeys, date);
     }
 }

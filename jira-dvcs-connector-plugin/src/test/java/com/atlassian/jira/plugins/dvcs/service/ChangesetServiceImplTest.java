@@ -6,7 +6,7 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
-import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -86,8 +86,8 @@ public class ChangesetServiceImplTest
         ChangesetCreatedEvent event = (ChangesetCreatedEvent) eventCaptor.getAllValues().get(0);
         assertThat(event.getChangeset(), is(changeset));
 
-        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
-        IssuesChangedEvent issuesChangedEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(DevSummaryChangedEvent.class));
+        DevSummaryChangedEvent devSummaryChangedEvent = (DevSummaryChangedEvent) eventCaptor.getAllValues().get(1);
         assertThat(event.getIssueKeys(), contains(new String[] { issueKey }));
     }
 

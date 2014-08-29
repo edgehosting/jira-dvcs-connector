@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -382,7 +382,7 @@ public class GitHubPullRequestProcessorTest
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
         verify(notificationService, times(1)).broadcast(eventCaptor.capture());
 
-        IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getValue();
+        DevSummaryChangedEvent firstEvent = (DevSummaryChangedEvent) eventCaptor.getValue();
         assertThat(firstEvent.getIssueKeys(), contains(new String[] { issueKey }));
     }
 

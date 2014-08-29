@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
-import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -116,8 +116,8 @@ public class BranchServiceImplTest
 
         // Subsquent issue keys will be same so just check the order
         assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
-        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
-        IssuesChangedEvent event = (IssuesChangedEvent) eventCaptor.getAllValues().get(1);
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(DevSummaryChangedEvent.class));
+        DevSummaryChangedEvent event = (DevSummaryChangedEvent) eventCaptor.getAllValues().get(1);
         assertThat(event.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
@@ -147,12 +147,12 @@ public class BranchServiceImplTest
         verify(threadEvents, times(4)).broadcast(eventCaptor.capture());
 
         assertThat(eventCaptor.getAllValues().get(0), instanceOf(BranchCreatedEvent.class));
-        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
-        assertThat(eventCaptor.getAllValues().get(2), instanceOf(IssuesChangedEvent.class));
-        assertThat(eventCaptor.getAllValues().get(3), instanceOf(IssuesChangedEvent.class));
-        final IssuesChangedEvent firstEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(2);
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(DevSummaryChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(2), instanceOf(DevSummaryChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(3), instanceOf(DevSummaryChangedEvent.class));
+        final DevSummaryChangedEvent firstEvent = (DevSummaryChangedEvent) eventCaptor.getAllValues().get(2);
         assertThat(firstEvent.getIssueKeys(), anyOf(contains(new String[] { "TST-1" }), contains(new String[] { "TST-2" })));
-        final IssuesChangedEvent secondEvent = (IssuesChangedEvent) eventCaptor.getAllValues().get(3);
+        final DevSummaryChangedEvent secondEvent = (DevSummaryChangedEvent) eventCaptor.getAllValues().get(3);
         assertThat(secondEvent.getIssueKeys(), anyOf(contains(new String[] { "TST-1" }), contains(new String[] { "TST-2" })));
     }
 
@@ -198,7 +198,7 @@ public class BranchServiceImplTest
         assertThat(event.getBranch().getName(), equalTo("TST-1 branch3"));
         assertThat(event.getIssueKeys().contains("TST-1"), is(true));
 
-        assertThat(eventCaptor.getAllValues().get(1), instanceOf(IssuesChangedEvent.class));
+        assertThat(eventCaptor.getAllValues().get(1), instanceOf(DevSummaryChangedEvent.class));
     }
 
     @Test

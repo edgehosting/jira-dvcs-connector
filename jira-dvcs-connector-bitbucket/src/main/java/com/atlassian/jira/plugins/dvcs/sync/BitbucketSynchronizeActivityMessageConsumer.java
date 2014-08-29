@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
-import com.atlassian.jira.plugins.dvcs.event.IssuesChangedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
@@ -149,7 +149,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                 final Set<String> newIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
 
                 ImmutableSet<String> allIssueKeys = ImmutableSet.<String>builder().addAll(newIssueKeys).addAll(oldIssueKeys).build();
-                notificationService.broadcast(new IssuesChangedEvent(repo.getId(), repo.getDvcsType(), allIssueKeys));
+                notificationService.broadcast(new DevSummaryChangedEvent(repo.getId(), repo.getDvcsType(), allIssueKeys));
             }
             catch (IllegalStateException e)
             {
