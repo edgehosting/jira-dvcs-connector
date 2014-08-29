@@ -21,16 +21,26 @@ public final class IssuesChangedEvent implements SyncEvent
     @Nonnull
     private final int repositoryId;
 
-    public IssuesChangedEvent(@Nonnull final int repositoryId, final @Nonnull Set<String> issueKeys)
+    @Nonnull
+    private final String dvcsType;
+
+    public IssuesChangedEvent(@Nonnull final int repositoryId, final String dvcsType, final @Nonnull Set<String> issueKeys)
     {
-        this(repositoryId, issueKeys, new Date());
+        this(repositoryId, dvcsType, issueKeys, new Date());
     }
 
-    public IssuesChangedEvent(@Nonnull final int repositoryId, @Nonnull final Set<String> issueKeys, @Nonnull final Date date)
+    public IssuesChangedEvent(@Nonnull final int repositoryId, @Nonnull final String dvcsType, @Nonnull final Set<String> issueKeys, @Nonnull final Date date)
     {
         this.date = date;
         this.issueKeys = issueKeys;
         this.repositoryId = repositoryId;
+        this.dvcsType = dvcsType;
+    }
+
+    @Nonnull
+    public String getDvcsType()
+    {
+        return dvcsType;
     }
 
     @Nonnull
@@ -54,8 +64,9 @@ public final class IssuesChangedEvent implements SyncEvent
 
     @JsonCreator
     private static IssuesChangedEvent fromJSON(@JsonProperty ("repositoryId") int repositoryId,
-            @JsonProperty ("issueKeys") Set<String> issueKeys, @JsonProperty ("date") Date date)
+            @JsonProperty ("dvcsType") String dvcsType, @JsonProperty ("issueKeys") Set<String> issueKeys,
+            @JsonProperty ("date") Date date)
     {
-        return new IssuesChangedEvent(repositoryId, issueKeys, date);
+        return new IssuesChangedEvent(repositoryId, dvcsType, issueKeys, date);
     }
 }

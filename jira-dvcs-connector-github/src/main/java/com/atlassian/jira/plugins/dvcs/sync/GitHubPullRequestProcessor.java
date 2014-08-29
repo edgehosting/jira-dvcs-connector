@@ -115,7 +115,7 @@ public class GitHubPullRequestProcessor
         }
 
         Set<String> oldIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
-        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), oldIssueKeys));
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), oldIssueKeys));
 
         repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
 
@@ -125,7 +125,7 @@ public class GitHubPullRequestProcessor
         pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
 
         Set<String> newIssueKeys = repositoryPullRequestDao.getIssueKeys(repository.getId(), localPullRequest.getID());
-        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), newIssueKeys));
+        notificationService.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), newIssueKeys));
     }
 
     /**

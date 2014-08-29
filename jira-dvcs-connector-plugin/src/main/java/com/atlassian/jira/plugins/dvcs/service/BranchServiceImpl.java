@@ -66,7 +66,7 @@ public class BranchServiceImpl implements BranchService
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
 
                 broadcastBranchCreatedEvent(branch, issueKeys);
-                threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
+                threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), issueKeys));
             }
         }
 
@@ -77,7 +77,7 @@ public class BranchServiceImpl implements BranchService
             {
                 branchDao.removeBranch(repository.getId(), oldBranch);
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(oldBranch.getName());
-                threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), issueKeys));
+                threadEvents.broadcast(new IssuesChangedEvent(repository.getId(), repository.getDvcsType(), issueKeys));
             }
         }
     }

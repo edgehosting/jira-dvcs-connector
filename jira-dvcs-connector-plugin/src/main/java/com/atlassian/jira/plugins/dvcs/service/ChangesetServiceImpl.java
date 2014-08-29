@@ -51,10 +51,13 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private ThreadEvents threadEvents;
 
-    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory,
+            RepositoryDao repositoryDao, ThreadEvents threadEvents)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
+        this.repositoryDao = repositoryDao;
+        this.threadEvents = threadEvents;
     }
 
     @Override
@@ -68,7 +71,8 @@ public class ChangesetServiceImpl implements ChangesetService
             if (changesetDao.createOrAssociate(changeset, extractedIssues))
             {
                 broadcastChangesetCreatedEvent(changeset, extractedIssues);
-                threadEvents.broadcast(new IssuesChangedEvent(changeset.getRepositoryId(), extractedIssues));
+                Repository repository = repositoryDao.get(changeset.getRepositoryId());
+                threadEvents.broadcast(new IssuesChangedEvent(changeset.getRepositoryId(), repository.getDvcsType(), extractedIssues));
             }
 
             return changeset;
