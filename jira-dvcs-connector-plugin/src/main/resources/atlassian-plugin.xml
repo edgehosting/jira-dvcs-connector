@@ -359,6 +359,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.PullRequestService</interface>
     </component>
 
+    <component key="notificationService" name="notificationService"
+               class="com.atlassian.jira.plugins.dvcs.service.NotificationServiceImpl">
+        <description>notificationService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.NotificationServiceImpl</interface>
+    </component>
+
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
 

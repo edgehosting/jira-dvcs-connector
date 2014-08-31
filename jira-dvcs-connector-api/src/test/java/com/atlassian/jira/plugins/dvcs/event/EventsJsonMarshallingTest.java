@@ -21,8 +21,9 @@ import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
-public class EvenstJsonMarshallingTest
+public class EventsJsonMarshallingTest
 {
     ObjectMapper objectMapper;
     ImmutableSet<String> issueKeys;
@@ -116,7 +117,16 @@ public class EvenstJsonMarshallingTest
         assertThat(convertToJsonThenBackTo(new PullRequestUpdatedEvent(pullRequest, pullRequest)), instanceOf(PullRequestUpdatedEvent.class));
     }
 
-    private <T> T convertToJsonThenBackTo(Object item) throws IOException
+    @Test
+    public void issuesChanged() throws Exception
+    {
+        final DevSummaryChangedEvent issueChangedEvent = convertToJsonThenBackTo(new DevSummaryChangedEvent(1, "bitbucket", issueKeys));
+        assertThat(issueChangedEvent, instanceOf(DevSummaryChangedEvent.class));
+        assertThat(issueChangedEvent.getIssueKeys().containsAll(issueKeys), is(true));
+        assertThat(issueChangedEvent.getRepositoryId(), is(1));
+    }
+
+    private <T> T convertToJsonThenBackTo(T item) throws IOException
     {
         String json = objectMapper.writeValueAsString(item);
 

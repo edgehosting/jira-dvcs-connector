@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.event.ChangesetCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -67,6 +68,8 @@ public class ChangesetServiceImpl implements ChangesetService
             if (changesetDao.createOrAssociate(changeset, extractedIssues))
             {
                 broadcastChangesetCreatedEvent(changeset, extractedIssues);
+                Repository repository = repositoryDao.get(changeset.getRepositoryId());
+                threadEvents.broadcast(new DevSummaryChangedEvent(changeset.getRepositoryId(), repository.getDvcsType(), extractedIssues));
             }
 
             return changeset;

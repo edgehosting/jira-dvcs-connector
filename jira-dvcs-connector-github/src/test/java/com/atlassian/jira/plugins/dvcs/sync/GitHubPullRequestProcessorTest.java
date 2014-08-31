@@ -3,13 +3,16 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
+import com.google.common.collect.ImmutableSet;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitComment;
@@ -37,12 +40,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -55,7 +61,6 @@ import static org.testng.Assert.assertNull;
 
 /**
  * GitHubPullRequestProcessor test
- *
  */
 public class GitHubPullRequestProcessorTest
 {
@@ -95,6 +100,9 @@ public class GitHubPullRequestProcessorTest
     @Mock
     private RepositoryPullRequestMapping pullRequestMapping;
 
+    @Mock
+    private NotificationService notificationService;
+
     @Captor
     private ArgumentCaptor<Map<String, Participant>> participantsIndexCaptor;
 
@@ -132,7 +140,7 @@ public class GitHubPullRequestProcessorTest
         long remoteId = pullRequest.getId();
         when(pullRequestMapping.getUpdatedOn()).thenReturn(updatedOn);
         when(pullRequestMapping.getRemoteId()).thenReturn(remoteId);
-        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] {});
+        when(pullRequestMapping.getCommits()).thenReturn(new RepositoryCommitMapping[] { });
         when(pullRequestMapping.getLastStatus()).thenReturn("OPEN");
         when(pullRequestMapping.getSourceBranch()).thenReturn("sourceBranch");
         when(pullRequestMapping.getSourceRepo()).thenReturn("owner/sourceRepo");
@@ -334,7 +342,7 @@ public class GitHubPullRequestProcessorTest
         assertEquals(participantsIndex.size(), 201);
 
         Participant participant = participantsIndexCaptor.getValue().get("user");
-        assertParticipant(participant,  "user");
+        assertParticipant(participant, "user");
 
         for (int i = 0; i < 100; i++)
         {
@@ -363,11 +371,19 @@ public class GitHubPullRequestProcessorTest
 
         RepositoryCommit repositoryCommit = mockCommit("aaa");
         when(gitHubPullRequestService.getCommits(any(IRepositoryIdProvider.class), anyInt())).thenReturn(Arrays.asList(repositoryCommit));
+        final String issueKey = "TST-1";
+        final ImmutableSet<String> issueKeys = ImmutableSet.of(issueKey);
+        when(repositoryPullRequestDao.getIssueKeys(anyInt(), anyInt())).thenReturn(issueKeys);
 
         testedClass.processPullRequest(repository, pullRequest);
         verify(repositoryPullRequestDao).saveCommit(eq(repository), saveCommitCaptor.capture());
 
         assertEquals(saveCommitCaptor.getValue().get(RepositoryCommitMapping.NODE), "aaa");
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(notificationService, times(1)).broadcast(eventCaptor.capture());
+
+        DevSummaryChangedEvent firstEvent = (DevSummaryChangedEvent) eventCaptor.getValue();
+        assertThat(firstEvent.getIssueKeys(), contains(new String[] { issueKey }));
     }
 
     @Test
@@ -389,7 +405,7 @@ public class GitHubPullRequestProcessorTest
 
         assertEquals(saveCommitCaptor.getAllValues().size(), 100);
         int i = 0;
-        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+        for (Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), "aaa" + i++);
         }
@@ -414,6 +430,7 @@ public class GitHubPullRequestProcessorTest
 
         verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
         verify(repositoryPullRequestDao).removeCommits(argThat(IsIterableContainingInAnyOrder.containsInAnyOrder(commitMapping)));
+        verify(notificationService, times(1)).broadcast(anyObject());
     }
 
     @Test

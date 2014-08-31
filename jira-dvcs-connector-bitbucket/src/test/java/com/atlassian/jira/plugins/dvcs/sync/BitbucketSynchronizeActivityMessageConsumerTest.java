@@ -5,11 +5,13 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
@@ -39,8 +41,10 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.Pu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.RepositoryPullRequestMappingMock;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsMapContaining;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -62,6 +66,7 @@ import java.util.Map;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.DECLINED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.MERGED;
 import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -70,6 +75,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMapOf;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -154,6 +160,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
     @Mock
     private FeatureManager featureManager;
+
+    @Mock
+    private NotificationService notificationService;
 
     private RepositoryPullRequestMappingMock target;
     private BitbucketPullRequest source;
@@ -484,7 +493,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         assertEquals(saveCommitCaptor.getAllValues().size(), 100);
         int i = 0;
-        for ( Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
+        for (Map<String, Object> commitMap : saveCommitCaptor.getAllValues())
         {
             assertEquals(commitMap.get(RepositoryCommitMapping.NODE), COMMIT_NODE + i++);
         }
@@ -647,6 +656,39 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     @Test
+    public void testUpdateCommitTriggersChangedEvent()
+    {
+        when(repositoryPullRequestDao.findRequestByRemoteId(eq(repository), anyLong())).thenReturn(null);
+
+        RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
+        when(commitMapping.getNode()).thenReturn(COMMIT_NODE_ORIGINAL);
+        setPRCommits(commitMapping);
+
+        final Integer repositoryId = 1;
+        when(repository.getId()).thenReturn(repositoryId);
+        final ImmutableSet<String> oldIssueKeys = ImmutableSet.of("TST-1");
+        final ImmutableSet<String> newIssueKeys = ImmutableSet.of("TST-2");
+        when(repositoryPullRequestDao.getIssueKeys(repository.getId(), 0)).thenReturn(oldIssueKeys).thenReturn(newIssueKeys);
+
+        testedClass.onReceive(message, payload);
+
+        verifyPRDaoSaveAndLinkCommit(COMMIT_NODE);
+        verify(repositoryPullRequestDao).unlinkCommits(eq(repository), eq(target), argThat(containsInAnyOrder(commitMapping)));
+        verify(repositoryPullRequestDao).removeCommits(argThat(containsInAnyOrder(commitMapping)));
+
+        verify(repositoryPullRequestDao).findRequestByRemoteId(eq(repository), anyLong());
+        verify(repositoryPullRequestDao).createPullRequest();
+        verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
+        verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
+
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(notificationService).broadcast(eventCaptor.capture());
+
+        DevSummaryChangedEvent firstEvent = (DevSummaryChangedEvent) eventCaptor.getValue();
+        assertThat(firstEvent.getIssueKeys(), Matchers.containsInAnyOrder("TST-1", "TST-2"));
+    }
+
+    @Test
     public void testStatusChanged()
     {
         BitbucketPullRequest remote = mock(BitbucketPullRequest.class);
@@ -694,6 +736,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         verify(repositoryPullRequestDao).findRequestByRemoteId(eq(repository), anyLong());
         verify(repositoryPullRequestDao).createPullRequest();
         verify(repositoryPullRequestDao).updatePullRequestIssueKeys(eq(repository), anyInt());
+        verify(repositoryPullRequestDao, times(2)).getIssueKeys(anyInt(), anyInt());
+        verify(notificationService).broadcast(anyObject());
 
         verifyNoMoreInteractions(repositoryPullRequestDao);
     }
@@ -814,8 +858,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     }
 
     /**
-     * For saveCommit, returns a commit mapping that has the same NODE as in the input map.
-     * To be used in subsequent linkCommit calls.
+     * For saveCommit, returns a commit mapping that has the same NODE as in the input map. To be used in subsequent
+     * linkCommit calls.
      */
     private class SaveCommitAnswer implements Answer<Object>
     {
@@ -823,9 +867,9 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
         public Object answer(final InvocationOnMock invocation) throws Throwable
         {
             //noinspection unchecked
-            final Map<String, Object> commitMap = (Map<String, Object>)invocation.getArguments()[1];
+            final Map<String, Object> commitMap = (Map<String, Object>) invocation.getArguments()[1];
             RepositoryCommitMapping commitMapping = mock(RepositoryCommitMapping.class);
-            when(commitMapping.getNode()).thenReturn((String)commitMap.get(RepositoryCommitMapping.NODE));
+            when(commitMapping.getNode()).thenReturn((String) commitMap.get(RepositoryCommitMapping.NODE));
             return commitMapping;
         }
     }
