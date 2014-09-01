@@ -89,6 +89,8 @@ public interface ChangesetDao
      */
     void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, ForEachChangesetClosure closure);
 
+    void forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure);
+
     /**
      * @param id
      * @param available
@@ -122,5 +124,10 @@ public interface ChangesetDao
          * @param changeset
          */
         void execute(Entity changeset);
+    }
+
+    public interface ForEachIssueToCommitMappingClosure
+    {
+        void execute(String dvcsType, int repositoryId, Set<String> issueKey);
     }
 }

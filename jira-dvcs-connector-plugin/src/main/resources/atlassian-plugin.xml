@@ -322,7 +322,13 @@
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
-    
+
+    <component key="administrationService" name="administrationService"
+               class="com.atlassian.jira.plugins.dvcs.service.AdministrationServiceImpl">
+        <description>administrationService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.AdministrationService</interface>
+    </component>
+
     <component key="branchService" name="branchService"
                class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
         <description>branchService</description>

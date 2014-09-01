@@ -4,6 +4,8 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
@@ -14,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.collect.ImmutableSet;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
@@ -21,6 +24,7 @@ import net.java.ao.schema.PrimaryKey;
 import net.java.ao.schema.Table;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -270,8 +274,6 @@ public class ChangesetDaoImpl implements ChangesetDao
             map.put(IssueToChangesetMapping.CHANGESET_ID, changesetMapping.getID());
             activeObjects.create(IssueToChangesetMapping.class, map);
         }
-
-
     }
 
     private void associateRepositoryToChangeset(ChangesetMapping changesetMapping, int repositoryId)
@@ -426,6 +428,105 @@ public class ChangesetDaoImpl implements ChangesetDao
                 closure.execute(mapping);
             }
         });
+    }
+
+    public void forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure)
+    {
+        final Query organizationQuery = Query.select().from(OrganizationMapping.class);
+
+        OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, organizationQuery);
+        for (OrganizationMapping organization : organizations)
+        {
+            final Query repositoryQuery = Query.select()
+                    .from(RepositoryMapping.class)
+                    .alias(RepositoryMapping.class, "rm")
+                    .where("rm." + RepositoryMapping.ORGANIZATION_ID + " = ?", organization.getID());
+            RepositoryMapping[] repositories = activeObjects.find(RepositoryMapping.class, repositoryQuery);
+
+            for (RepositoryMapping repository : repositories)
+            {
+                log.info("processing organisation {} and repository {}", organization.getID(), repository.getID());
+                processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, closure);
+            }
+        }
+
+        log.info("finished processing for each issue key");
+    }
+
+    public void processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, ForEachIssueToCommitMappingClosure closure)
+    {
+        int currentPage = 0;
+        IssueToChangesetMapping[] mappings;
+
+        do
+        {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            Query issueQuery = Query.select().distinct()
+                    .from(IssueToChangesetMapping.class)
+                    .alias(IssueToChangesetMapping.class, "ic")
+                    .alias(ChangesetMapping.class, "cm")
+                    .join(ChangesetMapping.class, "ic.CHANGESET_ID = cm.ID")
+                    .alias(RepositoryToChangesetMapping.class, "rtoc")
+                    .join(RepositoryToChangesetMapping.class, "cm.ID = rtoc.CHANGESET_ID")
+                    .alias(RepositoryMapping.class, "rm")
+                    .join(RepositoryMapping.class, "rm.ID = rtoc.REPOSITORY_ID")
+                    .where("rm.ID = ?", repositoryId)
+                    .limit(pageSize)
+                    .offset(currentPage * pageSize);
+
+            mappings = activeObjects.find(IssueToChangesetMapping.class, issueQuery);
+            currentPage++;
+
+            ImmutableSet.Builder<String> setBuilder = ImmutableSet.<String>builder();
+
+            for (IssueToChangesetMapping mapping : mappings)
+            {
+                setBuilder.add(mapping.getIssueKey());
+            }
+
+            final ImmutableSet<String> issueKeys = setBuilder.build();
+            closure.execute(dvcsType, repositoryId, issueKeys);
+            log.info("processing page {} with this many elements {} took {}", new Object[] { currentPage, issueKeys.size(), stopWatch });
+        }
+        while (mappings.length > 0);
+
+//        Query repositoryQuery = Query.select("*").from(RepositoryMapping.class);
+//
+//        activeObjects.stream(RepositoryMapping.class, repositoryQuery, new EntityStreamCallback<RepositoryMapping, Integer>()
+//        {
+//            @Override
+//            public void onRowRead(final RepositoryMapping repositoryMapping)
+//            {
+//                log.info("processing repo row with id {} and name {}", repositoryMapping.getID(), repositoryMapping.getName());
+//                Query issueQuery = Query.select("*")
+//                        .from(IssueToChangesetMapping.class)
+//                        .alias(IssueToChangesetMapping.class, "ic")
+//                        .alias(ChangesetMapping.class, "cm")
+//                        .join(ChangesetMapping.class, "ic.CHANGESET_ID = cm.ID")
+//                        .alias(RepositoryToChangesetMapping.class, "rtoc")
+//                        .join(RepositoryToChangesetMapping.class, "cm.ID = rtoc.CHANGESET_ID")
+//                        .alias(RepositoryMapping.class, "rm")
+//                        .join(RepositoryMapping.class, "rm.ID = rtoc.REPOSITORY_ID")
+//                        .alias(OrganizationMapping.class, "org")
+//                        .join(OrganizationMapping.class, "rm.ORGANIZATION_ID = org.ID")
+//                        .where("rm.ID = ?", repositoryMapping.getID());
+//
+//                issueQuery.cop
+//
+//                activeObjects.stream(IssueToChangesetMapping.class, issueQuery, new EntityStreamCallback<IssueToChangesetMapping, Integer>()
+//                {
+//                    @Override
+//                    public void onRowRead(final IssueToChangesetMapping issueToChangesetMapping)
+//                    {
+//                        log.info("processing row for issue key {} in repo {} ", issueToChangesetMapping.getIssueKey(), repositoryMapping.getID());
+////                        threadEvents.broadcast(new DevSummaryChangedEvent(repositoryMapping.getID(), repositoryMapping.get));
+//                    }
+//                });
+//            }
+//        });
+
+//        Query query = Query.select("ci." + CommitIssueKeyMapping.ISSUE_KEY).distinct()
     }
 
     private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
