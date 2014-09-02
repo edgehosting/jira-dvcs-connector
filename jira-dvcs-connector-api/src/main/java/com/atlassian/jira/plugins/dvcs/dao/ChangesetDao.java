@@ -128,6 +128,6 @@ public interface ChangesetDao
 
     public interface ForEachIssueToCommitMappingClosure
     {
-        void execute(String dvcsType, int repositoryId, Set<String> issueKey);
+        void execute(String dvcsType, int repository, Set<String> issueKey);
     }
 }

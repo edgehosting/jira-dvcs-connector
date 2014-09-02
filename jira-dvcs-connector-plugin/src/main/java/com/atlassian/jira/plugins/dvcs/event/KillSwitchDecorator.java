@@ -4,6 +4,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * Decorator for {@link EventService} that respects the {@link com.atlassian.jira.plugins.dvcs.event.EventsFeature}
  */
@@ -40,11 +42,30 @@ public class KillSwitchDecorator implements CarefulEventService
     }
 
     @Override
+    public void storeEvent(final int repositoryId, final SyncEvent event, final boolean scheduled)
+            throws IllegalArgumentException
+    {
+        if (eventsFeature.isEnabled())
+        {
+            delegate.storeEvent(repositoryId, event, scheduled);
+        }
+    }
+
+    @Override
     public void dispatchEvents(Repository repository)
     {
         if (eventsFeature.isEnabled())
         {
             delegate.dispatchEvents(repository);
+        }
+    }
+
+    @Override
+    public void dispatchEvents(final Set<Integer> repositoryIds)
+    {
+        if (eventsFeature.isEnabled())
+        {
+            delegate.dispatchEvents(repositoryIds);
         }
     }
 

@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
+import java.util.Set;
+
 /**
  * Service for managing synchronisation events.
  */
@@ -39,6 +41,15 @@ public interface EventService
     void storeEvent(Repository repository, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
 
     /**
+     * Stores the event against the repository, see {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent, boolean)}
+     * @param repositoryId
+     * @param event
+     * @param scheduled
+     * @throws IllegalArgumentException
+     */
+    void storeEvent(int repositoryId, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
+
+    /**
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as
      * they are published. Note that this method <b>schedules dispatching for asynchronously execution</b> and returns
      * immediately.
@@ -49,6 +60,12 @@ public interface EventService
      * @throws java.util.concurrent.RejectedExecutionException if dispatching can not be scheduled for execution
      */
     void dispatchEvents(Repository repository);
+
+    /**
+     * Dispatch all events for the supplied repository synchronously, this method will block until all events are published.
+     * @param repositoryIds
+     */
+    void dispatchEvents(Set<Integer> repositoryIds);
 
     /**
      * Discards all pending events for the given Repository.
