@@ -21,7 +21,7 @@ public class AdministrationServiceImpl implements AdministrationService
     private ChangesetDao changesetDao;
 
     @Resource (name = "eventServiceImpl")
-    EventService eventService;
+    private EventService eventService;
 
     @Resource
     private DevSummaryCachePrimingStatus status;
@@ -39,12 +39,21 @@ public class AdministrationServiceImpl implements AdministrationService
             return false;
         }
 
-        PrimeCacheClosure closure = new PrimeCacheClosure();
-        changesetDao.forEachIssueToCommitMapping(closure);
-
-        eventService.dispatchEvents(closure.repositoryIds);
-
-        status.finished();
+        PrimeCacheClosure closure = new PrimeCacheClosure(eventService, status);
+        try
+        {
+            changesetDao.forEachIssueToCommitMapping(closure);
+            eventService.dispatchEvents(closure.repositoryIds);
+            stopWatch.stop();
+            status.finished(stopWatch.toString());
+        }
+        catch (RuntimeException e)
+        {
+            stopWatch.stop();
+            status.failed(e, stopWatch.toString());
+            log.info("processing failed in this time " + stopWatch, e);
+            return false;
+        }
 
         log.info("overall processing took this long {}", stopWatch);
 
@@ -52,10 +61,17 @@ public class AdministrationServiceImpl implements AdministrationService
     }
 
     @VisibleForTesting
-    class PrimeCacheClosure implements ChangesetDao.ForEachIssueToCommitMappingClosure
+    static class PrimeCacheClosure implements ChangesetDao.ForEachIssueToCommitMappingClosure
     {
-
         private final Set<Integer> repositoryIds = new HashSet<Integer>();
+        private final EventService eventService;
+        private final DevSummaryCachePrimingStatus status;
+
+        PrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
+        {
+            this.eventService = eventService;
+            this.status = status;
+        }
 
         @Override
         public boolean execute(final String dvcsType, final int repositoryId, final Set<String> issueKeys)

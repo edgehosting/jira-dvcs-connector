@@ -37,7 +37,7 @@ public class DevSummaryCachePrimingStatusTest
         // Set up
         final DevSummaryCachePrimingStatus status =
                 new DevSummaryCachePrimingStatus(alreadyStarted, ISSUE_KEY_COUNT, TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT,
-                        TOTAL_PULL_REQUEST_COUNT, PREVIOUS_ERROR, true);
+                        TOTAL_PULL_REQUEST_COUNT, PREVIOUS_ERROR, true, "FOO");
 
         // Invoke
         final boolean started = status.startExclusively(TOTAL_ISSUE_KEY_COUNT, TOTAL_PULL_REQUEST_COUNT);
@@ -84,9 +84,9 @@ public class DevSummaryCachePrimingStatusTest
         final Exception exception = new Exception("oops");
         final DevSummaryCachePrimingStatus status =
                 new DevSummaryCachePrimingStatus(true, ISSUE_KEY_COUNT, TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT,
-                        TOTAL_PULL_REQUEST_COUNT, null, true);
+                        TOTAL_PULL_REQUEST_COUNT, null, true, "FOO");
 
-        status.failed(exception);
+        status.failed(exception, "FPP");
 
         assertStatus(status, exception, false, ISSUE_KEY_COUNT, TOTAL_ISSUE_KEY_COUNT,
                 PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, false);
@@ -99,7 +99,7 @@ public class DevSummaryCachePrimingStatusTest
         final int previousTotalPullRequestCount = 2;
         final DevSummaryCachePrimingStatus status =
                 new DevSummaryCachePrimingStatus(false, ISSUE_KEY_COUNT, previousTotalIssueCount,
-                        PULL_REQUEST_COUNT, previousTotalPullRequestCount, PREVIOUS_ERROR, true);
+                        PULL_REQUEST_COUNT, previousTotalPullRequestCount, PREVIOUS_ERROR, true, "FOO");
         status.startExclusively(TOTAL_ISSUE_KEY_COUNT, TOTAL_PULL_REQUEST_COUNT);
 
         assertStatus(status, null, true, 0, TOTAL_ISSUE_KEY_COUNT, 0, TOTAL_PULL_REQUEST_COUNT,
@@ -143,7 +143,7 @@ public class DevSummaryCachePrimingStatusTest
         status.completedIssueKeyBatch(2);
         status.startedNextPullRequest();
 
-        status.finished();
+        status.finished("FOO");
 
         // Finished but we didn't manually stop so expect stopped to be false
         assertStatus(status, null, false, totalIssueCount, totalIssueCount,
@@ -166,7 +166,7 @@ public class DevSummaryCachePrimingStatusTest
     {
         // Set up
         final DevSummaryCachePrimingStatus statusIn = new DevSummaryCachePrimingStatus(true, ISSUE_KEY_COUNT,
-                TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, null, false);
+                TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, null, false, "FOO");
 
         // Invoke
         final String json = statusIn.asJson();
@@ -190,10 +190,15 @@ public class DevSummaryCachePrimingStatusTest
         final String errorMessage = "Oops!";
 
         final DevSummaryCachePrimingStatus status = new DevSummaryCachePrimingStatus(true, ISSUE_KEY_COUNT,
-                TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, new Exception(errorMessage), false);
+                TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, new Exception(errorMessage), false, "FOO");
+
+        status.startExclusively(TOTAL_ISSUE_KEY_COUNT, TOTAL_PULL_REQUEST_COUNT);
+        final String timeTaken = "foo";
+        status.failed(new Exception(errorMessage), timeTaken);
 
         final String json = status.asJson();
 
         assertThat(json).contains(errorMessage);
+        assertThat(json).contains(status.getTimeTaken());
     }
 }

@@ -9,6 +9,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -36,6 +37,7 @@ public class DevSummaryCachePrimingStatus
     private final AtomicInteger totalIssueKeyCount;
     private final AtomicInteger pullRequestCount;
     private final AtomicInteger totalPullRequestCount;
+    private final AtomicReference<String> timeTaken;
 
     private Exception exception;
 
@@ -50,6 +52,7 @@ public class DevSummaryCachePrimingStatus
         totalIssueKeyCount = new AtomicInteger();
         pullRequestCount = new AtomicInteger();
         totalPullRequestCount = new AtomicInteger();
+        timeTaken = new AtomicReference<String>();
     }
 
     /**
@@ -71,7 +74,8 @@ public class DevSummaryCachePrimingStatus
             @JsonProperty ("pullRequestCount") final int pullRequestCount,
             @JsonProperty ("totalPullRequestCount") final int totalPullRequestCount,
             @JsonProperty ("error") final Exception exception,
-            @JsonProperty ("stopped") final boolean stopped)
+            @JsonProperty ("stopped") final boolean stopped,
+            @JsonProperty ("timeTaken") final String timeTaken)
     {
         this();
         this.exception = exception;
@@ -81,6 +85,7 @@ public class DevSummaryCachePrimingStatus
         this.totalIssueKeyCount.set(totalIssueKeyCount);
         this.pullRequestCount.set(pullRequestCount);
         this.totalPullRequestCount.set(totalPullRequestCount);
+        this.timeTaken.set(timeTaken);
     }
 
     // --------------------------------------- Accessors --------------------------------------
@@ -108,6 +113,9 @@ public class DevSummaryCachePrimingStatus
     {
         return totalPullRequestCount.get();
     }
+
+    @JsonProperty
+    public String getTimeTaken() {return timeTaken.get();}
 
     @JsonProperty
     public boolean isInProgress()
@@ -153,6 +161,7 @@ public class DevSummaryCachePrimingStatus
             this.pullRequestCount.set(0);
             this.totalPullRequestCount.set(totalPullRequestCount);
             this.stopped.set(false);
+            this.timeTaken.set("");
         }
 
         return canStart;
@@ -179,11 +188,12 @@ public class DevSummaryCachePrimingStatus
     /**
      * Signals that some part of the reindexing process failed.
      */
-    public void failed(final Exception exception)
+    public void failed(final Exception exception, String timeTaken)
     {
         this.exception = exception;
         this.inProgress.set(false);
         this.stopped.set(false);
+        this.timeTaken.set(timeTaken);
     }
 
     /**
@@ -198,9 +208,10 @@ public class DevSummaryCachePrimingStatus
     /**
      * Signals that reindexing has finished, successfully or otherwise.
      */
-    public void finished()
+    public void finished(String timeTaken)
     {
         inProgress.set(false);
+        this.timeTaken.set(timeTaken);
     }
 
     /**

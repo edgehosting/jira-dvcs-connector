@@ -12,7 +12,10 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
@@ -49,6 +52,17 @@ public class AdministrationServiceImplTest
     }
 
     @Test
+    public void testExceptionFails()
+    {
+        when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
+        final RuntimeException expectedException = new RuntimeException("foo");
+        when(changesetDao.forEachIssueToCommitMapping(any(ChangesetDao.ForEachIssueToCommitMappingClosure.class))).thenThrow(expectedException);
+
+        assertThat(administrationService.primeDevSummaryCache(), is(false));
+        verify(status).failed(eq(expectedException), any(String.class));
+    }
+
+    @Test
     public void testRunning()
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(false);
@@ -58,7 +72,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsFalseWhenStopped()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = administrationService.new PrimeCacheClosure();
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.PrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(true);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(false));
@@ -67,7 +81,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsTrueWhenRunning()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = administrationService.new PrimeCacheClosure();
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.PrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(false);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(true));
