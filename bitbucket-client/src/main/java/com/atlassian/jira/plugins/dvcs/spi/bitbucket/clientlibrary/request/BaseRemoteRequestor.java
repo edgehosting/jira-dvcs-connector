@@ -241,55 +241,70 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
+    private <T> T requestWithPayload(final HttpEntityEnclosingRequestBase method, final String uri, final Map<String, ? extends Object> params, final ResponseCallback<T> callback)
     {
-        HttpClient client = httpClientProvider.getHttpClient();
-        RemoteResponse response = null;
-
-        HttpResponse httpResponse = null;
-        try
-        {
-            createConnection(client, method, uri, params);
-            setPayloadParams(method, params);
-
-            httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(method, client, httpResponse);
-
-            return callback.onResponse(response);
-
-        }
-        catch (IOException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        }
-        catch (URISyntaxException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        }
-        finally
-        {
-            closeResponse(response);
-            SystemUtils.releaseConnection(method, httpResponse);
-            if (apiProvider.isCloseIdleConnections())
-            {
-                httpClientProvider.closeIdleConnections();
-            }
-        }
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri, params);
+                        setPayloadParams(method, params);
+                    }
+                },
+                callback,
+                false);
     }
 
-    private <T> T requestWithBody(HttpEntityEnclosingRequestBase method, String uri, String body, ContentType contentType,
+    private <T> T requestWithBody(final HttpEntityEnclosingRequestBase method, final String uri, final String body, final ContentType contentType,
             ResponseCallback<T> callback)
     {
-        HttpClient client = httpClientProvider.getHttpClient();
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri, null);
+                        setBody(method, body, contentType);
+                    }
+                },
+                callback,
+                false);
+    }
+
+    private <T> T requestWithoutPayload(final HttpRequestBase method, final String uri, final Map<String, List<String>> parameters, final ResponseCallback<T> callback)
+    {
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
+                    }
+                },
+                callback,
+                apiProvider.isCached());
+    }
+
+    private static interface ClientConfigurator {
+
+        public void configureClient(HttpClient client) throws IOException, URISyntaxException;
+    }
+
+    private <T, U extends HttpRequestBase> T request(U method, ClientConfigurator c, ResponseCallback<T> callback, boolean cached) {
+        HttpClient client = httpClientProvider.getHttpClient(cached);
         RemoteResponse response = null;
 
         HttpResponse httpResponse = null;
         try
         {
-            createConnection(client, method, uri, null);
-            setBody(method, body, contentType);
+            c.configureClient(client);
 
             httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
@@ -323,41 +338,6 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (response != null)
         {
             response.close();
-        }
-    }
-
-    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
-    {
-        HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
-
-        RemoteResponse response = null;
-
-        HttpResponse httpResponse = null;
-        try
-        {
-            createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
-
-            httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(method, client, httpResponse);
-
-            return callback.onResponse(response);
-
-        }
-        catch (IOException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-
-        }
-        catch (URISyntaxException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        }
-        finally
-        {
-            closeResponse(response);
-            SystemUtils.releaseConnection(method, httpResponse);
         }
     }
 
