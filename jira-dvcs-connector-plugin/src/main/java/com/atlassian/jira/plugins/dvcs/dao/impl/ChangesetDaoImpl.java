@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -101,14 +102,14 @@ public class ChangesetDaoImpl implements ChangesetDao
 
                 // delete association repo - changesets
                 Query query = Query.select().where(RepositoryToChangesetMapping.REPOSITORY_ID + " = ?", repositoryId);
-                log.debug("deleting repo - changesets associations from RepoToChangeset with id = [ {} ]", new String[]{String.valueOf(repositoryId)});
+                log.debug("deleting repo - changesets associations from RepoToChangeset with id = [ {} ]", new String[] { String.valueOf(repositoryId) });
                 ActiveObjectsUtils.delete(activeObjects, RepositoryToChangesetMapping.class, query);
 
                 // delete association issues - changeset
                 query = Query.select()
                         .alias(IssueToChangesetMapping.class, "i2c")
                         .where("not exists " +
-                            "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where i2c." +
+                                "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where i2c." +
                                 queryHelper.getSqlColumnName(IssueToChangesetMapping.CHANGESET_ID) + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
 
 
@@ -185,7 +186,8 @@ public class ChangesetDaoImpl implements ChangesetDao
                 {
                     fillProperties(changeset, chm);
                     chm.save();
-                } else
+                }
+                else
                 {
                     log.warn("Changest with node {} is not exists.", changeset.getNode());
                 }
@@ -381,7 +383,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
                                 .where(baseWhereClause.getSql(), baseWhereClause.getParams())
-                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC": " ASC")));
+                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC")));
 
                 return Arrays.asList(mappings);
             }
@@ -430,7 +432,15 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    public void forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure)
+    @Override
+    public int getNumberOfDistinctIssueKeysToCommit()
+    {
+        Query query = Query.select(IssueToChangesetMapping.ISSUE_KEY).distinct()
+                .from(IssueToChangesetMapping.class);
+        return activeObjects.count(IssueToChangesetMapping.class, query);
+    }
+
+    public boolean forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure)
     {
         final Query organizationQuery = Query.select().from(OrganizationMapping.class);
 
@@ -446,17 +456,24 @@ public class ChangesetDaoImpl implements ChangesetDao
             for (RepositoryMapping repository : repositories)
             {
                 log.info("processing organisation {} and repository {}", organization.getID(), repository.getID());
-                processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, closure);
+                boolean result = processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, closure);
+                if (!result)
+                {
+                    return result;
+                }
             }
         }
 
         log.info("finished processing for each issue key");
+        return true;
     }
 
-    public void processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, ForEachIssueToCommitMappingClosure closure)
+    @VisibleForTesting
+    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, ForEachIssueToCommitMappingClosure closure)
     {
         int currentPage = 0;
         IssueToChangesetMapping[] mappings;
+        boolean result;
 
         do
         {
@@ -486,47 +503,12 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
 
             final ImmutableSet<String> issueKeys = setBuilder.build();
-            closure.execute(dvcsType, repositoryId, issueKeys);
-            log.info("processing page {} with this many elements {} took {}", new Object[] { currentPage, issueKeys.size(), stopWatch });
+            result = closure.execute(dvcsType, repositoryId, issueKeys);
+            log.info("processing page {} with this many elements {} took {} and had the result {}",
+                    new Object[] { currentPage, issueKeys.size(), stopWatch, result });
         }
-        while (mappings.length > 0);
-
-//        Query repositoryQuery = Query.select("*").from(RepositoryMapping.class);
-//
-//        activeObjects.stream(RepositoryMapping.class, repositoryQuery, new EntityStreamCallback<RepositoryMapping, Integer>()
-//        {
-//            @Override
-//            public void onRowRead(final RepositoryMapping repositoryMapping)
-//            {
-//                log.info("processing repo row with id {} and name {}", repositoryMapping.getID(), repositoryMapping.getName());
-//                Query issueQuery = Query.select("*")
-//                        .from(IssueToChangesetMapping.class)
-//                        .alias(IssueToChangesetMapping.class, "ic")
-//                        .alias(ChangesetMapping.class, "cm")
-//                        .join(ChangesetMapping.class, "ic.CHANGESET_ID = cm.ID")
-//                        .alias(RepositoryToChangesetMapping.class, "rtoc")
-//                        .join(RepositoryToChangesetMapping.class, "cm.ID = rtoc.CHANGESET_ID")
-//                        .alias(RepositoryMapping.class, "rm")
-//                        .join(RepositoryMapping.class, "rm.ID = rtoc.REPOSITORY_ID")
-//                        .alias(OrganizationMapping.class, "org")
-//                        .join(OrganizationMapping.class, "rm.ORGANIZATION_ID = org.ID")
-//                        .where("rm.ID = ?", repositoryMapping.getID());
-//
-//                issueQuery.cop
-//
-//                activeObjects.stream(IssueToChangesetMapping.class, issueQuery, new EntityStreamCallback<IssueToChangesetMapping, Integer>()
-//                {
-//                    @Override
-//                    public void onRowRead(final IssueToChangesetMapping issueToChangesetMapping)
-//                    {
-//                        log.info("processing row for issue key {} in repo {} ", issueToChangesetMapping.getIssueKey(), repositoryMapping.getID());
-////                        threadEvents.broadcast(new DevSummaryChangedEvent(repositoryMapping.getID(), repositoryMapping.get));
-//                    }
-//                });
-//            }
-//        });
-
-//        Query query = Query.select("ci." + CommitIssueKeyMapping.ISSUE_KEY).distinct()
+        while (mappings.length > 0 && result);
+        return result;
     }
 
     private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
@@ -536,7 +518,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
-                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm."+ChangesetMapping.SMARTCOMMIT_AVAILABLE+" = ? " , repositoryId, Boolean.TRUE)
+                .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm." + ChangesetMapping.SMARTCOMMIT_AVAILABLE + " = ? ", repositoryId, Boolean.TRUE)
                 .order(ChangesetMapping.DATE + " DESC");
     }
 
@@ -576,7 +558,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .join(RepositoryToChangesetMapping.class, "chm.ID = rtchm." + RepositoryToChangesetMapping.CHANGESET_ID)
                 .where("rtchm." + RepositoryToChangesetMapping.REPOSITORY_ID + " = ? and chm." + ChangesetMapping.AUTHOR + " = ? ", repositoryId, author).limit(1);
 
-        final Set<String> emails= new HashSet<String>();
+        final Set<String> emails = new HashSet<String>();
 
         activeObjects.stream(AuthorEmail.class, query, new EntityStreamCallback<AuthorEmail, String>()
         {
@@ -590,21 +572,21 @@ public class ChangesetDaoImpl implements ChangesetDao
         return emails;
     }
 
-    @Table("ChangesetMapping")
+    @Table ("ChangesetMapping")
     static interface AuthorEmail extends RawEntity<String>
     {
 
-        @PrimaryKey(ChangesetMapping.AUTHOR_EMAIL)
+        @PrimaryKey (ChangesetMapping.AUTHOR_EMAIL)
         String getAuthorEmail();
 
         void setAuthorEmail();
     }
 
-    @Table("IssueToChangeset")
+    @Table ("IssueToChangeset")
     static interface ProjectKey extends RawEntity<String>
     {
 
-        @PrimaryKey(IssueToChangesetMapping.PROJECT_KEY)
+        @PrimaryKey (IssueToChangesetMapping.PROJECT_KEY)
         String getProjectKey();
 
         void setProjectKey();

@@ -89,7 +89,14 @@ public interface ChangesetDao
      */
     void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, ForEachChangesetClosure closure);
 
-    void forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure);
+    int getNumberOfDistinctIssueKeysToCommit();
+
+    /**
+     * Execute the supplied closure over every issue key mapping in the database
+     * @param closure
+     * @return true if all records are processed, false if the closure chose to stop processing
+     */
+    boolean forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure);
 
     /**
      * @param id
@@ -126,8 +133,16 @@ public interface ChangesetDao
         void execute(Entity changeset);
     }
 
+    /**
+     * Closure that is executed for each batch of issueKeys that is found.
+     */
     public interface ForEachIssueToCommitMappingClosure
     {
-        void execute(String dvcsType, int repository, Set<String> issueKey);
+        /**
+         * Execute the closure.
+         *
+         * @return true if processing should continue, false if the processing should stop
+         */
+        boolean execute(String dvcsType, int repositoryId, Set<String> issueKeys);
     }
 }
