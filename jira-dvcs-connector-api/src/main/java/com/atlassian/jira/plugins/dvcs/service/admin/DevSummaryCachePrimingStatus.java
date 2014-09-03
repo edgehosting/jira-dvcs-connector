@@ -14,10 +14,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Encapsulates the state of the priming of the dev summary cache operation. Is a singleton so that concurrent reindex
- * operations can be prevented.
+ * Encapsulates the state of the priming of the dev summary cache operation.
  * <p/>
  * Based on DevSummaryReindexStatus from dev summary plugin.
+ * <p/>
+ * This class is a singleton, concurrent priming operations are prevented by callers calling #startExclusively
+ * first. If they get true back then they are allowed to update the Status, otherwise they should wait until they
+ * can start exclusively, {@link com.atlassian.jira.plugins.dvcs.service.admin.AdministrationService}.
  * <p/>
  * Note that the #issueKeyCount and #pullRequestCount values will not necessarily equal the respective #totalIssueCount
  * and #totalPullRequestCount as we count the number of distinct issue keys BUT a given issue key may be processed
@@ -145,6 +148,8 @@ public class DevSummaryCachePrimingStatus
     /**
      * Signals that the caller wants to start indexing, if successful (returns true) then this status instance will be
      * zeroed to the initial state.
+     *
+     * Users of this class should call this method prior to performing any other operations.
      *
      * @return true if the operation can start
      */

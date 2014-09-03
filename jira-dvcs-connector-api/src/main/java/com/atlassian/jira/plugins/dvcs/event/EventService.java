@@ -59,6 +59,8 @@ public interface EventService
     /**
      * Dispatch all events for the supplied repository synchronously, this method will block until all events are
      * published.
+     *
+     * Note that this method will use the repository id for the repository description when publishing.
      */
     void dispatchEvents(int repositoryId);
 

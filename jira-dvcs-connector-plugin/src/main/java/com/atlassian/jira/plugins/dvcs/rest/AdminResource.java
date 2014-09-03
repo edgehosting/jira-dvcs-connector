@@ -22,6 +22,9 @@ import javax.ws.rs.core.Response.Status;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
+/**
+ * REST resource for administrative actions on the DVCS Connector.
+ */
 @Path ("/admin")
 public class AdminResource
 {
