@@ -535,7 +535,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            Query issueQuery = Query.select().distinct()
+            Query issueQuery = Query.select()
                     .from(RepositoryPullRequestIssueKeyMapping.class)
                     .alias(RepositoryPullRequestIssueKeyMapping.class, "prik")
                     .alias(RepositoryPullRequestMapping.class, "pr")

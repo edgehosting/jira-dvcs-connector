@@ -480,7 +480,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            Query issueQuery = Query.select().distinct()
+            Query issueQuery = Query.select()
                     .from(IssueToChangesetMapping.class)
                     .alias(IssueToChangesetMapping.class, "ic")
                     .alias(ChangesetMapping.class, "cm")

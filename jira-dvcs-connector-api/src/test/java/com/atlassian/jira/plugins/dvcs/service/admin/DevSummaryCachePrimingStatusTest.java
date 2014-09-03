@@ -3,10 +3,13 @@ package com.atlassian.jira.plugins.dvcs.service.admin;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class DevSummaryCachePrimingStatusTest
 {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Exception PREVIOUS_ERROR = new Exception("previous exception");
     private static final int ISSUE_KEY_COUNT = 1000;
     private static final int TOTAL_ISSUE_KEY_COUNT = 2000;
@@ -164,15 +167,12 @@ public class DevSummaryCachePrimingStatusTest
     @Test
     public void shouldBeRoundTrippableViaJson() throws Exception
     {
-        // Set up
         final DevSummaryCachePrimingStatus statusIn = new DevSummaryCachePrimingStatus(true, ISSUE_KEY_COUNT,
                 TOTAL_ISSUE_KEY_COUNT, PULL_REQUEST_COUNT, TOTAL_PULL_REQUEST_COUNT, null, false, "FOO");
 
-        // Invoke
-        final String json = statusIn.asJson();
+        final String json = OBJECT_MAPPER.writeValueAsString(statusIn);
 
-        // Check
-        final DevSummaryCachePrimingStatus statusOut = new ObjectMapper().readValue(json, DevSummaryCachePrimingStatus.class);
+        final DevSummaryCachePrimingStatus statusOut = OBJECT_MAPPER.readValue(json, DevSummaryCachePrimingStatus.class);
         assertStatus(statusOut,
                 statusIn.getError(),
                 statusIn.isInProgress(),
@@ -185,7 +185,7 @@ public class DevSummaryCachePrimingStatusTest
     }
 
     @Test
-    public void jsonShouldIncludeErrorDetailsIfPrimingFailed()
+    public void jsonShouldIncludeErrorDetailsIfPrimingFailed() throws IOException
     {
         final String errorMessage = "Oops!";
 
@@ -196,7 +196,7 @@ public class DevSummaryCachePrimingStatusTest
         final String timeTaken = "foo";
         status.failed(new Exception(errorMessage), timeTaken);
 
-        final String json = status.asJson();
+        final String json = OBJECT_MAPPER.writeValueAsString(status);
 
         assertThat(json).contains(errorMessage);
         assertThat(json).contains(status.getTimeTaken());

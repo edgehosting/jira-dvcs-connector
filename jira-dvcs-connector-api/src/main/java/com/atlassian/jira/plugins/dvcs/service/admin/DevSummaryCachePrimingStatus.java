@@ -4,13 +4,10 @@ import com.atlassian.jira.cluster.ClusterSafe;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -32,8 +29,6 @@ import javax.annotation.concurrent.ThreadSafe;
 @ClusterSafe ("Only intended for Cloud use")
 public class DevSummaryCachePrimingStatus
 {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     private final AtomicBoolean inProgress;
     private final AtomicBoolean stopped;
     private final AtomicInteger issueKeyCount;
@@ -41,8 +36,7 @@ public class DevSummaryCachePrimingStatus
     private final AtomicInteger pullRequestCount;
     private final AtomicInteger totalPullRequestCount;
     private final AtomicReference<String> timeTaken;
-
-    private Exception exception;
+    private final AtomicReference<Exception> exception;
 
     /**
      * Constructor for production use.
@@ -56,6 +50,7 @@ public class DevSummaryCachePrimingStatus
         pullRequestCount = new AtomicInteger();
         totalPullRequestCount = new AtomicInteger();
         timeTaken = new AtomicReference<String>();
+        exception = new AtomicReference<Exception>();
     }
 
     /**
@@ -81,7 +76,7 @@ public class DevSummaryCachePrimingStatus
             @JsonProperty ("timeTaken") final String timeTaken)
     {
         this();
-        this.exception = exception;
+        this.exception.set(exception);
         this.inProgress.set(inProgress);
         this.stopped.set(stopped);
         this.issueKeyCount.set(issueKeyCount);
@@ -129,7 +124,7 @@ public class DevSummaryCachePrimingStatus
     @JsonProperty
     public Exception getError()
     {
-        return exception;
+        return exception.get();
     }
 
     /**
@@ -160,7 +155,7 @@ public class DevSummaryCachePrimingStatus
         if (canStart)
         {
 
-            this.exception = null;
+            this.exception.set(null);
             this.issueKeyCount.set(0);
             this.totalIssueKeyCount.set(totalIssueCount);
             this.pullRequestCount.set(0);
@@ -193,7 +188,7 @@ public class DevSummaryCachePrimingStatus
      */
     public void failed(final Exception exception, String timeTaken)
     {
-        this.exception = exception;
+        this.exception.set(exception);
         this.inProgress.set(false);
         this.stopped.set(false);
         this.timeTaken.set(timeTaken);
@@ -215,23 +210,5 @@ public class DevSummaryCachePrimingStatus
     {
         inProgress.set(false);
         this.timeTaken.set(timeTaken);
-    }
-
-    /**
-     * Returns a JSON representation of this object.
-     *
-     * @return valid JSON
-     */
-    @Nonnull
-    public String asJson()
-    {
-        try
-        {
-            return OBJECT_MAPPER.writeValueAsString(this);
-        }
-        catch (IOException e)
-        {
-            throw new IllegalStateException(e);
-        }
     }
 }
