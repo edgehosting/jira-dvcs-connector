@@ -617,6 +617,14 @@ public class RepositoryServiceImpl implements RepositoryService
                 repositoryDao.save(repository);
                 synchronizer.pauseSynchronization(repository, true);
             }
+
+            // try remove postcommit hook
+            if (repository.isLinked())
+            {
+                removePostcommitHook(repository);
+                repository.setLinked(false);
+                repositoryDao.save(repository);
+            }
         }
     }
 

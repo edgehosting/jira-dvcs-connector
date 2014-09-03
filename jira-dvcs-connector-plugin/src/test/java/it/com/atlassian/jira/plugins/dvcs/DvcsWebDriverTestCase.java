@@ -9,10 +9,12 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
 import org.testng.annotations.Listeners;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -54,22 +56,7 @@ public abstract class DvcsWebDriverTestCase
         rpc.getPage().deleteAllOrganizations();
 
         // check that postcommit hook is removed.
-        final long maxWaitTime = 30000;
-        final long sleepInterval = 100;
-        long totalWaitTime = 0;
-        do
-        {
-            if (!postCommitHookExists(jiraCallbackUrl))
-            {
-                // test passed
-                return;
-            }
-            Uninterruptibles.sleepUninterruptibly(sleepInterval, TimeUnit.MILLISECONDS);
-            totalWaitTime += sleepInterval;
-        }
-        while (totalWaitTime < maxWaitTime);
-
-        fail(String.format("Postcommit hook not removed after %d ms", totalWaitTime));
+        assertThat(postCommitHookExists(jiraCallbackUrl)).isFalse();
     }
 
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
