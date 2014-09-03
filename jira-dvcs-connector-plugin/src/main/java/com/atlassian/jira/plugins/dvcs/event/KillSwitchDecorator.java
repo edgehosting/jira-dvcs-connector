@@ -4,8 +4,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 /**
  * Decorator for {@link EventService} that respects the {@link com.atlassian.jira.plugins.dvcs.event.EventsFeature}
  */
@@ -61,11 +59,11 @@ public class KillSwitchDecorator implements CarefulEventService
     }
 
     @Override
-    public void dispatchEvents(final Set<Integer> repositoryIds)
+    public void dispatchEvents(int repositoryId)
     {
         if (eventsFeature.isEnabled())
         {
-            delegate.dispatchEvents(repositoryIds);
+            delegate.dispatchEvents(repositoryId);
         }
     }
 

@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +55,8 @@ public class EventServiceImpl implements EventService
         storeEvent(repository, event, false);
     }
 
-    public void storeEvent(Repository repository, SyncEvent event, boolean scheduledSync) throws IllegalArgumentException
+    public void storeEvent(Repository repository, SyncEvent event, boolean scheduledSync)
+            throws IllegalArgumentException
     {
         storeEvent(repository.getId(), event, scheduledSync);
     }
@@ -81,12 +81,9 @@ public class EventServiceImpl implements EventService
     }
 
     @Override
-    public void dispatchEvents(Set<Integer> repositoryIds)
+    public void dispatchEvents(int repositoryId)
     {
-        for (Integer repositoryId : repositoryIds)
-        {
-            doDispatchEvents(new DispatchRequest(repositoryId, "repository with id " + repositoryId));
-        }
+        doDispatchEvents(new DispatchRequest(repositoryId, "repository with id " + repositoryId));
     }
 
     private void dispatch(final DispatchRequest dispatchRequest)

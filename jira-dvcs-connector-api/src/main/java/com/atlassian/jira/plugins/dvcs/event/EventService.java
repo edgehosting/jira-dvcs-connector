@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
-import java.util.Set;
-
 /**
  * Service for managing synchronisation events.
  */
@@ -14,8 +12,8 @@ public interface EventService
      * JSON.
      * <p/>
      * <p/>
-     * This method delegates to {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent, boolean)}
-     * passing {@code scheduled=false}.
+     * This method delegates to {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent,
+     * boolean)} passing {@code scheduled=false}.
      *
      * @param repository the Repository against which to store the event
      * @param event the event to save
@@ -41,11 +39,8 @@ public interface EventService
     void storeEvent(Repository repository, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
 
     /**
-     * Stores the event against the repository, see {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent, boolean)}
-     * @param repositoryId
-     * @param event
-     * @param scheduled
-     * @throws IllegalArgumentException
+     * Stores the event against the repository, see {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository,
+     * SyncEvent, boolean)}
      */
     void storeEvent(int repositoryId, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
 
@@ -62,10 +57,10 @@ public interface EventService
     void dispatchEvents(Repository repository);
 
     /**
-     * Dispatch all events for the supplied repository synchronously, this method will block until all events are published.
-     * @param repositoryIds
+     * Dispatch all events for the supplied repository synchronously, this method will block until all events are
+     * published.
      */
-    void dispatchEvents(Set<Integer> repositoryIds);
+    void dispatchEvents(int repositoryId);
 
     /**
      * Discards all pending events for the given Repository.

@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service.admin;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.google.common.annotations.VisibleForTesting;
@@ -8,7 +10,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Resource;
 
@@ -19,6 +20,9 @@ public class AdministrationServiceImpl implements AdministrationService
 
     @Resource
     private ChangesetDao changesetDao;
+
+    @Resource
+    private RepositoryPullRequestDao repositoryPullRequestDao;
 
     @Resource (name = "eventServiceImpl")
     private EventService eventService;
@@ -33,17 +37,15 @@ public class AdministrationServiceImpl implements AdministrationService
         stopWatch.start();
 
         final int totalIssueCount = changesetDao.getNumberOfDistinctIssueKeysToCommit();
-        final int totalPullRequestCount = 0;
-        if (!status.startExclusively(totalIssueCount, totalPullRequestCount))
+        final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests();
+        if (!status.startExclusively(totalIssueCount, totalPrIssueCount))
         {
             return false;
         }
-
-        PrimeCacheClosure closure = new PrimeCacheClosure(eventService, status);
         try
         {
-            changesetDao.forEachIssueToCommitMapping(closure);
-            eventService.dispatchEvents(closure.repositoryIds);
+            changesetDao.forEachIssueToCommitMapping(new IssueKeyPrimeCacheClosure(eventService, status));
+            repositoryPullRequestDao.forEachIssueKeyToPullRequest(new PullRequestPrimeCacheClosure(eventService, status));
             stopWatch.stop();
             status.finished(stopWatch.toString());
         }
@@ -61,11 +63,10 @@ public class AdministrationServiceImpl implements AdministrationService
     }
 
     @VisibleForTesting
-    static class PrimeCacheClosure implements ChangesetDao.ForEachIssueToCommitMappingClosure
+    static abstract class PrimeCacheClosure implements IssueToMappingClosure
     {
-        private final Set<Integer> repositoryIds = new HashSet<Integer>();
-        private final EventService eventService;
-        private final DevSummaryCachePrimingStatus status;
+        protected final EventService eventService;
+        protected final DevSummaryCachePrimingStatus status;
 
         PrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
         {
@@ -77,9 +78,41 @@ public class AdministrationServiceImpl implements AdministrationService
         public boolean execute(final String dvcsType, final int repositoryId, final Set<String> issueKeys)
         {
             eventService.storeEvent(repositoryId, new DevSummaryChangedEvent(repositoryId, dvcsType, issueKeys), false);
-            repositoryIds.add(repositoryId);
-            status.completedIssueKeyBatch(issueKeys.size());
+            updateCount(issueKeys.size());
+            eventService.dispatchEvents(repositoryId);
             return !status.isStopped();
+        }
+
+        public abstract void updateCount(int amount);
+    }
+
+    @VisibleForTesting
+    static class IssueKeyPrimeCacheClosure extends PrimeCacheClosure
+    {
+        IssueKeyPrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
+        {
+            super(eventService, status);
+        }
+
+        @Override
+        public void updateCount(final int amount)
+        {
+            status.completedIssueKeyBatch(amount);
+        }
+    }
+
+    @VisibleForTesting
+    static class PullRequestPrimeCacheClosure extends PrimeCacheClosure
+    {
+        PullRequestPrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
+        {
+            super(eventService, status);
+        }
+
+        @Override
+        public void updateCount(final int amount)
+        {
+            status.completedPullRequestIssueKeyBatch(amount);
         }
     }
 

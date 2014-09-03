@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service.admin;
 
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.google.common.collect.ImmutableSet;
@@ -22,11 +24,15 @@ import static org.mockito.Mockito.when;
 public class AdministrationServiceImplTest
 {
     private static final int TOTAL_NUMBER_OF_ISSUE_KEYS = 1000;
+    private static final int TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS = 500;
     private static final String ISSUE_KEY = "TEST-1";
     private static final ImmutableSet<String> ISSUE_KEYS = ImmutableSet.of(ISSUE_KEY);
 
     @Mock
     private ChangesetDao changesetDao;
+
+    @Mock
+    private RepositoryPullRequestDao repositoryPullRequestDao;
 
     @Mock
     private EventService eventService;
@@ -41,6 +47,7 @@ public class AdministrationServiceImplTest
     public void setup()
     {
         when(changesetDao.getNumberOfDistinctIssueKeysToCommit()).thenReturn(TOTAL_NUMBER_OF_ISSUE_KEYS);
+        when(repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests()).thenReturn(TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS);
     }
 
     @Test
@@ -52,11 +59,22 @@ public class AdministrationServiceImplTest
     }
 
     @Test
-    public void testExceptionFails()
+    public void testExceptionOnChangesetFailsStatus()
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(changesetDao.forEachIssueToCommitMapping(any(ChangesetDao.ForEachIssueToCommitMappingClosure.class))).thenThrow(expectedException);
+        when(changesetDao.forEachIssueToCommitMapping(any(IssueToMappingClosure.class))).thenThrow(expectedException);
+
+        assertThat(administrationService.primeDevSummaryCache(), is(false));
+        verify(status).failed(eq(expectedException), any(String.class));
+    }
+
+    @Test
+    public void testExceptionOnPullRequestFailsStatus()
+    {
+        when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
+        final RuntimeException expectedException = new RuntimeException("foo");
+        when(repositoryPullRequestDao.forEachIssueKeyToPullRequest(any(IssueToMappingClosure.class))).thenThrow(expectedException);
 
         assertThat(administrationService.primeDevSummaryCache(), is(false));
         verify(status).failed(eq(expectedException), any(String.class));
@@ -72,7 +90,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsFalseWhenStopped()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.PrimeCacheClosure(eventService, status);
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.IssueKeyPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(true);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(false));
@@ -81,7 +99,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsTrueWhenRunning()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.PrimeCacheClosure(eventService, status);
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.IssueKeyPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(false);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(true));

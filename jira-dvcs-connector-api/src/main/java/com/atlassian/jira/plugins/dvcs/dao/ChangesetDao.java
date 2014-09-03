@@ -14,24 +14,21 @@ public interface ChangesetDao
 {
     /**
      * Removes all changesets from given repository
-     *
-     * @param repositoryId
      */
     void removeAllInRepository(int repositoryId);
 
     /**
      * Calls {@link #createOrAssociate(com.atlassian.jira.plugins.dvcs.model.Changeset, java.util.Set)}.
+     *
      * @deprecated Use {@link #createOrAssociate} instead.
      */
     @Deprecated
     Changeset create(Changeset changeset, Set<String> extractedIssues);
 
     /**
-     * create Changeset and save to storage. If it's new object (without ID) after this operation it will have it assigned.
-     * it's create alse all associations (repository- changeset, issues-changest)
+     * create Changeset and save to storage. If it's new object (without ID) after this operation it will have it
+     * assigned. it's create alse all associations (repository- changeset, issues-changest)
      *
-     * @param changeset
-     * @param extractedIssues
      * @return true if the changeset was created, false if it was updated
      * @since 2.1.17
      */
@@ -39,9 +36,6 @@ public interface ChangesetDao
 
     /**
      * update properties of changeset which is already saved in DB
-     *
-     * @param changeset
-     * @return
      */
     Changeset update(Changeset changeset);
 
@@ -54,20 +48,11 @@ public interface ChangesetDao
 
     /**
      * Returns all changesets related to given issue keys
-     *
-     * @param issueKeys
-     * @param newestFirst
-     * @return
      */
     List<Changeset> getByIssueKey(Iterable<String> issueKeys, boolean newestFirst);
 
     /**
      * Returns all changesets related to given issue keys
-     *
-     * @param issueKeys
-     * @param dvcsType
-     * @param newestFirst
-     * @return
      */
     List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
 
@@ -75,17 +60,11 @@ public interface ChangesetDao
 
     /**
      * Returns latest changesets. Used by activity stream.
-     *
-     * @param maxResults
-     * @param gf
-     * @return
      */
     List<Changeset> getLatestChangesets(int maxResults, GlobalFilter gf);
 
     /**
      * Returns lists of latest commits that need to be processed by smartcommits logic.
-     *
-     * @param closure
      */
     void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, ForEachChangesetClosure closure);
 
@@ -93,10 +72,10 @@ public interface ChangesetDao
 
     /**
      * Execute the supplied closure over every issue key mapping in the database
-     * @param closure
+     *
      * @return true if all records are processed, false if the closure chose to stop processing
      */
-    boolean forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure);
+    boolean forEachIssueToCommitMapping(IssueToMappingClosure closure);
 
     /**
      * @param id
@@ -115,7 +94,6 @@ public interface ChangesetDao
     /**
      * Returns number of changesets synchronizes for the repository
      *
-     * @param repositoryId
      * @return number of changesets
      */
     public int getChangesetCount(final int repositoryId);
@@ -131,18 +109,5 @@ public interface ChangesetDao
          * @param changeset
          */
         void execute(Entity changeset);
-    }
-
-    /**
-     * Closure that is executed for each batch of issueKeys that is found.
-     */
-    public interface ForEachIssueToCommitMappingClosure
-    {
-        /**
-         * Execute the closure.
-         *
-         * @return true if processing should continue, false if the processing should stop
-         */
-        boolean execute(String dvcsType, int repositoryId, Set<String> issueKeys);
     }
 }

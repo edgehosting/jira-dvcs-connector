@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import net.java.ao.Query;
@@ -54,7 +54,7 @@ public class ChangesetDaoImplForEachIssueKeyTest
     private IssueToChangesetMapping issueToChangesetMapping;
 
     @Mock
-    private ChangesetDao.ForEachIssueToCommitMappingClosure closure;
+    private IssueToMappingClosure closure;
 
     @Captor
     private ArgumentCaptor<Set<String>> captor;

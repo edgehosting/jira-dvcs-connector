@@ -127,10 +127,10 @@ public class DevSummaryCachePrimingStatusTest
         final DevSummaryCachePrimingStatus status = new DevSummaryCachePrimingStatus();
         status.startExclusively(TOTAL_ISSUE_KEY_COUNT, TOTAL_PULL_REQUEST_COUNT);
 
-        status.startedNextPullRequest();
+        status.completedPullRequestIssueKeyBatch(10);
 
         assertStatus(status, null, true, 0, TOTAL_ISSUE_KEY_COUNT,
-                1, TOTAL_PULL_REQUEST_COUNT, false);
+                10, TOTAL_PULL_REQUEST_COUNT, false);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class DevSummaryCachePrimingStatusTest
         final int totalPRCount = 1;
         status.startExclusively(totalIssueCount, totalPRCount);
         status.completedIssueKeyBatch(2);
-        status.startedNextPullRequest();
+        status.completedPullRequestIssueKeyBatch(1);
 
         status.finished("FOO");
 

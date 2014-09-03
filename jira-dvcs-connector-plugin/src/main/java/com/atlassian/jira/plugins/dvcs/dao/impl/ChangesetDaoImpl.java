@@ -8,6 +8,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -440,7 +441,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         return activeObjects.count(IssueToChangesetMapping.class, query);
     }
 
-    public boolean forEachIssueToCommitMapping(ForEachIssueToCommitMappingClosure closure)
+    public boolean forEachIssueToCommitMapping(IssueToMappingClosure closure)
     {
         final Query organizationQuery = Query.select().from(OrganizationMapping.class);
 
@@ -469,7 +470,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @VisibleForTesting
-    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, ForEachIssueToCommitMappingClosure closure)
+    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingClosure closure)
     {
         int currentPage = 0;
         IssueToChangesetMapping[] mappings;
@@ -495,7 +496,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             mappings = activeObjects.find(IssueToChangesetMapping.class, issueQuery);
             currentPage++;
 
-            ImmutableSet.Builder<String> setBuilder = ImmutableSet.<String>builder();
+            ImmutableSet.Builder<String> setBuilder = ImmutableSet.builder();
 
             for (IssueToChangesetMapping mapping : mappings)
             {

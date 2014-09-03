@@ -176,13 +176,11 @@ public class DevSummaryCachePrimingStatus
     }
 
     /**
-     * Signals that fetching of the next Pull Request has commenced.
-     *
-     * @return the number of Pull Request fetched, including the one just started
+     * Signals that we have processed a block of pull request issue keys
      */
-    public int startedNextPullRequest()
+    public int completedPullRequestIssueKeyBatch(int numberInBatch)
     {
-        return pullRequestCount.incrementAndGet();
+        return pullRequestCount.addAndGet(numberInBatch);
     }
 
     /**
