@@ -489,15 +489,12 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         Query query = Query.select("ISSUE_KEY")
                 .from(RepositoryPullRequestMapping.class);
 
-        return activeObjects.count(RepositoryPullRequestMapping.class, query);
+        return activeObjects.count(RepositoryPullRequestIssueKeyMapping.class, query);
     }
 
     @Override
     public boolean forEachIssueKeyToPullRequest(final IssueToMappingFunction closure)
     {
-        Query query = Query.select("ISSUE_KEY").distinct()
-                .from(RepositoryPullRequestMapping.class);
-
         final Query organizationQuery = Query.select().from(OrganizationMapping.class);
 
         OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, organizationQuery);
