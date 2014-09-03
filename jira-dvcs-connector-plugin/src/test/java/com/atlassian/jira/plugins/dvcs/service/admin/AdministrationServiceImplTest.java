@@ -4,14 +4,12 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
-import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.google.common.collect.ImmutableSet;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.Executor;
@@ -24,7 +22,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Listeners (MockitoTestNgListener.class)
 public class AdministrationServiceImplTest
 {
     private static final int TOTAL_NUMBER_OF_ISSUE_KEYS = 1000;
