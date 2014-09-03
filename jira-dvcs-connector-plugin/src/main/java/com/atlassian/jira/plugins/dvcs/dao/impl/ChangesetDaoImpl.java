@@ -434,14 +434,14 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public int getNumberOfDistinctIssueKeysToCommit()
+    public int getNumberOfIssueKeysToChangeset()
     {
-        Query query = Query.select(IssueToChangesetMapping.ISSUE_KEY).distinct()
+        Query query = Query.select(IssueToChangesetMapping.ISSUE_KEY)
                 .from(IssueToChangesetMapping.class);
         return activeObjects.count(IssueToChangesetMapping.class, query);
     }
 
-    public boolean forEachIssueToCommitMapping(IssueToMappingFunction function)
+    public boolean forEachIssueToChangesetMapping(IssueToMappingFunction function)
     {
         final Query organizationQuery = Query.select().from(OrganizationMapping.class);
 

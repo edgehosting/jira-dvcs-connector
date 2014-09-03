@@ -49,8 +49,8 @@ public class AdministrationServiceImpl implements AdministrationService
     @Override
     public boolean primeDevSummaryCache()
     {
-        final int totalIssueCount = changesetDao.getNumberOfDistinctIssueKeysToCommit();
-        final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests();
+        final int totalIssueCount = changesetDao.getNumberOfIssueKeysToChangeset();
+        final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfIssueKeysToPullRequests();
         if (status.startExclusively(totalIssueCount, totalPrIssueCount))
         {
             executor.execute(new Runnable()
@@ -76,7 +76,7 @@ public class AdministrationServiceImpl implements AdministrationService
         stopWatch.start();
         try
         {
-            changesetDao.forEachIssueToCommitMapping(new IssueKeyPrimeCacheClosure(eventService, status));
+            changesetDao.forEachIssueToChangesetMapping(new IssueKeyPrimeCacheClosure(eventService, status));
             repositoryPullRequestDao.forEachIssueKeyToPullRequest(new PullRequestPrimeCacheClosure(eventService, status));
             stopWatch.stop();
             status.finished(stopWatch.toString());

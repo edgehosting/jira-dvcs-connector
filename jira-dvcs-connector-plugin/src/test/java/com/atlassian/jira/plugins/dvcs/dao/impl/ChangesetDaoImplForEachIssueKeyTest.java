@@ -86,7 +86,7 @@ public class ChangesetDaoImplForEachIssueKeyTest
     {
         setupForSuccessFlow();
 
-        boolean result = changesetDao.forEachIssueToCommitMapping(closure);
+        boolean result = changesetDao.forEachIssueToChangesetMapping(closure);
         assertThat(result, is(true));
         assertThat(2, is(captor.getAllValues().size()));
         assertThat(captor.getAllValues().get(0), contains(ISSUE_KEY));
@@ -114,7 +114,7 @@ public class ChangesetDaoImplForEachIssueKeyTest
     {
         setupForStopFlow();
 
-        boolean result = changesetDao.forEachIssueToCommitMapping(closure);
+        boolean result = changesetDao.forEachIssueToChangesetMapping(closure);
         assertThat(result, is(false));
     }
 

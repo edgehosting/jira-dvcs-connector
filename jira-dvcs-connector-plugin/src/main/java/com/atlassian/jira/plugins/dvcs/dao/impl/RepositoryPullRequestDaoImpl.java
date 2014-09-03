@@ -484,9 +484,9 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public int getNumberOfDistinctIssueKeysToPullRequests()
+    public int getNumberOfIssueKeysToPullRequests()
     {
-        Query query = Query.select("ISSUE_KEY").distinct()
+        Query query = Query.select("ISSUE_KEY")
                 .from(RepositoryPullRequestMapping.class);
 
         return activeObjects.count(RepositoryPullRequestMapping.class, query);

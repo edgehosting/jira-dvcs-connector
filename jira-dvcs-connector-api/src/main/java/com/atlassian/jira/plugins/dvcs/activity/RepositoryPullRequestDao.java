@@ -106,7 +106,7 @@ public interface RepositoryPullRequestDao
 
     void createParticipant(int pullRequestId, int repositoryId, Participant participant);
 
-    int getNumberOfDistinctIssueKeysToPullRequests();
+    int getNumberOfIssueKeysToPullRequests();
 
     boolean forEachIssueKeyToPullRequest(IssueToMappingFunction closure);
 }

@@ -68,14 +68,14 @@ public interface ChangesetDao
      */
     void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, ForEachChangesetClosure closure);
 
-    int getNumberOfDistinctIssueKeysToCommit();
+    int getNumberOfIssueKeysToChangeset();
 
     /**
      * Execute the supplied Function over every issue key mapping in the database
      *
      * @return true if all records are processed, false if the function chose to stop processing
      */
-    boolean forEachIssueToCommitMapping(IssueToMappingFunction function);
+    boolean forEachIssueToChangesetMapping(IssueToMappingFunction function);
 
     /**
      * @param id

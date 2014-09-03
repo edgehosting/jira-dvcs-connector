@@ -53,8 +53,8 @@ public class AdministrationServiceImplTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        when(changesetDao.getNumberOfDistinctIssueKeysToCommit()).thenReturn(TOTAL_NUMBER_OF_ISSUE_KEYS);
-        when(repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests()).thenReturn(TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS);
+        when(changesetDao.getNumberOfIssueKeysToChangeset()).thenReturn(TOTAL_NUMBER_OF_ISSUE_KEYS);
+        when(repositoryPullRequestDao.getNumberOfIssueKeysToPullRequests()).thenReturn(TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS);
         when(executorFactory.createExecutor(any(Executor.class))).thenReturn(executor);
 
         administrationService = new AdministrationServiceImpl(executorFactory);
@@ -75,7 +75,7 @@ public class AdministrationServiceImplTest
     public void testExceptionOnChangesetFailsStatus()
     {
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(changesetDao.forEachIssueToCommitMapping(any(IssueToMappingFunction.class))).thenThrow(expectedException);
+        when(changesetDao.forEachIssueToChangesetMapping(any(IssueToMappingFunction.class))).thenThrow(expectedException);
 
         administrationService.startPriming();
         verify(status).failed(eq(expectedException), any(String.class));
