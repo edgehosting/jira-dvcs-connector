@@ -5,17 +5,23 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.util.concurrent.ThreadFactories;
+import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import javax.annotation.Resource;
 
 public class AdministrationServiceImpl implements AdministrationService
 {
-
+    private static final ThreadFactory THREAD_FACTORY =
+            ThreadFactories.namedThreadFactory(AdministrationServiceImpl.class.getSimpleName());
     private static final Logger log = LoggerFactory.getLogger(AdministrationServiceImpl.class);
 
     @Resource
@@ -30,18 +36,44 @@ public class AdministrationServiceImpl implements AdministrationService
     @Resource
     private DevSummaryCachePrimingStatus status;
 
+    final ThreadLocalDelegateExecutorFactory executorFactory;
+
+    private final Executor executor;
+
+    public AdministrationServiceImpl(final ThreadLocalDelegateExecutorFactory executorFactory)
+    {
+        this.executorFactory = executorFactory;
+        executor = executorFactory.createExecutor(Executors.newSingleThreadExecutor(THREAD_FACTORY));
+    }
+
     @Override
     public boolean primeDevSummaryCache()
     {
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-
         final int totalIssueCount = changesetDao.getNumberOfDistinctIssueKeysToCommit();
         final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests();
-        if (!status.startExclusively(totalIssueCount, totalPrIssueCount))
+        if (status.startExclusively(totalIssueCount, totalPrIssueCount))
+        {
+            executor.execute(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    startPriming();
+                }
+            });
+            return true;
+        }
+        else
         {
             return false;
         }
+    }
+
+    @VisibleForTesting
+    void startPriming()
+    {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         try
         {
             changesetDao.forEachIssueToCommitMapping(new IssueKeyPrimeCacheClosure(eventService, status));
@@ -54,12 +86,9 @@ public class AdministrationServiceImpl implements AdministrationService
             stopWatch.stop();
             status.failed(e, stopWatch.toString());
             log.info("processing failed in this time " + stopWatch, e);
-            return false;
         }
 
-        log.info("overall processing took this long {}", stopWatch);
-
-        return true;
+        log.info("priming cache took this long {}", stopWatch);
     }
 
     @VisibleForTesting

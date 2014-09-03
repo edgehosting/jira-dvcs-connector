@@ -5,12 +5,16 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.google.common.collect.ImmutableSet;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
+import java.util.concurrent.Executor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -40,14 +44,26 @@ public class AdministrationServiceImplTest
     @Mock
     private DevSummaryCachePrimingStatus status;
 
-    @InjectMocks
+    @Mock
+    private ThreadLocalDelegateExecutorFactory executorFactory;
+
+    @Mock
+    private Executor executor;
+
     private AdministrationServiceImpl administrationService;
 
     @BeforeMethod
     public void setup()
     {
+        MockitoAnnotations.initMocks(this);
         when(changesetDao.getNumberOfDistinctIssueKeysToCommit()).thenReturn(TOTAL_NUMBER_OF_ISSUE_KEYS);
         when(repositoryPullRequestDao.getNumberOfDistinctIssueKeysToPullRequests()).thenReturn(TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS);
+        when(executorFactory.createExecutor(any(Executor.class))).thenReturn(executor);
+
+        administrationService = new AdministrationServiceImpl(executorFactory);
+        ReflectionTestUtils.setField(administrationService, "changesetDao", changesetDao);
+        ReflectionTestUtils.setField(administrationService, "repositoryPullRequestDao", repositoryPullRequestDao);
+        ReflectionTestUtils.setField(administrationService, "status", status);
     }
 
     @Test
@@ -61,22 +77,20 @@ public class AdministrationServiceImplTest
     @Test
     public void testExceptionOnChangesetFailsStatus()
     {
-        when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
         final RuntimeException expectedException = new RuntimeException("foo");
         when(changesetDao.forEachIssueToCommitMapping(any(IssueToMappingFunction.class))).thenThrow(expectedException);
 
-        assertThat(administrationService.primeDevSummaryCache(), is(false));
+        administrationService.startPriming();
         verify(status).failed(eq(expectedException), any(String.class));
     }
 
     @Test
     public void testExceptionOnPullRequestFailsStatus()
     {
-        when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
         final RuntimeException expectedException = new RuntimeException("foo");
         when(repositoryPullRequestDao.forEachIssueKeyToPullRequest(any(IssueToMappingFunction.class))).thenThrow(expectedException);
 
-        assertThat(administrationService.primeDevSummaryCache(), is(false));
+        administrationService.startPriming();
         verify(status).failed(eq(expectedException), any(String.class));
     }
 
