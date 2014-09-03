@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service.admin;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.google.common.annotations.VisibleForTesting;
@@ -63,7 +63,7 @@ public class AdministrationServiceImpl implements AdministrationService
     }
 
     @VisibleForTesting
-    static abstract class PrimeCacheClosure implements IssueToMappingClosure
+    static abstract class PrimeCacheClosure implements IssueToMappingFunction
     {
         protected final EventService eventService;
         protected final DevSummaryCachePrimingStatus status;

@@ -75,7 +75,7 @@ public interface ChangesetDao
      *
      * @return true if all records are processed, false if the closure chose to stop processing
      */
-    boolean forEachIssueToCommitMapping(IssueToMappingClosure closure);
+    boolean forEachIssueToCommitMapping(IssueToMappingFunction closure);
 
     /**
      * @param id

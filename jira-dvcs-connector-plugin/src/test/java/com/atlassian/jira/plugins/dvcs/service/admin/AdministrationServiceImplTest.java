@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service.admin;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.google.common.collect.ImmutableSet;
@@ -63,7 +63,7 @@ public class AdministrationServiceImplTest
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(changesetDao.forEachIssueToCommitMapping(any(IssueToMappingClosure.class))).thenThrow(expectedException);
+        when(changesetDao.forEachIssueToCommitMapping(any(IssueToMappingFunction.class))).thenThrow(expectedException);
 
         assertThat(administrationService.primeDevSummaryCache(), is(false));
         verify(status).failed(eq(expectedException), any(String.class));
@@ -74,7 +74,7 @@ public class AdministrationServiceImplTest
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(repositoryPullRequestDao.forEachIssueKeyToPullRequest(any(IssueToMappingClosure.class))).thenThrow(expectedException);
+        when(repositoryPullRequestDao.forEachIssueKeyToPullRequest(any(IssueToMappingFunction.class))).thenThrow(expectedException);
 
         assertThat(administrationService.primeDevSummaryCache(), is(false));
         verify(status).failed(eq(expectedException), any(String.class));

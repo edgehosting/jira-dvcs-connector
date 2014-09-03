@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
-import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -108,5 +108,5 @@ public interface RepositoryPullRequestDao
 
     int getNumberOfDistinctIssueKeysToPullRequests();
 
-    boolean forEachIssueKeyToPullRequest(IssueToMappingClosure closure);
+    boolean forEachIssueKeyToPullRequest(IssueToMappingFunction closure);
 }

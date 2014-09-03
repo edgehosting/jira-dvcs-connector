@@ -8,7 +8,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
-import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -441,7 +441,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         return activeObjects.count(IssueToChangesetMapping.class, query);
     }
 
-    public boolean forEachIssueToCommitMapping(IssueToMappingClosure closure)
+    public boolean forEachIssueToCommitMapping(IssueToMappingFunction function)
     {
         final Query organizationQuery = Query.select().from(OrganizationMapping.class);
 
@@ -457,7 +457,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             for (RepositoryMapping repository : repositories)
             {
                 log.info("processing organisation {} and repository {}", organization.getID(), repository.getID());
-                boolean result = processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, closure);
+                boolean result = processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, function);
                 if (!result)
                 {
                     return result;
@@ -470,7 +470,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @VisibleForTesting
-    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingClosure closure)
+    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingFunction function)
     {
         int currentPage = 0;
         IssueToChangesetMapping[] mappings;
@@ -504,7 +504,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
 
             final ImmutableSet<String> issueKeys = setBuilder.build();
-            result = closure.execute(dvcsType, repositoryId, issueKeys);
+            result = function.execute(dvcsType, repositoryId, issueKeys);
             log.info("processing page {} with this many elements {} took {} and had the result {}",
                     new Object[] { currentPage, issueKeys.size(), stopWatch, result });
         }

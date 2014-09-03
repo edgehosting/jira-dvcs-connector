@@ -10,7 +10,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
-import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingClosure;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -493,7 +493,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public boolean forEachIssueKeyToPullRequest(final IssueToMappingClosure closure)
+    public boolean forEachIssueKeyToPullRequest(final IssueToMappingFunction closure)
     {
         Query query = Query.select("ISSUE_KEY").distinct()
                 .from(RepositoryPullRequestMapping.class);
@@ -525,7 +525,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @VisibleForTesting
-    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingClosure closure)
+    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingFunction closure)
     {
         int currentPage = 0;
         RepositoryPullRequestIssueKeyMapping[] mappings;
