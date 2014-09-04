@@ -487,7 +487,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public int getNumberOfIssueKeysToPullRequests()
     {
         Query query = Query.select("ISSUE_KEY")
-                .from(RepositoryPullRequestMapping.class);
+                .from(RepositoryPullRequestIssueKeyMapping.class);
 
         return activeObjects.count(RepositoryPullRequestIssueKeyMapping.class, query);
     }
