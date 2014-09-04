@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.service.admin.AdministrationService;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
+import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -23,19 +23,19 @@ import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 /**
- * REST resource for administrative actions on the DVCS Connector.
+ * REST resource for generating dev summary changed events
  */
-@Path ("/admin")
-public class AdminResource
+@Path ("/event/dev-summary-changed")
+public class DevSummaryChangedEventResource
 {
     @Resource
-    private AdministrationService administrationService;
+    private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
 
     private final FeatureManager featureManager;
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
-    public AdminResource(final FeatureManager featureManager, final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
+    public DevSummaryChangedEventResource(final FeatureManager featureManager, final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
     {
         this.featureManager = featureManager;
         this.permissionManager = permissionManager;
@@ -43,7 +43,6 @@ public class AdminResource
     }
 
     @Produces (MediaType.TEXT_PLAIN)
-    @Path ("/event/devSummaryChanged")
     @POST
     public Response startPriming()
     {
@@ -57,7 +56,7 @@ public class AdminResource
             return response(FORBIDDEN, "Only available on Cloud instances");
         }
 
-        if (administrationService.primeDevSummaryCache())
+        if (devSummaryChangedEventService.primeDevSummaryCache())
         {
             return Response.status(Status.OK).entity("priming is scheduled").build();
         }
@@ -68,7 +67,6 @@ public class AdminResource
     }
 
     @Produces (MediaType.TEXT_PLAIN)
-    @Path ("/event/devSummaryChanged")
     @DELETE
     public Response stopPriming()
     {
@@ -77,12 +75,11 @@ public class AdminResource
             return response(Status.UNAUTHORIZED, null);
         }
 
-        administrationService.stopPriming();
+        devSummaryChangedEventService.stopPriming();
         return Response.status(Status.OK).entity("Stopped Priming").build();
     }
 
     @Produces (MediaType.APPLICATION_JSON)
-    @Path ("/event/devSummaryChanged")
     @GET
     public Response primingStatus()
     {
@@ -91,7 +88,7 @@ public class AdminResource
             return response(Status.UNAUTHORIZED, null);
         }
 
-        DevSummaryCachePrimingStatus status = administrationService.getPrimingStatus();
+        DevSummaryCachePrimingStatus status = devSummaryChangedEventService.getPrimingStatus();
         return Response.status(Status.OK).entity(status).build();
     }
 

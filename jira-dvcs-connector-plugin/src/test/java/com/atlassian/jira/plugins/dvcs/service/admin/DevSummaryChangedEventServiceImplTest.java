@@ -26,7 +26,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AdministrationServiceImplTest
+public class DevSummaryChangedEventServiceImplTest
 {
     private static final int TOTAL_NUMBER_OF_ISSUE_KEYS = 1000;
     private static final int TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS = 500;
@@ -60,7 +60,7 @@ public class AdministrationServiceImplTest
     @Mock
     private Repository repository;
 
-    private AdministrationServiceImpl administrationService;
+    private DevSummaryChangedEventServiceImpl administrationService;
 
     @BeforeMethod
     public void setup()
@@ -70,7 +70,7 @@ public class AdministrationServiceImplTest
         when(repositoryPullRequestDao.getNumberOfIssueKeysToPullRequests()).thenReturn(TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS);
         when(executorFactory.createExecutor(any(Executor.class))).thenReturn(executor);
 
-        administrationService = new AdministrationServiceImpl(executorFactory);
+        administrationService = new DevSummaryChangedEventServiceImpl(executorFactory);
         ReflectionTestUtils.setField(administrationService, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(administrationService, "repositoryPullRequestDao", repositoryPullRequestDao);
         ReflectionTestUtils.setField(administrationService, "status", status);
@@ -134,7 +134,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsFalseWhenStopped()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
+        DevSummaryChangedEventServiceImpl.PrimeCacheClosure closure = new DevSummaryChangedEventServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(true);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(false));
@@ -143,7 +143,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsTrueWhenRunning()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
+        DevSummaryChangedEventServiceImpl.PrimeCacheClosure closure = new DevSummaryChangedEventServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(false);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(true));

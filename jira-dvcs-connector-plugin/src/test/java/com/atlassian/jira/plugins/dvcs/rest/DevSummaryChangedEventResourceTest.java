@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.rest;
 
 
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.service.admin.AdministrationService;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
+import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.user.ApplicationUser;
@@ -22,11 +22,10 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 
-public class AdminResourceTest
+public class DevSummaryChangedEventResourceTest
 {
-
     @Mock
-    private AdministrationService administrationService;
+    private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
 
     @Mock
     private JiraAuthenticationContext authenticationContext;
@@ -37,14 +36,14 @@ public class AdminResourceTest
     @Mock
     private FeatureManager featureManager;
 
-    private AdminResource adminResource;
+    private DevSummaryChangedEventResource devSummaryChangedEventResource;
 
     @BeforeMethod
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        adminResource = new AdminResource(featureManager, permissionManager, authenticationContext);
-        ReflectionTestUtils.setField(adminResource, "administrationService", administrationService);
+        devSummaryChangedEventResource = new DevSummaryChangedEventResource(featureManager, permissionManager, authenticationContext);
+        ReflectionTestUtils.setField(devSummaryChangedEventResource, "devSummaryChangedEventService", devSummaryChangedEventService);
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(true);
         when(featureManager.isOnDemand()).thenReturn(true);
     }
@@ -52,16 +51,16 @@ public class AdminResourceTest
     @Test
     public void testStartPrimingSuccess()
     {
-        when(administrationService.primeDevSummaryCache()).thenReturn(true);
-        Response response = adminResource.startPriming();
+        when(devSummaryChangedEventService.primeDevSummaryCache()).thenReturn(true);
+        Response response = devSummaryChangedEventResource.startPriming();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
     @Test
     public void testStartPrimingFailure()
     {
-        when(administrationService.primeDevSummaryCache()).thenReturn(false);
-        Response response = adminResource.startPriming();
+        when(devSummaryChangedEventService.primeDevSummaryCache()).thenReturn(false);
+        Response response = devSummaryChangedEventResource.startPriming();
         assertThat(response.getStatus(), is(Status.CONFLICT.getStatusCode()));
     }
 
@@ -69,7 +68,7 @@ public class AdminResourceTest
     public void testStartPrimingNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = adminResource.startPriming();
+        Response response = devSummaryChangedEventResource.startPriming();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 
@@ -77,15 +76,15 @@ public class AdminResourceTest
     public void testStartPrimingNonOD()
     {
         when(featureManager.isOnDemand()).thenReturn(false);
-        Response response = adminResource.startPriming();
+        Response response = devSummaryChangedEventResource.startPriming();
         assertThat(response.getStatus(), is(Status.FORBIDDEN.getStatusCode()));
     }
 
     @Test
     public void testStatus()
     {
-        when(administrationService.getPrimingStatus()).thenReturn(new DevSummaryCachePrimingStatus());
-        Response response = adminResource.primingStatus();
+        when(devSummaryChangedEventService.getPrimingStatus()).thenReturn(new DevSummaryCachePrimingStatus());
+        Response response = devSummaryChangedEventResource.primingStatus();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
@@ -93,7 +92,7 @@ public class AdminResourceTest
     public void testStatusNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = adminResource.primingStatus();
+        Response response = devSummaryChangedEventResource.primingStatus();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 
@@ -101,7 +100,7 @@ public class AdminResourceTest
     public void testStop()
     {
 
-        Response response = adminResource.stopPriming();
+        Response response = devSummaryChangedEventResource.stopPriming();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
@@ -109,7 +108,7 @@ public class AdminResourceTest
     public void testStopNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = adminResource.stopPriming();
+        Response response = devSummaryChangedEventResource.stopPriming();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 }

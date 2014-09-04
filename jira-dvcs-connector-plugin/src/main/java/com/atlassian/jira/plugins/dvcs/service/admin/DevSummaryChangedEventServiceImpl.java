@@ -22,11 +22,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.Resource;
 
-public class AdministrationServiceImpl implements AdministrationService
+public class DevSummaryChangedEventServiceImpl
 {
     private static final ThreadFactory THREAD_FACTORY =
             ThreadFactories.namedThreadFactory("DVCSConnector.AdministrationService");
-    private static final Logger log = LoggerFactory.getLogger(AdministrationServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(DevSummaryChangedEventServiceImpl.class);
 
     @Resource
     private ChangesetDao changesetDao;
@@ -47,13 +47,12 @@ public class AdministrationServiceImpl implements AdministrationService
 
     private final Executor executor;
 
-    public AdministrationServiceImpl(final ThreadLocalDelegateExecutorFactory executorFactory)
+    public DevSummaryChangedEventServiceImpl(final ThreadLocalDelegateExecutorFactory executorFactory)
     {
         this.executorFactory = executorFactory;
         executor = executorFactory.createExecutor(Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    @Override
     public boolean primeDevSummaryCache()
     {
         final int totalIssueCount = changesetDao.getNumberOfIssueKeysToChangeset();
@@ -164,13 +163,11 @@ public class AdministrationServiceImpl implements AdministrationService
         }
     }
 
-    @Override
     public DevSummaryCachePrimingStatus getPrimingStatus()
     {
         return status;
     }
 
-    @Override
     public void stopPriming()
     {
         status.stopped();

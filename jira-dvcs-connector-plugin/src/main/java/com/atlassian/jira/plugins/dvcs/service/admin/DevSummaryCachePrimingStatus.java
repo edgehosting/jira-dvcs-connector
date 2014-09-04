@@ -17,7 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p/>
  * This class is a singleton, concurrent priming operations are prevented by callers calling #startExclusively
  * first. If they get true back then they are allowed to update the Status, otherwise they should wait until they
- * can start exclusively, {@link com.atlassian.jira.plugins.dvcs.service.admin.AdministrationService}.
+ * can start exclusively, {@link DevSummaryChangedEventService}.
  * <p/>
  * Note that the #issueKeyCount and #pullRequestCount values will not necessarily equal the respective #totalIssueCount
  * and #totalPullRequestCount as we count the number of distinct issue keys BUT a given issue key may be processed
