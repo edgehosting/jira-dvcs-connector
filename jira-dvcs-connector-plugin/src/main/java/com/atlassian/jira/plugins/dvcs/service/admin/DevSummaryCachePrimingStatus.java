@@ -4,6 +4,7 @@ import com.atlassian.jira.cluster.ClusterSafe;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @JsonIgnoreProperties ({ "result", "suppressed" })
 @ThreadSafe
 @ClusterSafe ("Only intended for Cloud use")
+@Component
 public class DevSummaryCachePrimingStatus
 {
     private final AtomicBoolean inProgress;

@@ -31,13 +31,6 @@
         <constructor-arg ref="pluginScheduler"/>
     </bean>
 
-    <bean class="com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer">
-        <description>repositoryTransformer</description>
-    </bean>
-
-    <bean class="com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus">
-    </bean>
-
     <osgi:service interface="com.sun.jersey.spi.container.ResourceFilterFactory">
         <osgi:service-properties>
             <entry key="plugin" value="com.atlassian.plugins.rest"/>

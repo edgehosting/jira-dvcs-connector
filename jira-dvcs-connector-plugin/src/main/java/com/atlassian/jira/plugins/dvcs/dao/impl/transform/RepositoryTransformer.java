@@ -7,9 +7,11 @@ import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Component
 public class RepositoryTransformer
 {
     private static final Logger log = LoggerFactory.getLogger(RepositoryTransformer.class);
