@@ -28,7 +28,7 @@ import javax.annotation.Resource;
 public class DevSummaryChangedEventServiceImpl
 {
     private static final ThreadFactory THREAD_FACTORY =
-            ThreadFactories.namedThreadFactory("DVCSConnector.AdministrationService");
+            ThreadFactories.namedThreadFactory("DVCSConnector.DevSummaryChangedEventServiceImpl");
     private static final Logger log = LoggerFactory.getLogger(DevSummaryChangedEventServiceImpl.class);
 
     @Resource
