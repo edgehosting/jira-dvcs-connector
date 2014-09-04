@@ -63,7 +63,7 @@
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
-        <org.eclipse.mylyn.github.version>3.5.0-SNAPSHOT</org.eclipse.mylyn.github.version>
+        <org.eclipse.mylyn.github.version>3.5.0-20140903.231957-78</org.eclipse.mylyn.github.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- DOG and PRD are still running jdk6
