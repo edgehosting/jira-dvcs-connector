@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.dao;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import net.java.ao.Entity;
 
 import java.util.List;
@@ -75,7 +77,8 @@ public interface ChangesetDao
      *
      * @return true if all records are processed, false if the function chose to stop processing
      */
-    boolean forEachIssueToChangesetMapping(IssueToMappingFunction function);
+    boolean forEachIssueKeyMapping(final Organization organization, final Repository repository,
+            final int pageSize, IssueToMappingFunction function);
 
     /**
      * @param id

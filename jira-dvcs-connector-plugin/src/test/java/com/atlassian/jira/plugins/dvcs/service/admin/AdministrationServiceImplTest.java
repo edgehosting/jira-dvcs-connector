@@ -4,7 +4,11 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -47,6 +51,15 @@ public class AdministrationServiceImplTest
     @Mock
     private Executor executor;
 
+    @Mock
+    private OrganizationService organizationService;
+
+    @Mock
+    private Organization organization;
+
+    @Mock
+    private Repository repository;
+
     private AdministrationServiceImpl administrationService;
 
     @BeforeMethod
@@ -61,6 +74,11 @@ public class AdministrationServiceImplTest
         ReflectionTestUtils.setField(administrationService, "changesetDao", changesetDao);
         ReflectionTestUtils.setField(administrationService, "repositoryPullRequestDao", repositoryPullRequestDao);
         ReflectionTestUtils.setField(administrationService, "status", status);
+        ReflectionTestUtils.setField(administrationService, "organizationService", organizationService);
+
+        when(repository.isLinked()).thenReturn(true);
+        when(organization.getRepositories()).thenReturn(ImmutableList.of(repository));
+        when(organizationService.getAll(eq(true))).thenReturn(ImmutableList.of(organization));
     }
 
     @Test
@@ -72,10 +90,24 @@ public class AdministrationServiceImplTest
     }
 
     @Test
+    public void testUnlinkedRepositoryNotUsed()
+    {
+        when(repository.isLinked()).thenReturn(false);
+        final RuntimeException expectedException = new RuntimeException("foo");
+        when(changesetDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
+                .thenThrow(expectedException);
+
+        administrationService.startPriming();
+
+        verify(status).finished(any(String.class));
+    }
+
+    @Test
     public void testExceptionOnChangesetFailsStatus()
     {
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(changesetDao.forEachIssueToChangesetMapping(any(IssueToMappingFunction.class))).thenThrow(expectedException);
+        when(changesetDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
+                .thenThrow(expectedException);
 
         administrationService.startPriming();
         verify(status).failed(eq(expectedException), any(String.class));
@@ -85,7 +117,8 @@ public class AdministrationServiceImplTest
     public void testExceptionOnPullRequestFailsStatus()
     {
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(repositoryPullRequestDao.forEachIssueKeyToPullRequest(any(IssueToMappingFunction.class))).thenThrow(expectedException);
+        when(repositoryPullRequestDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
+                .thenThrow(expectedException);
 
         administrationService.startPriming();
         verify(status).failed(eq(expectedException), any(String.class));
@@ -101,7 +134,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsFalseWhenStopped()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.IssueKeyPrimeCacheClosure(eventService, status);
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(true);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(false));
@@ -110,7 +143,7 @@ public class AdministrationServiceImplTest
     @Test
     public void testClosureReturnsTrueWhenRunning()
     {
-        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.IssueKeyPrimeCacheClosure(eventService, status);
+        AdministrationServiceImpl.PrimeCacheClosure closure = new AdministrationServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(false);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(true));

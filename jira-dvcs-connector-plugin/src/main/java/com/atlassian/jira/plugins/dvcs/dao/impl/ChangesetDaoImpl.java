@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -14,10 +13,11 @@ import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -441,40 +441,13 @@ public class ChangesetDaoImpl implements ChangesetDao
         return activeObjects.count(IssueToChangesetMapping.class, query);
     }
 
-    public boolean forEachIssueToChangesetMapping(IssueToMappingFunction function)
-    {
-        final Query organizationQuery = Query.select().from(OrganizationMapping.class);
-
-        OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, organizationQuery);
-        for (OrganizationMapping organization : organizations)
-        {
-            final Query repositoryQuery = Query.select()
-                    .from(RepositoryMapping.class)
-                    .alias(RepositoryMapping.class, "rm")
-                    .where("rm." + RepositoryMapping.ORGANIZATION_ID + " = ?", organization.getID());
-            RepositoryMapping[] repositories = activeObjects.find(RepositoryMapping.class, repositoryQuery);
-
-            for (RepositoryMapping repository : repositories)
-            {
-                log.info("processing organisation {} and repository {}", organization.getID(), repository.getID());
-                boolean result = processIssueKeyPage(organization.getDvcsType(), repository.getID(), 100, function);
-                if (!result)
-                {
-                    return result;
-                }
-            }
-        }
-
-        log.info("finished processing for each issue key");
-        return true;
-    }
-
-    @VisibleForTesting
-    boolean processIssueKeyPage(final String dvcsType, final int repositoryId, final int pageSize, IssueToMappingFunction function)
+    public boolean forEachIssueKeyMapping(final Organization organization, final Repository repository,
+            final int pageSize, IssueToMappingFunction function)
     {
         int currentPage = 0;
         IssueToChangesetMapping[] mappings;
         boolean result;
+        int repositoryId = repository.getId();
 
         do
         {
@@ -504,7 +477,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
 
             final ImmutableSet<String> issueKeys = setBuilder.build();
-            result = function.execute(dvcsType, repositoryId, issueKeys);
+            result = function.execute(organization.getDvcsType(), repositoryId, issueKeys);
             log.info("processing page {} with this many elements {} took {} and had the result {}",
                     new Object[] { currentPage, issueKeys.size(), stopWatch, result });
         }

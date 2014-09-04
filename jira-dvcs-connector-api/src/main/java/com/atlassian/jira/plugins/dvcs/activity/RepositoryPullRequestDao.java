@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -108,5 +109,8 @@ public interface RepositoryPullRequestDao
 
     int getNumberOfIssueKeysToPullRequests();
 
-    boolean forEachIssueKeyToPullRequest(IssueToMappingFunction closure);
+    /**
+     * Execute the supplied function for each Issue Key to Pull Request Mapping
+     */
+    boolean forEachIssueKeyMapping(final Organization organization, final Repository repository, final int pageSize, IssueToMappingFunction closure);
 }

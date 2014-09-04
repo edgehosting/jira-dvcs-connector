@@ -5,6 +5,9 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.util.concurrent.ThreadFactories;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.google.common.annotations.VisibleForTesting;
@@ -12,6 +15,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -29,6 +33,9 @@ public class AdministrationServiceImpl implements AdministrationService
 
     @Resource
     private RepositoryPullRequestDao repositoryPullRequestDao;
+
+    @Resource
+    private OrganizationService organizationService;
 
     @Resource (name = "eventServiceImpl")
     private EventService eventService;
@@ -76,8 +83,20 @@ public class AdministrationServiceImpl implements AdministrationService
         stopWatch.start();
         try
         {
-            changesetDao.forEachIssueToChangesetMapping(new IssueKeyPrimeCacheClosure(eventService, status));
-            repositoryPullRequestDao.forEachIssueKeyToPullRequest(new PullRequestPrimeCacheClosure(eventService, status));
+            List<Organization> organizations = organizationService.getAll(true);
+            final ChangesetPrimeCacheClosure changesetPrimeCacheClosure = new ChangesetPrimeCacheClosure(eventService, status);
+            final PullRequestPrimeCacheClosure pullRequestPrimeCacheClosure = new PullRequestPrimeCacheClosure(eventService, status);
+            for (Organization organization : organizations)
+            {
+                for (Repository repository : organization.getRepositories())
+                {
+                    if (repository.isLinked())
+                    {
+                        changesetDao.forEachIssueKeyMapping(organization, repository, 100, changesetPrimeCacheClosure);
+                        repositoryPullRequestDao.forEachIssueKeyMapping(organization, repository, 100, pullRequestPrimeCacheClosure);
+                    }
+                }
+            }
             stopWatch.stop();
             status.finished(stopWatch.toString());
         }
@@ -116,9 +135,9 @@ public class AdministrationServiceImpl implements AdministrationService
     }
 
     @VisibleForTesting
-    static class IssueKeyPrimeCacheClosure extends PrimeCacheClosure
+    static class ChangesetPrimeCacheClosure extends PrimeCacheClosure
     {
-        IssueKeyPrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
+        ChangesetPrimeCacheClosure(final EventService eventService, final DevSummaryCachePrimingStatus status)
         {
             super(eventService, status);
         }
