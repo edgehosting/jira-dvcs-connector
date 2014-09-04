@@ -59,9 +59,10 @@ public class DevSummaryChangedEventServiceImpl
     /**
      * Starts priming the cache, runs in a separate thread.
      *
+     * @param pageSize number of issue mappings to fetch per run
      * @return true if the job could be started, false if there is a job in progress
      */
-    public boolean generateDevSummaryEvents()
+    public boolean generateDevSummaryEvents(final int pageSize)
     {
         final int totalIssueCount = changesetDao.getNumberOfIssueKeysToChangeset();
         final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfIssueKeysToPullRequests();
@@ -72,7 +73,7 @@ public class DevSummaryChangedEventServiceImpl
                 @Override
                 public void run()
                 {
-                    startPriming();
+                    startPriming(pageSize);
                 }
             });
             return true;
@@ -84,7 +85,7 @@ public class DevSummaryChangedEventServiceImpl
     }
 
     @VisibleForTesting
-    void startPriming()
+    void startPriming(int pageSize)
     {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -99,8 +100,8 @@ public class DevSummaryChangedEventServiceImpl
                 {
                     if (repository.isLinked())
                     {
-                        changesetDao.forEachIssueKeyMapping(organization, repository, 100, changesetPrimeCacheClosure);
-                        repositoryPullRequestDao.forEachIssueKeyMapping(organization, repository, 100, pullRequestPrimeCacheClosure);
+                        changesetDao.forEachIssueKeyMapping(organization, repository, pageSize, changesetPrimeCacheClosure);
+                        repositoryPullRequestDao.forEachIssueKeyMapping(organization, repository, pageSize, pullRequestPrimeCacheClosure);
                     }
                 }
             }

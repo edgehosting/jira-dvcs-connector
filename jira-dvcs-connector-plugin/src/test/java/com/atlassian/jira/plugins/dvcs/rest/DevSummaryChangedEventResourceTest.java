@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 
 public class DevSummaryChangedEventResourceTest
 {
+    private static final int PAGE_SIZE = 100;
+
     @Mock
     private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
 
@@ -51,16 +53,16 @@ public class DevSummaryChangedEventResourceTest
     @Test
     public void testStartPrimingSuccess()
     {
-        when(devSummaryChangedEventService.generateDevSummaryEvents()).thenReturn(true);
-        Response response = devSummaryChangedEventResource.startGeneration();
+        when(devSummaryChangedEventService.generateDevSummaryEvents(PAGE_SIZE)).thenReturn(true);
+        Response response = devSummaryChangedEventResource.startGeneration(PAGE_SIZE);
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
     @Test
     public void testStartPrimingFailure()
     {
-        when(devSummaryChangedEventService.generateDevSummaryEvents()).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startGeneration();
+        when(devSummaryChangedEventService.generateDevSummaryEvents(PAGE_SIZE)).thenReturn(false);
+        Response response = devSummaryChangedEventResource.startGeneration(PAGE_SIZE);
         assertThat(response.getStatus(), is(Status.CONFLICT.getStatusCode()));
     }
 
@@ -68,7 +70,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStartPrimingNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startGeneration();
+        Response response = devSummaryChangedEventResource.startGeneration(PAGE_SIZE);
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 
@@ -76,7 +78,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStartPrimingNonOD()
     {
         when(featureManager.isOnDemand()).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startGeneration();
+        Response response = devSummaryChangedEventResource.startGeneration(PAGE_SIZE);
         assertThat(response.getStatus(), is(Status.FORBIDDEN.getStatusCode()));
     }
 

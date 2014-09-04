@@ -11,6 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -44,7 +46,7 @@ public class DevSummaryChangedEventResource
 
     @Produces (MediaType.TEXT_PLAIN)
     @POST
-    public Response startGeneration()
+    public Response startGeneration(@FormParam ("pageSize") @DefaultValue ("100") int pageSize)
     {
         if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, authenticationContext.getUser()))
         {
@@ -56,13 +58,13 @@ public class DevSummaryChangedEventResource
             return response(FORBIDDEN, "Only available on Cloud instances");
         }
 
-        if (devSummaryChangedEventService.generateDevSummaryEvents())
+        if (devSummaryChangedEventService.generateDevSummaryEvents(pageSize))
         {
-            return Response.status(Status.OK).entity("priming is scheduled").build();
+            return Response.status(Status.OK).entity("event generation is scheduled").build();
         }
         else
         {
-            return Response.status(Status.CONFLICT).entity("priming is already scheduled, either wait for completion or stop it").build();
+            return Response.status(Status.CONFLICT).entity("event generation is already scheduled, either wait for completion or stop it").build();
         }
     }
 
@@ -76,7 +78,7 @@ public class DevSummaryChangedEventResource
         }
 
         devSummaryChangedEventService.stopGeneration();
-        return Response.status(Status.OK).entity("Stopped Priming").build();
+        return Response.status(Status.OK).entity("Stopped Generation").build();
     }
 
     @Produces (MediaType.APPLICATION_JSON)

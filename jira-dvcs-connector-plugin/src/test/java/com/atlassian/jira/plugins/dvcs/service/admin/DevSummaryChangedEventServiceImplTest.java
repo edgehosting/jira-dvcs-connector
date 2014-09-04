@@ -32,6 +32,7 @@ public class DevSummaryChangedEventServiceImplTest
     private static final int TOTAL_NUMBER_OF_PULL_REQUEST_ISSUE_KEYS = 500;
     private static final String ISSUE_KEY = "TEST-1";
     private static final ImmutableSet<String> ISSUE_KEYS = ImmutableSet.of(ISSUE_KEY);
+    private static final int PAGE_SIZE = 100;
 
     @Mock
     private ChangesetDao changesetDao;
@@ -86,7 +87,7 @@ public class DevSummaryChangedEventServiceImplTest
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
 
-        assertThat(administrationService.generateDevSummaryEvents(), is(true));
+        assertThat(administrationService.generateDevSummaryEvents(PAGE_SIZE), is(true));
     }
 
     @Test
@@ -97,7 +98,7 @@ public class DevSummaryChangedEventServiceImplTest
         when(changesetDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
                 .thenThrow(expectedException);
 
-        administrationService.startPriming();
+        administrationService.startPriming(PAGE_SIZE);
 
         verify(status).finished(any(String.class));
     }
@@ -106,10 +107,10 @@ public class DevSummaryChangedEventServiceImplTest
     public void testExceptionOnChangesetFailsStatus()
     {
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(changesetDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
+        when(changesetDao.forEachIssueKeyMapping(eq(organization), eq(repository), eq(PAGE_SIZE), any(IssueToMappingFunction.class)))
                 .thenThrow(expectedException);
 
-        administrationService.startPriming();
+        administrationService.startPriming(PAGE_SIZE);
         verify(status).failed(eq(expectedException), any(String.class));
     }
 
@@ -117,10 +118,10 @@ public class DevSummaryChangedEventServiceImplTest
     public void testExceptionOnPullRequestFailsStatus()
     {
         final RuntimeException expectedException = new RuntimeException("foo");
-        when(repositoryPullRequestDao.forEachIssueKeyMapping(eq(organization), eq(repository), anyInt(), any(IssueToMappingFunction.class)))
+        when(repositoryPullRequestDao.forEachIssueKeyMapping(eq(organization), eq(repository), eq(PAGE_SIZE), any(IssueToMappingFunction.class)))
                 .thenThrow(expectedException);
 
-        administrationService.startPriming();
+        administrationService.startPriming(PAGE_SIZE);
         verify(status).failed(eq(expectedException), any(String.class));
     }
 
@@ -128,13 +129,14 @@ public class DevSummaryChangedEventServiceImplTest
     public void testRunning()
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(false);
-        assertThat(administrationService.generateDevSummaryEvents(), is(false));
+        assertThat(administrationService.generateDevSummaryEvents(PAGE_SIZE), is(false));
     }
 
     @Test
     public void testClosureReturnsFalseWhenStopped()
     {
-        DevSummaryChangedEventServiceImpl.PrimeCacheClosure closure = new DevSummaryChangedEventServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
+        DevSummaryChangedEventServiceImpl.PrimeCacheClosure closure =
+                new DevSummaryChangedEventServiceImpl.ChangesetPrimeCacheClosure(eventService, status);
         when(status.isStopped()).thenReturn(true);
 
         assertThat(closure.execute("bitbucket", 1, ISSUE_KEYS), is(false));
