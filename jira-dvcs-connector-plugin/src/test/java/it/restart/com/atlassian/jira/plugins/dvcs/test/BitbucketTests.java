@@ -171,32 +171,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
+        testPostCommitHookAddedAndRemoved(AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
+    }
+
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
 
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
-
-        // check postcommit hook is there
-        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "public-hg-repo");
-
-        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+        String postDeleteServicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        if (!servicesConfig.contains(jiraCallbackUrl))
-        {
-            // retrying once more
-            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        }
-
-        assertThat(servicesConfig).contains(jiraCallbackUrl);
-
-        // delete repository
-        rpc.getPage().deleteAllOrganizations();
-
-        // check that postcommit hook is removed
-        servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(servicesConfig).doesNotContain(jiraCallbackUrl);
+        return postDeleteServicesConfig.contains(jiraCallbackUrl);
     }
 
     @Test

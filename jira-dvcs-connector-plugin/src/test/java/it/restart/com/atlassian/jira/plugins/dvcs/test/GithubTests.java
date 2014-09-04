@@ -41,6 +41,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "noauthor", "test-project" });
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
+    private static final String REPOSITORY_NAME = "test-project";
     private OAuth oAuth;
 
     @BeforeClass
@@ -98,9 +99,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
 
-        final String repositoryName = "test-project";
         final String expectedMessage = "Mon Feb 06 2012";
-        RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
+        RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
         assertThat(repositoryDiv).isNotNull();
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
@@ -137,21 +137,14 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        // add organization
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
+        testPostCommitHookAddedAndRemoved(AccountType.GITHUB, REPOSITORY_NAME, jira, getOAuthCredentials());
+    }
 
-        // check that it created postcommit hook
-        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", "test-project");
-        String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), "test-project");
-
-        assertThat(actualHookUrls).contains(jiraCallbackUrl);
-
-        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
-
-        List<String> hookUrlsPostDelete = GithubTestHelper.getHookUrls("https://api.github.com", "test-project");
-        // check that postcommit hook is removed
-        assertThat(hookUrlsPostDelete).doesNotContain(jiraCallbackUrl);
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+        return actualHookUrls.contains(jiraCallbackUrl);
     }
 
     @Test
@@ -216,7 +209,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("test-project", false);
+        AccountsPageAccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());

@@ -123,12 +123,6 @@ public interface RepositoryService
     void removeRepositories(List<Repository> repositories);
 
     /**
-     * marks repository as deleted and stops the running synchronization
-     * @param repository
-     */
-    void prepareForRemove(Repository repository);
-
-    /**
      * @param repository
      */
     void remove(Repository repository);
