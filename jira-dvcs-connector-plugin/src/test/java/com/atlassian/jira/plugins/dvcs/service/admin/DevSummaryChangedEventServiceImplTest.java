@@ -86,7 +86,7 @@ public class DevSummaryChangedEventServiceImplTest
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(true);
 
-        assertThat(administrationService.primeDevSummaryCache(), is(true));
+        assertThat(administrationService.generateDevSummaryEvents(), is(true));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class DevSummaryChangedEventServiceImplTest
     public void testRunning()
     {
         when(status.startExclusively(anyInt(), anyInt())).thenReturn(false);
-        assertThat(administrationService.primeDevSummaryCache(), is(false));
+        assertThat(administrationService.generateDevSummaryEvents(), is(false));
     }
 
     @Test

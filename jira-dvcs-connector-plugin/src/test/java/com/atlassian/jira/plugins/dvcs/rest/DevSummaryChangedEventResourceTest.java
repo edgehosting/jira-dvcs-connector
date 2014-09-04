@@ -51,16 +51,16 @@ public class DevSummaryChangedEventResourceTest
     @Test
     public void testStartPrimingSuccess()
     {
-        when(devSummaryChangedEventService.primeDevSummaryCache()).thenReturn(true);
-        Response response = devSummaryChangedEventResource.startPriming();
+        when(devSummaryChangedEventService.generateDevSummaryEvents()).thenReturn(true);
+        Response response = devSummaryChangedEventResource.startGeneration();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
     @Test
     public void testStartPrimingFailure()
     {
-        when(devSummaryChangedEventService.primeDevSummaryCache()).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startPriming();
+        when(devSummaryChangedEventService.generateDevSummaryEvents()).thenReturn(false);
+        Response response = devSummaryChangedEventResource.startGeneration();
         assertThat(response.getStatus(), is(Status.CONFLICT.getStatusCode()));
     }
 
@@ -68,7 +68,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStartPrimingNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startPriming();
+        Response response = devSummaryChangedEventResource.startGeneration();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 
@@ -76,15 +76,15 @@ public class DevSummaryChangedEventResourceTest
     public void testStartPrimingNonOD()
     {
         when(featureManager.isOnDemand()).thenReturn(false);
-        Response response = devSummaryChangedEventResource.startPriming();
+        Response response = devSummaryChangedEventResource.startGeneration();
         assertThat(response.getStatus(), is(Status.FORBIDDEN.getStatusCode()));
     }
 
     @Test
     public void testStatus()
     {
-        when(devSummaryChangedEventService.getPrimingStatus()).thenReturn(new DevSummaryCachePrimingStatus());
-        Response response = devSummaryChangedEventResource.primingStatus();
+        when(devSummaryChangedEventService.getEventGenerationStatus()).thenReturn(new DevSummaryCachePrimingStatus());
+        Response response = devSummaryChangedEventResource.generationStatus();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
@@ -92,7 +92,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStatusNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = devSummaryChangedEventResource.primingStatus();
+        Response response = devSummaryChangedEventResource.generationStatus();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 
@@ -100,7 +100,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStop()
     {
 
-        Response response = devSummaryChangedEventResource.stopPriming();
+        Response response = devSummaryChangedEventResource.stopGeneration();
         assertThat(response.getStatus(), is(Status.OK.getStatusCode()));
     }
 
@@ -108,7 +108,7 @@ public class DevSummaryChangedEventResourceTest
     public void testStopNonAdmin()
     {
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
-        Response response = devSummaryChangedEventResource.stopPriming();
+        Response response = devSummaryChangedEventResource.stopGeneration();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
 }

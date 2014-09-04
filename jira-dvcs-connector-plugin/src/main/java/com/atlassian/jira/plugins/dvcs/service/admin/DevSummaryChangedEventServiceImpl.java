@@ -22,6 +22,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.Resource;
 
+/**
+ * Service that manages generation of dev summary changed events, typically used for priming the dev summary cache.
+ */
 public class DevSummaryChangedEventServiceImpl
 {
     private static final ThreadFactory THREAD_FACTORY =
@@ -53,7 +56,12 @@ public class DevSummaryChangedEventServiceImpl
         executor = executorFactory.createExecutor(Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    public boolean primeDevSummaryCache()
+    /**
+     * Starts priming the cache, runs in a separate thread.
+     *
+     * @return true if the job could be started, false if there is a job in progress
+     */
+    public boolean generateDevSummaryEvents()
     {
         final int totalIssueCount = changesetDao.getNumberOfIssueKeysToChangeset();
         final int totalPrIssueCount = repositoryPullRequestDao.getNumberOfIssueKeysToPullRequests();
@@ -163,12 +171,12 @@ public class DevSummaryChangedEventServiceImpl
         }
     }
 
-    public DevSummaryCachePrimingStatus getPrimingStatus()
+    public DevSummaryCachePrimingStatus getEventGenerationStatus()
     {
         return status;
     }
 
-    public void stopPriming()
+    public void stopGeneration()
     {
         status.stopped();
     }

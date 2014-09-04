@@ -44,7 +44,7 @@ public class DevSummaryChangedEventResource
 
     @Produces (MediaType.TEXT_PLAIN)
     @POST
-    public Response startPriming()
+    public Response startGeneration()
     {
         if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, authenticationContext.getUser()))
         {
@@ -56,7 +56,7 @@ public class DevSummaryChangedEventResource
             return response(FORBIDDEN, "Only available on Cloud instances");
         }
 
-        if (devSummaryChangedEventService.primeDevSummaryCache())
+        if (devSummaryChangedEventService.generateDevSummaryEvents())
         {
             return Response.status(Status.OK).entity("priming is scheduled").build();
         }
@@ -68,27 +68,27 @@ public class DevSummaryChangedEventResource
 
     @Produces (MediaType.TEXT_PLAIN)
     @DELETE
-    public Response stopPriming()
+    public Response stopGeneration()
     {
         if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, authenticationContext.getUser()))
         {
             return response(Status.UNAUTHORIZED, null);
         }
 
-        devSummaryChangedEventService.stopPriming();
+        devSummaryChangedEventService.stopGeneration();
         return Response.status(Status.OK).entity("Stopped Priming").build();
     }
 
     @Produces (MediaType.APPLICATION_JSON)
     @GET
-    public Response primingStatus()
+    public Response generationStatus()
     {
         if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, authenticationContext.getUser()))
         {
             return response(Status.UNAUTHORIZED, null);
         }
 
-        DevSummaryCachePrimingStatus status = devSummaryChangedEventService.getPrimingStatus();
+        DevSummaryCachePrimingStatus status = devSummaryChangedEventService.getEventGenerationStatus();
         return Response.status(Status.OK).entity(status).build();
     }
 
@@ -103,5 +103,4 @@ public class DevSummaryChangedEventResource
                 .cacheControl(cacheControl)
                 .build();
     }
-
 }
