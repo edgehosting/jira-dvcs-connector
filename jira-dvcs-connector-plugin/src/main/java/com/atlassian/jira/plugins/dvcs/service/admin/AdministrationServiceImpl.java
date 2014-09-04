@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 public class AdministrationServiceImpl implements AdministrationService
 {
     private static final ThreadFactory THREAD_FACTORY =
-            ThreadFactories.namedThreadFactory(AdministrationServiceImpl.class.getSimpleName());
+            ThreadFactories.namedThreadFactory("DVCSConnector.AdministrationService");
     private static final Logger log = LoggerFactory.getLogger(AdministrationServiceImpl.class);
 
     @Resource
