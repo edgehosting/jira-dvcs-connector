@@ -12,8 +12,8 @@ public interface EventService
      * JSON.
      * <p/>
      * <p/>
-     * This method delegates to {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent, boolean)}
-     * passing {@code scheduled=false}.
+     * This method delegates to {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent,
+     * boolean)} passing {@code scheduled=false}.
      *
      * @param repository the Repository against which to store the event
      * @param event the event to save
@@ -39,6 +39,12 @@ public interface EventService
     void storeEvent(Repository repository, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
 
     /**
+     * Stores the event against the repository, see {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository,
+     * SyncEvent, boolean)}
+     */
+    void storeEvent(int repositoryId, SyncEvent event, boolean scheduled) throws IllegalArgumentException;
+
+    /**
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as
      * they are published. Note that this method <b>schedules dispatching for asynchronously execution</b> and returns
      * immediately.
@@ -49,6 +55,14 @@ public interface EventService
      * @throws java.util.concurrent.RejectedExecutionException if dispatching can not be scheduled for execution
      */
     void dispatchEvents(Repository repository);
+
+    /**
+     * Dispatch all events for the supplied repository synchronously, this method will block until all events are
+     * published.
+     *
+     * Note that this method will use the repository id for the repository description when publishing.
+     */
+    void dispatchEvents(int repositoryId);
 
     /**
      * Discards all pending events for the given Repository.

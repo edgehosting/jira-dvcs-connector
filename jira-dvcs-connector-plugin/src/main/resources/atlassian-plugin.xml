@@ -27,6 +27,7 @@
     <component-import key="crowdService" interface="com.atlassian.crowd.embedded.api.CrowdService" />
     <component-import key="issueManager" interface="com.atlassian.jira.issue.IssueManager" />
     <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager" />
+    <component-import key="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory"/>
 
     <!-- Note: This MUST be public and registered under the LifecycleAware interface to work! -->
     <component key="scheduledJob" name="Scheduled Job"  class="com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler" public="true">
@@ -322,7 +323,13 @@
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
-    
+
+    <component key="devSummaryChangedEventServiceImpl" name="devSummaryChangedEventServiceImpl"
+               class="com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl">
+        <description>administrationService</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl</interface>
+    </component>
+
     <component key="branchService" name="branchService"
                class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
         <description>branchService</description>

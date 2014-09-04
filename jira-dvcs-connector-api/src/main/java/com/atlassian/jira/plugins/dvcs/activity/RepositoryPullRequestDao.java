@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activity;
 
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -42,7 +44,6 @@ public interface RepositoryPullRequestDao
      *
      * @param domain the repository
      * @param pullRequestId ID of the pull request
-     *
      * @return Number of found issues keys
      */
     int updatePullRequestIssueKeys(Repository domain, int pullRequestId);
@@ -68,8 +69,8 @@ public interface RepositoryPullRequestDao
     RepositoryPullRequestMapping findRequestByRemoteId(Repository domain, long remoteId);
 
     /**
-     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or
-     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
+     * Retrieves keys of issues associated with the pull request. If either {@code repositoryId} or {@code
+     * pullRequestId} point to non-existing entities, an empty set will be returned.
      *
      * @param repositoryId ID of the repository
      * @param pullRequestId ID of the pull request
@@ -80,8 +81,8 @@ public interface RepositoryPullRequestDao
     Set<String> getIssueKeys(int repositoryId, int pullRequestId);
 
     /**
-     * Retrieves keys of issues associated with the pull request. If either {@code domain.id} or
-     * {@code pullRequestId} point to non-existing entities, an empty set will be returned.
+     * Retrieves keys of issues associated with the pull request. If either {@code domain.id} or {@code pullRequestId}
+     * point to non-existing entities, an empty set will be returned.
      *
      * @param domain the repository
      * @param pullRequestId pull request ID
@@ -105,4 +106,11 @@ public interface RepositoryPullRequestDao
     void saveParticipant(PullRequestParticipantMapping participantMapping);
 
     void createParticipant(int pullRequestId, int repositoryId, Participant participant);
+
+    int getNumberOfIssueKeysToPullRequests();
+
+    /**
+     * Execute the supplied function for each Issue Key to Pull Request Mapping
+     */
+    boolean forEachIssueKeyMapping(final Organization organization, final Repository repository, final int pageSize, IssueToMappingFunction closure);
 }

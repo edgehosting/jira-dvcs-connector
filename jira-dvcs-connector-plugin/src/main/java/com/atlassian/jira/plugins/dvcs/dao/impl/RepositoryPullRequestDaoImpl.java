@@ -10,7 +10,9 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestToCommitMapping;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
@@ -18,12 +20,14 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Sets;
 import net.java.ao.Query;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -477,6 +481,56 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         params.put(PullRequestParticipantMapping.PULL_REQUEST_ID, pullRequestId);
         params.put(PullRequestParticipantMapping.DOMAIN, repositoryId);
         activeObjects.create(PullRequestParticipantMapping.class, params);
+    }
+
+    @Override
+    public int getNumberOfIssueKeysToPullRequests()
+    {
+        Query query = Query.select("ISSUE_KEY")
+                .from(RepositoryPullRequestIssueKeyMapping.class);
+
+        return activeObjects.count(RepositoryPullRequestIssueKeyMapping.class, query);
+    }
+
+    public boolean forEachIssueKeyMapping(final Organization organization, final Repository repository, final int pageSize, IssueToMappingFunction closure)
+    {
+        int currentPage = 0;
+        RepositoryPullRequestIssueKeyMapping[] mappings;
+        boolean result;
+        final int repositoryId = repository.getId();
+
+        do
+        {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            Query issueQuery = Query.select()
+                    .from(RepositoryPullRequestIssueKeyMapping.class)
+                    .alias(RepositoryPullRequestIssueKeyMapping.class, "prik")
+                    .alias(RepositoryPullRequestMapping.class, "pr")
+                    .join(RepositoryPullRequestMapping.class, "prik.PULL_REQUEST_ID = pr.ID")
+                    .alias(RepositoryMapping.class, "rm")
+                    .join(RepositoryMapping.class, "rm.ID = pr.TO_REPOSITORY_ID")
+                    .where("rm.ID = ?", repositoryId)
+                    .limit(pageSize)
+                    .offset(currentPage * pageSize);
+
+            mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, issueQuery);
+            currentPage++;
+
+            ImmutableSet.Builder<String> setBuilder = ImmutableSet.builder();
+
+            for (RepositoryPullRequestIssueKeyMapping mapping : mappings)
+            {
+                setBuilder.add(mapping.getIssueKey());
+            }
+
+            final ImmutableSet<String> issueKeys = setBuilder.build();
+            result = closure.execute(organization.getDvcsType(), repositoryId, issueKeys);
+            LOGGER.info("processing page {} with this many elements {} took {} and had the result {}",
+                    new Object[] { currentPage, issueKeys.size(), stopWatch, result });
+        }
+        while (mappings.length > 0 && result);
+        return result;
     }
 
     /**
