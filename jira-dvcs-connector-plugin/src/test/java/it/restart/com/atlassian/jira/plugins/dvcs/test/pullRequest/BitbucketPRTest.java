@@ -4,11 +4,13 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
+import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
@@ -68,6 +70,27 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         }
 
         dvcs.deleteAllRepositories();
+
+        removeExpiredRepositories(ACCOUNT_NAME, PASSWORD);
+        removeExpiredRepositories(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
+    }
+
+    private void removeExpiredRepositories(String owner, String password)
+    {
+        BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(owner, password);
+        RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
+
+        for ( BitbucketRepository repository : repositoryService.getAllRepositories(owner))
+        {
+            if (timestampNameTestResource.isExpired(repository.getName()))
+            {
+                try
+                {
+                    repositoryService.removeRepository(repository.getName(), owner);
+                }
+                catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+            }
+        }
     }
 
     @Override
