@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.29</version>
+        <version>3.0.38</version>
     </parent>
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>2.1.22-SNAPSHOT</version>
+    <version>2.2.2-SNAPSHOT</version>
 
     <licenses>
         <license>

@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -65,6 +66,7 @@ public class BranchServiceImpl implements BranchService
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
 
                 broadcastBranchCreatedEvent(branch, issueKeys);
+                threadEvents.broadcast(new DevSummaryChangedEvent(repository.getId(), repository.getDvcsType(), issueKeys));
             }
         }
 
@@ -74,6 +76,8 @@ public class BranchServiceImpl implements BranchService
             if (!newBranchSet.contains(oldBranch))
             {
                 branchDao.removeBranch(repository.getId(), oldBranch);
+                Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(oldBranch.getName());
+                threadEvents.broadcast(new DevSummaryChangedEvent(repository.getId(), repository.getDvcsType(), issueKeys));
             }
         }
     }

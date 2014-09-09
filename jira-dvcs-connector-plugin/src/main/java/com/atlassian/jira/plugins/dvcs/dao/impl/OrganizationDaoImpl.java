@@ -324,7 +324,10 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public void remove(int organizationId)
     {
-        activeObjects.delete(activeObjects.get(OrganizationMapping.class, organizationId));
+        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, organizationId);
+        if (organizationMapping != null) {
+            activeObjects.delete(organizationMapping);
+        }
 
         // removing organization from invalid organizations list
         InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);

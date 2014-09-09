@@ -131,12 +131,8 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         long startTime = System.currentTimeMillis();
         List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
-        for (Repository repository : repositoriesToDelete)
-        {
-            repositoryService.prepareForRemove(repository);
-        }
-        organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
+        organizationDao.remove(organizationId);
         repositoryService.removeOrphanRepositories(repositoriesToDelete);
         log.debug("Organization {} was deleted in {} ms", organizationId, System.currentTimeMillis() - startTime);
     }

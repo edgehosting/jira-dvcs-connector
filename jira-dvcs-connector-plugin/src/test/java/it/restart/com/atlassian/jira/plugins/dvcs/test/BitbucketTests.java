@@ -36,19 +36,20 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
-
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" });
 
     @BeforeClass
     public void beforeClass()
@@ -89,7 +90,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         // check add user extension
         PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
@@ -103,29 +104,34 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
-        assertThat(organization.getRepositories(true).size()).isEqualTo(4);
-        assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
+        final String repositoryName = "public-hg-repo";
+        final String expectedMessage = "Fri Mar 02 2012";
+
+        RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
+        assertThat(repositoryDiv).isNotNull();
+        assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         addOrganization(AccountType.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false, true);
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
     public void addOrganizationInvalidOAuth()
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true, true);
@@ -165,41 +171,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        // remove existing
+        testPostCommitHookAddedAndRemoved(AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
+    }
+
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
-        HttpSenderUtils.removeJsonElementsUsingIDs(bitbucketServiceConfigUrl, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
-
-        // check postcommit hook is there
-        String baseUrl = jira.getProductInstance().getBaseUrl();
-        String syncUrl = baseUrl + "/rest/bitbucket/1.0/repository/";
-
-        RepositoryDiv createdOrganisation = organisation.findRepository("public-hg-repo");
-        if (createdOrganisation != null)
-        {
-            syncUrl += createdOrganisation.getRepositoryId() + "/sync";
-        }
-
-        String servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
+        String postDeleteServicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
                 "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        if (!servicesConfig.contains(syncUrl))
-        {
-            // retrying once more
-            servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                    "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        }
-
-        assertThat(servicesConfig).contains(syncUrl);
-
-        // delete repository
-        rpc.getPage().deleteAllOrganizations();
-
-        // check that postcommit hook is removed
-        servicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        assertThat(servicesConfig).doesNotContain(syncUrl);
+        return postDeleteServicesConfig.contains(jiraCallbackUrl);
     }
 
     @Test
@@ -301,9 +283,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // move issue from QA project to BBC project
         JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
         movingPage.stepOne_typeProjectName("Bitbucket Connector")
-                  .clickNext()
-                  .clickNext()
-                  .submit();
+                .clickNext()
+                .clickNext()
+                .submit();
 
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
@@ -423,7 +405,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
     {
-
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync, expectError);
     }

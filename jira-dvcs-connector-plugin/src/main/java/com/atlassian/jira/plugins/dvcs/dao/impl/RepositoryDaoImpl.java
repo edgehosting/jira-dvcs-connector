@@ -4,7 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
+import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
@@ -25,10 +25,12 @@ import javax.annotation.Resource;
 
 public class RepositoryDaoImpl implements RepositoryDao
 {
-
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
     private final ActiveObjects activeObjects;
+
+    @Resource
+    private RepositoryTransformer repositoryTransformer;
 
     @Resource
     private Synchronizer synchronizer;
@@ -46,79 +48,11 @@ public class RepositoryDaoImpl implements RepositoryDao
         }
 
         OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
-        log.debug("Repository transformation: [{}] ", repositoryMapping);
-
-        Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
-                repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
-                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
-        repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
-        repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
-
-        Date lastDate = repositoryMapping.getLastCommitDate();
-
-        if (lastDate == null || (repositoryMapping.getActivityLastSync() != null && repositoryMapping.getActivityLastSync().after(lastDate)))
-        {
-            lastDate = repositoryMapping.getActivityLastSync();
-        }
-        repository.setLastActivityDate(lastDate);
-        repository.setLogo(repositoryMapping.getLogo());
-        // set sync progress
-        repository.setSync((DefaultProgress) synchronizer.getProgress(repository.getId()));
-        repository.setFork(repositoryMapping.isFork());
-
-        if (repository.isFork() && repositoryMapping.getForkOfSlug() != null)
-        {
-            Repository forkOfRepository = new Repository();
-            forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());
-            forkOfRepository.setName(repositoryMapping.getForkOfName());
-            forkOfRepository.setOwner(repositoryMapping.getForkOfOwner());
-            if (organizationMapping != null)
-            {
-                forkOfRepository.setRepositoryUrl(createForkOfRepositoryUrl(repositoryMapping, organizationMapping));
-            }
-            repository.setForkOf(forkOfRepository);
-        }
-
-        if (organizationMapping != null)
-        {
-            Credential credential = new Credential(organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
-                    organizationMapping.getAccessToken(), organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
-            repository.setCredential(credential);
-            repository.setDvcsType(organizationMapping.getDvcsType());
-            repository.setOrgHostUrl(organizationMapping.getHostUrl());
-            repository.setOrgName(organizationMapping.getName());
-            repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
-        } else
-        {
-            repository.setOrgHostUrl(null);
-            repository.setOrgName(null);
-            repository.setRepositoryUrl(null);
-        }
-
-        return repository;
+        final DefaultProgress progress = (DefaultProgress) synchronizer.getProgress(repositoryMapping.getID());
+        return repositoryTransformer.transform(repositoryMapping, organizationMapping, progress);
     }
 
-    private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
-    {
-        return createRepositoryUrl(organizationMapping.getHostUrl(), organizationMapping.getName(), repositoryMapping.getSlug());
-    }
-
-    private String createForkOfRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
-    {
-        return createRepositoryUrl(organizationMapping.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
-    }
-
-    private String createRepositoryUrl(String hostUrl, String owner, String slug)
-    {
-        // normalize
-        if (hostUrl != null && hostUrl.endsWith("/"))
-        {
-            hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
-        }
-        return hostUrl + "/" + owner + "/" + slug;
-    }
-
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     @Override
     public List<Repository> getAllByOrganization(final int organizationId, final boolean includeDeleted)
     {
@@ -126,7 +60,8 @@ public class RepositoryDaoImpl implements RepositoryDao
         if (includeDeleted)
         {
             query.where(RepositoryMapping.ORGANIZATION_ID + " = ? ", organizationId);
-        } else
+        }
+        else
         {
             query.where(RepositoryMapping.ORGANIZATION_ID + " = ? AND " + RepositoryMapping.DELETED + " = ? ", organizationId,
                     Boolean.FALSE);
@@ -177,7 +112,8 @@ public class RepositoryDaoImpl implements RepositoryDao
         if (!includeDeleted)
         {
             select.where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? ", dvcsType, Boolean.FALSE);
-        } else
+        }
+        else
         {
             select.where("org." + OrganizationMapping.DVCS_TYPE + " = ?", dvcsType);
         }
@@ -197,7 +133,8 @@ public class RepositoryDaoImpl implements RepositoryDao
         if (includeDeleted)
         {
             query.where(RepositoryMapping.LINKED + " = ?", Boolean.TRUE);
-        } else
+        }
+        else
         {
             query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
         }
@@ -208,11 +145,10 @@ public class RepositoryDaoImpl implements RepositoryDao
     /**
      * Transform repositories.
      *
-     * @param repositoriesToReturn
-     *            the repositories to return
+     * @param repositoriesToReturn the repositories to return
      * @return the collection< repository>
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private Collection<Repository> transformRepositories(final List<RepositoryMapping> repositoriesToReturn)
     {
         return CollectionUtils.collect(repositoriesToReturn, new Transformer()
@@ -243,7 +179,8 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             log.warn("Repository with id {} was not found.", repositoryId);
             return null;
-        } else
+        }
+        else
         {
             return transform(repositoryMapping);
 
@@ -283,7 +220,8 @@ public class RepositoryDaoImpl implements RepositoryDao
                     }
                     rm = activeObjects.create(RepositoryMapping.class, map);
                     rm = activeObjects.find(RepositoryMapping.class, "ID = ?", rm.getID())[0];
-                } else
+                }
+                else
                 {
                     rm = activeObjects.get(RepositoryMapping.class, repository.getId());
 
@@ -301,7 +239,8 @@ public class RepositoryDaoImpl implements RepositoryDao
                         rm.setForkOfName(repository.getForkOf().getName());
                         rm.setForkOfSlug(repository.getForkOf().getSlug());
                         rm.setForkOfOwner(repository.getForkOf().getOwner());
-                    } else
+                    }
+                    else
                     {
                         rm.setForkOfName(null);
                         rm.setForkOfSlug(null);

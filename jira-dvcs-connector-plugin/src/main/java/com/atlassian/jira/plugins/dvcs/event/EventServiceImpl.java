@@ -55,12 +55,18 @@ public class EventServiceImpl implements EventService
         storeEvent(repository, event, false);
     }
 
-    public void storeEvent(Repository repository, SyncEvent event, boolean scheduledSync) throws IllegalArgumentException
+    public void storeEvent(Repository repository, SyncEvent event, boolean scheduledSync)
+            throws IllegalArgumentException
+    {
+        storeEvent(repository.getId(), event, scheduledSync);
+    }
+
+    public void storeEvent(int repositoryId, SyncEvent event, boolean scheduledSync) throws IllegalArgumentException
     {
         try
         {
-            syncEventDao.save(toSyncEventMapping(repository, event, scheduledSync));
-            logger.debug("Saved event for repository {}: {}", repository, event);
+            syncEventDao.save(toSyncEventMapping(repositoryId, event, scheduledSync));
+            logger.debug("Saved event for repositoryId {}: {}", repositoryId, event);
         }
         catch (IOException e)
         {
@@ -70,8 +76,18 @@ public class EventServiceImpl implements EventService
 
     public void dispatchEvents(Repository repository)
     {
-        final DispatchRequest dispatchRequest = new DispatchRequest(repository);
+        dispatch(new DispatchRequest(repository));
 
+    }
+
+    @Override
+    public void dispatchEvents(int repositoryId)
+    {
+        doDispatchEvents(new DispatchRequest(repositoryId, "repository with id " + repositoryId));
+    }
+
+    private void dispatch(final DispatchRequest dispatchRequest)
+    {
         // do the event dispatching asynchronously
         eventDispatcher.submit(new Callable<Void>()
         {
@@ -168,10 +184,11 @@ public class EventServiceImpl implements EventService
         logger.debug("Deleted {} events from repo: {}", deleted, repository);
     }
 
-    private SyncEventMapping toSyncEventMapping(Repository repository, SyncEvent event, final Boolean scheduledSync) throws IOException
+    private SyncEventMapping toSyncEventMapping(int repositoryId, SyncEvent event, final Boolean scheduledSync)
+            throws IOException
     {
         SyncEventMapping mapping = syncEventDao.create();
-        mapping.setRepoId(repository.getId());
+        mapping.setRepoId(repositoryId);
         mapping.setEventDate(event.getDate());
         mapping.setEventClass(event.getClass().getName());
         mapping.setEventJson(objectMapper.writeValueAsString(event));
@@ -227,6 +244,12 @@ public class EventServiceImpl implements EventService
         {
             this.repoId = repository.getId();
             this.repoToString = repository.toString();
+        }
+
+        private DispatchRequest(final int repoId, final String repoToString)
+        {
+            this.repoId = repoId;
+            this.repoToString = repoToString;
         }
 
         public int repoId()

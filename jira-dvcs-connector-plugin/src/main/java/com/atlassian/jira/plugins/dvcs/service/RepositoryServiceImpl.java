@@ -611,26 +611,20 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
-            prepareForRemove(repository);
+            if (!repository.isDeleted())
+            {
+                repository.setDeleted(true);
+                repositoryDao.save(repository);
+                synchronizer.pauseSynchronization(repository, true);
+            }
+
             // try remove postcommit hook
             if (repository.isLinked())
             {
                 removePostcommitHook(repository);
                 repository.setLinked(false);
+                repositoryDao.save(repository);
             }
-
-            repositoryDao.save(repository);
-        }
-    }
-
-    @Override
-    public void prepareForRemove(Repository repository)
-    {
-        if (!repository.isDeleted())
-        {
-    	    synchronizer.pauseSynchronization(repository, true);
-            repository.setDeleted(true);
-            repositoryDao.save(repository);
         }
     }
 

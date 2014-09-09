@@ -116,7 +116,7 @@ public class DefaultSynchronizer implements Synchronizer
             throw new SourceControlException.SynchronizationDisabled("Synchronization is disabled for repository " + repo.getName() + " (" + repo.getId() + ")");
         }
 
-        if (repo.isLinked())
+        if (repo.isLinked() && !repo.isDeleted())
         {
             // Remove the soft sync flag if we have no branch heads.
             if (branchService.getListOfBranchHeads(repo).isEmpty())
