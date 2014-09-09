@@ -138,17 +138,14 @@ public class GitTestResource
         catch (InvalidRemoteException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (TransportException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -186,12 +183,10 @@ public class GitTestResource
         catch (NoFilepatternException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -219,32 +214,26 @@ public class GitTestResource
         catch (NoHeadException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (NoMessageException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (UnmergedPathsException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (ConcurrentRefUpdateException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (WrongRepositoryStateException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -268,12 +257,10 @@ public class GitTestResource
         catch (InvalidRemoteException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (TransportException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
@@ -304,17 +291,14 @@ public class GitTestResource
         catch (InvalidRemoteException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (TransportException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (IOException e)
         {
@@ -341,22 +325,18 @@ public class GitTestResource
         catch (RefAlreadyExistsException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (RefNotFoundException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (InvalidRefNameException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -379,27 +359,22 @@ public class GitTestResource
         catch (RefAlreadyExistsException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (RefNotFoundException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (InvalidRefNameException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (CheckoutConflictException e)
         {
             throw new RuntimeException(e);
-
         }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 

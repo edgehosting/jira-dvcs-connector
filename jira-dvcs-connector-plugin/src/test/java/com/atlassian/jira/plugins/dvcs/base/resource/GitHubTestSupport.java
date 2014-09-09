@@ -8,6 +8,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.apache.commons.httpclient.HttpStatus;
 import org.eclipse.egit.github.core.Comment;
+import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
@@ -359,7 +360,7 @@ public class GitHubTestSupport
             // wait until forked repository is prepared
             do
             {
-                sleep(5000);
+                sleep(1000);
             }
             while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
 
@@ -399,7 +400,7 @@ public class GitHubTestSupport
      */
     public PullRequest openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
     {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
 
         PullRequest request = new PullRequest();
         request.setTitle(title);
@@ -409,18 +410,18 @@ public class GitHubTestSupport
         request.setBase(new PullRequestMarker().setLabel(base));
 
         PullRequest result = null;
-
+        final PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
         try
         {
             try
             {
-                result = new PullRequestService(getGitHubClient(bySlug.owner)).createPullRequest(bySlug.repository, request);
+                result = pullRequestService.createPullRequest(bySlug.repository, request);
             }
             catch (RequestException e)
             {
                 // let's try once more after while
                 sleep(5000);
-                result = new PullRequestService(getGitHubClient(bySlug.owner)).createPullRequest(bySlug.repository, request);
+                result = pullRequestService.createPullRequest(bySlug.repository, request);
             }
         }
         catch (IOException e)
@@ -428,11 +429,51 @@ public class GitHubTestSupport
             throw new RuntimeException(e);
         }
 
+
         // pull request creation is asynchronous process - it is necessary to wait a little bit
         // otherwise unexpected behavior can happened - like next push will be part as open pull request
-        sleep(5000);
+        final int pullrequestId = result.getNumber();
+        waitUntil(new Predicate()
+        {
+            @Override
+            public boolean test()
+            {
+                return existsPullRequest(pullRequestService, bySlug.repository, pullrequestId);
+            }
+        });
 
         return result;
+    }
+
+    private void waitUntil(Predicate predicate)
+    {
+        for (int i = 0; i <=5; i++)
+        {
+            if (predicate.test())
+            {
+                break;
+            }
+            sleep(1000);
+        }
+    }
+
+    private static interface Predicate
+    {
+        boolean test();
+    }
+
+    private boolean existsPullRequest(PullRequestService pullRequestService, IRepositoryIdProvider repository, int id)
+    {
+        try
+        {
+            return pullRequestService.getPullRequest(repository, id) != null;
+        }
+        catch (IOException e)
+        {
+
+        }
+
+        return false;
     }
 
     /**
@@ -445,25 +486,26 @@ public class GitHubTestSupport
      * @param base to which base
      * @return created EGit pull request
      */
-    public PullRequest updatePullRequest(PullRequest pullRequest, String owner, String repositoryName, String title, String description, String base)
+    public PullRequest updatePullRequest(PullRequest pullRequest, String owner, String repositoryName, final String title, final String description, String base)
     {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
 
         pullRequest.setTitle(title);
         pullRequest.setBody(description);
 
         PullRequest result;
+        final PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
         try
         {
             try
             {
-                result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
+                result = pullRequestService.editPullRequest(bySlug.repository, pullRequest);
             }
             catch (RequestException e)
             {
                 // let's try once more after while
                 sleep(5000);
-                result = new PullRequestService(getGitHubClient(bySlug.owner)).editPullRequest(bySlug.repository, pullRequest);
+                result = pullRequestService.editPullRequest(bySlug.repository, pullRequest);
             }
         }
         catch (IOException e)
@@ -471,7 +513,23 @@ public class GitHubTestSupport
             throw new RuntimeException(e);
         }
 
-        sleep(5000);
+        final int pullRequestId = result.getNumber();
+        waitUntil(new Predicate()
+        {
+            @Override
+            public boolean test()
+            {
+                try
+                {
+                    PullRequest pullRequest =  pullRequestService.getPullRequest(bySlug.repository, pullRequestId);
+                    return title.equals(pullRequest.getTitle()) && description.equals(pullRequest.getBody());
+                }
+                catch (IOException e)
+                {
+                    return false;
+                }
+            }
+        });
 
         return result;
     }
@@ -504,12 +562,10 @@ public class GitHubTestSupport
         try
         {
             pullRequestService.merge(bySlug.repository, pullRequestNumber, commitMessage);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
