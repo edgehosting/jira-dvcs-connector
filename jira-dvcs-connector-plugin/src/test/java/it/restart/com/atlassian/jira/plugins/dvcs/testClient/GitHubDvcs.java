@@ -1,18 +1,18 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
-import com.atlassian.jira.plugins.dvcs.base.resource.GitTestResource;
+import com.atlassian.jira.plugins.dvcs.base.resource.GitTestSupport;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
 public class GitHubDvcs implements Dvcs
 {
-    private GitTestResource gitTestResource;
+    private GitTestSupport gitTestSupport;
     private final GitHubTestSupport gitHubTestSupport;
 
     public GitHubDvcs(GitHubTestSupport gitHubTestSupport)
     {
         this.gitHubTestSupport = gitHubTestSupport;
-        gitTestResource = new GitTestResource();
+        gitTestSupport = new GitTestSupport();
     }
 
     @Override
@@ -30,8 +30,8 @@ public class GitHubDvcs implements Dvcs
     @Override
     public void createBranch(final String owner, final String repositoryName, final String branchName)
     {
-        gitTestResource.createBranch(repositoryName, branchName);
-        gitTestResource.checkout(repositoryName, branchName);
+        gitTestSupport.createBranch(repositoryName, branchName);
+        gitTestSupport.checkout(repositoryName, branchName);
     }
 
     @Override
@@ -43,39 +43,39 @@ public class GitHubDvcs implements Dvcs
     @Override
     public void addFile(final String owner, final String repositoryName, final String filePath, final byte[] content)
     {
-        gitTestResource.addFile(repositoryName, filePath, content);
+        gitTestSupport.addFile(repositoryName, filePath, content);
     }
 
     @Override
     public String commit(final String owner, final String repositoryName, final String message, final String authorName, final String authorEmail)
     {
-        return gitTestResource.commit(repositoryName, message, authorName, authorEmail);
+        return gitTestSupport.commit(repositoryName, message, authorName, authorEmail);
     }
 
     @Override
     public void push(final String owner, final String repositoryName, final String username, final String password)
     {
-        gitTestResource.push(repositoryName, username, password);
+        gitTestSupport.push(repositoryName, username, password);
     }
 
     @Override
     public void push(final String owner, final String repositoryName, final String username, final String password, final String reference, final boolean newBranch)
     {
-        gitTestResource.push(repositoryName, username, password);
+        gitTestSupport.push(repositoryName, username, password);
     }
 
     @Override
     public void push(final String owner, final String repositoryName, final String username, final String password, final String reference)
     {
-        gitTestResource.push(repositoryName, username, password);
+        gitTestSupport.push(repositoryName, username, password);
     }
 
     @Override
     public void createTestLocalRepository(final String owner, final String repositoryName, final String username, final String password)
     {
-        gitTestResource.addRepository(repositoryName);
+        gitTestSupport.addRepository(repositoryName);
 
-        gitTestResource.clone(repositoryName, gitHubTestSupport.getRepository(owner, repositoryName).getCloneUrl(), username, password);
+        gitTestSupport.clone(repositoryName, gitHubTestSupport.getRepository(owner, repositoryName).getCloneUrl(), username, password);
     }
 
     @Override
@@ -87,6 +87,6 @@ public class GitHubDvcs implements Dvcs
     @Override
     public void deleteAllRepositories()
     {
-        gitTestResource.deleteAllRepositories();
+        gitTestSupport.deleteAllRepositories();
     }
 }

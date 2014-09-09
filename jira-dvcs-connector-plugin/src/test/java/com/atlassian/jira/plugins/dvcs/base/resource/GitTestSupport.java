@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GitTestResource
+public class GitTestSupport
 {
 
     private final Map<String, RepositoryContext> repositoryByName = new HashMap<String, RepositoryContext>();
@@ -55,11 +55,11 @@ public class GitTestResource
 
     }
 
-    public GitTestResource()
+    public GitTestSupport()
     {
     }
 
-    public GitTestResource(TestListenerDelegate listenerDelegate)
+    public GitTestSupport(TestListenerDelegate listenerDelegate)
     {
         listenerDelegate.register(new AbstractTestListener()
         {

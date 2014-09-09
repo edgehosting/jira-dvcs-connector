@@ -55,19 +55,19 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys), false);
+        return transform(pullRequestDao.getByIssueKeys(issueKeys), false);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys, dvcsType), false);
+        return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final boolean withCommits)
     {
-        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys), withCommits);
+        return transform(pullRequestDao.getByIssueKeys(issueKeys), withCommits);
     }
 
     private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings, boolean withCommits)
@@ -148,6 +148,7 @@ public class PullRequestServiceImpl implements PullRequestService
         threadEvents.broadcast(new PullRequestUpdatedEvent(prAfter, prBefore));
         return mappingAfterUpdate;
     }
+
     private boolean isPullRequestReopened(PullRequest prBefore, PullRequest prAfter)
     {
         return (prAfter.getStatus() == PullRequestStatus.OPEN && prBefore.getStatus() != PullRequestStatus.OPEN);

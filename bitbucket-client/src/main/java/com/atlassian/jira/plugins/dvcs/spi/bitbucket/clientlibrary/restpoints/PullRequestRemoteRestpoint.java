@@ -17,6 +17,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteRequestor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.RemoteResponse;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.ResponseCallback;
+import com.atlassian.jira.util.UrlBuilder;
+import com.google.common.base.Strings;
 import com.google.gson.reflect.TypeToken;
 import org.apache.http.entity.ContentType;
 
@@ -181,7 +183,7 @@ public class PullRequestRemoteRestpoint
 
     public void declinePullRequest(String owner, String repoSlug, long pullRequestId, String message)
     {
-        String url = String.format("/repositories/%s/%s/pullrequests/%s/decline", owner, repoSlug, pullRequestId);
+        String url = buildPRUrl(owner, repoSlug, pullRequestId, "decline");
 
         Map<String, String> parameters = null;
         if (message != null)
@@ -195,14 +197,14 @@ public class PullRequestRemoteRestpoint
 
     public void approvePullRequest(final String owner, final String repoSlug, final long pullRequestId)
     {
-        String url = String.format("/repositories/%s/%s/pullrequests/%s/approve", owner, repoSlug, pullRequestId);
+        String url = buildPRUrl(owner, repoSlug, pullRequestId, "approve");
 
         requestor.post(url, null, ResponseCallback.EMPTY);
     }
 
     public void mergePullRequest(String owner, String repoSlug, long pullRequestId, String message, boolean closeSourceBranch)
     {
-        String url = String.format("/repositories/%s/%s/pullrequests/%s/merge", owner, repoSlug, pullRequestId);
+        String url = buildPRUrl(owner, repoSlug, pullRequestId, "merge");
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("message", message);
@@ -213,7 +215,7 @@ public class PullRequestRemoteRestpoint
 
     public void commentPullRequest(String owner, String repoSlug, long pullRequestId, String comment)
     {
-        String url = String.format("/api/1.0/repositories/%s/%s/pullrequests/%s/comments", owner, repoSlug, pullRequestId);
+        String url = buildPRUrl(owner, repoSlug, pullRequestId, "comments");
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("content", comment);
@@ -248,7 +250,7 @@ public class PullRequestRemoteRestpoint
             bitbucketPullRequest.setReviewers(bitbucketReviewers);
         }
 
-        String url = String.format("/repositories/%s/%s/pullrequests", owner, repoSlug);
+        String url = buildPRUrl(owner, repoSlug);
 
         return requestor.post(url, ClientUtils.toJson(bitbucketPullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
         {
@@ -275,7 +277,7 @@ public class PullRequestRemoteRestpoint
         destination.setBranch(new BitbucketBranch(destinationBranch));
         pullRequest.setDestination(destination);
 
-        String url = String.format("/repositories/%s/%s/pullrequests/%s", owner, repoSlug, pullRequest.getId());
+        String url = buildPRUrl(owner, repoSlug, pullRequest.getId(), null);
 
         return requestor.put(url, ClientUtils.toJson(pullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
         {
@@ -289,6 +291,25 @@ public class PullRequestRemoteRestpoint
             }
 
         });
+    }
+
+    private String buildPRUrl(String owner, String repoSlug, long pullRequestId, String request)
+    {
+        UrlBuilder urlBuilder = new UrlBuilder("/repositories/");
+        urlBuilder.addPath(owner).addPath(repoSlug).addPath("pullrequests").addPath("" + pullRequestId);
+        if (!Strings.isNullOrEmpty(request))
+        {
+            urlBuilder.addPath(request);
+        }
+        return urlBuilder.asUrlString();
+    }
+
+    private String buildPRUrl(String owner, String repoSlug)
+    {
+        UrlBuilder urlBuilder = new UrlBuilder("/repositories/");
+        urlBuilder.addPath(owner).addPath(repoSlug).addPath("pullrequests");
+
+        return urlBuilder.asUrlString();
     }
 }
 

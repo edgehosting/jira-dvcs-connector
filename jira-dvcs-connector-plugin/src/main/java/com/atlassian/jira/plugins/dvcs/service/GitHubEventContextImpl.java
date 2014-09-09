@@ -38,7 +38,6 @@ public class GitHubEventContextImpl implements GitHubEventContext
     }
 
     @Override
-
     public void savePullRequest(PullRequest pullRequest)
     {
         if (pullRequest == null || processedPullRequests.contains(pullRequest.getId()))

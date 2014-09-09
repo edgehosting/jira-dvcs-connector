@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.base.resource;
 
 import com.atlassian.jira.plugins.dvcs.base.AbstractTestListener;
 import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
+import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -410,7 +411,7 @@ public class GitHubTestSupport
         request.setBase(new PullRequestMarker().setLabel(base));
 
         PullRequest result = null;
-        final PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        final PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
             try
@@ -444,6 +445,8 @@ public class GitHubTestSupport
 
         return result;
     }
+
+    private PullRequestService getPullRequestService(final RepositoryContext bySlug) {return new PullRequestService(getGitHubClient(bySlug.owner));}
 
     private void waitUntil(Predicate predicate)
     {
@@ -494,7 +497,7 @@ public class GitHubTestSupport
         pullRequest.setBody(description);
 
         PullRequest result;
-        final PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        final PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
             try
@@ -555,10 +558,10 @@ public class GitHubTestSupport
         mergePullRequest(owner, repositoryName, pullRequest.getNumber(), commitMessage);
     }
 
-    public void mergePullRequest(String owner, String repositoryName, int pullRequestNumber, String commitMessage)
+    public void mergePullRequest(String owner, String repositoryName, final int pullRequestNumber, String commitMessage)
     {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
             pullRequestService.merge(bySlug.repository, pullRequestNumber, commitMessage);
@@ -567,6 +570,25 @@ public class GitHubTestSupport
         {
             throw new RuntimeException(e);
         }
+
+        waitUntil(new Predicate()
+        {
+            @Override
+            public boolean test()
+            {
+                try
+                {
+                    PullRequest pullRequest = pullRequestService.getPullRequest(bySlug.repository, pullRequestNumber);
+                    return PullRequestStatus.fromGithubStatus(pullRequest.getState(), pullRequest.getMergedAt()) == PullRequestStatus.MERGED;
+                }
+                catch (IOException e)
+                {
+
+                }
+
+                return false;
+            }
+        });
     }
 
     /**
@@ -576,22 +598,38 @@ public class GitHubTestSupport
      * @param repositoryName pull request owner
      * @param pullRequest to close
      */
-    public void closePullRequest(String owner, String repositoryName, PullRequest pullRequest)
+    public void closePullRequest(String owner, String repositoryName, final PullRequest pullRequest)
     {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
             pullRequest.setState("CLOSED");
             pullRequestService.editPullRequest(bySlug.repository, pullRequest);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
 
+        waitUntil(new Predicate()
+        {
+            @Override
+            public boolean test()
+            {
+                try
+                {
+                    PullRequest result = pullRequestService.getPullRequest(bySlug.repository, pullRequest.getNumber());
+                    return "closed".equals(result.getState());
+                }
+                catch (IOException e)
+                {
+
+                }
+
+                return false;
+            }
+        });
     }
 
     /**
@@ -605,16 +643,14 @@ public class GitHubTestSupport
     public List<RepositoryCommit> getPullRequestCommits(String owner, String repositoryName, int pullRequestId)
     {
         RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        PullRequestService pullRequestService = new PullRequestService(getGitHubClient(bySlug.owner));
+        PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
             return pullRequestService.getCommits(bySlug.repository, pullRequestId);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -635,12 +671,10 @@ public class GitHubTestSupport
         {
             return issueService.createComment(bySlug.repository,
                     pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -661,12 +695,10 @@ public class GitHubTestSupport
         {
             return issueService.createComment(bySlug.repository,
                     pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -686,12 +718,10 @@ public class GitHubTestSupport
         try
         {
             return issueService.getComment(owner, bySlug.repository.getName(), commentId);
-
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
@@ -736,7 +766,6 @@ public class GitHubTestSupport
             {
                 return repositoryService.createRepository(owner, repository);
             }
-
         }
         catch (IOException e)
         {

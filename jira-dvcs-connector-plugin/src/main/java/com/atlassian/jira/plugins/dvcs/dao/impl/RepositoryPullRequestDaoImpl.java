@@ -282,7 +282,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys)
+    public List<RepositoryPullRequestMapping> getByIssueKeys(final Iterable<String> issueKeys)
     {
         Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
         if (prIds.isEmpty())
@@ -301,7 +301,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     }
 
     @Override
-    public List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys, final String dvcsType)
+    public List<RepositoryPullRequestMapping> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
         Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
         
