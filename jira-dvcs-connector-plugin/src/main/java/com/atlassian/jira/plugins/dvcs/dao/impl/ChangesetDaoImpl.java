@@ -430,7 +430,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
     {
-        return Query.select("*")
+        return Query.select()
                 .from(ChangesetMapping.class)
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
