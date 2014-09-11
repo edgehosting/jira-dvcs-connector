@@ -288,7 +288,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
         final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, prIds.toArray(), Object.class);
         
-        Query select = Query.select("ID, *")
+        Query select = Query.select()
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
@@ -309,7 +309,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
         final Object [] params = ObjectArrays.concat(new Object[] { dvcsType, Boolean.FALSE, Boolean.TRUE }, prIds.toArray(), Object.class);
 
-        Query select = Query.select("ID, *")
+        Query select = Query.select()
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
                 .alias(OrganizationMapping.class, "org")
@@ -385,7 +385,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public RepositoryCommitMapping getCommitByNode(Repository domain, int pullRequestId, String node)
     {
         Query query = Query
-                .select("ID, *")
+                .select()
                 .alias(RepositoryCommitMapping.class, "cm")
                 .alias(RepositoryPullRequestToCommitMapping.class, "pr2cm")
                 .alias(RepositoryPullRequestMapping.class, "PR")

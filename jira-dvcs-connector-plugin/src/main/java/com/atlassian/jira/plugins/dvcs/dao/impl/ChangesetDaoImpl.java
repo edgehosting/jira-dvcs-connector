@@ -307,7 +307,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             @Override
             public ChangesetMapping doInTransaction()
             {
-                Query query = Query.select("ID, *")
+                Query query = Query.select()
                         .from(ChangesetMapping.class)
                         .alias(ChangesetMapping.class, "chm")
                         .alias(RepositoryToChangesetMapping.class, "rtchm")
@@ -350,7 +350,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select("ID, *")
+                        Query.select()
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(RepositoryToChangesetMapping.class, "REPO")
                                 .join(RepositoryToChangesetMapping.class, "CHANGESET.ID = REPO." + RepositoryToChangesetMapping.CHANGESET_ID)
@@ -374,7 +374,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select("ID, *")
+                        Query.select()
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
@@ -401,7 +401,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 SqlAndParams baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
-                Query query = Query.select("ID, *")
+                Query query = Query.select()
                         .alias(ChangesetMapping.class, "CHANGESET")
                         .alias(IssueToChangesetMapping.class, "ISSUE")
                         .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
