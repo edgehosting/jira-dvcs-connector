@@ -289,7 +289,7 @@ public abstract class QueryTemplate
 
         final Map<String, Object> initialParameterValues = new HashMap<String, Object>();
 
-        final Query result = Query.select("ID, *");
+        final Query result = Query.select();
 
         QueryContext context = new QueryContext()
         {
