@@ -1,8 +1,5 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -87,12 +84,14 @@ public class AccountsPage implements Page
 
     private boolean isSyncing()
     {
+        //PFFFF
+        /*
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return true;
             }
-        }
+        }*/
         return false;
     }
 }

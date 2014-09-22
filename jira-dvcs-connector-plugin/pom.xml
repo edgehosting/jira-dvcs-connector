@@ -50,6 +50,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-pageobjects</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-core</artifactId>
         </dependency>
@@ -221,12 +227,12 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>hamcrest-library</artifactId>
                     <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-library</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>hamcrest-core</artifactId>
                     <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.mockito</groupId>

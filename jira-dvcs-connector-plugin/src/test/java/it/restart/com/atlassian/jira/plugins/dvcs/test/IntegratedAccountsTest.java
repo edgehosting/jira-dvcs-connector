@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
@@ -11,12 +12,12 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountOAuthDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount.AccountType;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountOAuthDialog;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -121,7 +122,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         // log in to JIRA
         new JiraLoginPageController(jira).login();
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin();
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
 
         oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
         oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();

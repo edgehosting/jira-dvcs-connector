@@ -10,9 +10,9 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
@@ -123,9 +123,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public abstract BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url);
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationFailingOAuth();
+    public abstract BaseConfigureOrganizationsPage addOrganizationFailingOAuth(String username, String password);
 
-    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync);
+    public abstract BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync, String username, String password);
 
 
     public void setJiraTestedProduct(JiraTestedProduct jiraTestedProduct)
@@ -202,7 +202,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
      * @param accountType type of account
      * @param accountName account name
      * @param repositoryName repository name
-     * @return {@link it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository} element
+     * @return {@link com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository} element
      */
     public AccountsPageAccountRepository enableAndSyncRepository(AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
     {

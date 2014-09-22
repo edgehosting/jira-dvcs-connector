@@ -9,9 +9,9 @@ import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulat
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.google.common.collect.Lists;
 import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         pushToRemoteDvcsRepository(getFirstDvcsZipRepoPathToPush());
 
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
-        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false);
+        configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         AccountsPageAccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
 
         assertThat(repository.getMessage()).doesNotContain(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE);

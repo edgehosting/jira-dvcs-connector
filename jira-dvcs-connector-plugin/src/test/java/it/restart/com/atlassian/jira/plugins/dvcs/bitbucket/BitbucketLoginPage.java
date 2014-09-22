@@ -1,7 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -27,11 +26,6 @@ public class BitbucketLoginPage implements Page
     public String getUrl()
     {
         return "https://bitbucket.org/account/signin/?next=/";
-    }
-
-    public void doLogin()
-    {
-        doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
     }
 
     public void doLogin(String username, String password)

@@ -7,10 +7,6 @@ import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
-
 /**
  * @author Martin Skurla
  */
@@ -64,12 +60,14 @@ public class JiraPageUtils
 
     private static boolean isSyncFinished()
     {
+        //PFFFF
+        /*
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return false;
             }
-        }
+        }*/
         return true;
     }
 

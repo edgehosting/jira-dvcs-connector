@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.common;
+package com.atlassian.jira.plugins.dvcs.pageobjects.common;
 
 import com.atlassian.pageobjects.Page;
 

@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;

@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
 
 import java.util.List;
 

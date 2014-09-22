@@ -37,6 +37,7 @@
         <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
         <module>jira-dvcs-connector-plugin</module>
+        <module>jira-dvcs-connector-pageobjects</module>
     </modules>
 
     <scm>

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
@@ -35,7 +34,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
 
     @Override
-    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
+    public GithubConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync, String username, String password)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -53,7 +52,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         }
 
         addOrgButton.click();
-        checkAndDoGithubLogin();
+        checkAndDoGithubLogin(username, password);
 
         String currentUrl = authorizeGithubAppIfRequired();
         if (!currentUrl.contains("jira"))
@@ -90,7 +89,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
     }
 
     @Override
-    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth(final String username, final String password)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -106,7 +105,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
 
         addOrgButton.click();
 
-        String currentUrl = checkAndDoGithubLogin();
+        String currentUrl = checkAndDoGithubLogin(username, password);
         String expectedUrl = "https://github.com/login/oauth/authorize?";
         if (!currentUrl.startsWith(expectedUrl) || !currentUrl.contains("client_id=xxx"))
         {
@@ -116,7 +115,7 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         return this;
     }
 
-    private String checkAndDoGithubLogin()
+    private String checkAndDoGithubLogin(final String username, final String password)
     {
 
     	waitWhileNewPageLaoded();
@@ -124,8 +123,8 @@ public class GithubConfigureOrganizationsPage extends BaseConfigureOrganizations
         String currentUrl = jiraTestedProduct.getTester().getDriver().getCurrentUrl();
         if (currentUrl.contains("https://github.com/login?"))
         {
-            githubWebLoginField.type("jirabitbucketconnector");
-            githubWebPasswordField.type(PasswordUtil.getPassword("jirabitbucketconnector"));
+            githubWebLoginField.type(username);
+            githubWebPasswordField.type(password);
             setPageAsOld();
             githubWebSubmitButton.click();
         }
