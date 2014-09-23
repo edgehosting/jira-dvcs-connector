@@ -75,7 +75,7 @@ public class GithubPRTest extends PullRequestTestCases<PullRequest>
     protected void initLocalTestRepository()
     {
         gitHubTestSupport.beforeMethod();
-        repositoryName = gitHubTestSupport.addRepositoryByName(ACCOUNT_NAME, repositoryName,
+        gitHubTestSupport.addRepositoryByName(ACCOUNT_NAME, repositoryName,
                 GitHubTestSupport.Lifetime.DURING_TEST_METHOD, EXPIRATION_DURATION_5_MIN);
 
         dvcs.createTestLocalRepository(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
