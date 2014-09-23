@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.base.resource;
 
+import com.atlassian.fugue.Either;
 import com.atlassian.jira.plugins.dvcs.base.AbstractTestListener;
 import com.atlassian.jira.plugins.dvcs.base.TestListenerDelegate;
+import com.atlassian.jira.plugins.dvcs.base.resource.github.EGitPullRequestServiceWrapper;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
@@ -9,7 +11,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.apache.commons.httpclient.HttpStatus;
 import org.eclipse.egit.github.core.Comment;
-import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
@@ -87,7 +88,7 @@ public class GitHubTestSupport
      *
      * @author Stanislav Dvorscak
      */
-    private static class RepositoryContext
+    public static class RepositoryContext
     {
 
         /**
@@ -110,6 +111,16 @@ public class GitHubTestSupport
         {
             this.owner = owner;
             this.repository = repository;
+        }
+
+        public Repository getRepository()
+        {
+            return repository;
+        }
+
+        public String getOwner()
+        {
+            return owner;
         }
     }
 
@@ -375,7 +386,7 @@ public class GitHubTestSupport
      */
     public PullRequest openPullRequest(String owner, String repositoryName, String title, String description, String head, String base)
     {
-        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
 
         PullRequest request = new PullRequest();
         request.setTitle(title);
@@ -385,30 +396,21 @@ public class GitHubTestSupport
         request.setBase(new PullRequestMarker().setLabel(base));
 
         PullRequest result = null;
-        final PullRequestService pullRequestService = getPullRequestService(bySlug);
         try
         {
-            try
-            {
-                result = pullRequestService.createPullRequest(bySlug.repository, request);
-            }
-            catch (RequestException e)
-            {
-                // let's try once more after while
-                sleep(5000);
-                result = pullRequestService.createPullRequest(bySlug.repository, request);
-            }
+            result = pullRequestService.createPullRequest(request);
         }
-        catch (IOException e)
+        catch (RuntimeException e)
         {
-            throw new RuntimeException(e);
+            // let's try once more after while
+            sleep(5000);
+            result = pullRequestService.createPullRequest(request);
         }
-
 
         // pull request creation is asynchronous process - it is necessary to wait a little bit
         // otherwise unexpected behavior can happened - like next push will be part as open pull request
         final int pullrequestId = result.getNumber();
-        waitUntil(new PullRequestCallBackPredicate(pullRequestService, bySlug.repository, pullrequestId, new PullRequestCallBackFunction()
+        waitUntil(new PullRequestCallBackPredicate(pullRequestService, pullrequestId, new PullRequestCallBackFunction()
         {
             @Override
             public boolean testPullRequest(final PullRequest pullRequest)
@@ -440,34 +442,24 @@ public class GitHubTestSupport
 
     private static final class PullRequestCallBackPredicate
     {
-        private final PullRequestService pullRequestService;
-        private final IRepositoryIdProvider repository;
+        private final EGitPullRequestServiceWrapper pullRequestService;
         private final int pullRequestId;
         private final PullRequestCallBackFunction callback;
 
-        private PullRequestCallBackPredicate(final PullRequestService pullRequestService,
-                final IRepositoryIdProvider repository, final int pullRequestId, final PullRequestCallBackFunction callback)
+        private PullRequestCallBackPredicate(final EGitPullRequestServiceWrapper pullRequestService,
+                final int pullRequestId, final PullRequestCallBackFunction callback)
         {
             this.pullRequestService = pullRequestService;
-            this.repository = repository;
             this.pullRequestId = pullRequestId;
             this.callback = callback;
         }
 
         public boolean test()
         {
-            PullRequest pullRequest = null;
-            try
+            Either<IOException, PullRequest> pullRequestEither = pullRequestService.getPullRequestEither(pullRequestId);
+            if (pullRequestEither.isRight())
             {
-                pullRequest = pullRequestService.getPullRequest(repository, pullRequestId);
-            }
-            catch (IOException e)
-            {
-                return false;
-            }
-            if (pullRequest != null)
-            {
-                return callback.testPullRequest(pullRequest);
+                return callback.testPullRequest(pullRequestEither.right().get());
             }
             else
             {
@@ -488,17 +480,16 @@ public class GitHubTestSupport
      */
     public PullRequest updatePullRequest(PullRequest pullRequest, String owner, String repositoryName, final String title, final String description, String base)
     {
-        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
 
         pullRequest.setTitle(title);
         pullRequest.setBody(description);
 
-        final PullRequestService pullRequestService = getPullRequestService(bySlug);
-        PullRequest result = editPullRequest(pullRequestService, bySlug.repository, pullRequest);
+        PullRequest result = pullRequestService.editPullRequest(pullRequest);
 
         final int pullRequestId = result.getNumber();
 
-        waitUntil(new PullRequestCallBackPredicate(pullRequestService, bySlug.repository, pullRequestId, new PullRequestCallBackFunction()
+        waitUntil(new PullRequestCallBackPredicate(pullRequestService, pullRequestId, new PullRequestCallBackFunction()
         {
             @Override
             public boolean testPullRequest(final PullRequest pullRequest)
@@ -520,18 +511,10 @@ public class GitHubTestSupport
 
     public void mergePullRequest(String owner, String repositoryName, final int pullRequestNumber, String commitMessage)
     {
-        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        final PullRequestService pullRequestService = getPullRequestService(bySlug);
-        try
-        {
-            pullRequestService.merge(bySlug.repository, pullRequestNumber, commitMessage);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
+        pullRequestService.merge(pullRequestNumber, commitMessage);
 
-        waitUntil(new PullRequestCallBackPredicate(pullRequestService, bySlug.repository, pullRequestNumber, new PullRequestCallBackFunction()
+        waitUntil(new PullRequestCallBackPredicate(pullRequestService, pullRequestNumber, new PullRequestCallBackFunction()
         {
             @Override
             public boolean testPullRequest(final PullRequest pullRequest)
@@ -550,12 +533,11 @@ public class GitHubTestSupport
      */
     public void closePullRequest(String owner, String repositoryName, final PullRequest pullRequest)
     {
-        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        final PullRequestService pullRequestService = getPullRequestService(bySlug);
+        final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
         pullRequest.setState("CLOSED");
-        editPullRequest(pullRequestService, bySlug.repository, pullRequest);
+        pullRequestService.editPullRequest(pullRequest);
 
-        waitUntil(new PullRequestCallBackPredicate(pullRequestService, bySlug.repository, pullRequest.getNumber(), new PullRequestCallBackFunction()
+        waitUntil(new PullRequestCallBackPredicate(pullRequestService, pullRequest.getNumber(), new PullRequestCallBackFunction()
         {
             @Override
             public boolean testPullRequest(final PullRequest pullRequest)
@@ -575,16 +557,8 @@ public class GitHubTestSupport
      */
     public List<RepositoryCommit> getPullRequestCommits(String owner, String repositoryName, int pullRequestId)
     {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-        PullRequestService pullRequestService = getPullRequestService(bySlug);
-        try
-        {
-            return pullRequestService.getCommits(bySlug.repository, pullRequestId);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
+        return pullRequestService.getCommits(pullRequestId);
     }
 
     /**
@@ -600,30 +574,6 @@ public class GitHubTestSupport
         RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
 
         IssueService issueService = new IssueService(getGitHubClient(owner));
-        try
-        {
-            return issueService.createComment(bySlug.repository,
-                    pullRequest.getIssueUrl().substring(pullRequest.getIssueUrl().lastIndexOf('/') + 1), comment);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Adds comment to provided pull request as author.
-     *
-     * @param owner of repository
-     * @param pullRequest pull request owner
-     * @param comment message
-     * @return created remote comment
-     */
-    public Comment commentPullRequest(String owner, String repositoryName, PullRequest pullRequest, String comment, String author)
-    {
-        RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
-
-        IssueService issueService = new IssueService(getGitHubClient(author));
         try
         {
             return issueService.createComment(bySlug.repository,
@@ -657,7 +607,6 @@ public class GitHubTestSupport
             throw new RuntimeException(e);
         }
     }
-
     /**
      * Resolves GitHub client.
      *
@@ -775,30 +724,6 @@ public class GitHubTestSupport
         }
     }
 
-    private PullRequest getPullRequest(final PullRequestService pullRequestService, final IRepositoryIdProvider repository, final int pullRequestId)
-    {
-        try
-        {
-            return pullRequestService.getPullRequest(repository, pullRequestId);
-        }
-        catch (IOException e)
-        {
-            return null;
-        }
-    }
-
-    private PullRequest editPullRequest(final PullRequestService pullRequestService, final IRepositoryIdProvider repository, final PullRequest pullRequest)
-    {
-        try
-        {
-            return pullRequestService.editPullRequest(repository, pullRequest);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void sleep(long millis)
     {
         try
@@ -809,5 +734,13 @@ public class GitHubTestSupport
         {
             // nothing to do
         }
+    }
+
+    private EGitPullRequestServiceWrapper buildPullRequestServiceWrapper(String owner, String repositoryName)
+    {
+
+        final RepositoryContext bySlug = repositoryBySlug.get(getSlug(owner, repositoryName));
+        final PullRequestService pullRequestService = getPullRequestService(bySlug);
+        return new EGitPullRequestServiceWrapper(bySlug.repository, pullRequestService);
     }
 }
