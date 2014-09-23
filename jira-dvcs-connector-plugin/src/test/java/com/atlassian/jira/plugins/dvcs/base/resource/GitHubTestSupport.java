@@ -438,7 +438,7 @@ public class GitHubTestSupport
         boolean testPullRequest(@Nonnull PullRequest pullRequest);
     }
 
-    private final class PullRequestCallBackPredicate
+    private static final class PullRequestCallBackPredicate
     {
         private final PullRequestService pullRequestService;
         private final IRepositoryIdProvider repository;
@@ -456,7 +456,15 @@ public class GitHubTestSupport
 
         public boolean test()
         {
-            PullRequest pullRequest = getPullRequest(pullRequestService, repository, pullRequestId);
+            PullRequest pullRequest = null;
+            try
+            {
+                pullRequest = pullRequestService.getPullRequest(repository, pullRequestId);
+            }
+            catch (IOException e)
+            {
+                return false;
+            }
             if (pullRequest != null)
             {
                 return callback.testPullRequest(pullRequest);
