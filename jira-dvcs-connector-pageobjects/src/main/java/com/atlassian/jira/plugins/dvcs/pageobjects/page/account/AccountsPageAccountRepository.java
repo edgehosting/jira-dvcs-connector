@@ -154,14 +154,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
-        //PFFFF
-        /*RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getId() == getId() && repository.getSync() != null && !repository.getSync().isFinished()) {
-                return true;
-            }
-        }*/
-        return false;
+        return synchronizationIcon.hasClass("running");
     }
 
     /**
