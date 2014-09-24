@@ -127,7 +127,7 @@ public class GitHubEventServiceImplTest
         when(events.iterator()).thenReturn(events);
         when(events.hasNext()).thenReturn(true, true, false);
         Collection<Event> firstPage = Lists.newArrayList(event1, event2, mockEvent("2",2));
-        Collection<Event> secondPage = Lists.newArrayList(mockEvent("1", 1), mockEvent("0", 0));
+        Collection<Event> secondPage = Lists.newArrayList(event2, mockEvent("1", 1), mockEvent("0", 0));
         //noinspection unchecked
         when(events.next()).thenReturn(firstPage, secondPage);
 

@@ -24,9 +24,13 @@ import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 
 /**
@@ -37,6 +41,8 @@ import javax.annotation.Resource;
  */
 public class GitHubEventServiceImpl implements GitHubEventService
 {
+    private static final Logger logger = LoggerFactory.getLogger(GitHubEventServiceImpl.class);
+
     /**
      * Injected {@link GitHubEventDAO} dependency.
      */
@@ -100,8 +106,15 @@ public class GitHubEventServiceImpl implements GitHubEventService
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
         boolean forcePRListSynchronization = true;
+        Set<String> processedEventIds = new HashSet<String>();
         for (final Event event : Iterables.concat(events))
         {
+            if (!processedEventIds.add(event.getId()))
+            {
+                logger.warn("Duplicate event id provided by Github, skipping this event");
+                continue;
+            }
+
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
