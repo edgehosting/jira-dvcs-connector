@@ -173,7 +173,12 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         final String updatedPullRequestName = pullRequestName + "updated";
         pullRequestDetails = pullRequestClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
                 updatedPullRequestName, "updated desc", dvcs.getDefaultBranchName());
-        pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
+
+        if (getAccountType() != AccountsPageAccount.AccountType.BITBUCKET)
+        {
+            // skip adding PR comment for BB until we have page objects to do so (BB Rest Api does not support that atm)
+            pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
+        }
 
         if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
         {
@@ -196,7 +201,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         Assert.assertEquals(restPullRequest.getTitle(), updatedPullRequestName);
 
         // Comments are not critical so let us just check them at the end rather than having a separate refresh and wait
-        Assert.assertEquals(restPullRequest.getCommentCount(), 1);
+        Assert.assertEquals(restPullRequest.getCommentCount(), getAccountType() != AccountsPageAccount.AccountType.BITBUCKET ? 1 : 0);
 
         // Commits should be pulled in now that we have merged
         Collection<String> allCommits = new ArrayList<String>(firstRoundCommits);
@@ -231,7 +236,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         {
             Thread.sleep(millis);
         }
-        catch (InterruptedException e)
+        catch (InterruptedException ignored)
         {
         }
     }
