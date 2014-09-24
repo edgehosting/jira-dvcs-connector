@@ -25,7 +25,7 @@ public class EGitPullRequestServiceWrapper
         this.pullRequestService = pullRequestService;
     }
 
-    public PullRequest createPullRequest(PullRequest request)
+    public PullRequest create(PullRequest request)
     {
         try
         {
@@ -49,7 +49,7 @@ public class EGitPullRequestServiceWrapper
         }
     }
 
-    public PullRequest editPullRequest(PullRequest request)
+    public PullRequest edit(PullRequest request)
     {
         try
         {
@@ -61,7 +61,7 @@ public class EGitPullRequestServiceWrapper
         }
     }
 
-    public PullRequest getPullRequest(int id)
+    public PullRequest get(int id)
     {
         try
         {
@@ -73,7 +73,7 @@ public class EGitPullRequestServiceWrapper
         }
     }
 
-    public Either<IOException, PullRequest> getPullRequestEither(int id)
+    public Either<IOException, PullRequest> getAsEither(int id)
     {
         try
         {

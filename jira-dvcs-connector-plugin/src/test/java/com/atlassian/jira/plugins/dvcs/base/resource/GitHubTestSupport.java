@@ -398,13 +398,13 @@ public class GitHubTestSupport
         PullRequest result = null;
         try
         {
-            result = pullRequestService.createPullRequest(request);
+            result = pullRequestService.create(request);
         }
         catch (RuntimeException e)
         {
             // let's try once more after while
             sleep(5000);
-            result = pullRequestService.createPullRequest(request);
+            result = pullRequestService.create(request);
         }
 
         // pull request creation is asynchronous process - it is necessary to wait a little bit
@@ -456,7 +456,7 @@ public class GitHubTestSupport
 
         public boolean test()
         {
-            Either<IOException, PullRequest> pullRequestEither = pullRequestService.getPullRequestEither(pullRequestId);
+            Either<IOException, PullRequest> pullRequestEither = pullRequestService.getAsEither(pullRequestId);
             if (pullRequestEither.isRight())
             {
                 return callback.testPullRequest(pullRequestEither.right().get());
@@ -485,7 +485,7 @@ public class GitHubTestSupport
         pullRequest.setTitle(title);
         pullRequest.setBody(description);
 
-        PullRequest result = pullRequestService.editPullRequest(pullRequest);
+        PullRequest result = pullRequestService.edit(pullRequest);
 
         final int pullRequestId = result.getNumber();
 
@@ -535,7 +535,7 @@ public class GitHubTestSupport
     {
         final EGitPullRequestServiceWrapper pullRequestService = buildPullRequestServiceWrapper(owner, repositoryName);
         pullRequest.setState("CLOSED");
-        pullRequestService.editPullRequest(pullRequest);
+        pullRequestService.edit(pullRequest);
 
         waitUntil(new PullRequestCallBackPredicate(pullRequestService, pullRequest.getNumber(), new PullRequestCallBackFunction()
         {
