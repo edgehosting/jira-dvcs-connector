@@ -11,19 +11,7 @@ import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRefNameException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.NoMessageException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.api.errors.UnmergedPathsException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -114,8 +102,7 @@ public class GitTestSupport
     }
 
     /**
-     * Clones repository, which is defined by provided repository URI. Clone URL will be obtained from {@link
-     * #uriToRemoteRepository}. Useful for {@link #fork(String)} repository.
+     * Clones repository, which is defined by provided repository URI.
      *
      * @param repositoryName into which repository
      * @param cloneUrl url of cloned repository
@@ -134,14 +121,6 @@ public class GitTestSupport
             cloneCommand.setDirectory(repositoryContext.repository.getDirectory().getParentFile());
             cloneCommand.call();
 
-        }
-        catch (InvalidRemoteException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (TransportException e)
-        {
-            throw new RuntimeException(e);
         }
         catch (GitAPIException e)
         {
@@ -180,10 +159,6 @@ public class GitTestSupport
             addCommand.addFilepattern(filePath);
             addCommand.call();
         }
-        catch (NoFilepatternException e)
-        {
-            throw new RuntimeException(e);
-        }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
@@ -211,26 +186,6 @@ public class GitTestSupport
             RevCommit commit = commitCommand.call();
             return commit.getId().getName();
         }
-        catch (NoHeadException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (NoMessageException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (UnmergedPathsException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (ConcurrentRefUpdateException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (WrongRepositoryStateException e)
-        {
-            throw new RuntimeException(e);
-        }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
@@ -253,14 +208,6 @@ public class GitTestSupport
             PushCommand pushCommand = repositoryContext.git.push();
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
             pushCommand.call();
-        }
-        catch (InvalidRemoteException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (TransportException e)
-        {
-            throw new RuntimeException(e);
         }
         catch (GitAPIException e)
         {
@@ -288,14 +235,6 @@ public class GitTestSupport
             pushCommand.call();
 
         }
-        catch (InvalidRemoteException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (TransportException e)
-        {
-            throw new RuntimeException(e);
-        }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
@@ -322,18 +261,6 @@ public class GitTestSupport
             createBranchCommand.setName(name);
             createBranchCommand.call();
         }
-        catch (RefAlreadyExistsException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (RefNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (InvalidRefNameException e)
-        {
-            throw new RuntimeException(e);
-        }
         catch (GitAPIException e)
         {
             throw new RuntimeException(e);
@@ -343,7 +270,7 @@ public class GitTestSupport
     /**
      * Checkout on provided repository - git checkout.
      *
-     * @param repositoryUri over which repository
+     * @param repositoryName name of the repository
      * @param name name to checkout e.g.: branch name
      */
     public void checkout(String repositoryName, String name)
@@ -355,22 +282,6 @@ public class GitTestSupport
             CheckoutCommand checkoutCommand = repositoryContext.git.checkout();
             checkoutCommand.setName(name);
             checkoutCommand.call();
-        }
-        catch (RefAlreadyExistsException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (RefNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (InvalidRefNameException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (CheckoutConflictException e)
-        {
-            throw new RuntimeException(e);
         }
         catch (GitAPIException e)
         {
