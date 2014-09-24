@@ -106,15 +106,9 @@ public class GitHubEventServiceImpl implements GitHubEventService
         PageIterator<Event> events = eventService.pageEvents(forRepositoryId);
 
         boolean forcePRListSynchronization = true;
-        Set<String> processedEventIds = new HashSet<String>();
+        final Set<String> processedEventIds = new HashSet<String>();
         for (final Event event : Iterables.concat(events))
         {
-            if (!processedEventIds.add(event.getId()))
-            {
-                logger.warn("Duplicate event id provided by Github, skipping this event");
-                continue;
-            }
-
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
@@ -139,6 +133,12 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
                     }
 
+                    if (processedEventIds.contains(event.getId()))
+                    {
+                        logger.error("Short circuiting attempt to process duplicate event id {}", event.getId());
+                        return Boolean.TRUE;
+                    }
+
                     // called registered GitHub event processors
                     gitHubEventProcessorAggregator.process(repository, event, isSoftSync, synchronizationTags, context);
                     saveEventCounterpart(repository, event, false);
@@ -146,6 +146,12 @@ public class GitHubEventServiceImpl implements GitHubEventService
                     return Boolean.FALSE;
                 }
             });
+
+            if (!processedEventIds.add(event.getId()))
+            {
+                logger.debug("Duplicate event id provided by Github, skipping this event");
+                continue;
+            }
 
             if (shouldStop)
             {
