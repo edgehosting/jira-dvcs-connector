@@ -39,8 +39,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
     protected static final String TEST_PROJECT_KEY = "TST";
 
-    protected static final String COMMIT_AUTHOR = "Stanislav Dvorscak";
-    private static final String COMMIT_AUTHOR_EMAIL = "sdvorscak@atlassian.com";
+    protected static final String COMMIT_AUTHOR = "Jira DvcsConnector";
+    private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com"; // fake email
 
     /**
      * Repository owner.
