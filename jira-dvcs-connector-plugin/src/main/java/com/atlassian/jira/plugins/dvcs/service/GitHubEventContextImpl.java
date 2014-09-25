@@ -14,7 +14,6 @@ import java.util.Set;
 
 /**
  * Context for GitHub event synchronisation
- *
  */
 public class GitHubEventContextImpl implements GitHubEventContext
 {
@@ -60,5 +59,20 @@ public class GitHubEventContextImpl implements GitHubEventContext
     public Set<Long> getProcessedPullRequests()
     {
         return processedPullRequests;
+    }
+
+    public Repository getRepository()
+    {
+        return repository;
+    }
+
+    public boolean isSoftSync()
+    {
+        return isSoftSync;
+    }
+
+    public String[] getSynchronizationTags()
+    {
+        return synchronizationTags;
     }
 }
