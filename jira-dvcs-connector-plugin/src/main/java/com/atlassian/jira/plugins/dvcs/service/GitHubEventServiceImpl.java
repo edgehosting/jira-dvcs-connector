@@ -201,7 +201,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
 
             if (processedEventIds.contains(event.getId()))
             {
-                logger.error("Short circuiting attempt to process duplicate event id {}", event.getId());
+                logger.info("Short circuiting attempt to process duplicate event id {}", event.getId());
                 return Boolean.FALSE;
             }
 
