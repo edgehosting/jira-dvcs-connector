@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
+import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
 import org.eclipse.egit.github.core.PullRequest;
@@ -49,7 +50,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
         repositoriesPageController.getPage().deleteAllOrganizations();
 
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL);
-        repositoriesPageController.addOrganization(accountType, GitHubTestSupport.USER, oAuthCredentials, false);
+        repositoriesPageController.addOrganization(accountType, IntegrationTestUserDetails.ACCOUNT_NAME, oAuthCredentials, false);
         repositoriesPageController.addOrganization(accountType, GitHubTestSupport.ORGANIZATION, oAuthCredentials, false);
     }
 
@@ -78,7 +79,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
     protected void initLocalTestRepository()
     {
         gitHubTestSupport.beforeMethod();
-        repositoryName = gitHubTestSupport.addRepositoryByName(ACCOUNT_NAME, repositoryName,
+        gitHubTestSupport.addRepositoryByName(ACCOUNT_NAME, repositoryName,
                 GitHubTestSupport.Lifetime.DURING_TEST_METHOD, EXPIRATION_DURATION_5_MIN);
 
         dvcs.createTestLocalRepository(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);

@@ -1,6 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
+import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
 import org.eclipse.egit.github.core.PullRequest;
 
 public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
@@ -26,7 +27,7 @@ public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
             final String password, final PullRequest pullRequest, final String title, final String description, final String base)
     {
 
-        PullRequest updatedPullRequest = gitHubTestSupport.updatePullRequest(pullRequest, GitHubTestSupport.USER, repositoryName, title,
+        PullRequest updatedPullRequest = gitHubTestSupport.updatePullRequest(pullRequest, IntegrationTestUserDetails.ACCOUNT_NAME, repositoryName, title,
                 description, base);
 
         return new PullRequestDetails(updatedPullRequest.getHtmlUrl(), new Long(updatedPullRequest.getNumber()), updatedPullRequest);

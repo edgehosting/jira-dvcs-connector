@@ -215,12 +215,13 @@ public class PullRequestRemoteRestpoint
 
     public void commentPullRequest(String owner, String repoSlug, long pullRequestId, String comment)
     {
-        String url = buildPRUrl(owner, repoSlug, pullRequestId, "comments");
-
-        Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put("content", comment);
-
-        requestor.post(url, parameters, ResponseCallback.EMPTY);
+        // NOT SUPPORTED BY BB YET
+//        String url = buildPRUrl(owner, repoSlug, pullRequestId, "comments");
+//
+//        Map<String, String> parameters = new HashMap<String, String>();
+//        parameters.put("content", comment);
+//
+//        requestor.post(url, parameters, ResponseCallback.EMPTY);
     }
 
     private BitbucketPullRequest createBitbucketPullRequest(final String owner, final String repoSlug, final String title, final String description, final BitbucketPullRequestRepository sourceRepository, final String sourceBranch, final String destinationBranch, final List<String> reviewers)
@@ -252,7 +253,7 @@ public class PullRequestRemoteRestpoint
 
         String url = buildPRUrl(owner, repoSlug);
 
-        return requestor.post(url, ClientUtils.toJson(bitbucketPullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
+        return requestor.post(url, ClientUtils.toJson(bitbucketPullRequest), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
         {
 
             @Override
@@ -279,7 +280,7 @@ public class PullRequestRemoteRestpoint
 
         String url = buildPRUrl(owner, repoSlug, pullRequest.getId(), null);
 
-        return requestor.put(url, ClientUtils.toJson(pullRequest).toString(), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
+        return requestor.put(url, ClientUtils.toJson(pullRequest), ContentType.APPLICATION_JSON, new ResponseCallback<BitbucketPullRequest>()
         {
 
             @Override
