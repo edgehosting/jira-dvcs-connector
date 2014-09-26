@@ -6,10 +6,10 @@ import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
@@ -22,9 +22,6 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
-import static it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType.BITBUCKET;
-import static it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE;
 
 /**
  * Base class that contains the test cases for the PullRequest scenarios.
@@ -153,7 +150,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     public void testOpenPullRequestUpdateApproveAndMerge()
     {
         // skipping this test for GHE as the test is very flakey, see BBC-895
-        if (getAccountType() == GIT_HUB_ENTERPRISE)
+        if (getAccountType() == AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE)
         {
             return;
         }
@@ -182,13 +179,13 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         pullRequestDetails = pullRequestClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
                 updatedPullRequestName, "updated desc", dvcs.getDefaultBranchName());
 
-        if (getAccountType() != BITBUCKET)
+        if (getAccountType() != AccountsPageAccount.AccountType.BITBUCKET)
         {
             // skip adding PR comment for BB until we have page objects to do so (BB Rest Api does not support that atm)
             pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
         }
 
-        if (getAccountType() == BITBUCKET)
+        if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
         {
             pullRequestClient.approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
 
@@ -209,7 +206,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         Assert.assertEquals(restPullRequest.getTitle(), updatedPullRequestName);
 
         // Comments are not critical so let us just check them at the end rather than having a separate refresh and wait
-        Assert.assertEquals(restPullRequest.getCommentCount(), getAccountType() != BITBUCKET ? 1 : 0);
+        Assert.assertEquals(restPullRequest.getCommentCount(), getAccountType() != AccountsPageAccount.AccountType.BITBUCKET ? 1 : 0);
 
         // Commits should be pulled in now that we have merged
         Collection<String> allCommits = new ArrayList<String>(firstRoundCommits);
