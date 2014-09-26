@@ -114,7 +114,10 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(getJiraTestedProduct());
         repositoriesPageController.getPage().deleteAllOrganizations();
+        cleanupAfterClass();
     }
+
+    protected abstract void cleanupAfterClass();
 
     @BeforeMethod
     protected void beforeEachPullRequestTest()
