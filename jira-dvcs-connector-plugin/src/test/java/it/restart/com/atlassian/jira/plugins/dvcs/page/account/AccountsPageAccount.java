@@ -160,7 +160,7 @@ public class AccountsPageAccount extends WebDriverElement
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
+        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(15000));
     }
 
     /**
@@ -192,5 +192,57 @@ public class AccountsPageAccount extends WebDriverElement
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
         return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
     }
-    
+
+    /**
+     * Synchronizes the repository with the given name
+     *
+     * @param repositoryName name of the repository to be synchronized
+     * @return page object of the repository
+     */
+    public AccountsPageAccountRepository synchronizeRepository(String repositoryName)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+        }
+
+        repository.synchronize();
+
+        return repository;
+    }
+
+    /**
+     * Full synchronizes the repository with the given name
+     *
+     * @param repositoryName name of the repository to be synchronized
+     * @return page object of the repository
+     */
+    public AccountsPageAccountRepository fullSynchronizeRepository(String repositoryName)
+    {
+        AccountsPageAccountRepository repository = getRepository(repositoryName);
+        if (!repository.isEnabled())
+        {
+            repository.enable();
+        }
+        repository.fullSynchronize();
+
+        return repository;
+    }
+
+    /**
+     * Synchronize the repositories with the given names
+     *
+     * @param repositoryNames names of the repositories to be synchronized
+     */
+    public void synchronizeRepositories(String... repositoryNames)
+    {
+        for (String repositoryName : repositoryNames)
+        {
+            AccountsPageAccountRepository repository = getRepository(repositoryName);
+            repository.enable();
+            repository.synchronizeWithNoWait();
+        }
+    }
 }

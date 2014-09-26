@@ -33,7 +33,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     public static void initializeBitbucketRepositoriesREST()
     {
         HttpClientProvider httpClientProvider = new HttpClientProvider();
-        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+        httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
 
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                    DVCS_REPO_OWNER,

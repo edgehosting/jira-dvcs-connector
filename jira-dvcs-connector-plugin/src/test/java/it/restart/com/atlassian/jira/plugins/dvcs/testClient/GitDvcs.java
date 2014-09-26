@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.test;
+package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import com.google.common.io.Files;
@@ -94,9 +94,9 @@ public class GitDvcs implements Dvcs
         }
     }
 
-    
+
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#createBranch(java.lang.String, java.lang.String, java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#createBranch(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public void createBranch(String owner, String repositoryName, String branchName)
@@ -127,8 +127,14 @@ public class GitDvcs implements Dvcs
         }
     }
 
+    public void switchBranch(String owner, String repositoryName, String branchName)
+    {
+        String repositoryUri = getUriKey(owner, repositoryName);
+        checkout(repositoryUri, branchName);
+    }
+
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#addFile(java.lang.String, java.lang.String, java.lang.String, byte[])
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#addFile(java.lang.String, java.lang.String, java.lang.String, byte[])
      */
     @Override
     public void addFile(String owner, String repositoryName, String filePath, byte[] content)
@@ -165,7 +171,7 @@ public class GitDvcs implements Dvcs
     }
 
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#commit(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#commit(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public String commit(String owner, String repositoryName, String message, String authorName, String authorEmail)
@@ -205,7 +211,7 @@ public class GitDvcs implements Dvcs
     }
 
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public void push(String owner, String repositoryName, String username, String password)
@@ -230,7 +236,7 @@ public class GitDvcs implements Dvcs
     }
     
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
     @Override
     public void push(String owner, String repositoryName, String username, String password, String reference, boolean newBranch)
@@ -262,7 +268,7 @@ public class GitDvcs implements Dvcs
     }
 
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#push(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public void push(String owner, String repositoryName, String username, String password, String reference)
@@ -271,7 +277,7 @@ public class GitDvcs implements Dvcs
     }
     
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#createTestLocalRepository(java.lang.String, java.lang.String, java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#createTestLocalRepository(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public void createTestLocalRepository(String owner, String repositoryName, String username, String password)
@@ -289,7 +295,7 @@ public class GitDvcs implements Dvcs
     }
     
     /* (non-Javadoc)
-     * @see it.restart.com.atlassian.jira.plugins.dvcs.test.Dvcs#deleteTestRepository(java.lang.String)
+     * @see it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs#deleteTestRepository(java.lang.String)
      */
     @Override
     public void deleteTestRepository(String repositoryUri)
@@ -308,7 +314,13 @@ public class GitDvcs implements Dvcs
             }
         }
     }
-    
+
+    @Override
+    public void deleteAllRepositories()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     private String getUriKey(String owner, String slug)
     {
         return owner + "/" + slug;

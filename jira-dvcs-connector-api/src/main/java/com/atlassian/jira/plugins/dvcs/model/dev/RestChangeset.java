@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.model.dev;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -9,9 +10,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestChangeset
 {
     private RestUser author;
+    @XmlElement (name = "authorTimestamp")
     private long authorTimestamp;
+    @XmlElement(name = "displayId")
     private String displayId;
     private String id;
+    @XmlElement(name = "fileCount")
     private int fileCount;
     private String message;
     private String url;

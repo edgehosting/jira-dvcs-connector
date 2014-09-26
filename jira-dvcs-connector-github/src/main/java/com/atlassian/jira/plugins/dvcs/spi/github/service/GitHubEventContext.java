@@ -9,8 +9,7 @@ public interface GitHubEventContext
 {
     /**
      * Saving pull request
-     *
-     * @param pullRequest
      */
+
     void savePullRequest(PullRequest pullRequest);
 }

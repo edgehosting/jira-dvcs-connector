@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestRef;
@@ -25,7 +27,7 @@ public class PullRequestTransformer
         this.repositoryService = repositoryService;
     }
 
-    public PullRequest transform(RepositoryPullRequestMapping pullRequestMapping)
+    public PullRequest transform(RepositoryPullRequestMapping pullRequestMapping, boolean withCommits)
     {
         if (pullRequestMapping == null)
         {
@@ -50,6 +52,10 @@ public class PullRequestTransformer
         pullRequest.setParticipants(transform(pullRequestMapping.getParticipants()));
         pullRequest.setCommentCount(pullRequestMapping.getCommentCount());
 
+        if (withCommits)
+        {
+            pullRequest.setCommits(transform(pullRequestMapping.getCommits()));
+        }
         pullRequest.setExecutedBy(pullRequestMapping.getExecutedBy());
         return pullRequest;
     }
@@ -69,6 +75,25 @@ public class PullRequestTransformer
         }
 
         return participants;
+    }
+
+    private List<Changeset> transform(RepositoryCommitMapping[] commitMappings)
+    {
+        if (commitMappings == null)
+        {
+            return null;
+        }
+
+        List<Changeset> commits = new ArrayList<Changeset>();
+        for (RepositoryCommitMapping commitMapping : commitMappings)
+        {
+            Changeset changeset = new Changeset(0, commitMapping.getNode(), commitMapping.getMessage(), commitMapping.getDate());
+            changeset.setAuthor(commitMapping.getAuthor());
+            changeset.setRawAuthor(commitMapping.getRawAuthor());
+            commits.add(changeset);
+        }
+
+        return commits;
     }
 
     private String createRepositoryUrl(String hostUrl, String repositoryLabel)

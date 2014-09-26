@@ -60,9 +60,9 @@ public interface RepositoryPullRequestDao
 
     // R
 
-    List<RepositoryPullRequestMapping> getPullRequestsForIssue(final Iterable<String> issueKeys);
+    List<RepositoryPullRequestMapping> getByIssueKeys(final Iterable<String> issueKeys);
 
-    List<RepositoryPullRequestMapping> getPullRequestsForIssue(Iterable<String> issueKeys, String dvcsType);
+    List<RepositoryPullRequestMapping> getByIssueKeys(Iterable<String> issueKeys, String dvcsType);
 
     RepositoryPullRequestMapping findRequestById(int localId);
 

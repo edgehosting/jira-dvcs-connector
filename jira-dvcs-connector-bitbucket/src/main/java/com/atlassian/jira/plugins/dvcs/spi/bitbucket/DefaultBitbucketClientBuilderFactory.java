@@ -18,13 +18,16 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
 {
 
     private final Encryptor encryptor;
-    private final String userAgent;
     private final HttpClientProvider httpClientProvider;
 
     public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, PluginAccessor pluginAccessor, HttpClientProvider httpClientProvider)
     {
+        this(encryptor, DvcsConstants.getUserAgent(pluginAccessor), httpClientProvider);
+    }
+
+    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, String userAgent, HttpClientProvider httpClientProvider)
+    {
         this.encryptor = encryptor;
-        this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
         this.httpClientProvider = httpClientProvider;
         httpClientProvider.setUserAgent(userAgent);
     }

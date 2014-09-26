@@ -6,15 +6,11 @@ import java.util.List;
 
 /**
  * BitbucketPullRequest
- *
- *
- * <br />
- * <br />
- * Created on 11.12.2012, 14:02:57 <br />
- * <br />
+ * <p/>
+ * <p/>
+ * <br /> <br /> Created on 11.12.2012, 14:02:57 <br /> <br />
  *
  * @author jhocman@atlassian.com
- *
  */
 public class BitbucketPullRequest implements Serializable
 {
@@ -33,6 +29,7 @@ public class BitbucketPullRequest implements Serializable
     private Date createdOn;
     private Date updatedOn;
     private List<BitbucketPullRequestParticipant> participants;
+    private List<BitbucketUser> reviewers;
 
     public BitbucketPullRequest()
     {
@@ -157,6 +154,16 @@ public class BitbucketPullRequest implements Serializable
     public void setAuthor(final BitbucketAccount author)
     {
         this.author = author;
+    }
+
+    public List<BitbucketUser> getReviewers()
+    {
+        return reviewers;
+    }
+
+    public void setReviewers(final List<BitbucketUser> reviewers)
+    {
+        this.reviewers = reviewers;
     }
 
     public BitbucketAccount getClosedBy()

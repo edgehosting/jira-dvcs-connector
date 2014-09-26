@@ -33,4 +33,18 @@ public class RepositoriesLocalRestpoint
         return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(RepositoryList.class);
     }
 
+    /**
+     * REST point for "/rest/bitbucket/1.0/repository/{id}"
+     *
+     * @param repositoryId repository id
+     * @return {@link Repository}
+     */
+    public Repository getRepository(int repositoryId)
+    {
+        RestUrlBuilder url = new RestUrlBuilder("/rest/bitbucket/1.0/repository/" + repositoryId);
+        ClientConfig clientConfig = new DefaultClientConfig();
+        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        Client client = Client.create(clientConfig);
+        return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(Repository.class);
+    }
 }

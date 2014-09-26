@@ -25,6 +25,8 @@ import javax.inject.Inject;
  */
 public abstract class BaseConfigureOrganizationsPage implements Page
 {
+    public static final String SYNC_FAILED_MESSAGE = "Sync Failed";
+
     @Inject
     PageBinder pageBinder;
 
@@ -210,6 +212,13 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         AccountsPageAccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
+
+        // if synchronization fails, let's try again
+        if (repository.getMessage().contains(SYNC_FAILED_MESSAGE))
+        {
+            repository.synchronize();
+        }
+
         return repository;
     }
 }

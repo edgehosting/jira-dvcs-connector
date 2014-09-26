@@ -39,7 +39,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 
     private static final String JIRA_PROJECT_NAME_AND_KEY = "MC"; // Missing Commits
-    public static final String SYNC_FAILED_MESSAGE = "Sync Failed";
+
     protected OAuth oAuth;
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
     private String missingCommitsRepositoryName;
@@ -98,12 +98,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
         configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false);
         AccountsPageAccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
-        // if synchronization fails, let's try again
-        if (repository.getMessage().contains(SYNC_FAILED_MESSAGE))
-        {
-            repository.synchronize();
-        }
-        assertThat(repository.getMessage()).doesNotContain(SYNC_FAILED_MESSAGE);
+
+        assertThat(repository.getMessage()).doesNotContain(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE);
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 

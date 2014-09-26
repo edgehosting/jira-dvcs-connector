@@ -14,7 +14,6 @@ import java.util.Set;
 
 /**
  * Context for GitHub event synchronisation
- *
  */
 public class GitHubEventContextImpl implements GitHubEventContext
 {

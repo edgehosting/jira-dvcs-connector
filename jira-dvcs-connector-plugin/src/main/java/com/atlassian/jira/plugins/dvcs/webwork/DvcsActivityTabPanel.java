@@ -74,7 +74,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         List<IssueAction> issueActions = new ArrayList<IssueAction>();
 
         //
-        List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKeys);
+        List<RepositoryPullRequestMapping> prs = activityDao.getByIssueKeys(issueKeys);
         Map<String, Object> ctxt = Maps.newHashMap(new  ImmutableMap.Builder<String, Object>().put("prs", prs).build());
         issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
         //

@@ -55,13 +55,35 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys)
     {
-        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys));
+        return transform(pullRequestDao.getByIssueKeys(issueKeys), false);
     }
 
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        return transform(pullRequestDao.getPullRequestsForIssue(issueKeys, dvcsType));
+        return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
+    }
+
+    @Override
+    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final boolean withCommits)
+    {
+        return transform(pullRequestDao.getByIssueKeys(issueKeys), withCommits);
+    }
+
+    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings, boolean withCommits)
+    {
+        List<PullRequest> pullRequests = new ArrayList<PullRequest>();
+
+        for (RepositoryPullRequestMapping pullRequestMapping : pullRequestsMappings)
+        {
+            PullRequest pullRequest = transformer.transform(pullRequestMapping, withCommits);
+            if (pullRequest != null)
+            {
+                pullRequests.add(pullRequest);
+            }
+        }
+
+        return pullRequests;
     }
 
     @Override
@@ -82,14 +104,14 @@ public class PullRequestServiceImpl implements PullRequestService
     public RepositoryPullRequestMapping createPullRequest(RepositoryPullRequestMapping repositoryPullRequestMapping)
     {
         final RepositoryPullRequestMapping createdMapping = pullRequestDao.savePullRequest(repositoryPullRequestMapping);
-        final PullRequest pullRequest = transformer.transform(createdMapping);
+        final PullRequest pullRequest = transformer.transform(createdMapping, false);
 
         // we know that pull requests always start off in the OPEN state so if that's not the current state we can
         // deduce that we missed the pull request's creation. in this case we broadcast separate create and updated
         // events so that listeners can observe the distinct events.
         if (OPEN != pullRequest.getStatus())
         {
-            final PullRequest createdPullRequest = transformer.transform(createdMapping);
+            final PullRequest createdPullRequest = transformer.transform(createdMapping, false);
             createdPullRequest.setStatus(OPEN);
 
             threadEvents.broadcast(new PullRequestCreatedEvent(createdPullRequest));
@@ -115,8 +137,8 @@ public class PullRequestServiceImpl implements PullRequestService
         RepositoryPullRequestMapping mappingAfterUpdate = pullRequestDao.updatePullRequestInfo(pullRequestId, updatedPullRequestMapping);
 
         // send both the before and after state of the PR in the event
-        PullRequest prAfter = transformer.transform(mappingAfterUpdate);
-        PullRequest prBefore = transformer.transform(mappingBeforeUpdate);
+        PullRequest prAfter = transformer.transform(mappingAfterUpdate, false);
+        PullRequest prBefore = transformer.transform(mappingBeforeUpdate, false);
 
         if (isPullRequestReopened(prBefore, prAfter))
         {
@@ -171,21 +193,5 @@ public class PullRequestServiceImpl implements PullRequestService
             Participant participant = participantIndex.get(username);
             pullRequestDao.createParticipant(pullRequestId, repositoryId, participant);
         }
-    }
-
-    private List<PullRequest> transform(List<RepositoryPullRequestMapping> pullRequestsMappings)
-    {
-        List<PullRequest> pullRequests = new ArrayList<PullRequest>();
-
-        for (RepositoryPullRequestMapping pullRequestMapping : pullRequestsMappings)
-        {
-            PullRequest pullRequest = transformer.transform(pullRequestMapping);
-            if (pullRequest != null)
-            {
-                pullRequests.add(pullRequest);
-            }
-        }
-
-        return pullRequests;
     }
 }

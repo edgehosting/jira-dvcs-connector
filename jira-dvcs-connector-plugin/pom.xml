@@ -191,6 +191,13 @@
             <version>0.4</version>
             <scope>test</scope>
         </dependency>
+        <!-- guava version 11 and higher is required by javahg -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>11.0.2</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-nav-links-plugin</artifactId>
@@ -427,7 +434,7 @@
         <profile>
             <id>dev-postgres</id>
             <properties>
-                <!-- Default: Postgres properties values feel free to customize it via 
+                <!-- Default: Postgres properties values feel free to customize it via
                     -Dpostgres.xxx=xxx -->
                 <postgres.host>localhost</postgres.host>
                 <postgres.port>5432</postgres.port>
@@ -473,7 +480,7 @@
         <profile>
             <id>dev-oracle</id>
             <properties>
-                <!-- Default: Oracle properties values feel free to customize it via 
+                <!-- Default: Oracle properties values feel free to customize it via
                     -Doracle.xxx=xxx -->
                 <oracle.host>localhost</oracle.host>
                 <oracle.port>1521</oracle.port>
