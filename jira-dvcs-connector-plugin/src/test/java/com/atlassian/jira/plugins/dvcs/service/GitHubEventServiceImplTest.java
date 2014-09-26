@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
@@ -42,17 +43,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
  * {@link com.atlassian.jira.plugins.dvcs.service.GitHubEventServiceImpl} test
- *
+ * <p/>
  * Note that these tests DO NOT actually test that the events are processed, they are testing the overall synchronize
  * flow and that the pages are fetched etc.
- *
- * Be aware that generally the id of the mock events such as #event1 need to line up with the id that is used to retrieve
- * the DB mapping class to make the tests work. Obvious but easy to forget.
- *
+ * <p/>
+ * Be aware that generally the id of the mock events such as #event1 need to line up with the id that is used to
+ * retrieve the DB mapping class to make the tests work. Obvious but easy to forget.
  */
 public class GitHubEventServiceImplTest
 {
@@ -72,16 +73,10 @@ public class GitHubEventServiceImplTest
     private ActiveObjects activeObjects;
 
     @Mock
-    private GitHubEventProcessorAggregator<EventPayload> gitHubEventProcessorAggregator;
-
-    @Mock
     private EventService eventService;
 
     @Mock
     private PageIterator<Event> events;
-
-    private Event event1;
-    private Event event2;
 
     @Mock
     private GitHubEventMapping savePointEvent;
@@ -108,144 +103,117 @@ public class GitHubEventServiceImplTest
 
         when(githubClientProvider.getEventService(repository)).thenReturn(eventService);
         when(eventService.pageEvents(any(RepositoryId.class))).thenReturn(events);
-        when(activeObjects.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable
-            {
-                return ((TransactionCallback) invocationOnMock.getArguments()[0]).doInTransaction();
-            }
-        });
 
         when(synchronizer.getProgress(eq(repository.getId()))).thenReturn(progress);
     }
 
     @Test
-    public void testSynchronizeWithEventsAlreadyInDatabase()
+    public void testDoesNothingWhenNothingToProcess()
     {
+
         when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
-        event1 = mockEvent("4", 4);
-        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(4));
-        event2 = mockEvent("3", 3);
-        when(savePointEvent.getCreatedAt()).thenReturn(new Date(3));
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("3"))).thenReturn(savePointEvent);
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("4"))).thenReturn(newSavePointEvent);
 
         when(events.iterator()).thenReturn(events);
-        when(events.hasNext()).thenReturn(true, true, false);
-        Collection<Event> firstPage = Lists.newArrayList(event1, event2, mockEvent("2",2));
-        Collection<Event> secondPage = Lists.newArrayList(mockEvent("1", 1), mockEvent("0", 0));
-        //noinspection unchecked
-        when(events.next()).thenReturn(firstPage, secondPage);
-
-        gitHubEventService.synchronize(repository, true, new String[]{}, false);
-        verify(events, times(1)).next();
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
-        verifyNoMoreInteractions(gitHubEventProcessorAggregator);
-    }
-
-    @Test
-    public void testSynchronizeWithNoEventsInDatabase()
-    {
-        when(newSavePointEvent.getGitHubId()).thenReturn("foo");
-        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
-        when(savePointEvent.getCreatedAt()).thenReturn(new Date(2));
-        event1 = mockEvent("3", 3);
-        // null the first time so that we process it, return an equivalent Mapping Object the second time so that we set the new save point
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("3"))).thenReturn(null, newSavePointEvent);
-
-        when(events.iterator()).thenReturn(events);
-        when(events.hasNext()).thenReturn(true, false);
-        Collection<Event> firstPage = Lists.newArrayList(event1);
-        when(events.next()).thenReturn(firstPage);
+        when(events.next()).thenReturn(new LinkedList<Event>());
+        when(events.hasNext()).thenReturn(false);
 
         gitHubEventService.synchronize(repository, true, new String[] { }, false);
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
-        verify(events, times(1)).next();
-        verify(gitHubEventProcessorAggregator).process(eq(repository), eq(event1), eq(true), any(String[].class), any(GitHubEventContextImpl.class));
+
+        verify(gitHubEventDAO).getLastSavePoint(eq(repository));
+        verifyNoMoreInteractions(gitHubEventDAO);
+        verifyNoMoreInteractions(messagingService);
     }
 
     @Test
-    public void testSynchronize_SavePointAtEndOfPage()
+    public void testDoesNothingWhenStopIsTrue()
     {
+
         when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
-        event1 = mockEvent("4", 4);
-        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(4));
-        event2 = mockEvent("3", 3);
-        when(savePointEvent.getCreatedAt()).thenReturn(new Date(3));
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("3"))).thenReturn(savePointEvent);
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("4"))).thenReturn(newSavePointEvent);
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(true);
 
+        Collection<Event> firstPage = Lists.newArrayList(mockEvent("2", 2));
         when(events.iterator()).thenReturn(events);
-        when(events.hasNext()).thenReturn(true, true, false);
-        Collection<Event> firstPage = Lists.newArrayList(event1, event2);
-        Collection<Event> secondPage = Lists.newArrayList(mockEvent("2", 2), mockEvent("1", 1));
-        Collection<Event> thirdPage = Lists.newArrayList(mockEvent("0", 0));
-        //noinspection unchecked
-        when(events.next()).thenReturn(firstPage, secondPage, thirdPage);
+        when(events.next()).thenReturn(firstPage);
+        when(events.hasNext()).thenReturn(true, false);
 
-        gitHubEventService.synchronize(repository, true, new String[]{}, false);
-        verify(events, times(2)).next();
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
+        gitHubEventService.synchronize(repository, true, new String[] { }, false);
+
+        verify(gitHubEventDAO).getLastSavePoint(eq(repository));
+        verifyNoMoreInteractions(gitHubEventDAO);
+        verifyNoMoreInteractions(messagingService);
     }
 
     @Test
-    public void testForcePRListSynchronization()
+    public void testProcessOneEventButDarkFeatureSetSoNoMoreMessages()
     {
-        mock300Events();
 
-        gitHubEventService.synchronize(repository, true, new String[]{}, false);
-        verify(events, times(10)).next();
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
-        verify(messagingService).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
-    }
-
-    @Test
-    public void testForcePRListSynchronization_withDarkFeature()
-    {
-        mock300Events();
-
+        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(false, true);
         when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(true);
 
-        gitHubEventService.synchronize(repository, true, new String[]{}, false);
-        verify(events, times(10)).next();
-        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
-        verify(messagingService, never()).publish(any(MessageAddress.class), any(GitHubPullRequestPageMessage.class), Matchers.<String[]>anyVararg());
+        Collection<Event> firstPage = Lists.newArrayList(mockEvent("2", 2));
+        when(events.iterator()).thenReturn(events);
+        when(events.next()).thenReturn(firstPage);
+        when(events.hasNext()).thenReturn(true, false);
+
+        gitHubEventService.synchronize(repository, true, new String[] { }, false);
+
+        verifyNoMoreInteractions(messagingService);
     }
 
-    private void mock300Events()
+    @Test
+    public void testProcessOneEventDarkFeatureOff()
+    {
+        when(gitHubEventDAO.getByGitHubId(repository, "2")).thenReturn(newSavePointEvent);
+
+        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(false, true);
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(false);
+
+        Collection<Event> firstPage = Lists.newArrayList(mockEvent("2", 2));
+        when(events.iterator()).thenReturn(events);
+        when(events.next()).thenReturn(firstPage);
+        when(events.hasNext()).thenReturn(true, false);
+
+        gitHubEventService.synchronize(repository, true, new String[] { }, false);
+
+        verify(gitHubEventDAO).markAsSavePoint(newSavePointEvent);
+    }
+
+    @Test
+    public void testProcessOneEvent()
     {
         when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
-        List<Event> allEvents = new ArrayList<Event>();
-        for (int i = 1; i <= 300; i++)
-        {
-            allEvents.add(mockEvent(i + "", i));
-        }
-        List<List<Event>> eventPages = Lists.partition(Lists.reverse(allEvents), 30);
-        final Iterator<List<Event>> eventPagesIterator = eventPages.iterator();
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(false, true);
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(false);
 
-        when(newSavePointEvent.getCreatedAt()).thenReturn(new Date(300));
-        when(savePointEvent.getCreatedAt()).thenReturn(new Date(0));
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("300"))).thenReturn(newSavePointEvent);
-        when(gitHubEventDAO.getByGitHubId(eq(repository), eq("0"))).thenReturn(savePointEvent);
-
+        Collection<Event> firstPage = Lists.newArrayList(mockEvent("2", 2));
         when(events.iterator()).thenReturn(events);
-        Boolean[] hasNextValues = new Boolean[eventPages.size()];
-        for (int i = 0; i < eventPages.size() - 1 ; i++)
-        {
-            hasNextValues[i] = true;
-        }
-        hasNextValues[eventPages.size() - 1] = false;
+        when(events.next()).thenReturn(firstPage);
+        when(events.hasNext()).thenReturn(true, false);
 
-        when(events.hasNext()).thenReturn(true, hasNextValues);
-        when(events.next()).thenAnswer(new Answer<Collection<Event>>()
-        {
-            @Override
-            public Collection<Event> answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return eventPagesIterator.next();
-            }
-        });
+        gitHubEventService.synchronize(repository, true, new String[] { }, false);
+
+        verify(gitHubEventDAO).getLastSavePoint(eq(repository));
+    }
+
+    @Test
+    public void testProcessTwoPagesOfEvents()
+    {
+
+        when(gitHubEventDAO.getLastSavePoint(repository)).thenReturn(savePointEvent);
+        when(activeObjects.executeInTransaction(any(TransactionCallback.class))).thenReturn(false, true);
+        when(syncDisabledHelper.isGitHubUsePullRequestListDisabled()).thenReturn(false);
+
+        Collection<Event> firstPage = Lists.newArrayList(mockEvent("2", 2));
+        Collection<Event> secondPage = Lists.newArrayList(mockEvent("3", 3));
+        when(events.iterator()).thenReturn(events);
+        when(events.next()).thenReturn(firstPage, secondPage);
+        when(events.hasNext()).thenReturn(true, true, false);
+
+        gitHubEventService.synchronize(repository, true, new String[] { }, false);
+
+        verify(activeObjects, times(2)).executeInTransaction(any(TransactionCallback.class));
     }
 
     private Event mockEvent(String id, long date)
