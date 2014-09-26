@@ -127,9 +127,7 @@ public class AccountsPageAccount extends WebDriverElement
     /**
      * Resolves repository for provided name.
      *
-     * @param repositoryName
-     *            name of repository
-     * @return resolved repository
+     * @return resolved repositories
      */
     public List<AccountsPageAccountRepository> getRepositories()
     {

@@ -67,31 +67,4 @@ public class AccountsPage implements Page
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-
-    public void waitForSyncToFinish()
-    {
-        new WebDriverWait(driver, 60).until(new Predicate<WebDriver>()
-        {
-
-            @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                return !isSyncing();
-            }
-
-        });
-    }
-
-    private boolean isSyncing()
-    {
-        //PFFFF
-        /*
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && !repository.getSync().isFinished()) {
-                return true;
-            }
-        }*/
-        return false;
-    }
 }

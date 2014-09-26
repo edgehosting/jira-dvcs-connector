@@ -50,6 +50,9 @@ public class AccountsPageAccountRepository extends WebDriverElement
     @ElementBy(xpath = "td[4]/div/a/span")
     private PageElement synchronizationIcon;
 
+    @ElementBy(cssSelector = ".repo_sync_error_msg")
+    private PageElement repoSynchErrorMsg;
+
     /**
      * Synchronization button - fire synchronization process.
      */
@@ -163,12 +166,17 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public void synchronize()
     {
         syncAndWaitForFinish();
-        if (StringUtils.isNotBlank(getSyncError()))
+        if (hasRepoSyncError())
         {
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertTrue(StringUtils.isBlank(getSyncError()), "Synchronization failed");
+        Assert.assertFalse(hasRepoSyncError(), "Synchronization failed");
+    }
+
+    private boolean hasRepoSyncError()
+    {
+        return !repoSynchErrorMsg.getText().isEmpty();
     }
 
     private void syncAndWaitForFinish()
@@ -184,22 +192,6 @@ public class AccountsPageAccountRepository extends WebDriverElement
             }
 
         });
-    }
-
-    private String getSyncError()
-    {
-        return getSyncError(getId());
-    }
-
-    private String getSyncError(int repositoryId)
-    {
-        //PFFFF
-        /*Repository repository = new RepositoriesLocalRestpoint().getRepository(repositoryId);
-        if (repository.getSync() != null && repository.getSync().getError() != null)
-        {
-            return repository.getSync().getError();
-        }*/
-        return null;
     }
 
     public void synchronizeWithNoWait()
