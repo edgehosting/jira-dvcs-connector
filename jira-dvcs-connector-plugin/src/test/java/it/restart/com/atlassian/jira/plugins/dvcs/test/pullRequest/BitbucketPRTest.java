@@ -41,6 +41,12 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         addOrganizations(jiraTestedProduct);
     }
 
+    @Override
+    protected void cleanupAfterClass()
+    {
+        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+    }
+
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
     {
         new MagicVisitor(jiraTestedProduct).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);

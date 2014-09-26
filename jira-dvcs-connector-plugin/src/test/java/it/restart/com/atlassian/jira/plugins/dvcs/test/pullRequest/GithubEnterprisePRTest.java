@@ -2,13 +2,14 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
+import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
@@ -37,6 +38,12 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
         pullRequestClient = new GitHubPullRequestClient(gitHubTestSupport);
 
         addOrganizations(jiraTestedProduct);
+    }
+
+    @Override
+    protected void cleanupAfterClass()
+    {
+        new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthApplicationPage.class, GithubEnterpriseTests.GITHUB_ENTERPRISE_URL).removeConsumer(oAuth);
     }
 
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
