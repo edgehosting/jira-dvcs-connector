@@ -5,15 +5,12 @@ import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.testng.annotations.AfterClass;
 
 public class GithubPRTest extends PullRequestTestCases<PullRequest>
 {
@@ -24,7 +21,7 @@ public class GithubPRTest extends PullRequestTestCases<PullRequest>
     }
 
     @Override
-    protected void beforeEachTestInitialisation(final JiraTestedProduct jiraTestedProduct)
+    protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         gitHubTestSupport = new GitHubTestSupport(new MagicVisitor(jiraTestedProduct));
         gitHubTestSupport.beforeClass();
@@ -39,12 +36,15 @@ public class GithubPRTest extends PullRequestTestCases<PullRequest>
     @Override
     protected void cleanupAfterClass()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
+        if (gitHubTestSupport != null)
+        {
+            gitHubTestSupport.afterClass();
+        }
     }
 
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
     {
-        OAuth oAuth = gitHubTestSupport.addOAuth(GitHubTestSupport.URL, jiraTestedProduct.getProductInstance().getBaseUrl(),
+        oAuth = gitHubTestSupport.addOAuth(GitHubTestSupport.URL, jiraTestedProduct.getProductInstance().getBaseUrl(),
                 GitHubTestSupport.Lifetime.DURING_CLASS);
 
         new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class).doLogin();
@@ -67,15 +67,6 @@ public class GithubPRTest extends PullRequestTestCases<PullRequest>
         GitHubClient gitHubClient2 = GitHubClient.createClient(GitHubTestSupport.URL);
         gitHubClient2.setCredentials(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         gitHubTestSupport.addOwner(FORK_ACCOUNT_NAME, gitHubClient2);
-    }
-
-    @AfterClass (alwaysRun = true)
-    protected void afterClass()
-    {
-        if (gitHubTestSupport != null)
-        {
-            gitHubTestSupport.afterClass();
-        }
     }
 
     @Override

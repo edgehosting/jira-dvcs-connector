@@ -97,7 +97,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     {
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
-        beforeEachTestInitialisation(getJiraTestedProduct());
+        beforeEachTestClassInitialisation(getJiraTestedProduct());
 
         dvcsPRTestHelper = new DvcsPRTestHelper(dvcs, ACCOUNT_NAME, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, PASSWORD);
     }
@@ -107,7 +107,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
      * <b>AND</b> initialise the following member variables on the parent: <ul> <li>PullRequestTestCases#dvcs</li>
      * <li>PullRequestTestCases#pullRequestClient</li> </ul>
      */
-    protected abstract void beforeEachTestInitialisation(JiraTestedProduct jiraTestedProduct);
+    protected abstract void beforeEachTestClassInitialisation(JiraTestedProduct jiraTestedProduct);
 
     @AfterClass (alwaysRun = true)
     public void afterEachPullRequestTestClass()
