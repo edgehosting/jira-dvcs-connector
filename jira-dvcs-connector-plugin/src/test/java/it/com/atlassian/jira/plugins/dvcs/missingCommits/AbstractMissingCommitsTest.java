@@ -135,8 +135,10 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         // This originally came from JiraPageUtils, but moved over to here since the implementation there was changed to only use page objects.
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && !repository.getSync().isFinished()) {
+        for (Repository repository : repositories.getRepositories())
+        {
+            if (repository.getSync() != null && !repository.getSync().isFinished())
+            {
                 return false;
             }
         }
