@@ -158,7 +158,7 @@ public class AccountsPageAccount extends WebDriverElement
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(15000));
+        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(60000));
     }
 
     /**
