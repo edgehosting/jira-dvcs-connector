@@ -3,20 +3,17 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.testng.annotations.AfterClass;
 
 public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
 {
@@ -29,7 +26,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
     }
 
     @Override
-    protected void beforeEachTestInitialisation(final JiraTestedProduct jiraTestedProduct)
+    protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         gitHubTestSupport = new GitHubTestSupport(new MagicVisitor(jiraTestedProduct));
         gitHubTestSupport.beforeClass();
@@ -43,12 +40,15 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
     @Override
     protected void cleanupAfterClass()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthApplicationPage.class, GithubEnterpriseTests.GITHUB_ENTERPRISE_URL).removeConsumer(oAuth);
+        if (gitHubTestSupport != null)
+        {
+            gitHubTestSupport.afterClass();
+        }
     }
 
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
     {
-        OAuth oAuth = gitHubTestSupport.addOAuth(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, jiraTestedProduct.getProductInstance().getBaseUrl(),
+        oAuth = gitHubTestSupport.addOAuth(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, jiraTestedProduct.getProductInstance().getBaseUrl(),
                 GitHubTestSupport.Lifetime.DURING_CLASS);
 
         new MagicVisitor(jiraTestedProduct).visit(GithubLoginPage.class, GithubEnterpriseTests.GITHUB_ENTERPRISE_URL).doLogin();
@@ -71,15 +71,6 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
         GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, GITHUB_ENTERPRISE_USER_AGENT);
         gitHubClient2.setCredentials(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         gitHubTestSupport.addOwner(FORK_ACCOUNT_NAME, gitHubClient2);
-    }
-
-    @AfterClass (alwaysRun = true)
-    protected void afterClass()
-    {
-        if (gitHubTestSupport != null)
-        {
-            gitHubTestSupport.afterClass();
-        }
     }
 
     @Override

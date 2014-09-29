@@ -28,7 +28,7 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     }
 
     @Override
-    protected void beforeEachTestInitialisation(final JiraTestedProduct jiraTestedProduct)
+    protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         dvcs = new MercurialDvcs();
         // need to initialize ComponentWorker for UrlBuilder in PullRequestRemoteRestpoint used by BitbucketClient
