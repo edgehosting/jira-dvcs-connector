@@ -60,4 +60,19 @@ public class GitHubEventContextImpl implements GitHubEventContext
     {
         return processedPullRequests;
     }
+
+    public Repository getRepository()
+    {
+        return repository;
+    }
+
+    public boolean isSoftSync()
+    {
+        return isSoftSync;
+    }
+
+    public String[] getSynchronizationTags()
+    {
+        return synchronizationTags;
+    }
 }
