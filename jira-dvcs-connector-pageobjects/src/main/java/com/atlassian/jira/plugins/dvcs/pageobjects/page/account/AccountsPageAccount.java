@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Container of single account of {@link AccountsPage}.
@@ -158,7 +159,8 @@ public class AccountsPageAccount extends WebDriverElement
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(60000));
+        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(1200000));
+        assertFalse(find(By.id("refreshing-account-dialog")).isVisible());
     }
 
     /**
