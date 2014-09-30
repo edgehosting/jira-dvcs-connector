@@ -1,17 +1,22 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.webdriver.AtlassianWebDriver;
+import com.google.inject.Inject;
 import org.openqa.selenium.By;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketOAuthPage implements Page
-{    
+{
+    @Inject
+    private AtlassianWebDriver driver;
+
     @ElementBy(linkText = "Add consumer")
     private PageElement addConsumerButton;
     
@@ -53,6 +58,11 @@ public class BitbucketOAuthPage implements Page
         PageElementUtils.permissionDeniedWorkAround(addConsumerButton);
 
         addConsumerButton.click();
+
+        // clicking the button scrolls to it, scroll back to top so that the dialog is considered visible
+        driver.executeScript("scroll(0, 0);");
+
+
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
         String consumerName = "Test_OAuth_" + System.currentTimeMillis();
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";

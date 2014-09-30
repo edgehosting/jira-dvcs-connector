@@ -9,8 +9,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Basic
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
