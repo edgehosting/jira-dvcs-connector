@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Container of single account of {@link AccountsPage}.
@@ -127,9 +128,7 @@ public class AccountsPageAccount extends WebDriverElement
     /**
      * Resolves repository for provided name.
      *
-     * @param repositoryName
-     *            name of repository
-     * @return resolved repository
+     * @return resolved repositories
      */
     public List<AccountsPageAccountRepository> getRepositories()
     {
@@ -160,7 +159,7 @@ public class AccountsPageAccount extends WebDriverElement
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(15000));
+        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(600000));
     }
 
     /**

@@ -7,9 +7,13 @@ import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.pageobjects.PageBinder;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Martin Skurla
@@ -54,20 +58,27 @@ public class JiraPageUtils
         createIssueDialog.submit(DashboardPage.class);
     }
     
-    public static void checkSyncProcessSuccess()
+    public static void checkSyncProcessSuccess(PageBinder pageBinder)
     {
         do
         {
             sleep(1000);
-        } while (!isSyncFinished());
+        } while (!isSyncFinished(pageBinder));
     }
 
-    private static boolean isSyncFinished()
+    private static boolean isSyncFinished(PageBinder pageBinder)
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && !repository.getSync().isFinished()) {
-                return false;
+        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
+        Iterator<AccountsPageAccount> accounts = accountsPage.getAccounts().iterator();
+        while (accounts.hasNext())
+        {
+            List<AccountsPageAccountRepository> repos = accounts.next().getRepositories();
+            for (AccountsPageAccountRepository repo : repos)
+            {
+                if (repo.isSyncing())
+                {
+                    return false;
+                }
             }
         }
         return true;

@@ -8,7 +8,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountControlsDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
 import org.openqa.selenium.By;
 
 import java.util.ArrayList;

@@ -1,11 +1,11 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.bitbucket;
 
-import com.atlassian.jira.plugins.dvcs.util.PageElementUtils;
+import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import org.openqa.selenium.By;
 
 import static org.fest.assertions.api.Assertions.assertThat;

@@ -14,7 +14,7 @@ import com.atlassian.jira.testkit.client.restclient.SearchResult;
 import com.atlassian.jira.testkit.client.util.TestKitLocalEnvironmentData;
 import com.atlassian.pageobjects.TestedProductFactory;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 

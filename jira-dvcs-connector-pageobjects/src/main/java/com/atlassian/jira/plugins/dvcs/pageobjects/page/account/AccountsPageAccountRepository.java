@@ -1,9 +1,6 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -12,18 +9,14 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -56,6 +49,9 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     @ElementBy(xpath = "td[4]/div/a/span")
     private PageElement synchronizationIcon;
+
+    @ElementBy(cssSelector = ".repo_sync_error_msg")
+    private PageElement repoSynchErrorMsg;
 
     /**
      * Synchronization button - fire synchronization process.
@@ -161,13 +157,8 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getId() == getId() && repository.getSync() != null && !repository.getSync().isFinished()) {
-                return true;
-            }
-        }
-        return false;
+        System.out.println("SYNC SELECTOR: " + synchronizationIcon.find(By.cssSelector(".running")).isPresent());
+        return synchronizationIcon.hasClass("running");
     }
 
     /**
@@ -176,42 +167,17 @@ public class AccountsPageAccountRepository extends WebDriverElement
     public void synchronize()
     {
         syncAndWaitForFinish();
-        if (StringUtils.isNotBlank(getSyncError()))
+        if (hasRepoSyncError())
         {
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertTrue(StringUtils.isBlank(getSyncError()), "Synchronization failed");
+        Assert.assertFalse(hasRepoSyncError(), "Synchronization failed");
     }
 
-    public void synchronize(final Predicate<Void> finishPredicate)
+    private boolean hasRepoSyncError()
     {
-        syncAndWaitForFinish();
-
-        try
-        {
-            jiraTestedProduct.getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
-            {
-                @Override
-                public Boolean apply(@Nullable final WebDriver input)
-                {
-                    if (StringUtils.isBlank(getSyncError()) && finishPredicate.apply(null))
-                    {
-                        return true;
-                    }
-                    // retrying synchronization
-                    syncAndWaitForFinish();
-
-                    return false;
-                }
-            }, 15);
-        }
-        catch (TimeoutException e)
-        {
-            // nop
-        }
-
-        Assert.assertTrue(StringUtils.isBlank(getSyncError()), "Synchronization failed");
+        return !repoSynchErrorMsg.getText().isEmpty();
     }
 
     private void syncAndWaitForFinish()
@@ -227,34 +193,6 @@ public class AccountsPageAccountRepository extends WebDriverElement
             }
 
         });
-    }
-
-    private List<String> getSyncErrors()
-    {
-        List<String> errors = new ArrayList<String>();
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && repository.getSync().getError() != null)
-            {
-                errors.add(repository.getSync().getError());
-            }
-        }
-        return errors;
-    }
-
-    private String getSyncError()
-    {
-        return getSyncError(getId());
-    }
-
-    private String getSyncError(int repositoryId)
-    {
-        Repository repository = new RepositoriesLocalRestpoint().getRepository(repositoryId);
-        if (repository.getSync() != null && repository.getSync().getError() != null)
-        {
-            return repository.getSync().getError();
-        }
-        return null;
     }
 
     public void synchronizeWithNoWait()

@@ -30,7 +30,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     private PageElement oauthBbSecret;
 
     @Override
-    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync)
+    public BitBucketConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync, String username, String password)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();
@@ -56,7 +56,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         if (autoSync)
         {
-            JiraPageUtils.checkSyncProcessSuccess();
+            JiraPageUtils.checkSyncProcessSuccess(pageBinder);
         }
 
         return this;
@@ -65,7 +65,6 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     /**
      * Links a public repository to the given JIRA project.
      *
-     * @param projectKey The JIRA project key
      * @param url        The url to the bitucket public repo
      * @return BitBucketConfigureOrganizationsPage
      */
@@ -88,7 +87,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
      * {@inheritDoc}
      */
     @Override
-    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth()
+    public BaseConfigureOrganizationsPage addOrganizationFailingOAuth(String username, String password)
     {
         linkRepositoryButton.click();
         waitFormBecomeVisible();

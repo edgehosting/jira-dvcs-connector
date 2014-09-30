@@ -6,7 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
 
 import java.util.ArrayList;
