@@ -157,6 +157,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
+        System.out.println("SYNC SELECTOR: " + synchronizationIcon.find(By.cssSelector(".running")).isPresent());
         return synchronizationIcon.hasClass("running");
     }
 
