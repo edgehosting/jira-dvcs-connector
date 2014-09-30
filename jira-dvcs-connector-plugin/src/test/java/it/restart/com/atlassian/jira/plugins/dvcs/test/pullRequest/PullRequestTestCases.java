@@ -165,9 +165,6 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
                 fixBranchName, dvcs.getDefaultBranchName());
         String pullRequestLocation = pullRequestDetails.getLocation();
 
-        // Wait for remote system after creation of pullRequest
-        sleep(500);
-
         RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
@@ -223,7 +220,17 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
         account.synchronizeRepository(repositoryName);
 
-        RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
+        // Event processing can take some time to complete, poll the endpoint to find our PR
+        RestDevResponse<RestPrRepository> response = null;
+        for (int i = 0; i < 200; i++)
+        {
+            response = getPullRequestResponse(issueKey);
+            if (response.getRepositories().size() > 0)
+            {
+                break;
+            }
+            sleep(50);
+        }
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         return response.getRepositories().get(0);
