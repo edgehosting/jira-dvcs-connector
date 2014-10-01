@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.2.3-SNAPSHOT</version>
+        <version>2.2.3-D20141001T080122</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
