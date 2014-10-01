@@ -20,6 +20,7 @@ public class PullRequest
     private String author;
     private List<Participant> participants;
     private int commentCount;
+    private List<Changeset> commits;
     private String executedBy;
 
     @JsonCreator
@@ -158,6 +159,16 @@ public class PullRequest
     public void setCommentCount(final int commentCount)
     {
         this.commentCount = commentCount;
+    }
+
+    public List<Changeset> getCommits()
+    {
+        return commits;
+    }
+
+    public void setCommits(final List<Changeset> commits)
+    {
+        this.commits = commits;
     }
 
     public String getExecutedBy()

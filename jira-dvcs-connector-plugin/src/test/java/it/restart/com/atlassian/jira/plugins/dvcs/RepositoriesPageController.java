@@ -6,7 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
 
 import java.util.ArrayList;
@@ -34,6 +34,12 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
+        OrganizationDiv existingOrganisation = page.getOrganization(accountType.type, accountName);
+        if (existingOrganisation != null)
+        {
+            // Org shouldn't be there lets clean it up
+            existingOrganisation.delete();
+        }
         return addOrganization(accountType, accountName, oAuthCredentials, autosync, false);
     }
 
@@ -49,7 +55,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             page.continueAddOrgButton.click();
         }
 
-        if(requiresGrantAccess())
+        if (requiresGrantAccess())
         {
             accountType.grantAccessPageController.grantAccess(jira);
         }
@@ -73,7 +79,8 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
                 waitForSyncToFinish();
             }
             assertThat(getSyncErrors()).describedAs("Synchronization failed").isEmpty();
-        } else
+        }
+        else
         {
             assertThat(isSyncFinished());
         }
@@ -82,7 +89,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     /**
      * Waiting until synchronization is done.
-     * 
      */
     public void waitForSyncToFinish()
     {
@@ -91,18 +97,22 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             try
             {
                 Thread.sleep(1000l);
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                 // ignore
             }
-        } while (!isSyncFinished());
+        }
+        while (!isSyncFinished());
     }
 
     private boolean isSyncFinished()
     {
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && !repository.getSync().isFinished()) {
+        for (Repository repository : repositories.getRepositories())
+        {
+            if (repository.getSync() != null && !repository.getSync().isFinished())
+            {
                 return false;
             }
         }
@@ -113,8 +123,10 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     {
         List<String> errors = new ArrayList<String>();
         RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
-        for (Repository repository : repositories.getRepositories()) {
-            if (repository.getSync() != null && repository.getSync().getError() != null) {
+        for (Repository repository : repositories.getRepositories())
+        {
+            if (repository.getSync() != null && repository.getSync().getError() != null)
+            {
                 errors.add(repository.getSync().getError());
             }
         }
@@ -130,17 +142,18 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     }
 
     /**
-    *
-    */
+     *
+     */
     public static class AccountType
     {
         public static final AccountType BITBUCKET = new AccountType(0, "bitbucket", null, new BitbucketGrantAccessPageController());
         public static final AccountType GITHUB = new AccountType(1, "github", null, new GithubGrantAccessPageController());
+
         public static AccountType getGHEAccountType(String hostUrl)
         {
             return new AccountType(2, "githube", hostUrl, new GithubGrantAccessPageController()); // TODO GrantAccessPageController
         }
-        
+
         public final int index;
         public final String type;
         public final GrantAccessPageController grantAccessPageController;

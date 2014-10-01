@@ -8,7 +8,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountControlsDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
 import org.openqa.selenium.By;
 
 import java.util.ArrayList;
@@ -68,7 +68,11 @@ public class OrganizationDiv
     public List<RepositoryDiv> getRepositories(boolean filterDynamicRepositories)
     {
         List<RepositoryDiv> list = new ArrayList<RepositoryDiv>();
-        List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr"));
+        if (!repositoriesTable.isPresent()) {
+            return list;
+        }
+        
+        List<PageElement> trs = repositoriesTable.findAll(By.xpath("//table/tbody/tr[contains(concat(@class, ' '), 'dvcs-repo-row')]"));
         for (PageElement tr : trs)
         {
 

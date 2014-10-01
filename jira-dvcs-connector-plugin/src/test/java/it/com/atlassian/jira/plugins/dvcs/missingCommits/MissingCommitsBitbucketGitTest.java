@@ -11,9 +11,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
 
@@ -33,7 +33,7 @@ public class MissingCommitsBitbucketGitTest extends AbstractMissingCommitsTest<B
     public static void initializeBitbucketRepositoriesREST()
     {
         HttpClientProvider httpClientProvider = new HttpClientProvider();
-        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+        httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
 
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                    DVCS_REPO_OWNER,

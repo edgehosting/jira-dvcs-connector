@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
+import com.google.gson.annotations.SerializedName;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -14,6 +16,7 @@ public class RestRepository
     private String url;
     private String avatar;
     private Boolean fork;
+    @SerializedName("forkOf")
     private RestRepository forkOf;
 
     public RestRepository()

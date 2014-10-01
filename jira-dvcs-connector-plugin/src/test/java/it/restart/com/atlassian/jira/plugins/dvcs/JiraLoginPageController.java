@@ -3,7 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.JiraLoginPage;
 import com.atlassian.pageobjects.Page;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.PageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
 
 public class JiraLoginPageController implements PageController<JiraLoginPage>
 {

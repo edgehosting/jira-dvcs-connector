@@ -144,11 +144,13 @@ public class DefaultProgress implements Progress, Serializable
         this.error = error;
     }
 
+    @Override
     public EnumSet<SynchronizationFlag> getRunAgainFlags()
     {
         return runAgain;
     }
 
+    @Override
     public void setRunAgainFlags(final EnumSet<SynchronizationFlag> runAgain)
     {
         this.runAgain = runAgain;
@@ -284,11 +286,13 @@ public class DefaultProgress implements Progress, Serializable
         this.hasAdminPermission = hasAdminPermission;
     }
 
+    @Override
     public int getAuditLogId()
     {
         return auditLogId;
     }
 
+    @Override
     public void setAuditLogId(int auditLogId)
     {
         this.auditLogId = auditLogId;

@@ -50,6 +50,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-pageobjects</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-core</artifactId>
         </dependency>
@@ -195,6 +201,13 @@
             <version>0.4</version>
             <scope>test</scope>
         </dependency>
+        <!-- guava version 11 and higher is required by javahg -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>11.0.2</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-nav-links-plugin</artifactId>
@@ -218,12 +231,12 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>hamcrest-library</artifactId>
                     <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-library</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>hamcrest-core</artifactId>
                     <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.mockito</groupId>
@@ -431,7 +444,7 @@
         <profile>
             <id>dev-postgres</id>
             <properties>
-                <!-- Default: Postgres properties values feel free to customize it via 
+                <!-- Default: Postgres properties values feel free to customize it via
                     -Dpostgres.xxx=xxx -->
                 <postgres.host>localhost</postgres.host>
                 <postgres.port>5432</postgres.port>
@@ -477,7 +490,7 @@
         <profile>
             <id>dev-oracle</id>
             <properties>
-                <!-- Default: Oracle properties values feel free to customize it via 
+                <!-- Default: Oracle properties values feel free to customize it via
                     -Doracle.xxx=xxx -->
                 <oracle.host>localhost</oracle.host>
                 <oracle.port>1521</oracle.port>
