@@ -2,7 +2,15 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount.AccountType;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountOAuthDialog;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Predicate;
@@ -10,14 +18,6 @@ import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount.AccountType;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountOAuthDialog;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -46,10 +46,11 @@ import javax.annotation.Nullable;
 public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
+    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
     /**
      * Name of tested account.
      */
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String ACCOUNT_NAME = BB_ACCOUNT_NAME;
 
     /**
      * Access Jira instance.
@@ -122,10 +123,10 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         // log in to JIRA
         new JiraLoginPageController(jira).login();
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
 
-        oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
-        oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
+        oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
 
         onDemandConfigurationPath = System.getProperty( //
                 JsonFileBasedAccountsConfigProvider.ENV_ONDEMAND_CONFIGURATION, // environment customization
@@ -139,8 +140,8 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     @AfterClass(alwaysRun = true)
     public void afterTestAlways()
     {
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuthOriginal.applicationId);
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuthNew.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthOriginal.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthNew.applicationId);
     }
 
     /**

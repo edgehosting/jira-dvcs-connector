@@ -2,9 +2,16 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.DashboardPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
@@ -19,13 +26,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -46,8 +46,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
-    private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
+    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
+    private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private OAuth oAuth;
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" });
 
@@ -57,9 +58,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to Bitbucket
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
         // setup up OAuth from bitbucket
-        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
         // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
         jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
@@ -71,7 +72,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in bitbucket
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuth.applicationId);
         // log out from bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }
@@ -180,7 +181,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
 
         String postDeleteServicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+                BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
         return postDeleteServicesConfig.contains(jiraCallbackUrl);
     }
 

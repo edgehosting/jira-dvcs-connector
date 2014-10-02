@@ -3,6 +3,8 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
@@ -10,8 +12,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
 import org.mockito.MockitoAnnotations;
@@ -21,6 +21,7 @@ import java.util.Collection;
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
+    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
     private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
 
     public BitbucketPRTest()
@@ -44,7 +45,7 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @Override
     protected void cleanupAfterClass()
     {
-        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class).removeConsumer(oAuth.applicationId);
+        new MagicVisitor(getJiraTestedProduct()).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuth.applicationId);
     }
 
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
@@ -52,7 +53,7 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         new MagicVisitor(jiraTestedProduct).visit(BitbucketLoginPage.class).doLogin(ACCOUNT_NAME, PASSWORD);
 
         // Creates & adds OAuth settings
-        oAuth = new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class).addConsumer();
+        oAuth = new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
 
         // adds Bitbucket account into Jira
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
