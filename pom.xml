@@ -198,7 +198,19 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.activeobjects</groupId>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>1.4.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
                 <artifactId>activeobjects-plugin</artifactId>
                 <version>${ao.version}</version>
                 <scope>provided</scope>
@@ -256,7 +268,19 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.2.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.1.1</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+            <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>2.5.6.SEC01</version>
                 <scope>provided</scope>
@@ -267,6 +291,12 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
