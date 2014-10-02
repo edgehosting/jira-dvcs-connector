@@ -46,10 +46,11 @@ import javax.annotation.Nullable;
 public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
+    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
     /**
      * Name of tested account.
      */
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String ACCOUNT_NAME = BB_ACCOUNT_NAME;
 
     /**
      * Access Jira instance.
@@ -122,10 +123,10 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         // log in to JIRA
         new JiraLoginPageController(jira).login();
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
 
-        oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
-        oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class).addConsumer();
+        oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
+        oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
 
         onDemandConfigurationPath = System.getProperty( //
                 JsonFileBasedAccountsConfigProvider.ENV_ONDEMAND_CONFIGURATION, // environment customization
@@ -139,8 +140,8 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     @AfterClass(alwaysRun = true)
     public void afterTestAlways()
     {
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuthOriginal.applicationId);
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class).removeConsumer(oAuthNew.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthOriginal.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthNew.applicationId);
     }
 
     /**

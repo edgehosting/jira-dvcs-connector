@@ -35,11 +35,7 @@ public class BitbucketOAuthPage implements Page
     @ElementBy(xpath = "//section[@id='oauth-consumers']//tbody")
     private PageElement consumersTable;
 
-    private String account = "jirabitbucketconnector";
-
-    public BitbucketOAuthPage()
-    {
-    }
+    private final String account;
 
     public BitbucketOAuthPage(final String account)
     {
