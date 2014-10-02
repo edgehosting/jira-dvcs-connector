@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
@@ -266,16 +265,14 @@
                         <baseurl.jira>http://localhost:2990/jira</baseurl.jira>
                         <http.jira.port>2990</http.jira.port>
                         <context.jira.path>jira</context.jira.path>
-                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}
-                        </jirabitbucketconnector.password>
+                        <jirabitbucketconnector.password>${jirabitbucketconnector.password}</jirabitbucketconnector.password>
                         <dvcsconnectortest.password>${dvcsconnectortest.password}</dvcsconnectortest.password>
                         <ondemand.properties>${basedir}/target/jira/home/ondemand.properties</ondemand.properties>
                         <atlassian.plugins.enable.wait>300</atlassian.plugins.enable.wait>
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-                    <productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip
-                    </productDataPath>
+                    <productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
                     <log4jProperties>target/test-classes/log4j.properties</log4jProperties>
                     <pluginArtifacts>
                         <pluginArtifact>
@@ -369,8 +366,7 @@
         </plugins>
     </build>
     <properties>
-        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff
-        </jirabitbucketconnector.password>
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
         <skipTests>false</skipTests>
@@ -410,14 +406,11 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/target/test-classes/test-resources-mysql-gh-enabled-5.0.1.zip
-                                    </dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-mysql-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
-                                            <url>
-                                                jdbc:mysql://${mysql.host}:${mysql.port}/${mysql.database}?useUnicode=true&amp;amp;characterEncoding=utf8&amp;amp;sessionVariables=storage_engine=InnoDB
-                                            </url>
+                                            <url>jdbc:mysql://${mysql.host}:${mysql.port}/${mysql.database}?useUnicode=true&amp;amp;characterEncoding=utf8&amp;amp;sessionVariables=storage_engine=InnoDB</url>
                                             <driver>com.mysql.jdbc.Driver</driver>
                                             <username>${mysql.username}</username>
                                             <password>${mysql.password}</password>
@@ -459,15 +452,11 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>
-                                        ${basedir}/target/test-classes/test-resources-postgres-gh-enabled-5.0.1.zip
-                                    </dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-postgres-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
-                                            <url>
-                                                jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}
-                                            </url>
+                                            <url>jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}</url>
                                             <driver>org.postgresql.Driver</driver>
                                             <username>${postgres.username}</username>
                                             <password>${postgres.password}</password>
@@ -509,9 +498,7 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>
-                                        ${basedir}/target/test-classes/test-resources-oracle-gh-enabled-5.0.1.zip
-                                    </dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-oracle-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
@@ -557,13 +544,11 @@
                                 <product>
                                     <id>jira</id>
                                     <version>${jira.version}</version>
-                                    <dataPath>${basedir}/target/test-classes/test-resources-mssql-gh-enabled-5.0.1.zip
-                                    </dataPath>
+                                    <dataPath>${basedir}/target/test-classes/test-resources-mssql-gh-enabled-5.0.1.zip</dataPath>
                                     <dataSources>
                                         <dataSource>
                                             <jndi>jdbc/JiraDS</jndi>
-                                            <url>jdbc:jtds:sqlserver://${mssql.host}:${mssql.port}/${mssql.database}
-                                            </url>
+                                            <url>jdbc:jtds:sqlserver://${mssql.host}:${mssql.port}/${mssql.database}</url>
                                             <driver>net.sourceforge.jtds.jdbc.Driver</driver>
                                             <username>${mssql.username}</username>
                                             <password>${mssql.password}</password>
