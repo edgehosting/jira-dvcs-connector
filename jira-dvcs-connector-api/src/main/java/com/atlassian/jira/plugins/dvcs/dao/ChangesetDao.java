@@ -85,9 +85,11 @@ public interface ChangesetDao
     /**
      * Returns lists of latest commits that need to be processed by smartcommits logic.
      *
-     * @param closure
+     * @param repositoryId id of the repository to select changesets from
+     * @param columns the columns that are required in the closure
+     * @param closure the code to be executed for each changeset selected
      */
-    void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, ForEachChangesetClosure closure);
+    void forEachLatestChangesetsAvailableForSmartcommitDo(int repositoryId, String[] columns, ForEachChangesetClosure closure);
 
     /**
      * @param id
