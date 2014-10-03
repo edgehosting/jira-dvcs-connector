@@ -12,10 +12,10 @@ import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -172,7 +172,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertFalse(hasRepoSyncError(), "Synchronization failed");
+        Assert.assertFalse("Synchronization failed", hasRepoSyncError());
     }
 
     private boolean hasRepoSyncError()
