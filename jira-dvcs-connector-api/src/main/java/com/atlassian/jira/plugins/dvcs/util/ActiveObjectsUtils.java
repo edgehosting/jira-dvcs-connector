@@ -22,6 +22,8 @@ public class ActiveObjectsUtils
     // Because of an issue in ActiveObjects (AO-453, AO-455) we can't use deleteWithSQL in PostgresSQL
     private static final boolean DELETE_WITH_SQL = false; //SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
 
+    public static final String ID = "ID";
+
     public static <T extends Entity> int delete(final ActiveObjects activeObjects, Class<T> entityType, Query query)
     {
         long startTime = System.currentTimeMillis();
@@ -46,10 +48,10 @@ public class ActiveObjectsUtils
             log.debug("Deleting up to {} entities of {} remaining.", DELETE_WINDOW_SIZE, ids.size() - deleted);
             if (DELETE_WITH_SQL)
             {
-                activeObjects.deleteWithSQL(entityType, renderListOperator("ID", "IN", "OR", window), window.toArray());
+                activeObjects.deleteWithSQL(entityType, renderListOperator(ID, "IN", "OR", window), window.toArray());
             } else
             {
-                activeObjects.delete(activeObjects.find(entityType, renderListOperator("ID", "IN", "OR", window), window.toArray()));
+                activeObjects.delete(activeObjects.find(entityType, renderListOperator(ID, "IN", "OR", window), window.toArray()));
             }
             deleted += window.size();
         }
