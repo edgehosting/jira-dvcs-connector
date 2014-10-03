@@ -22,6 +22,7 @@ import static com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping.
 import static com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping.DATE;
 import static com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping.MESSAGE;
 import static com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping.NODE;
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * The Class RunnableChangesetSmartcommitProcessor.
@@ -65,7 +66,7 @@ public class SmartcommitOperation implements Callable<Void>
             log.debug("Running SmartcommitOperation ... ");
 
             changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repository.getId(),
-                    new String[] {"ID", MESSAGE, NODE, AUTHOR_EMAIL, DATE}, // the columns used in the closure below
+                    new String[] {ID, MESSAGE, NODE, AUTHOR_EMAIL, DATE}, // the columns used in the closure below
                     new ForEachChangesetClosure()
             {
                 @Override
