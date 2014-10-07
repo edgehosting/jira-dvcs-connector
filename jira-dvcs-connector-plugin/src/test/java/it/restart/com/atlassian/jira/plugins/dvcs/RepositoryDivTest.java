@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
 import org.testng.annotations.Test;
 
 import static org.fest.assertions.api.Assertions.assertThat;

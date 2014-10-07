@@ -1,6 +1,6 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import com.atlassian.jira.plugins.dvcs.RestUrlBuilder;
+import com.atlassian.jira.plugins.dvcs.pageobjects.RestUrlBuilder;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;

@@ -1,5 +1,6 @@
-package com.atlassian.jira.plugins.dvcs;
+package com.atlassian.jira.plugins.dvcs.pageobjects;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.google.common.collect.Maps;
 
 import java.net.InetAddress;
@@ -9,11 +10,21 @@ import java.util.Map.Entry;
 
 public class RestUrlBuilder
 {
+    private final JiraTestedProduct jira;
+
     private final String path;
     private final Map<String, String> params = Maps.newHashMap();
+    private String hostname;
 
     public RestUrlBuilder(String path)
     {
+        this.jira = null;
+        this.path = path;
+    }
+
+    public RestUrlBuilder(JiraTestedProduct jira, String path)
+    {
+        this.jira = jira;
         this.path = path;
     }
 
@@ -48,17 +59,26 @@ public class RestUrlBuilder
     
     /**
      * Fast way to get base url. (assuming it's http://hostname:2990/jira)
+     *
+     * Note: if {@code jira} has been instantiated then we use it to get the real url.
+     *
      * @return
      */
     private String getBaseUrlFast()
     {
-        try
+        if (jira == null) {
+            try
+            {
+                String hostname = InetAddress.getLocalHost().getHostName();
+                return "http://" + hostname + ":2990/jira";
+            } catch (UnknownHostException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        } else
         {
-            String hostname = InetAddress.getLocalHost().getHostName();
-            return "http://" + hostname + ":2990/jira";
-        } catch (UnknownHostException e)
-        {
-            throw new RuntimeException(e);
+            return jira.environmentData().getBaseUrl().toExternalForm();
         }
     }
 }
