@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
+
 /**
  * An implementation of {@link MessageDao}.
  * 
@@ -117,7 +119,7 @@ public class MessageDaoImpl implements MessageDao
                 alias(MessageMapping.class, "message");
                 alias(MessageTagMapping.class, "messageTag");
 
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
+                join(MessageTagMapping.class, column(MessageMapping.class, ID), MessageTagMapping.MESSAGE);
 
                 where(eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")));
             }
@@ -155,8 +157,8 @@ public class MessageDaoImpl implements MessageDao
                 alias(MessageTagMapping.class, "messageTag");
                 alias(MessageQueueItemMapping.class, "messageQueueItem");
 
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
-                join(MessageQueueItemMapping.class, column(MessageMapping.class, "ID"), MessageQueueItemMapping.MESSAGE);
+                join(MessageTagMapping.class, column(MessageMapping.class, ID), MessageTagMapping.MESSAGE);
+                join(MessageQueueItemMapping.class, column(MessageMapping.class, ID), MessageQueueItemMapping.MESSAGE);
 
                 where(and( //
                         eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")), //

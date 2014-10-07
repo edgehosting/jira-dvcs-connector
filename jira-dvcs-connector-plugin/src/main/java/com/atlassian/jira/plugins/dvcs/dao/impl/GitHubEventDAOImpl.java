@@ -13,6 +13,8 @@ import net.java.ao.Query;
 import java.util.Map;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
+
 /**
  * AO implementation of the {@link GitHubEventDAO}.
  * 
@@ -108,7 +110,7 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
         Query query = Query.select();
         query.where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.SAVE_POINT + " = ? ", repository.getId(), true);
         query.setOrderClause(queryHelper.getOrder(new OrderClause[] {
-                new OrderClause(GitHubEventMapping.CREATED_AT, OrderClause.Order.DESC), new OrderClause("ID", OrderClause.Order.DESC) }));
+                new OrderClause(GitHubEventMapping.CREATED_AT, OrderClause.Order.DESC), new OrderClause(ID, OrderClause.Order.DESC) }));
         query.setLimit(1);
 
         GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);

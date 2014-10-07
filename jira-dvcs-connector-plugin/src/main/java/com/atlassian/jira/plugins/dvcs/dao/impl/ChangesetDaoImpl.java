@@ -24,7 +24,8 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.PrimaryKey;
 import net.java.ao.schema.Table;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 public class ChangesetDaoImpl implements ChangesetDao
 {
@@ -123,7 +126,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                         .alias(ChangesetMapping.class, "c")
                         .where("not exists " +
                                 "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where c." +
-                                queryHelper.getSqlColumnName("ID") + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+                                queryHelper.getSqlColumnName(ID) + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
 
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
@@ -420,9 +423,9 @@ public class ChangesetDaoImpl implements ChangesetDao
     }
 
     @Override
-    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final ForEachChangesetClosure closure)
+    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final String[] columns, final ForEachChangesetClosure closure)
     {
-        Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId);
+        Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId, columns);
         activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
         {
             @Override
@@ -485,9 +488,10 @@ public class ChangesetDaoImpl implements ChangesetDao
         return result;
     }
 
-    private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
+    private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId, final String[] columns)
     {
-        return Query.select()
+        // this query is to be used with stream, we have to be explicit about which columns we want
+        return Query.select(StringUtils.join(columns, ','))
                 .from(ChangesetMapping.class)
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
