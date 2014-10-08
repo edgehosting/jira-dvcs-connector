@@ -344,9 +344,9 @@ public class GitHubTestSupport
                     gitHubClient.getUser().equals(owner) ? null : owner);
 
             // wait until forked repository is prepared
-            waitTillRepositoryIsReady(repositoryService, repository);
+            final Repository newRepository = waitTillRepositoryIsReady(repositoryService, repository);
 
-            RepositoryContext repositoryContext = new RepositoryContext(owner, repository);
+            RepositoryContext repositoryContext = new RepositoryContext(owner, newRepository);
             repositoryByLifetime.get(lifetime).add(repositoryContext);
             repositoryBySlug.put(getSlug(owner, repositoryName), repositoryContext);
         }
@@ -635,9 +635,7 @@ public class GitHubTestSupport
         {
             final Repository createdRepository = createRepositoryForUserOrOrg(owner, name, gitHubClient, repositoryService);
 
-            waitTillRepositoryIsReady(repositoryService, createdRepository);
-
-            return createdRepository;
+            return waitTillRepositoryIsReady(repositoryService, createdRepository);
         }
         catch (IOException e)
         {
@@ -730,14 +728,19 @@ public class GitHubTestSupport
         }
     }
 
-    private void waitTillRepositoryIsReady(final RepositoryService repositoryService, final Repository repository)
+    private Repository waitTillRepositoryIsReady(final RepositoryService repositoryService, final Repository repository)
             throws IOException
     {
-        do
+        for (int i = 0; i < 10; i++)
         {
-            sleep(500);
+            sleep(100);
+            final Repository newRepository = repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName());
+            if (newRepository != null)
+            {
+                return newRepository;
+            }
         }
-        while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
+        throw new IOException("Unable to retrieve the new repository after 10s - " + repository.getUrl());
     }
 
     private void sleep(long millis)
