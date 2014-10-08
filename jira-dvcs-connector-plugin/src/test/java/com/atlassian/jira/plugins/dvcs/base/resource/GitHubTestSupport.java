@@ -344,11 +344,7 @@ public class GitHubTestSupport
                     gitHubClient.getUser().equals(owner) ? null : owner);
 
             // wait until forked repository is prepared
-            do
-            {
-                sleep(1000);
-            }
-            while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
+            waitTillRepositoryIsReady(repositoryService, repository);
 
             RepositoryContext repositoryContext = new RepositoryContext(owner, repository);
             repositoryByLifetime.get(lifetime).add(repositoryContext);
@@ -635,23 +631,33 @@ public class GitHubTestSupport
         GitHubClient gitHubClient = getGitHubClient(owner);
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
-        Repository repository = new Repository();
-        repository.setName(name);
-
         try
         {
-            if (gitHubClient.getUser().equals(owner))
-            {
-                return repositoryService.createRepository(repository);
-            }
-            else
-            {
-                return repositoryService.createRepository(owner, repository);
-            }
+            final Repository createdRepository = createRepositoryForUserOrOrg(owner, name, gitHubClient, repositoryService);
+
+            waitTillRepositoryIsReady(repositoryService, createdRepository);
+
+            return createdRepository;
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private Repository createRepositoryForUserOrOrg(final String owner, final String repoName, final GitHubClient gitHubClient, final RepositoryService repositoryService)
+            throws IOException
+    {
+        Repository repository = new Repository();
+        repository.setName(repoName);
+
+        if (gitHubClient.getUser().equals(owner))
+        {
+            return repositoryService.createRepository(repository);
+        }
+        else
+        {
+            return repositoryService.createRepository(owner, repository);
         }
     }
 
@@ -722,6 +728,16 @@ public class GitHubTestSupport
                 }
             }
         }
+    }
+
+    private void waitTillRepositoryIsReady(final RepositoryService repositoryService, final Repository repository)
+            throws IOException
+    {
+        do
+        {
+            sleep(500);
+        }
+        while (repositoryService.getRepository(repository.getOwner().getLogin(), repository.getName()) == null);
     }
 
     private void sleep(long millis)
