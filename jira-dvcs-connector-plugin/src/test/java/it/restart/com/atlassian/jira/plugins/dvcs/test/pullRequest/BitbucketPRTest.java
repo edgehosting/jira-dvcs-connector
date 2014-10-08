@@ -11,7 +11,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
 import org.mockito.MockitoAnnotations;
