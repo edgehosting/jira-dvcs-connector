@@ -122,9 +122,9 @@ public class GithubOAuthPage implements Page
 
     private void retry(int times, Runnable runnable)
     {
-        for (int count = 1 ; count < times; count++)
+        for (int count = 1 ; count <= times; count++)
         {
-            logger.warn("retrying GitHub deleting application: %d times", count);
+            logger.warn("retrying GitHub deleting application: {} times", count);
             try
             {
                 runnable.run();
@@ -142,7 +142,7 @@ public class GithubOAuthPage implements Page
                 }
             }
         }
-        logger.warn("Gave up retrying GitHub deleting application");
+        logger.warn("Gave up retrying GitHub deleting application", new RuntimeException("for stack tracing only"));
     }
 
 }
