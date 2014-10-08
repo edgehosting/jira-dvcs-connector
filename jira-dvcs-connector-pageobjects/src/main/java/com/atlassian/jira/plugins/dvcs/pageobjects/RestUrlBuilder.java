@@ -56,7 +56,7 @@ public class RestUrlBuilder
     {
         return build();
     }
-    
+
     /**
      * Fast way to get base url. (assuming it's http://hostname:2990/jira)
      *
@@ -66,7 +66,8 @@ public class RestUrlBuilder
      */
     private String getBaseUrlFast()
     {
-        if (jira == null) {
+        if (jira == null)
+        {
             try
             {
                 String hostname = InetAddress.getLocalHost().getHostName();
@@ -75,7 +76,6 @@ public class RestUrlBuilder
             {
                 throw new RuntimeException(e);
             }
-
         } else
         {
             return jira.environmentData().getBaseUrl().toExternalForm();
