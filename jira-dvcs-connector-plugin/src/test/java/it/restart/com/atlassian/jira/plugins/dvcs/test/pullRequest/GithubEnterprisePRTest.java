@@ -86,8 +86,9 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
     @Override
     protected void cleanupLocalTestRepository()
     {
-        gitHubTestSupport.afterMethod();
+        // delete account in local configuration first to avoid 404 error when uninstalling hook
         dvcs.deleteAllRepositories();
+        gitHubTestSupport.afterMethod();
     }
 
     @Override
