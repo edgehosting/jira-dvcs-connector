@@ -1,6 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.pageobjects.model.DefaultIssueActions;
+import com.atlassian.jira.pageobjects.pages.viewissue.IssueMenu;
+import com.atlassian.jira.pageobjects.pages.viewissue.MoveIssuePage;
+import com.atlassian.jira.pageobjects.pages.viewissue.ViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
@@ -20,7 +24,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
@@ -260,19 +263,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // add organization
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
+        final String issueKey = "QA-1";
+
         // check commits setup to start with
-        assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
 
         // move issue from QA project to BBC project
-        JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
-        movingPage.stepOne_typeProjectName("Bitbucket Connector")
-                .clickNext()
-                .clickNext()
-                .submit();
+        moveIssueToProject(issueKey, "Bitbucket Connector");
 
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
-        assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
     }
 
     @Override
@@ -404,6 +405,15 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
         return page;
+    }
+
+    private void moveIssueToProject(final String issueKey, final String newProject)
+    {
+        ViewIssuePage viewIssuePage = jira.goToViewIssue(issueKey);
+        IssueMenu issueMenu = viewIssuePage.getIssueMenu();
+        issueMenu.invoke(DefaultIssueActions.MOVE);
+        final MoveIssuePage moveIssuePage = jira.getPageBinder().bind(MoveIssuePage.class, issueKey);
+        moveIssuePage.setNewProject(newProject).next().next().move();
     }
 
     @Override
