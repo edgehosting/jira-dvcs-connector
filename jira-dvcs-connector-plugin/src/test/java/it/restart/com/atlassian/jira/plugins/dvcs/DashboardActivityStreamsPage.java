@@ -29,12 +29,23 @@ public class DashboardActivityStreamsPage implements Page
     @ElementBy(id = "config-form")
     private PageElement configForm;
 
+    final private boolean isEditMode;
+
+    /**
+     *
+     * @param isEditMode whether we are visiting the edit dashboard page or the normal view dashboard page
+     */
+    public DashboardActivityStreamsPage(final boolean isEditMode)
+    {
+        this.isEditMode = isEditMode;
+    }
+
     @Override
     public String getUrl()
     {
         // this url is used to get to the main dashboard page only
         // the actual url for the activity stream widget is calculated based on the iframe src
-        return "/secure/Dashboard.jspa";
+        return isEditMode ? "/secure/admin/EditDefaultDashboard!default.jspa" : "/secure/Dashboard.jspa";
     }
 
     public void checkIssueActivityPresentedForQA5()
@@ -68,6 +79,11 @@ public class DashboardActivityStreamsPage implements Page
 
     public void setIssueKeyFilter(String issueKey)
     {
+        if (!isEditMode)
+        {
+            throw new AssertionError("Could not set issue key in non edit mode of the dashboard - " + issueKey);
+        }
+
         showFilter();
 
         PageElement addFilterLinkElm = rootElement.find(By.className("add-filter-link"));

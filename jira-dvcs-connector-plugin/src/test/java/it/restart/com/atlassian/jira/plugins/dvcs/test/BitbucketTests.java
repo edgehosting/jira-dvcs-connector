@@ -195,7 +195,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID);
+        DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, true);
 
         // Activity streams should contain at least one changeset with 'more files' link.
         assertThat(page.isMoreFilesLinkVisible()).isTrue();
@@ -212,7 +212,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
 
-        page = visitActivityStreamGadget(GADGET_ID);
+        page = visitActivityStreamGadget(GADGET_ID, true);
         page.checkIssueActivityNotPresentedForQA5();
     }
 
@@ -227,14 +227,14 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
             addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
             // Activity streams gadget expected at dashboard page!
-            DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID);
+            DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, false);
 
             page.checkIssueActivityPresentedForQA5();
 
             // logout user
             jira.getTester().getDriver().manage().deleteAllCookies();
 
-            page = visitActivityStreamGadget(GADGET_ID);
+            page = visitActivityStreamGadget(GADGET_ID, false);
             // anonymous user should not see QA-5 activity stream
             page.checkIssueActivityNotPresentedForQA5();
         }
@@ -393,17 +393,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync, expectError);
     }
 
-    private DashboardActivityStreamsPage visitActivityStreamGadget(final String gadgetId)
+    private DashboardActivityStreamsPage visitActivityStreamGadget(final String gadgetId, final boolean isEditMode)
     {
         // Activity streams gadget expected at dashboard page!
-        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
+        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class, isEditMode);
         assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
 
         WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id(gadgetId));
         String iframeSrc = iframeElm.getAttribute("src");
         jira.getTester().gotoUrl(iframeSrc);
 
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
+        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class, isEditMode);
         return page;
     }
 
