@@ -8,13 +8,19 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Class to assist with constructing urls when querying rest resources during integration tests.
+ * <p/>
+ * If the constructor {@code RestUrlBuilder(String)} is used, then an JIRA base url of "http://" + hostname + ":2990/jira"
+ * is assumed, and this is returned from {@code getBaseUrlFast()}. If the constructor
+ * {@code RestUrlBuilder(JiraTestedProduct, String)} is used, then the {@code JiraTestedProduct} is queried to get the
+ * actual base url of the JIRA instance when {@code getBaseUrlFast()} is called.
+ */
 public class RestUrlBuilder
 {
     private final JiraTestedProduct jira;
-
-    private final String path;
     private final Map<String, String> params = Maps.newHashMap();
-    private String hostname;
+    private final String path;
 
     public RestUrlBuilder(String path)
     {
