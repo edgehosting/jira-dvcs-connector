@@ -14,7 +14,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
-import static com.atlassian.pageobjects.elements.timeout.TimeoutType.UI_ACTION;
 
 /**
  *
@@ -38,12 +37,10 @@ public class GithubOAuthPage implements Page
     @ElementBy(cssSelector = ".keys")
     private PageElement secrets;
 
-    // deliberately setting to 1s to test retry
-    @ElementBy(linkText = "Delete application", timeoutType = UI_ACTION)
+    @ElementBy(linkText = "Delete application", timeoutType = PAGE_LOAD)
     private PageElement deleteApplication;
 
-    // deliberately setting to 1s to test retry
-    @ElementBy(xpath = "//div[@id='facebox']//button", timeoutType = UI_ACTION)
+    @ElementBy(xpath = "//div[@id='facebox']//button", timeoutType = PAGE_LOAD)
     private PageElement deleteApplicationConfirm;
 
     @ElementBy(tagName = "body")
