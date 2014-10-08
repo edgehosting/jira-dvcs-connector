@@ -32,7 +32,9 @@ public class DashboardActivityStreamsPage implements Page
     @Override
     public String getUrl()
     {
-        return "/secure/admin/EditDefaultDashboard!default.jspa";
+        // this url is used to get to the main dashboard page only
+        // the actual url for the activity stream widget is calculated based on the iframe src
+        return "/secure/Dashboard.jspa";
     }
 
     public void checkIssueActivityPresentedForQA5()
