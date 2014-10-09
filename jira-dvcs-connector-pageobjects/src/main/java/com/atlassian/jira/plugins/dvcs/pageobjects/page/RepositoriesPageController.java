@@ -1,13 +1,14 @@
-package it.restart.com.atlassian.jira.plugins.dvcs;
+package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.GrantAccessPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubGrantAccessPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.github.GithubGrantAccessPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +109,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private boolean isSyncFinished()
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories(jira);
         for (Repository repository : repositories.getRepositories())
         {
             if (repository.getSync() != null && !repository.getSync().isFinished())
@@ -122,7 +123,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     private List<String> getSyncErrors()
     {
         List<String> errors = new ArrayList<String>();
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories(jira);
         for (Repository repository : repositories.getRepositories())
         {
             if (repository.getSync() != null && repository.getSync().getError() != null)

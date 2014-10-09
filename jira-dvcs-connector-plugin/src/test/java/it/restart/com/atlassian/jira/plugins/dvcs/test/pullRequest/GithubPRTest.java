@@ -5,7 +5,7 @@ import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;

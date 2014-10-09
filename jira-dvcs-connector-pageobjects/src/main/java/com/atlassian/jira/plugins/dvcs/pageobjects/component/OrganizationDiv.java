@@ -1,6 +1,6 @@
-package it.restart.com.atlassian.jira.plugins.dvcs;
+package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.ConfirmationDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -8,7 +8,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
 import org.openqa.selenium.By;
 
 import java.util.ArrayList;

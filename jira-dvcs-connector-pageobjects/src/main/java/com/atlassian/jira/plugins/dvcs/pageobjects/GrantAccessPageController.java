@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs;
+package com.atlassian.jira.plugins.dvcs.pageobjects;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 

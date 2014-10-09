@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs.github;
+package com.atlassian.jira.plugins.dvcs.pageobjects.github;
 
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;

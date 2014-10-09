@@ -1,4 +1,4 @@
-package it.restart.com.atlassian.jira.plugins.dvcs;
+package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import com.atlassian.pageobjects.elements.PageElement;
 import org.openqa.selenium.By;

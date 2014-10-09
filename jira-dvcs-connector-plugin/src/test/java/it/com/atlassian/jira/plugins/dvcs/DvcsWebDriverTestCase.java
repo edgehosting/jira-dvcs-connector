@@ -3,16 +3,12 @@ package it.com.atlassian.jira.plugins.dvcs;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.ProductInstance;
-import com.google.common.util.concurrent.Uninterruptibles;
-import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoryDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
 import org.testng.annotations.Listeners;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.testng.Assert.assertTrue;

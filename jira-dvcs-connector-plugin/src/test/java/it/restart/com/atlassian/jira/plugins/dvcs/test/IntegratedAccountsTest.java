@@ -15,9 +15,9 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketGrantAccessPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -172,7 +172,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jira);
         repositoriesPageController.addOrganization(
-                it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
+                RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
                 new OAuthCredentials(oAuthOriginal.key, oAuthOriginal.secret), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
@@ -211,7 +211,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jira);
         repositoriesPageController.addOrganization(
-                it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
+                RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
                 new OAuthCredentials(oAuthOriginal.key, oAuthOriginal.secret), false);
 
         buildOnDemandProperties(new IntegratedAccount(ACCOUNT_NAME, oAuthNew.key, oAuthNew.secret));
