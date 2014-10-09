@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
+
 /**
  * Represents the page to link repositories to projects
  */
@@ -48,7 +50,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     @ElementBy(id = "organization")
     PageElement organization;
 
-    @ElementBy(id = "organization-list")
+    @ElementBy(id = "organization-list", timeoutType = PAGE_LOAD)
     PageElement organizationsElement;
 
     @ElementBy(id = "autoLinking")

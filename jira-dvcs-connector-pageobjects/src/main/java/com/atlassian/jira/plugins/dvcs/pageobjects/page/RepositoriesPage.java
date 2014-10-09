@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
+
 /**
  * Represents the page to link repositories to projects
  */
@@ -45,7 +47,7 @@ public class RepositoriesPage implements Page
     @ElementBy(id = "aui-message-bar")
     private PageElement messageBarDiv;
 
-    @ElementBy(id = "organization-list")
+    @ElementBy(id = "organization-list", timeoutType = PAGE_LOAD)
     private PageElement organizationsElement;
 
     @ElementBy(id = "repoEntry")

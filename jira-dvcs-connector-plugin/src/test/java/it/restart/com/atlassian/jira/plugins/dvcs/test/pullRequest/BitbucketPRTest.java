@@ -75,6 +75,9 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @Override
     protected void cleanupLocalTestRepository()
     {
+        // delete account in local configuration first to avoid 404 error when uninstalling hook
+        dvcs.deleteAllRepositories();
+
         BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(ACCOUNT_NAME, PASSWORD);
         RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
 
@@ -82,8 +85,6 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         {
             repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
         }
-
-        dvcs.deleteAllRepositories();
 
         removeExpiredRepositories(ACCOUNT_NAME, PASSWORD);
         removeExpiredRepositories(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
