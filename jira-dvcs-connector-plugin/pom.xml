@@ -92,11 +92,41 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-pageobjects-api</artifactId>
+            <version>2.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-pageobjects-elements</artifactId>
+            <version>2.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-webdriver-core</artifactId>
+            <version>2.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>atlassian-jira-pageobjects</artifactId>
             <version>${jira.version}</version>
             <scope>test</scope>
             <exclusions>
+                <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-pageobjects-api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-pageobjects-elements</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-webdriver-core</groupId>
+                </exclusion>
                 <exclusion>
                     <artifactId>junit</artifactId>
                     <groupId>junit</groupId>
