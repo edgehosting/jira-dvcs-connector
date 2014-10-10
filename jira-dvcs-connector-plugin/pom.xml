@@ -91,22 +91,31 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- use atlassian-selenium 2.2.0 so that FF 31 is used instead of FF 12
+             We need FF 31 as GitHub the delete oauth page now does not support FF 12 -->
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-api</artifactId>
-            <version>2.2.0</version>
+            <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-elements</artifactId>
-            <version>2.2.0</version>
+            <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-webdriver-core</artifactId>
-            <version>2.2.0</version>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- downgrade selenium-java bundled in atlassian-selenium as it requires guava 14 to be bundled -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -162,10 +171,18 @@
             </exclusions>
         </dependency>
         <!-- httpclient is explicitly excluded in the pageobjects dependency to avoid it being bundled, due to maven bug
-             we add it here with test scope so that it could still be included in test -->
+             we add it here with test scope so that it could still be included in test
+             We are also overwriting it with a different version 4.3.x so that it works with atlassian-selenium 2.2.0 -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+            <version>${apache.httpcomponents.for.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${apache.httpcomponents.for.selenium.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -400,6 +417,8 @@
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
         <skipTests>false</skipTests>
+        <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
+        <selenium.version>2.41.0</selenium.version>
     </properties>
     <profiles>
         <profile>
