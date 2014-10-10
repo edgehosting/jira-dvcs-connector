@@ -190,18 +190,6 @@
                         <artifactId>beehive-core</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>commons-codec</groupId>
-                        <artifactId>commons-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.collections</groupId>
-                        <artifactId>google-collections</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>net.sf.ehcache</groupId>
                         <artifactId>ehcache</artifactId>
                     </exclusion>
