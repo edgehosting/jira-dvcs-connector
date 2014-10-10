@@ -5,6 +5,8 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
+
 public class BitbucketLoginPage implements Page
 {
     @ElementBy(id = "id_username")
@@ -16,7 +18,7 @@ public class BitbucketLoginPage implements Page
     @ElementBy(name = "submit")
     private PageElement loginButton;
 
-    @ElementBy(id = "user-dropdown-trigger")
+    @ElementBy(id = "user-dropdown-trigger", timeoutType = PAGE_LOAD)
     private PageElement userDropdownTriggerLink;
     
     @ElementBy(linkText = "Log out")
@@ -43,8 +45,12 @@ public class BitbucketLoginPage implements Page
         // accessing tag name as workaround for permission denied to access property 'nr@context' issue
         PageElementUtils.permissionDeniedWorkAround(usernameOrEmailInput);
 
-        userDropdownTriggerLink.click();
-        logoutLink.click();
+        if (userDropdownTriggerLink.isPresent())
+        {
+            // only do the logout if the user drop down is present, i.e., if the user is logged in.
+            userDropdownTriggerLink.click();
+            logoutLink.click();
+        }
     }
     
 }

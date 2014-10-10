@@ -6,21 +6,18 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.AtlassianWebDriver;
-import com.google.inject.Inject;
+import com.atlassian.webdriver.testing.rule.WebDriverSupport;
 import org.openqa.selenium.By;
 
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketOAuthPage implements Page
 {
-    @Inject
-    private AtlassianWebDriver driver;
-
     @ElementBy(linkText = "Add consumer")
     private PageElement addConsumerButton;
     
-    @ElementBy(id = "bb-add-consumer-dialog")
+    @ElementBy(id = "bb-add-consumer-dialog", timeoutType = PAGE_LOAD)
     private PageElement bbAddConsumerDialog;
     
     @ElementBy(id = "consumer-name")
@@ -56,7 +53,7 @@ public class BitbucketOAuthPage implements Page
         addConsumerButton.click();
 
         // clicking the button scrolls to it, scroll back to top so that the dialog is considered visible
-        driver.executeScript("scroll(0, 0);");
+        WebDriverSupport.fromAutoInstall().getDriver().executeScript("scroll(0, 0);");
 
 
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
