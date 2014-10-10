@@ -24,13 +24,17 @@ import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.webdriver.testing.rule.WebDriverSupport;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -252,9 +256,23 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // add organization
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
+        setSize(new Dimension(1024, 1280));
+
         GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoardPlan();
         greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
+    }
+
+    // code copied from WindowSizeRule from atlassian-selenium,
+    // will be reworked to have a proper TestNG implementation of the WindowSize annotation
+    private void setSize(Dimension dimension)
+    {
+        final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
+
+        support.getDriver().manage().window().setPosition(new Point(0,0));
+        support.getDriver().manage().window().setSize(dimension);
+        // _not_ a mistake... don't ask
+        support.getDriver().manage().window().setSize(dimension);
     }
 
     @Test
