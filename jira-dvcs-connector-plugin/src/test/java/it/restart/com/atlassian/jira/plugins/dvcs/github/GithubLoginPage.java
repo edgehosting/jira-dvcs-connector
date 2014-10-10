@@ -80,9 +80,13 @@ public class GithubLoginPage implements Page
         {
             githubWebLogoutLink.click();
         }
-        else
+        else if (oldGithubWebLogoutLink.isPresent())
         {
             oldGithubWebLogoutLink.click();
+        }
+        else
+        {
+            return; // skip if user has already logged out
         }
         try
         {
