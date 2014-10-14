@@ -21,6 +21,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService.DIRECTION_ASC;
+import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService.DIRECTION_DESC;
+import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService.SORT_CREATED;
+import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService.SORT_UPDATED;
+import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestService.STATE_ALL;
+
 /**
  * Message consumer for {@link com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage}
  *
@@ -64,13 +70,12 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
         boolean softSync = payload.isSoftSync();
         Set<Long> processedPullRequests = payload.getProcessedPullRequests();
 
-        CustomPullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
-        EventService eventService = gitHubClientProvider.getEventService(repository);
-
         RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
         if (page == 1 && !softSync)
         {
+            EventService eventService = gitHubClientProvider.getEventService(repository);
+
             // saving the first event as save point
             // GitHub doesn't support per_page parameter for events, therefore 30 events will be downloaded and saved
             // leaving the page size set to 1 in case that this will change in the future to request only the first event
@@ -83,10 +88,12 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
             }
         }
 
+        CustomPullRequestService pullRequestService = gitHubClientProvider.getPullRequestService(repository);
+
         // sorting by update date to be able to stop for soft sync and by creation date when full sync to avoid page shifting
         PageIterator<PullRequest> pullRequestsPages = softSync ?
-                pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_UPDATED, CustomPullRequestService.DIRECTION_DESC, page, pagelen) :
-                pullRequestService.pagePullRequests(repositoryId, CustomPullRequestService.STATE_ALL, CustomPullRequestService.SORT_CREATED, CustomPullRequestService.DIRECTION_ASC, page, pagelen);
+                pullRequestService.pagePullRequests(repositoryId, STATE_ALL, SORT_UPDATED, DIRECTION_DESC, page, pagelen) :
+                pullRequestService.pagePullRequests(repositoryId, STATE_ALL, SORT_CREATED, DIRECTION_ASC, page, pagelen);
 
         Iterable<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, Collections.<PullRequest>emptyList());
         Set<Long> currentlyProccessedPullRequests = new LinkedHashSet<Long>();
@@ -106,7 +113,10 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
 
         if (pullRequestsPages.hasNext())
         {
-            currentlyProccessedPullRequests.addAll(processedPullRequests);
+            if (processedPullRequests != null)
+            {
+                currentlyProccessedPullRequests.addAll(processedPullRequests);
+            }
             fireNextPage(message, payload, pullRequestsPages.getNextPage(), currentlyProccessedPullRequests);
         }
     }
