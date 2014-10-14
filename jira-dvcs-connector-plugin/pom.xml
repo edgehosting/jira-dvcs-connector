@@ -247,6 +247,14 @@
             <groupId>com.atlassian.scheduler</groupId>
             <artifactId>atlassian-scheduler-compat</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.mysema.querydsl</groupId>
+            <artifactId>querydsl-sql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.pocketknife</groupId>
+            <artifactId>atlassian-pocketknife-querydsl</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
