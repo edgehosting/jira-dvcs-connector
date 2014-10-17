@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+@Component
 public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
 {
     @Resource
@@ -46,8 +48,10 @@ public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
                     return dvcsCommunicator.getAccountInfo(hostUrl, accountName);
                 }
             }
-          // unknown DVCS type, let the guess it anyway
-        } else {
+            // unknown DVCS type, let the guess it anyway
+        }
+        else
+        {
             for (DvcsCommunicator dvcsCommunicator : dvcsCommunicators)
             {
                 AccountInfo accountInfo = dvcsCommunicator.getAccountInfo(hostUrl, accountName);

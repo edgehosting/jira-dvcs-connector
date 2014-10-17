@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.crypto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -12,20 +13,21 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * An encryption service for storing passwords
  */
-
+@Component
 public class DefaultEncryptor implements Encryptor
 {
     final Logger logger = LoggerFactory.getLogger(DefaultEncryptor.class);
 
     /**
      * Encrypt the input into a hex encoded string;
+     *
      * @param input the input to encrypt
      * @param organizationName the project key
      * @param hostUrl the repository url
      * @return the encrypted string
      */
     @Override
-	public String encrypt(String input, String organizationName, String hostUrl)
+    public String encrypt(String input, String organizationName, String hostUrl)
     {
         byte[] encrypted;
         try
@@ -46,7 +48,7 @@ public class DefaultEncryptor implements Encryptor
         }
         catch (Exception e)
         {
-            logger.debug("error encrypting",e);
+            logger.debug("error encrypting", e);
             encrypted = new byte[0];
         }
 
@@ -67,11 +69,11 @@ public class DefaultEncryptor implements Encryptor
     }
 
     @Override
-	public String decrypt(String password, String organizationName, String hostUrl)
+    public String decrypt(String password, String organizationName, String hostUrl)
     {
-    	if (password == null) 
-    		return null; 
-    			
+        if (password == null)
+        { return null; }
+
         try
         {
             byte[] ciphertext = DefaultEncryptor.hexStringToByteArray(password);
@@ -99,7 +101,7 @@ public class DefaultEncryptor implements Encryptor
         }
         catch (Exception e)
         {
-            logger.debug("error decrypting",e);
+            logger.debug("error decrypting", e);
         }
         return "";
     }

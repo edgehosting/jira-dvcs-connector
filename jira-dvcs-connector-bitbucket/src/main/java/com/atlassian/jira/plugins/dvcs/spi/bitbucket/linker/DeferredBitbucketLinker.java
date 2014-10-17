@@ -3,12 +3,15 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -16,11 +19,11 @@ import java.util.concurrent.locks.Lock;
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
+@Component
 public class DeferredBitbucketLinker implements BitbucketLinker
 {
     /**
-     * Returns the name of the cluster-wide lock to acquire before modifying the links
-     * for the given repository.
+     * Returns the name of the cluster-wide lock to acquire before modifying the links for the given repository.
      *
      * @param repository the repository whose links are being modified
      * @return a globally unique lock name
@@ -36,15 +39,17 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     private final ClusterLockService clusterLockService;
     private final PluginSettingsFactory pluginSettingsFactory;
 
+    @Autowired
     public DeferredBitbucketLinker(@Qualifier ("bitbucketLinker") final BitbucketLinker bitbucketLinker,
-            final ClusterLockServiceFactory clusterLockServiceFactory, final PluginSettingsFactory pluginSettingsFactory)
+            @ComponentImport final ClusterLockServiceFactory clusterLockServiceFactory,
+            @ComponentImport final PluginSettingsFactory pluginSettingsFactory)
     {
-		this.bitbucketLinker = bitbucketLinker;
+        this.bitbucketLinker = bitbucketLinker;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
-	@Override
+    @Override
     public void linkRepository(final Repository repository, final Set<String> projectKeys)
     {
         configureLinks(repository, new Runnable()
@@ -57,9 +62,9 @@ public class DeferredBitbucketLinker implements BitbucketLinker
         });
     }
 
-	@Override
-	public void unlinkRepository(final Repository repository)
-	{
+    @Override
+    public void unlinkRepository(final Repository repository)
+    {
         configureLinks(repository, new Runnable()
         {
             @Override
@@ -68,11 +73,11 @@ public class DeferredBitbucketLinker implements BitbucketLinker
                 bitbucketLinker.unlinkRepository(repository);
             }
         });
-	}
+    }
 
-	@Override
-	public void linkRepositoryIncremental(final Repository repository, final Set<String> projectKeys)
-	{
+    @Override
+    public void linkRepositoryIncremental(final Repository repository, final Set<String> projectKeys)
+    {
         configureLinks(repository, new Runnable()
         {
             @Override
@@ -81,7 +86,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
                 bitbucketLinker.linkRepositoryIncremental(repository, projectKeys);
             }
         });
-	}
+    }
 
     private void configureLinks(final Repository repository, final Runnable task)
     {

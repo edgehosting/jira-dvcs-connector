@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSupport<OldBitbucketSynchronizeCsetMsg>
 {
     private static final String ID = OldBitbucketSynchronizeCsetMsgConsumer.class.getCanonicalName();
@@ -26,6 +28,7 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     {
         return payload.getRepository();
     }
+
     @Override
     protected String getBranch(OldBitbucketSynchronizeCsetMsg payload)
     {
@@ -41,13 +44,13 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     @Override
     protected OldBitbucketSynchronizeCsetMsg createNextMessage(OldBitbucketSynchronizeCsetMsg payload, String parentChangesetNode)
     {
-       return new OldBitbucketSynchronizeCsetMsg(payload.getRepository(), //
-               payload.getBranch(), //
-               parentChangesetNode, //
-               payload.getRefreshAfterSynchronizedAt(), //
-               payload.getProgress(),
-               payload.isSoftSync(), payload.getSyncAuditId(),
-               payload.isWebHookSync());
+        return new OldBitbucketSynchronizeCsetMsg(payload.getRepository(), //
+                payload.getBranch(), //
+                parentChangesetNode, //
+                payload.getRefreshAfterSynchronizedAt(), //
+                payload.getProgress(),
+                payload.isSoftSync(), payload.getSyncAuditId(),
+                payload.isWebHookSync());
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServi
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +39,9 @@ public class DevSummaryChangedEventResource
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
-    public DevSummaryChangedEventResource(final FeatureManager featureManager, final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
+    @Autowired
+    public DevSummaryChangedEventResource(@ComponentImport final FeatureManager featureManager,
+            final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
     {
         this.featureManager = featureManager;
         this.permissionManager = permissionManager;

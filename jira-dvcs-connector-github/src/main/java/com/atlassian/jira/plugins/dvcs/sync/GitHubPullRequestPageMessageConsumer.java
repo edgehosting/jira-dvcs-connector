@@ -15,6 +15,7 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -26,6 +27,7 @@ import javax.annotation.Resource;
  *
  * @author Miroslav Stencel <mstencel@atlassian.com>
  */
+@Component
 public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<GitHubPullRequestPageMessage>
 {
     public static final String QUEUE = GitHubPullRequestPageMessageConsumer.class.getCanonicalName();
@@ -40,7 +42,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider} dependency.
      */
-    @Resource(name = "githubClientProvider")
+    @Resource (name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
     /**
@@ -91,7 +93,7 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
         Iterable<PullRequest> pullRequests = Iterables.getFirst(pullRequestsPages, Collections.<PullRequest>emptyList());
         Set<Long> currentlyProccessedPullRequests = new LinkedHashSet<Long>();
 
-        for ( PullRequest pullRequest : pullRequests)
+        for (PullRequest pullRequest : pullRequests)
         {
             if (processedPullRequests != null && processedPullRequests.contains(pullRequest.getId()))
             {

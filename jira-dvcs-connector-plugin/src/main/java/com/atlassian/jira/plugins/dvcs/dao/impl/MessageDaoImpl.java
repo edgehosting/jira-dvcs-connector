@@ -10,10 +10,12 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
@@ -23,10 +25,10 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * An implementation of {@link MessageDao}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class MessageDaoImpl implements MessageDao
 {
 
@@ -34,8 +36,9 @@ public class MessageDaoImpl implements MessageDao
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
-    
+
     /**
      * Injected {@link QueryHelper} dependency.
      */
@@ -60,7 +63,7 @@ public class MessageDaoImpl implements MessageDao
                     activeObjects.create(MessageTagMapping.class, //
                             new DBParam(MessageTagMapping.MESSAGE, result.getID()), //
                             new DBParam(MessageTagMapping.TAG, tag) //
-                            );
+                    );
                 }
                 return result;
             }
@@ -124,7 +127,7 @@ public class MessageDaoImpl implements MessageDao
                 where(eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")));
             }
 
-        }.toQuery(Collections.<String, Object> singletonMap("tag", tag)), new EntityStreamCallback<MessageMapping, Integer>()
+        }.toQuery(Collections.<String, Object>singletonMap("tag", tag)), new EntityStreamCallback<MessageMapping, Integer>()
         {
 
             @Override
@@ -166,7 +169,7 @@ public class MessageDaoImpl implements MessageDao
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
+        }.toQuery(MapBuilder.<String, Object>build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
         return activeObjects.count(MessageMapping.class, query);
     }
 }

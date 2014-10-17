@@ -4,11 +4,14 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.sal.api.message.Message;
 import com.atlassian.sal.api.upgrade.PluginUpgradeTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +22,8 @@ import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
 /**
  * For Bitbucket.
  */
+@ExportAsService (PluginUpgradeTask.class)
+@Component
 public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_02_ProjectBasedRepositoryLinksUpgradeTask.class);
@@ -26,7 +31,8 @@ public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgra
     private final ChangesetService changesetService;
     private final DvcsCommunicator communicator;
 
-    public To_02_ProjectBasedRepositoryLinksUpgradeTask(@Qualifier("bitbucketCommunicator") DvcsCommunicator communicator,
+    @Autowired
+    public To_02_ProjectBasedRepositoryLinksUpgradeTask(@Qualifier ("bitbucketCommunicator") DvcsCommunicator communicator,
             RepositoryService repositoryService, ChangesetService changesetService)
     {
         this.communicator = communicator;
@@ -60,7 +66,8 @@ public class To_02_ProjectBasedRepositoryLinksUpgradeTask implements PluginUpgra
                     communicator.linkRepository(repository,
                             changesetService.findReferencedProjects(repository.getId()));
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 log.warn("Failed to link repository {}. " + e.getMessage(), repository.getName());
             }

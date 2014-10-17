@@ -6,12 +6,15 @@ import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,63 +25,71 @@ import static com.atlassian.activeobjects.spi.DatabaseType.ORACLE;
 
 /**
  * An implementation of {@link QueryHelper}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class QueryHelperImpl implements QueryHelper
 {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryHelperImpl.class);
 
     /**
      * Injected {@link PluginAccessor} dependency.
      */
     @Resource
+    @ComponentImport
     private PluginAccessor pluginAccessor;
 
     /**
      * Injected {@link DataSourceProvider} dependency.
      */
     @Resource
+    @ComponentImport
     private DataSourceProvider dataSourceProvider;
 
     private final CachedReference<DataSourceMetaData> dataSourceMetaData;
 
-    public QueryHelperImpl(final CacheManager cacheManager)
+    @Autowired
+    public QueryHelperImpl(@ComponentImport final CacheManager cacheManager)
     {
         dataSourceMetaData = cacheManager.getCachedReference(getClass().getName() + ".dataSourceMetaData",
                 new Supplier<DataSourceMetaData>()
-        {
-            @Override
-            public DataSourceMetaData get()
-            {
-                Connection connection = null;
-                try
                 {
-                    connection = dataSourceProvider.getDataSource().getConnection();
-                    final DatabaseType databaseType = dataSourceProvider.getDatabaseType();
-                    final String schema = dataSourceProvider.getSchema();
-                    final String quote = connection.getMetaData().getIdentifierQuoteString();
-                    return new DataSourceMetaData(databaseType, schema, quote);
-
-                } catch (SQLException e)
-                {
-                    throw new RuntimeException(e);
-
-                } finally {
-                    if (connection != null) {
+                    @Override
+                    public DataSourceMetaData get()
+                    {
+                        Connection connection = null;
                         try
                         {
-                            connection.close();
-                        } catch (SQLException e)
+                            connection = dataSourceProvider.getDataSource().getConnection();
+                            final DatabaseType databaseType = dataSourceProvider.getDatabaseType();
+                            final String schema = dataSourceProvider.getSchema();
+                            final String quote = connection.getMetaData().getIdentifierQuoteString();
+                            return new DataSourceMetaData(databaseType, schema, quote);
+
+                        }
+                        catch (SQLException e)
                         {
-                            LOGGER.error("Unable to close connection!", e);
+                            throw new RuntimeException(e);
+
+                        }
+                        finally
+                        {
+                            if (connection != null)
+                            {
+                                try
+                                {
+                                    connection.close();
+                                }
+                                catch (SQLException e)
+                                {
+                                    LOGGER.error("Unable to close connection!", e);
+                                }
+                            }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -118,7 +129,8 @@ public class QueryHelperImpl implements QueryHelper
         if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
             result += dataSourceMetaData.quote + plainTableName + dataSourceMetaData.quote;
-        } else
+        }
+        else
         {
             result += plainTableName;
         }
@@ -138,7 +150,8 @@ public class QueryHelperImpl implements QueryHelper
         if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
             return dataSourceMetaData.quote + plainColumnName + dataSourceMetaData.quote;
-        } else
+        }
+        else
         {
             return plainColumnName;
         }
@@ -167,14 +180,16 @@ public class QueryHelperImpl implements QueryHelper
                     {
                         isFirst = false;
                         return input.getColumn() + ' ' + input.getOrder().name();
-                    } else
+                    }
+                    else
                     {
                         return getSqlColumnName(input.getColumn()) + ' ' + input.getOrder().name();
                     }
                 }
 
             };
-        } else
+        }
+        else
         {
             orderClauseToString = new Function<OrderClause, String>()
             {
@@ -201,9 +216,8 @@ public class QueryHelperImpl implements QueryHelper
 
     /**
      * Constrain for AO version - current AO version must be less than provided version.
-     * 
-     * @param version
-     *            expected version constrain
+     *
+     * @param version expected version constrain
      * @return true if current version is less than provided
      */
     private boolean isBeforeAOVersion(String version)
@@ -230,7 +244,8 @@ public class QueryHelperImpl implements QueryHelper
                 {
                     return false;
                 }
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 return false;
             }
@@ -239,7 +254,8 @@ public class QueryHelperImpl implements QueryHelper
         return true;
     }
 
-    private static class DataSourceMetaData {
+    private static class DataSourceMetaData
+    {
 
         private final DatabaseType databaseType;
         private final String schema;

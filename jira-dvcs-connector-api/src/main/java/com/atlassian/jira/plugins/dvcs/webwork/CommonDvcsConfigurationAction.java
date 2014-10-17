@@ -4,7 +4,10 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 
@@ -12,50 +15,54 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 import static com.atlassian.jira.plugins.dvcs.util.CustomStringUtils.encode;
 
+@Component
 public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 {
     public static final String DEFAULT_SOURCE = "unknown";
 
-	private String autoLinking = "";
-	private String autoSmartCommits = "";
+    private String autoLinking = "";
+    private String autoSmartCommits = "";
 
     private String source;
 
-	private static final long serialVersionUID = 8695500426304238626L;
+    private static final long serialVersionUID = 8695500426304238626L;
 
     private EventPublisher eventPublisher;
 
-	protected static HashMap<String, String> dvcsTypeToUrlMap = new HashMap<String, String>();
-	static {
-		dvcsTypeToUrlMap.put("bitbucket", "https://bitbucket.org");
-		dvcsTypeToUrlMap.put("github", "https://github.com");
-	}
+    protected static HashMap<String, String> dvcsTypeToUrlMap = new HashMap<String, String>();
 
-	public CommonDvcsConfigurationAction(EventPublisher eventPublisher)
-	{
-		super();
+    static
+    {
+        dvcsTypeToUrlMap.put("bitbucket", "https://bitbucket.org");
+        dvcsTypeToUrlMap.put("github", "https://github.com");
+    }
+
+    @Autowired
+    public CommonDvcsConfigurationAction(@ComponentImport EventPublisher eventPublisher)
+    {
+        super();
         this.eventPublisher = eventPublisher;
     }
 
-	protected boolean hadAutolinkingChecked()
-	{
-		return StringUtils.isNotBlank(autoLinking);
-	}
+    protected boolean hadAutolinkingChecked()
+    {
+        return StringUtils.isNotBlank(autoLinking);
+    }
 
-	protected boolean hadAutoSmartCommitsChecked()
-	{
-	    return StringUtils.isNotBlank(autoSmartCommits);
-	}
+    protected boolean hadAutoSmartCommitsChecked()
+    {
+        return StringUtils.isNotBlank(autoSmartCommits);
+    }
 
-	public String getAutoLinking()
-	{
-		return autoLinking;
-	}
+    public String getAutoLinking()
+    {
+        return autoLinking;
+    }
 
-	public void setAutoLinking(String autoLinking)
-	{
-		this.autoLinking = autoLinking;
-	}
+    public void setAutoLinking(String autoLinking)
+    {
+        this.autoLinking = autoLinking;
+    }
 
     public String getAutoSmartCommits()
     {
@@ -99,10 +106,8 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 
     /**
      * Calculate the url parameter string of the form "&source=xxx" for source parameter.
-     *
+     * <p/>
      * If source is null, empty string "" is returned.
-     *
-     * @return
      */
     protected String getSourceAsUrlParam()
     {
@@ -111,11 +116,10 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 
     /**
      * Calculate the url parameter string of the form "&source=xxx" for source parameter.
-     *
+     * <p/>
      * If source is null, empty string "" is returned.
      *
      * @param paramSeparator either "&" or "?" depending on whether there are other url params.
-     * @return
      */
     protected String getSourceAsUrlParam(String paramSeparator)
     {

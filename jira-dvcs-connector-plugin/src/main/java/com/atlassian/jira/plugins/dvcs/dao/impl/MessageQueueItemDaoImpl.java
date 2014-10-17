@@ -11,9 +11,11 @@ import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
@@ -25,10 +27,10 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * {@link MessageQueueItemDao} implementation over AO.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 {
 
@@ -42,6 +44,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
 
     /**
@@ -123,7 +126,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                 where(eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.MESSAGE), parameter("messageId")));
             }
 
-        }.toQuery(Collections.<String, Object> singletonMap("messageId", id));
+        }.toQuery(Collections.<String, Object>singletonMap("messageId", id));
         return activeObjects.find(MessageQueueItemMapping.class, query);
     }
 
@@ -145,7 +148,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.MESSAGE), parameter("messageId")) //
                 ));
             }
-        }.toQuery(MapBuilder.<String, Object> build("queue", queue, "messageId", messageId));
+        }.toQuery(MapBuilder.<String, Object>build("queue", queue, "messageId", messageId));
 
         MessageQueueItemMapping[] founded = activeObjects.find(MessageQueueItemMapping.class, query);
         return founded.length == 1 ? founded[0] : null;
@@ -175,7 +178,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", state.name()));
+        }.toQuery(MapBuilder.<String, Object>build("tag", tag, "state", state.name()));
 
         activeObjects.stream(MessageQueueItemMapping.class, query, new EntityStreamCallback<MessageQueueItemMapping, Integer>()
         {
@@ -205,7 +208,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                 where(eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")));
             }
 
-        }.toQuery(Collections.<String, Object> singletonMap("state", state.name()));
+        }.toQuery(Collections.<String, Object>singletonMap("state", state.name()));
 
         activeObjects.stream(MessageQueueItemMapping.class, query, new EntityStreamCallback<MessageQueueItemMapping, Integer>()
         {
@@ -240,8 +243,8 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
     /**
      * Find the next item to be processed by priority and queue and address.
      *
-     * @param priority the priority of the messages, see {@link MessagingService#SOFTSYNC_PRIORITY}
-     * and {@link MessagingService#DEFAULT_PRIORITY}
+     * @param priority the priority of the messages, see {@link MessagingService#SOFTSYNC_PRIORITY} and {@link
+     * MessagingService#DEFAULT_PRIORITY}
      */
     private MessageQueueItemMapping getNextItemForProcessingByPriority(int priority, String queue, String address)
     {
@@ -264,7 +267,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 
                 order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(ID)), true));
             }
-        }.toQuery(MapBuilder.<String, Object> build("address", address, "priority", priority, "queue", queue, "state", MessageState.PENDING));
+        }.toQuery(MapBuilder.<String, Object>build("address", address, "priority", priority, "queue", queue, "state", MessageState.PENDING));
         query.limit(1);
 
         MessageQueueItemMapping[] founded = activeObjects.find(MessageQueueItemMapping.class, query);

@@ -16,11 +16,14 @@ import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +32,7 @@ import java.util.List;
 /**
  * Webwork action used to configure the bitbucket organizations
  */
+@Component
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
     static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
@@ -49,8 +53,10 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final OAuthStore oAuthStore;
     private final SyncDisabledHelper syncDisabledHelper;
 
-    public ConfigureDvcsOrganizations(EventPublisher eventPublisher, OrganizationService organizationService, FeatureManager featureManager,
-            PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore, SyncDisabledHelper syncDisabledHelper)
+    @Autowired
+    public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher, OrganizationService organizationService,
+            @ComponentImport FeatureManager featureManager, PluginFeatureDetector featuresDetector,
+            @ComponentImport PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore, SyncDisabledHelper syncDisabledHelper)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;

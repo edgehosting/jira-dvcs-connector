@@ -8,42 +8,54 @@ import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
-public class CommentHandler implements CommandHandler<Comment> {
+@ExportAsService (CommandHandler.class)
+@Component
+public class CommentHandler implements CommandHandler<Comment>
+{
 
     private static CommandType CMD_TYPE = CommandType.COMMENT;
 
     private final CommentService commentService;
 
-    public CommentHandler(CommentService commentService) {
+    @Autowired
+    public CommentHandler(CommentService commentService)
+    {
         this.commentService = commentService;
     }
 
-
     @Override
-	public CommandType getCommandType() {
+    public CommandType getCommandType()
+    {
         return CMD_TYPE;
     }
 
     @Override
-	public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
+    public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate)
+    {
 
-    	JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
-       
+        JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
+
         Comment comment = commentService.create(user,
-                                                issue,
-                                                args.isEmpty() ? null : args.get(0),
-                                                null, null, commitDate,
-                                                true,
-                                                jiraServiceContext.getErrorCollection());
-        
-        if (jiraServiceContext.getErrorCollection().hasAnyErrors()) {
+                issue,
+                args.isEmpty() ? null : args.get(0),
+                null, null, commitDate,
+                true,
+                jiraServiceContext.getErrorCollection());
+
+        if (jiraServiceContext.getErrorCollection().hasAnyErrors())
+        {
             return Either.error(CommitHookHandlerError.fromErrorCollection(
                     CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
-        } else {
+        }
+        else
+        {
             return Either.value(comment);
         }
 

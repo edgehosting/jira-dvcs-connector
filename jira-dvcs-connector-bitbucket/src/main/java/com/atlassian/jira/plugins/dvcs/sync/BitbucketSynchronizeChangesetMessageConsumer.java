@@ -17,6 +17,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
@@ -28,15 +30,16 @@ import javax.annotation.Resource;
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
  *
  * @author Stanislav Dvorscak
- *
  */
-public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
+@Component
+public class BitbucketSynchronizeChangesetMessageConsumer
+        implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
 
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
 
-    @Resource(name = "cachingBitbucketCommunicator")
+    @Resource (name = "cachingBitbucketCommunicator")
     private CachingDvcsCommunicator cachingCommunicator;
     @Resource
     private ChangesetService changesetService;
@@ -47,6 +50,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     @Resource
     private MessagingService messagingService;
 
+    @Autowired
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
     }
@@ -85,7 +89,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
-            
+
             MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(cset, issues);
@@ -100,7 +104,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                     payload.getProgress().getChangesetCount() + 1, //
                     payload.getProgress().getJiraCount() + issues.size(), //
                     0 //
-                    );
+            );
         }
 
         if (StringUtils.isNotBlank(page.getNext()))
@@ -129,7 +133,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId(), originalMessage.isWebHookSync()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId(), originalMessage.isWebHookSync()), softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     @Override

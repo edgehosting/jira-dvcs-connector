@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
@@ -20,16 +21,20 @@ import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateBitbucketOauthToken.class);
     private final ApplicationProperties ap;
     private final HttpClientProvider httpClientProvider;
 
-    public RegenerateBitbucketOauthToken(EventPublisher eventPublisher,
+    @Autowired
+    public RegenerateBitbucketOauthToken(@ComponentImport EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
-            ApplicationProperties ap, HttpClientProvider httpClientProvider)
+            @ComponentImport ApplicationProperties ap, HttpClientProvider httpClientProvider)
     {
         super(eventPublisher, organizationService, repositoryService);
         this.ap = ap;
@@ -49,7 +54,8 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 
             return SystemUtils.getRedirect(this, authUrl, true);
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             addErrorMessage("Cannot proceed authentication, check OAuth credentials for account " + getOrganizationName());
             return INPUT;
@@ -88,12 +94,13 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         if (StringUtils.isBlank(organization))
         {
             addErrorMessage("No organization id has been provided, invalid request");
-        } else
+        }
+        else
         {
             //TODO what if we have more integrated accounts?
             Organization integratedAccount = organizationService.findIntegratedAccount();
-            if (    integratedAccount != null
-                &&  Integer.valueOf(organization).equals(integratedAccount.getId()))
+            if (integratedAccount != null
+                    && Integer.valueOf(organization).equals(integratedAccount.getId()))
             {
                 addErrorMessage("Failed to regenerate token for an integrated account.");
             }
@@ -112,11 +119,13 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         try
         {
             accessTokenObj = service.getAccessToken(requestToken, verifier);
-        } catch (OAuthConnectionException e)
+        }
+        catch (OAuthConnectionException e)
         {
             Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
             throw new SourceControlException("Error obtaining access token. Cannot access " + organizationInstance.getHostUrl() + " from Jira.", e);
-        } finally
+        }
+        finally
         {
             httpClientProvider.closeIdleConnections();
         }

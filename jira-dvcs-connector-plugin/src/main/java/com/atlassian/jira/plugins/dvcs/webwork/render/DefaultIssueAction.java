@@ -43,7 +43,8 @@ public class DefaultIssueAction implements IssueAction
         try
         {
             templateRenderer.render(template, context, stringWriter);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.warn(e.getMessage(), e);
         }

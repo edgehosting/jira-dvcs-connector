@@ -19,6 +19,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -30,6 +31,7 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
+@Component
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
     public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
@@ -58,7 +60,8 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
             GithubClientWithTimeout result = new GitHubEnterpriseClient(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new IllegalArgumentException(e);
         }
@@ -70,7 +73,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
         public GitHubEnterpriseClient(final String hostname, final int port,
                 final String scheme)
         {
-            super(hostname,port,scheme);
+            super(hostname, port, scheme);
             gson = createGson(true);
         }
 
@@ -81,7 +84,7 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
             builder.registerTypeAdapter(Event.class, new EventFormatter());
             builder.setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES);
             if (serializeNulls)
-                builder.serializeNulls();
+            { builder.serializeNulls(); }
             return builder.create();
         }
     }
@@ -111,7 +114,8 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
             try
             {
                 return fmt.parseDateTime(value).toDate();
-            } catch (IllegalArgumentException e)
+            }
+            catch (IllegalArgumentException e)
             {
                 log.debug("Could not parse '" + value + "'.", e);
             }

@@ -30,6 +30,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +43,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -66,6 +69,7 @@ import javax.annotation.Resource;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
     @VisibleForTesting
@@ -81,6 +85,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
 
     /**
@@ -148,7 +153,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().local().build();
 
     /**
-     * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
+     * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer
+     * serializer}.
      */
     private final Map<Class<?>, MessagePayloadSerializer<?>> payloadTypeToPayloadSerializer = new ConcurrentHashMap<Class<?>, MessagePayloadSerializer<?>>();
 
@@ -167,8 +173,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
 
-    @SuppressWarnings("unchecked")
-    public MessagingServiceImpl(final CacheManager cacheManager)
+    @SuppressWarnings ("unchecked")
+    @Autowired
+    public MessagingServiceImpl(@ComponentImport final CacheManager cacheManager)
     {
         // altassian-cache 2.0.8 or later will auto clear a local cache
         idToMessageAddress = cacheManager.getCache(
@@ -214,18 +221,21 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 log.debug("Attempting to wait for AO - DONE.");
                 stop = true;
                 return true;
-            } catch (PluginException e)
+            }
+            catch (PluginException e)
             {
                 countOfRetry--;
                 try
                 {
                     Thread.sleep(5000);
-                } catch (InterruptedException ie)
+                }
+                catch (InterruptedException ie)
                 {
                     // nothing to do
                 }
             }
-        } while (countOfRetry > 0 && !stop);
+        }
+        while (countOfRetry > 0 && !stop);
         log.debug("Attempting to wait for AO - UNSUCCESSFUL.");
         return false;
     }
@@ -243,7 +253,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             public void callback(MessageQueueItemMapping e)
             {
                 Message<HasProgress> message = new Message<HasProgress>();
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings ("unchecked")
                 MessageConsumer<HasProgress> consumer = (MessageConsumer<HasProgress>) queueToMessageConsumer.get(e.getQueue());
 
                 toMessage(message, e.getMessage());
@@ -296,7 +306,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings ("unchecked")
         MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(payload.getClass());
 
         Message<P> message = new Message<P>();
@@ -315,7 +325,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     {
         MessageMapping messageMapping = messageDao.create(toMessageMap(message), tags);
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
+        @SuppressWarnings ({ "rawtypes", "unchecked" })
         List<MessageConsumer<P>> byAddress = (List) addressToMessageConsumer.get(message.getAddress().getId());
         for (MessageConsumer<P> consumer : byAddress)
         {
@@ -372,9 +382,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     @Override
-    public <P extends  HasProgress> P deserializePayload(Message<P> message)
+    public <P extends HasProgress> P deserializePayload(Message<P> message)
     {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings ("unchecked")
         MessagePayloadSerializer<P> payloadSerializer = (MessagePayloadSerializer<P>) payloadTypeToPayloadSerializer.get(message.getPayloadType());
         return payloadSerializer.deserialize(message);
     }
@@ -474,7 +484,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         activeObjects.create(MessageTagMapping.class, //
                                 new DBParam(MessageTagMapping.MESSAGE, e.getMessage().getID()), //
                                 new DBParam(MessageTagMapping.TAG, newSyncAuditIdLog) //
-                                );
+                        );
                     }
 
                 });
@@ -600,7 +610,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     @Override
     public <P extends HasProgress> MessageAddress<P> get(final Class<P> payloadType, final String id)
     {
@@ -638,7 +648,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     return Integer.parseInt(tag.substring(SYNCHRONIZATION_AUDIT_TAG_PREFIX.length()));
 
                 }
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 log.error("Synchronization audit id tag has invalid format, tag was: " + tag);
                 // we don't stop, maybe there is still a valid tag
@@ -663,7 +674,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     repositoryId = Integer.parseInt(tag.substring(SYNCHRONIZATION_REPO_TAG_PREFIX.length()));
                     return repositoryService.get(repositoryId);
 
-                } catch (NumberFormatException e)
+                }
+                catch (NumberFormatException e)
                 {
                     log.warn("Get repo ID from message: " + e.getMessage());
                 }
@@ -677,8 +689,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Re-maps provided {@link Message} to parameters.
      *
-     * @param source
-     *            of mapping
+     * @param source of mapping
      * @return mapped entity
      */
     private <P extends HasProgress> Map<String, Object> toMessageMap(Message<P> source)
@@ -696,19 +707,18 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Re-maps provided {@link MessageMapping} to {@link Message}.
      *
-     * @param target
-     *            of mapping
-     * @param source
-     *            of mapping
+     * @param target of mapping
+     * @param source of mapping
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private <P extends HasProgress> void toMessage(Message<P> target, MessageMapping source)
     {
         Class<P> payloadType;
         try
         {
             payloadType = (Class<P>) Class.forName(source.getPayloadType(), true, getClass().getClassLoader());
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
             throw new RuntimeException(e);
         }
@@ -802,8 +812,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Ends the progress if there are no more messages currently queued for the given repository.
      *
-     * @param repository
-     * @param progress
      * @return a boolean indicating whether sync progress was ended
      */
     private boolean endProgress(final Repository repository, Progress progress)
@@ -842,7 +850,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                 }
 
                 return true;
-            } finally
+            }
+            finally
             {
                 httpClientProvider.closeIdleConnections();
             }
@@ -875,8 +884,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * not contain any errors. The returned Optional will contain the smart commits promise if smart commits processing
      * was attempted.
      *
-     * @param repository
-     * @param progress
      * @return an Promise that completes when smart commits processing is done
      */
     @Nonnull
@@ -905,7 +912,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         private final String id;
         private final Class<P> payloadType;
 
-        private IdKey(final String id, final Class<P> payloadType) {
+        private IdKey(final String id, final Class<P> payloadType)
+        {
             this.id = id;
             this.payloadType = payloadType;
         }
@@ -921,7 +929,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         {
             //noinspection unchecked
             return (this == obj) ||
-                    (obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>)obj).id));
+                    (obj != null && obj instanceof IdKey && StringUtils.equals(id, ((IdKey<P>) obj).id));
         }
     }
 

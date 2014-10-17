@@ -13,10 +13,14 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.workflow.WorkflowManager;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,10 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-public class TransitionHandler implements CommandHandler<Issue> {
+@ExportAsService (CommandHandler.class)
+@Component
+public class TransitionHandler implements CommandHandler<Issue>
+{
 
     private static CommandType CMD_TYPE = CommandType.TRANSITION;
-    
+
     // private Pattern IN_TRANSITION_PATTERN = Pattern.compile("(#\\S*)(.*)");
 
     private static final String NO_STATUS = "fisheye.commithooks.transition.unknownstatus";
@@ -43,26 +50,33 @@ public class TransitionHandler implements CommandHandler<Issue> {
     private final WorkflowManager workflowManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
 
-    public TransitionHandler(IssueService issueService, WorkflowManager workflowManager, JiraAuthenticationContext jiraAuthenticationContext) {
+    @Autowired
+    public TransitionHandler(@ComponentImport IssueService issueService,
+            @ComponentImport WorkflowManager workflowManager,
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext)
+    {
         this.issueService = issueService;
         this.workflowManager = workflowManager;
         this.jiraAuthenticationContext = jiraAuthenticationContext;
     }
 
     @Override
-	public CommandType getCommandType() {
+    public CommandType getCommandType()
+    {
         return CMD_TYPE;
     }
 
     @Override
-	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
-        
-    	String cmd = commandName;
+    public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate)
+    {
+
+        String cmd = commandName;
         final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
-    	
-    	String comment = (args != null && args.size() == 1) ? args.get(0) : null;
-      
-        if (cmd == null || cmd.equals("")) {
+
+        String comment = (args != null && args.size() == 1) ? args.get(0) : null;
+
+        if (cmd == null || cmd.equals(""))
+        {
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_COMMAND_PROVIDED_TEMPLATE, issue.getKey())));
         }
@@ -72,75 +86,94 @@ public class TransitionHandler implements CommandHandler<Issue> {
         Collection<ValidatedAction> validActions =
                 getValidActions(actions, user, issue, new IssueInputParametersImpl(), comment);
 
-        if (validActions.isEmpty()) {
+        if (validActions.isEmpty())
+        {
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_ALLOWED_ACTIONS_TEMPLATE, issue.getKey())));
         }
 
         Collection<ValidatedAction> matchingValidActions = getMatchingActionsForCommand(cmd, validActions);
 
-        if (matchingValidActions.isEmpty()) {
+        if (matchingValidActions.isEmpty())
+        {
 
             String validActionNames = StringUtils.join(getActionNamesIterator(validActions), ", ");
 
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_MATCHING_ACTIONS_TEMPLATE, issue.getKey(), getIssueState(issue), cmd, validActionNames)));
 
-        } else if (matchingValidActions.size() > 1) {
+        }
+        else if (matchingValidActions.size() > 1)
+        {
 
             String validActionNames = StringUtils.join(getActionNamesIterator(matchingValidActions), ", ");
 
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(MULTIPLE_ACTIONS_TEMPLATE, cmd, issue.getKey(), getIssueState(issue), validActionNames)));
-        } else {
-            
+        }
+        else
+        {
+
             IssueService.TransitionValidationResult validation = matchingValidActions.iterator().next().validation;
             IssueService.IssueResult result = issueService.transition(user, validation);
-            if (!result.isValid()) {
+            if (!result.isValid())
+            {
                 return Either.error(CommitHookHandlerError.fromErrorCollection(
                         CMD_TYPE.getName(), issue.getKey(), result.getErrorCollection()));
             }
 
-            return Either.value((Issue)result.getIssue());
+            return Either.value((Issue) result.getIssue());
         }
     }
 
-    private String getIssueState(Issue issue) {
+    private String getIssueState(Issue issue)
+    {
         Status s = issue.getStatusObject();
         final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
         return s == null ? i18nHelper.getText(NO_STATUS) : s.getName();
     }
 
-    private Iterator<String> getActionNamesIterator(Collection<ValidatedAction> matchingValidActions) {
+    private Iterator<String> getActionNamesIterator(Collection<ValidatedAction> matchingValidActions)
+    {
         return Iterables.transform(matchingValidActions,
-                    new Function<ValidatedAction, String>() {
-                        @Override
-						public String apply(ValidatedAction in) {
-                            return in.action.getName();
-                        }
-                    }).iterator();
+                new Function<ValidatedAction, String>()
+                {
+                    @Override
+                    public String apply(ValidatedAction in)
+                    {
+                        return in.action.getName();
+                    }
+                }).iterator();
     }
 
-    private Collection<ActionDescriptor> getActionsForIssue(MutableIssue issue) {
+    private Collection<ActionDescriptor> getActionsForIssue(MutableIssue issue)
+    {
         return workflowManager.getWorkflow(issue).getAllActions();
     }
 
-    private Collection<ValidatedAction> getMatchingActionsForCommand(String cmd, Collection<ValidatedAction> actions) {
+    private Collection<ValidatedAction> getMatchingActionsForCommand(String cmd, Collection<ValidatedAction> actions)
+    {
         String cmdSanitized = cmd.trim().toLowerCase(Locale.US);
         String cmdWithSpaces = cmdSanitized.replace('-', ' ');
 
         Collection<ValidatedAction> firstShotActions = new ArrayList<ValidatedAction>();
         Collection<ValidatedAction> secondShotActions = new ArrayList<ValidatedAction>();
-        for (ValidatedAction validatedAction : actions) {
+        for (ValidatedAction validatedAction : actions)
+        {
             String name = validatedAction.action.getName().toLowerCase(Locale.US);
 
-            if (name.equals(cmdSanitized)) { // choose an exact match immediately
+            if (name.equals(cmdSanitized))
+            { // choose an exact match immediately
                 return Arrays.asList(validatedAction);
 
-            } else if (name.startsWith(cmdSanitized)) {
+            }
+            else if (name.startsWith(cmdSanitized))
+            {
                 firstShotActions.add(validatedAction);
 
-            } else if (name.startsWith(cmdWithSpaces)) {
+            }
+            else if (name.startsWith(cmdWithSpaces))
+            {
                 secondShotActions.add(validatedAction);
             }
         }
@@ -148,11 +181,13 @@ public class TransitionHandler implements CommandHandler<Issue> {
         return firstShotActions.isEmpty() ? secondShotActions : firstShotActions;
     }
 
-    private class ValidatedAction {
+    private class ValidatedAction
+    {
         ActionDescriptor action;
         IssueService.TransitionValidationResult validation;
 
-        public ValidatedAction(ActionDescriptor action, IssueService.TransitionValidationResult validation) {
+        public ValidatedAction(ActionDescriptor action, IssueService.TransitionValidationResult validation)
+        {
             this.action = action;
             this.validation = validation;
         }
@@ -163,23 +198,27 @@ public class TransitionHandler implements CommandHandler<Issue> {
             User user,
             MutableIssue issue,
             IssueInputParameters parameters,
-            String comment) {
+            String comment)
+    {
 
         Collection<ValidatedAction> validations =
-            new ArrayList<ValidatedAction>();
-        for (ActionDescriptor ad : actionsToValidate) {
+                new ArrayList<ValidatedAction>();
+        for (ActionDescriptor ad : actionsToValidate)
+        {
             IssueInputParametersImpl input = new IssueInputParametersImpl();
-            if (comment != null) {
+            if (comment != null)
+            {
                 input.setComment(comment);
             }
             IssueService.TransitionValidationResult validation =
                     issueService.validateTransition(user, issue.getId(), ad.getId(), input);
-            if (validation.isValid()) {
+            if (validation.isValid())
+            {
                 validations.add(new ValidatedAction(ad, validation));
             }
         }
         return validations;
     }
-    
+
 
 }

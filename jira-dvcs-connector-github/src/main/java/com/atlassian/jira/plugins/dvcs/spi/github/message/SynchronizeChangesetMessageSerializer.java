@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
@@ -10,8 +11,8 @@ import java.util.Date;
  * An implementation of {@link MessagePayloadSerializer} over {@link SynchronizeChangesetMessage}.
  *
  * @author Stanislav Dvorscak
- *
  */
+@Component
 public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<SynchronizeChangesetMessage>
 {
 

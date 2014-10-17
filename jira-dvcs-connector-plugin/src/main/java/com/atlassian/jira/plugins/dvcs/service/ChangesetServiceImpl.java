@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -26,6 +27,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
+@Component
 public class ChangesetServiceImpl implements ChangesetService
 {
     private static final Logger logger = LoggerFactory.getLogger(ChangesetServiceImpl.class);
@@ -51,7 +55,9 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private ThreadEvents threadEvents;
 
-    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
+    @Autowired
+    public ChangesetServiceImpl(final ChangesetDao changesetDao,
+            @ComponentImport final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();

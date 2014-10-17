@@ -15,6 +15,7 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
@@ -43,6 +44,8 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -57,6 +60,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
@@ -73,19 +79,22 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final RepositoryService repositoryService;
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
-    public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
-                                       TemplateRenderer templateRenderer, PermissionManager permissionManager,
-                                       JiraAuthenticationContext jiraAuthenticationContext,
-                                       ProjectManager projectManager, ChangesetService changesetService,
-                                       RepositoryService repositoryService,
-                                       IssueAndProjectKeyManager issueAndProjectKeyManager)
+    @Autowired
+    public DvcsStreamsActivityProvider(@ComponentImport I18nResolver i18nResolver,
+            @ComponentImport ApplicationProperties applicationProperties,
+            @ComponentImport UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
+            @ComponentImport TemplateRenderer templateRenderer,
+            @ComponentImport PermissionManager permissionManager,
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
+            @ComponentImport ProjectManager projectManager, ChangesetService changesetService,
+            RepositoryService repositoryService,
+            IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.issueLinker = issueLinker;
-        this.templateRenderer = templateRenderer;
+        this.templateRenderer = checkNotNull(templateRenderer);
         this.permissionManager = permissionManager;
         this.jiraAuthenticationContext = jiraAuthenticationContext;
         this.projectManager = projectManager;
@@ -94,18 +103,22 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
-    private Iterable<StreamsEntry> transformEntries(final ActivityRequest activityRequest, Iterable<Changeset> changesetEntries, AtomicBoolean cancelled) throws StreamsException
+    private Iterable<StreamsEntry> transformEntries(final ActivityRequest activityRequest, Iterable<Changeset> changesetEntries, AtomicBoolean cancelled)
+            throws StreamsException
     {
         List<StreamsEntry> entries = new ArrayList<StreamsEntry>();
         Set<String> alreadyAddedChangesetRawNodes = new HashSet<String>(entries.size(), 1.0F);
 
         for (Changeset changeset : changesetEntries)
         {
-            if (cancelled.get()) {
+            if (cancelled.get())
+            {
 
                 throw new CancelledException();
 
-            } else {
+            }
+            else
+            {
                 // https://sdog.jira.com/browse/BBC-308; without this check we would be adding visually same items
                 // to activity stream
                 if (!alreadyAddedChangesetRawNodes.contains(getNode(changeset)))
@@ -135,7 +148,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     }
 
     /**
-     * Transforms a single {@link com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping} to a {@link com.atlassian.streams.api.StreamsEntry}.
+     * Transforms a single {@link com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping} to a {@link
+     * com.atlassian.streams.api.StreamsEntry}.
      *
      * @param changeset the changeset entry
      * @return the transformed streams entry
@@ -144,7 +158,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     {
         final Repository repository = repositoryService.get(changeset.getRepositoryId());
 
-        if (repository == null) {
+        if (repository == null)
+        {
             return null;
         }
 
@@ -172,7 +187,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 try
                 {
                     templateRenderer.render("/templates/activityentry-title.vm", templateMap, sw);
-                } catch (IOException e)
+                }
+                catch (IOException e)
                 {
                     log.warn(e.getMessage(), e);
                 }
@@ -216,7 +232,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 try
                 {
                     templateRenderer.render("/templates/activityentry-summary.vm", templateMap, sw);
-                } catch (IOException e)
+                }
+                catch (IOException e)
                 {
                     log.warn(e.getMessage(), e);
                 }
@@ -233,12 +250,14 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
             {
                 URI uri = new URI(user.getAvatar());
                 userProfile = new UserProfile.Builder("").profilePictureUri(Option.option(uri)).build();
-            } catch (URISyntaxException e)
+            }
+            catch (URISyntaxException e)
             {
                 // we use anonymous profile
                 userProfile = userProfileAccessor.getAnonymousUserProfile(activityRequest.getContextUri());
             }
-        } else
+        }
+        else
         {
             userProfile = userProfileAccessor.getAnonymousUserProfile(activityRequest.getContextUri());
         }
@@ -280,7 +299,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
                 {
                     Iterable<Changeset> latestChangesets = changesetService.getLatestChangesets(activityRequest.getMaxResults(), gf);
                     if (cancelled.get())
-                        throw new CancelledException();
+                    { throw new CancelledException(); }
                     log.debug("Found changeset entries: {}", latestChangesets);
 
                     final List<Changeset> changesetDetails = changesetService.getChangesetsWithFileDetails(Lists.newArrayList(latestChangesets));
@@ -327,7 +346,8 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         if (CollectionUtils.isEmpty(inProjectsList))
         {
             projectsToCheckPermission = projectManager.getProjectObjects();
-        } else
+        }
+        else
         {
             projectsToCheckPermission = Iterables.transform(inProjectsList, projectKeyToProject);
         }

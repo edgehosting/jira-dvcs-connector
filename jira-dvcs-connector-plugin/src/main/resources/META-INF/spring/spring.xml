@@ -3,11 +3,14 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:osgi="http://www.springframework.org/schema/osgi"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:atlassian-scanner="http://www.atlassian.com/schema/atlassian-scanner"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
                            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
-                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.atlassian.com/schema/atlassian-scanner http://www.atlassian.com/schema/atlassian-scanner/atlassian-scanner.xsd">
 
     <context:component-scan base-package="com.atlassian.jira.plugins.dvcs"/>
+    <atlassian-scanner:scan-indexes/>
 
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>

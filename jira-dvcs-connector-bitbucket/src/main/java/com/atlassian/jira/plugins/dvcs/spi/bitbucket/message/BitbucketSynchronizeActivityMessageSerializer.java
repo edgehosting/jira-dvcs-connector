@@ -3,12 +3,15 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeActivityMessage>
+@Component
+public class BitbucketSynchronizeActivityMessageSerializer
+        extends AbstractMessagePayloadSerializer<BitbucketSynchronizeActivityMessage>
 {
 
     @Override
@@ -24,7 +27,8 @@ public class BitbucketSynchronizeActivityMessageSerializer extends AbstractMessa
     }
 
     @Override
-    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json, final int version) throws Exception
+    protected BitbucketSynchronizeActivityMessage deserializeInternal(JSONObject json, final int version)
+            throws Exception
     {
         Set<Integer> processedPullRequests;
         Set<Integer> processedPullRequestsLocal;
