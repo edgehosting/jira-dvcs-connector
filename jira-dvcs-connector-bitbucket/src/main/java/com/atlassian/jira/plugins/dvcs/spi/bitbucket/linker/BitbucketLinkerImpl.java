@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * <p/>
  * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
  */
-@Component
+@Component("bitbucketLinker")
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);

@@ -53,7 +53,7 @@ public class DvcsScheduler implements LifecycleAware
 
     @Autowired
     public DvcsScheduler(final MessagingService messagingService,
-            @ComponentImport final CompatibilityPluginScheduler scheduler,
+            final CompatibilityPluginScheduler scheduler,
             final DvcsSchedulerJob dvcsSchedulerJob, @ComponentImport final EventPublisher eventPublisher,
             final SyncConfig syncConfig)
     {

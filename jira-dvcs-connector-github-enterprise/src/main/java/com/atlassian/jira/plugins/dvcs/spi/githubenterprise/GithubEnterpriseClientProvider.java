@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientWithTimeout;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -19,6 +20,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -31,10 +33,12 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
-@Component
+@Component("githubEnterpriseClientProvider")
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
-    public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
+    @Autowired
+    public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory,
+            @ComponentImport PluginAccessor pluginAccessor)
     {
         super(authenticationFactory, pluginAccessor);
     }

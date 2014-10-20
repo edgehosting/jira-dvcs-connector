@@ -20,8 +20,6 @@ import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -36,7 +34,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
  * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for
  * quicker subsequent lookup times
  */
-@Component
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
     @VisibleForTesting
@@ -112,7 +109,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private final Cache<OrganisationKey, List<Group>> groupsCache;
     private DvcsCommunicator delegate;
 
-    @Autowired
     public CachingCommunicator(@ComponentImport final CacheManager cacheManager)
     {
         // self-loading caches returned from getCache are always clean/empty

@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @ExportAsService (CommandHandler.class)
-@Component
+@Component("smartcommitsCommentHandler")
 public class CommentHandler implements CommandHandler<Comment>
 {
 
@@ -25,7 +26,7 @@ public class CommentHandler implements CommandHandler<Comment>
     private final CommentService commentService;
 
     @Autowired
-    public CommentHandler(CommentService commentService)
+    public CommentHandler(@ComponentImport CommentService commentService)
     {
         this.commentService = commentService;
     }

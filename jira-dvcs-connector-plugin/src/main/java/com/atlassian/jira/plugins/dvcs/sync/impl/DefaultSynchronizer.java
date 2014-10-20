@@ -91,7 +91,7 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Autowired
     public DefaultSynchronizer(@ComponentImport final CacheManager cacheManager,
-            @ComponentImport final ClusterLockServiceFactory clusterLockServiceFactory)
+            final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");

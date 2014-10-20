@@ -54,8 +54,12 @@ public class SyncConfig
         }
     };
 
+    /**
+     * The constructor parameter needs a name for its import as it clashes with the SAL class of the same name
+     * @param applicationProperties
+     */
     @Autowired
-    public SyncConfig(@ComponentImport ApplicationProperties applicationProperties)
+    public SyncConfig(@ComponentImport("jiraAP") ApplicationProperties applicationProperties)
     {
         this.applicationProperties = applicationProperties;
     }

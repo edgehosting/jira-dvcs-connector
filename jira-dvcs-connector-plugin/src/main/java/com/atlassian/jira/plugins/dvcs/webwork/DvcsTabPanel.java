@@ -87,7 +87,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     @Autowired
     public DvcsTabPanel(PanelVisibilityManager panelVisibilityManager,
-            SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
+            @ComponentImport SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             @ComponentImport WebResourceManager webResourceManager,
             ChangesetRenderer renderer, @ComponentImport EventPublisher eventPublisher)
     {

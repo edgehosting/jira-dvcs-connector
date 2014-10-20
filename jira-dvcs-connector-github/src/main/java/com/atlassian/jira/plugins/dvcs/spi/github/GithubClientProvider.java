@@ -25,7 +25,7 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
-@Component
+@Component("githubClientProvider")
 public class GithubClientProvider
 {
     private final AuthenticationFactory authenticationFactory;

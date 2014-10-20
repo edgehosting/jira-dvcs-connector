@@ -19,7 +19,7 @@ import java.util.concurrent.locks.Lock;
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-@Component
+@Component("defferedBitbucketLinker")
 public class DeferredBitbucketLinker implements BitbucketLinker
 {
     /**
@@ -41,7 +41,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
 
     @Autowired
     public DeferredBitbucketLinker(@Qualifier ("bitbucketLinker") final BitbucketLinker bitbucketLinker,
-            @ComponentImport final ClusterLockServiceFactory clusterLockServiceFactory,
+            final ClusterLockServiceFactory clusterLockServiceFactory,
             @ComponentImport final PluginSettingsFactory pluginSettingsFactory)
     {
         this.bitbucketLinker = bitbucketLinker;

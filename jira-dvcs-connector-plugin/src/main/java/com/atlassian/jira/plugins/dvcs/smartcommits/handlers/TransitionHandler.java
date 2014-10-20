@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 @ExportAsService (CommandHandler.class)
-@Component
+@Component("smartcommitsTransitionsHandler")
 public class TransitionHandler implements CommandHandler<Issue>
 {
 

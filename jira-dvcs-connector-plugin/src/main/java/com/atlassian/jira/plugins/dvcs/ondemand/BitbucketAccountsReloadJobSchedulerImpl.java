@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
 import com.atlassian.scheduler.compat.JobHandler;
 import com.atlassian.scheduler.compat.JobHandlerKey;
@@ -45,7 +44,7 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     private final CompatibilityPluginScheduler scheduler;
 
     @Autowired
-    public BitbucketAccountsReloadJobSchedulerImpl(@ComponentImport final CompatibilityPluginScheduler scheduler,
+    public BitbucketAccountsReloadJobSchedulerImpl(final CompatibilityPluginScheduler scheduler,
             final BitbucketAccountsReloadJobHandler jobHandler)
     {
         this.scheduler = scheduler;

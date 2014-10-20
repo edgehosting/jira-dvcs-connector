@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @ExportAsService (CommandHandler.class)
-@Component
+@Component("smartcommitsWorklogHandler")
 public class WorkLogHandler implements CommandHandler<Worklog>
 {
 

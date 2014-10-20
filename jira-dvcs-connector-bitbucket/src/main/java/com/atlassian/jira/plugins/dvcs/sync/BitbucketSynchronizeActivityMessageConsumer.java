@@ -48,7 +48,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -93,12 +92,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     private FeatureManager featureManager;
     @Resource
     private NotificationService notificationService;
-
-    @Autowired
-    public BitbucketSynchronizeActivityMessageConsumer()
-    {
-        super();
-    }
 
     @Override
     public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, final BitbucketSynchronizeActivityMessage payload)

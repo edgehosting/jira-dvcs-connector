@@ -18,7 +18,6 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -56,8 +55,7 @@ public class ChangesetServiceImpl implements ChangesetService
     private ThreadEvents threadEvents;
 
     @Autowired
-    public ChangesetServiceImpl(final ChangesetDao changesetDao,
-            @ComponentImport final ClusterLockServiceFactory clusterLockServiceFactory)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();

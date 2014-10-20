@@ -4,7 +4,6 @@ import com.atlassian.jira.cluster.ClusterSafe;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,7 +43,6 @@ public class DevSummaryCachePrimingStatus
     /**
      * Constructor for production use.
      */
-    @Autowired
     public DevSummaryCachePrimingStatus()
     {
         inProgress = new AtomicBoolean();

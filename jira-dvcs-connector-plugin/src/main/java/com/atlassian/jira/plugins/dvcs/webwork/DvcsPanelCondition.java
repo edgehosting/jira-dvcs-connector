@@ -4,13 +4,17 @@ import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.web.Condition;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class DvcsPanelCondition implements Condition
 {
     private final PanelVisibilityManager panelVisibilityManager;
 
+    @Autowired
     public DvcsPanelCondition(PanelVisibilityManager panelVisibilityManager)
     {
         this.panelVisibilityManager = panelVisibilityManager;

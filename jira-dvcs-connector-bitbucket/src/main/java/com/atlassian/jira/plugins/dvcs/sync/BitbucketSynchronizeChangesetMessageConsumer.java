@@ -17,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -50,7 +49,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     @Resource
     private MessagingService messagingService;
 
-    @Autowired
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
     }
