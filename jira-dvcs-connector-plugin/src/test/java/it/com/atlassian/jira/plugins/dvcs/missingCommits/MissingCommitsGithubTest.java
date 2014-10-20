@@ -52,14 +52,18 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeRemoteDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
-
-        // remove expired repositories
-        for ( Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+        // githubRepositoriesREST might not be initialized if AbstractMissingCommitsTest#beforeClass() failed
+        if (githubRepositoriesREST != null)
         {
-            if (timestampNameTestResource.isExpired(repository.getName()))
+            githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
+
+            // remove expired repositories
+            for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
             {
-                githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                if (timestampNameTestResource.isExpired(repository.getName()))
+                {
+                    githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                }
             }
         }
     }
