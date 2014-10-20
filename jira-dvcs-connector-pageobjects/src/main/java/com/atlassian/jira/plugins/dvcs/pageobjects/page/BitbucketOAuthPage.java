@@ -55,7 +55,6 @@ public class BitbucketOAuthPage implements Page
         // clicking the button scrolls to it, scroll back to top so that the dialog is considered visible
         WebDriverSupport.fromAutoInstall().getDriver().executeScript("scroll(0, 0);");
 
-
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
         String consumerName = "Test_OAuth_" + System.currentTimeMillis();
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
