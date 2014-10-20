@@ -49,19 +49,23 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         {
             bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
         }
-        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
     }
 
     @Override
     void removeRemoteDvcsRepository()
     {
-        removeRepository(getMissingCommitsRepositoryName());
-
-        for ( BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
+        // bitbucketRepositoriesREST might not be initialized if AbstractMissingCommitsTest#beforeClass() failed
+        if (bitbucketRepositoriesREST != null)
         {
-            if (timestampNameTestResource.isExpired(repository.getName()))
+            removeRepository(getMissingCommitsRepositoryName());
+
+            for (BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
             {
-                removeRepository(repository.getName());
+                if (timestampNameTestResource.isExpired(repository.getName()))
+                {
+                    removeRepository(repository.getName());
+                }
             }
         }
     }
@@ -72,7 +76,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         {
             bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
         }
-        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
     }
 
     @Override
