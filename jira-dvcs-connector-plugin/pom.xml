@@ -59,31 +59,32 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
+        <!-- use atlassian-selenium 2.2.0 so that FF 31 is used instead of FF 12
+             We need FF 31 as GitHub the delete oauth page now does not support FF 12 -->
         <dependency>
-            <groupId>com.atlassian.crowd</groupId>
-            <artifactId>crowd-events</artifactId>
-            <version>2.4.3</version>
-            <scope>provided</scope>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-pageobjects-api</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.crowd</groupId>
-            <artifactId>crowd-integration-api</artifactId>
-            <version>2.4.3</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.collections</groupId>
-                    <artifactId>google-collections</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-pageobjects-elements</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-webdriver-core</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- downgrade selenium-java bundled in atlassian-selenium as it requires guava 14 to be bundled -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -92,44 +93,40 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-pageobjects-api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-pageobjects-elements</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.atlassian.selenium</artifactId>
+                    <groupId>atlassian-webdriver-core</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>junit</artifactId>
                     <groupId>junit</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.google.collections</groupId>
-                    <artifactId>google-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <!-- httpclient is explicitly excluded in the pageobjects dependency to avoid it being bundled, due to maven bug
-             we add it here with test scope so that it could still be included in test -->
+             we add it here with test scope so that it could still be included in test
+             We are also overwriting it with a different version 4.3.x so that it works with atlassian-selenium 2.2.0 -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+            <version>${apache.httpcomponents.for.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${apache.httpcomponents.for.selenium.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -182,7 +179,6 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>2.2.0.201212191850-r</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -364,6 +360,8 @@
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
         <skipTests>false</skipTests>
+        <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
+        <selenium.version>2.41.0</selenium.version>
     </properties>
     <profiles>
         <profile>

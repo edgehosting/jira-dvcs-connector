@@ -77,16 +77,20 @@ public class GithubLoginPage implements Page
         if (githubWebLogoutLink.isPresent())
         {
             githubWebLogoutLink.click();
-            try
-            {
-                // GitHub sometimes requires logout confirm
-                Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
-                getGithubWebLogoutConfirm.click();
-            }
-            catch (AssertionError e)
-            {
-                // GitHub doesn't requires logout confirm
-            }
+        }
+        else
+        {
+            return; // skip if user has already logged out
+        }
+        try
+        {
+            // GitHub sometimes requires logout confirm
+            Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
+            getGithubWebLogoutConfirm.click();
+        }
+        catch (AssertionError e)
+        {
+            // GitHub doesn't requires logout confirm
         }
     }
 }

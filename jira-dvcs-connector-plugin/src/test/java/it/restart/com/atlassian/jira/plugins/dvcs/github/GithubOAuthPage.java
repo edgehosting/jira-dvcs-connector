@@ -7,15 +7,21 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import javax.inject.Inject;
+
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
 /**
  *
  */
 public class GithubOAuthPage implements Page
 {
+    private static Logger logger = LoggerFactory.getLogger(GithubOAuthPage.class);
+
     @ElementBy(name = "oauth_application[name]")
     private PageElement oauthApplicationName;
 
@@ -30,11 +36,11 @@ public class GithubOAuthPage implements Page
     
     @ElementBy(cssSelector = ".keys")
     private PageElement secrets;
-    
-    @ElementBy(linkText = "Delete application")
+
+    @ElementBy(linkText = "Delete application", timeoutType = PAGE_LOAD)
     private PageElement deleteApplication;
 
-    @ElementBy(xpath = "//div[@id='facebox']//button")
+    @ElementBy(xpath = "//div[@id='facebox']//button", timeoutType = PAGE_LOAD)
     private PageElement deleteApplicationConfirm;
 
     @ElementBy(tagName = "body")
@@ -81,33 +87,41 @@ public class GithubOAuthPage implements Page
 
     public void removeConsumer()
     {
-        deleteApplication.click();
 
+        final Runnable remove = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                deleteApplication.click();
+                Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+                deleteApplicationConfirm.click();
+            }
+        };
         try
         {
-            Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+            remove.run();
         }
         catch(AssertionError e)
         {
-            // retryning the delete after page refresh, sometimes it's not working
+            // retrying the delete after page refresh, sometimes it's not working
             retry(5, new Runnable()
             {
                 @Override
                 public void run()
                 {
                     webDriver.navigate().refresh();
-                    deleteApplication.click();
-                    Poller.waitUntilTrue(deleteApplicationConfirm.timed().isVisible());
+                    remove.run();
                 }
             });
         }
-        deleteApplicationConfirm.click();
     }
 
     private void retry(int times, Runnable runnable)
     {
-        for (int count = 1 ; count < times; count++)
+        for (int count = 1 ; count <= times; count++)
         {
+            logger.warn("retrying GitHub deleting application: {} times", count);
             try
             {
                 runnable.run();
@@ -115,11 +129,17 @@ public class GithubOAuthPage implements Page
             }
             catch (AssertionError e)
             {
-                // ignoring
+                // wait for a while and retry
+                try
+                {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException ignored)
+                {
+                }
             }
         }
-
-        runnable.run();
+        logger.warn("Gave up retrying GitHub deleting application", new RuntimeException("for stack tracing only"));
     }
 
 }
