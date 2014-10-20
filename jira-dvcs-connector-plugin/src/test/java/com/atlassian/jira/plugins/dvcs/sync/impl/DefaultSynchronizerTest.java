@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
+import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
 import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
@@ -273,9 +274,11 @@ public class DefaultSynchronizerTest
     public void setUp() throws Exception
     {
         // repo sync that doesn't capture
+        //noinspection unchecked
         when(repoSyncHelper.startSync(any(Repository.class), (EnumSet) argThat(not(hasItem(SOFT_SYNC))))).thenReturn(notCapturingRepoSync);
 
         // the capturing syncs
+        //noinspection unchecked
         when(repoSyncHelper.startSync(any(Repository.class), (EnumSet) argThat(hasItem(SOFT_SYNC)))).thenReturn(repoSyncForDefaultSync, repoSyncForMessageExecutor);
 
         when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
@@ -418,6 +421,8 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(branchService, "dvcsCommunicatorProvider", dvcsCommunicatorProvider);
 
         when(syncAudit.newSyncAuditLog(eq(repositoryMock.getId()), anyString(), any(Date.class))).thenReturn(syncAuditLogMock);
+
+        ReflectionTestUtils.setField(messagingService, "eventService", mock(CarefulEventService.class));
 
         ReflectionTestUtils.setField(defaultSynchronizer, "branchService", branchService);
         ReflectionTestUtils.setField(defaultSynchronizer, "messagingService", messagingService);

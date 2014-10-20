@@ -1,7 +1,10 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.pageobjects.pages.DashboardPage;
+import com.atlassian.jira.pageobjects.model.DefaultIssueActions;
+import com.atlassian.jira.pageobjects.pages.viewissue.IssueMenu;
+import com.atlassian.jira.pageobjects.pages.viewissue.MoveIssuePage;
+import com.atlassian.jira.pageobjects.pages.viewissue.ViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
@@ -14,7 +17,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraAddUserPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraMove_QA1_IssuePage;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType;
@@ -49,7 +51,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private OAuth oAuth;
-    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo" });
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList("public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo");
+    private static final String GADGET_ID = "gadget-10001";
 
     @BeforeClass
     public void beforeClass()
@@ -206,37 +209,24 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        // Activity streams gadget expected at dashboard page!
-        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
-        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
-
-        WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id("gadget-10001"));
-        String iframeSrc = iframeElm.getAttribute("src");
-        jira.getTester().gotoUrl(iframeSrc);
-
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
+        DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, true);
 
         // Activity streams should contain at least one changeset with 'more files' link.
         assertThat(page.isMoreFilesLinkVisible()).isTrue();
         page.checkIssueActivityPresentedForQA5();
 
-        // TODO commenting out this part of test, page objects should be fixed for Jira 6.1
         page.setIssueKeyFilter("QA-4");
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
-
         // because commit contains both keys QA-4 and QA-5, so should be present on both issues' activity streams
         page.checkIssueActivityPresentedForQA5();
 
         page.setIssueKeyFilter("QA-5");
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
-
         page.checkIssueActivityPresentedForQA5();
 
         // delete repository
         rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
 
-        page = jira.visit(DashboardActivityStreamsPage.class);
+        page = visitActivityStreamGadget(GADGET_ID, true);
         page.checkIssueActivityNotPresentedForQA5();
     }
 
@@ -245,34 +235,29 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void testAnonymousAccess()
     {
         setupAnonymousAccessAllowed();
-        // add organization
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        try
+        {
+            // add organization
+            addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
-        // Activity streams gadget expected at dashboard page!
-        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class);
-        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
+            // Activity streams gadget expected at dashboard page!
+            DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, false);
 
-        WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id("gadget-10001"));
-        String iframeSrc = iframeElm.getAttribute("src");
-        jira.getTester().gotoUrl(iframeSrc);
+            page.checkIssueActivityPresentedForQA5();
 
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
-        page.checkIssueActivityPresentedForQA5();
+            // logout user
+            jira.getTester().getDriver().manage().deleteAllCookies();
 
-        // logout user
-        jira.getTester().getDriver().manage().deleteAllCookies();
-
-        // Activity streams gadget expected at dashboard page!
-        jira.visit(DashboardPage.class);
-        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
-
-        jira.getTester().gotoUrl(iframeSrc);
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class);
-        page.checkIssueActivityNotPresentedForQA5();
-
-        // log in to JIRA
-        new JiraLoginPageController(jira).login();
-        setupAnonymousAccessForbidden();
+            page = visitActivityStreamGadget(GADGET_ID, false);
+            // anonymous user should not see QA-5 activity stream
+            page.checkIssueActivityNotPresentedForQA5();
+        }
+        finally
+        {
+            // always clean up the anonymous setting change
+            new JiraLoginPageController(jira).login();
+            setupAnonymousAccessForbidden();
+        }
     }
 
     @Test
@@ -292,19 +277,17 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // add organization
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
+        final String issueKey = "QA-1";
+
         // check commits setup to start with
-        assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
 
         // move issue from QA project to BBC project
-        JiraMove_QA1_IssuePage movingPage = jira.getPageBinder().navigateToAndBind(JiraMove_QA1_IssuePage.class, jira.getPageBinder());
-        movingPage.stepOne_typeProjectName("Bitbucket Connector")
-                .clickNext()
-                .clickNext()
-                .submit();
+        moveIssueToProject(issueKey, "Bitbucket Connector");
 
         // check commits kept
         // in fact, Jira will make the redirect to moved/created issue BBC-1
-        assertThat(getCommitsForIssue("QA-1", 5)).hasItemWithCommitMessage("QA-1 test modification");
+        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
     }
 
     @Override
@@ -422,6 +405,29 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync, expectError);
+    }
+
+    private DashboardActivityStreamsPage visitActivityStreamGadget(final String gadgetId, final boolean isEditMode)
+    {
+        // Activity streams gadget expected at dashboard page!
+        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class, isEditMode);
+        assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
+
+        WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id(gadgetId));
+        String iframeSrc = iframeElm.getAttribute("src");
+        jira.getTester().gotoUrl(iframeSrc);
+
+        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class, isEditMode);
+        return page;
+    }
+
+    private void moveIssueToProject(final String issueKey, final String newProject)
+    {
+        ViewIssuePage viewIssuePage = jira.goToViewIssue(issueKey);
+        IssueMenu issueMenu = viewIssuePage.getIssueMenu();
+        issueMenu.invoke(DefaultIssueActions.MOVE);
+        final MoveIssuePage moveIssuePage = jira.getPageBinder().bind(MoveIssuePage.class, issueKey);
+        moveIssuePage.setNewProject(newProject).next().next().move();
     }
 
     @Override
