@@ -44,7 +44,8 @@ public class DevSummaryChangedEventResourceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        devSummaryChangedEventResource = new DevSummaryChangedEventResource(featureManager, permissionManager, authenticationContext);
+        devSummaryChangedEventResource = new DevSummaryChangedEventResource(featureManager, permissionManager,
+                authenticationContext, devSummaryChangedEventService);
         ReflectionTestUtils.setField(devSummaryChangedEventResource, "devSummaryChangedEventService", devSummaryChangedEventService);
         when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(true);
         when(featureManager.isOnDemand()).thenReturn(true);

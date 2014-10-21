@@ -7,9 +7,10 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
 public class DefaultAuthenticationFactory implements AuthenticationFactory
@@ -17,10 +18,10 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 
 	private final Encryptor encryptor;
 
-    @Resource
+    @Autowired
 	public DefaultAuthenticationFactory(Encryptor encryptor)
 	{
-		this.encryptor = encryptor;
+		this.encryptor = checkNotNull(encryptor);
 	}
 
 	@Override
