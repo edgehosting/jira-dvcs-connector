@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 public class UserAddListenerFactoryBean implements InitializingBean, DisposableBean
@@ -20,25 +21,25 @@ public class UserAddListenerFactoryBean implements InitializingBean, DisposableB
     private static final Logger log = LoggerFactory.getLogger(UserAddListenerFactoryBean.class);
 
     @ComponentImport
-    @Autowired
+    @Resource
     private EventPublisher eventPublisher;
 
-    @Autowired
+    @Resource
     private OrganizationService organizationService;
 
-    @Autowired
+    @Resource
     private DvcsCommunicatorProvider communicatorProvider;
 
     @ComponentImport
-    @Autowired
+    @Resource
     private UserManager userManager;
 
-    @Autowired
     @ComponentImport
+    @Resource
     private GroupManager groupManager;
 
     @ComponentImport
-    @Autowired
+    @Resource
     private CrowdService crowdService;
 
     private DvcsAddUserListener dvcsAddUserListener;

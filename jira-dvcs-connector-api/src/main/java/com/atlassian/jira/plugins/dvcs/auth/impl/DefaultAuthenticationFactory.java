@@ -7,8 +7,9 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 public class DefaultAuthenticationFactory implements AuthenticationFactory
@@ -16,7 +17,7 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 
 	private final Encryptor encryptor;
 
-    @Autowired
+    @Resource
 	public DefaultAuthenticationFactory(Encryptor encryptor)
 	{
 		this.encryptor = encryptor;

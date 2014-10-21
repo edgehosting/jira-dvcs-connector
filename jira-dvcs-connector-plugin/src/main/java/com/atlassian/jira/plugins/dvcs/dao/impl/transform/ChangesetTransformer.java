@@ -48,8 +48,6 @@ public class ChangesetTransformer
             return null;
         }
 
-//        log.debug("Changeset transformation: [{}] ", changesetMapping);
-
         final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
 
         List<Integer> repositories = changeset.getRepositoryIds();
