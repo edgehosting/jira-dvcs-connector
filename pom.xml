@@ -283,19 +283,16 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>2.5.6.SEC01</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.plugin</groupId>
                 <artifactId>atlassian-spring-scanner-annotation</artifactId>
                 <version>${atlassian.spring.scanner.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.plugin</groupId>
                 <artifactId>atlassian-spring-scanner-runtime</artifactId>
                 <version>${atlassian.spring.scanner.version}</version>
-                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

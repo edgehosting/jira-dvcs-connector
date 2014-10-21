@@ -4,18 +4,18 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_FAILED;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 import static com.atlassian.jira.plugins.dvcs.util.CustomStringUtils.encode;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+@Scanned
 public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 {
     public static final String DEFAULT_SOURCE = "unknown";
@@ -35,11 +35,9 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 		dvcsTypeToUrlMap.put("github", "https://github.com");
 	}
 
-    @Autowired
     public CommonDvcsConfigurationAction(@ComponentImport EventPublisher eventPublisher)
     {
-        super();
-        this.eventPublisher = eventPublisher;
+        this.eventPublisher = checkNotNull(eventPublisher);
     }
 
 	protected boolean hadAutolinkingChecked()
