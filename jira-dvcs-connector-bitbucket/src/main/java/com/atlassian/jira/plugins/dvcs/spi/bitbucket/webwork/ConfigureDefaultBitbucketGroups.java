@@ -4,16 +4,15 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
+@Scanned
 public class ConfigureDefaultBitbucketGroups extends JiraWebActionSupport
 {
 	private static final long serialVersionUID = 6246027331604675862L;
@@ -26,7 +25,6 @@ public class ConfigureDefaultBitbucketGroups extends JiraWebActionSupport
 
 	private final OrganizationService organizationService;
 
-    @Autowired
     public ConfigureDefaultBitbucketGroups(OrganizationService organizationService)
     {
         this.organizationService = organizationService;

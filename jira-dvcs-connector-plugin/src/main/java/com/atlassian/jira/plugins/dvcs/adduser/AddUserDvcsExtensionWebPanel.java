@@ -3,14 +3,13 @@ package com.atlassian.jira.plugins.dvcs.adduser;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.model.AbstractWebPanel;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.StringWriter;
 import java.util.Map;
@@ -26,7 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * 
  * @author jhocman@atlassian.com
  */
-@Component
+@Scanned
 public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 {
     private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
@@ -36,7 +35,6 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     private final OrganizationService organizationService;
     private final TemplateRenderer templateRenderer;
 
-    @Autowired
     public AddUserDvcsExtensionWebPanel(@ComponentImport PluginAccessor pluginAccessor,
             @ComponentImport TemplateRenderer templateRenderer, @ComponentImport ApplicationProperties appProperties,
             PluginFeatureDetector featuresDetector, OrganizationService organizationService)

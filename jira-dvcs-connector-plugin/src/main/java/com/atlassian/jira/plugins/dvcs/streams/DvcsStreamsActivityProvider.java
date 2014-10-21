@@ -15,6 +15,7 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
@@ -44,8 +45,6 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -62,7 +61,7 @@ import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+@Scanned
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
@@ -79,7 +78,6 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final RepositoryService repositoryService;
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
-    @Autowired
     public DvcsStreamsActivityProvider(@ComponentImport I18nResolver i18nResolver,
             @ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,

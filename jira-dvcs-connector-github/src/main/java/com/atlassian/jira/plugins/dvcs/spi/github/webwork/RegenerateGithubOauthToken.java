@@ -6,14 +6,13 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
+@Scanned
 public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
@@ -23,7 +22,6 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 
     protected final String baseUrl;
 
-    @Autowired
     public RegenerateGithubOauthToken(@ComponentImport EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
             @ComponentImport ApplicationProperties applicationProperties)

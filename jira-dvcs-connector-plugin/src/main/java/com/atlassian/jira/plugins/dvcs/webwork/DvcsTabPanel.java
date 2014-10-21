@@ -9,20 +9,19 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-@Component
+@Scanned
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
 
@@ -85,7 +84,6 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
 
     private final EventPublisher eventPublisher;
 
-    @Autowired
     public DvcsTabPanel(PanelVisibilityManager panelVisibilityManager,
             @ComponentImport SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
             @ComponentImport WebResourceManager webResourceManager,

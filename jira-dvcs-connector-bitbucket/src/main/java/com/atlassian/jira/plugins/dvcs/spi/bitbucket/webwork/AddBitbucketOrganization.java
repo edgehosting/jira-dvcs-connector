@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
@@ -26,8 +27,6 @@ import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
@@ -37,7 +36,7 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 /**
  * Webwork action used to configure the bitbucket organization.
  */
-@Component
+@Scanned
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 {
     private static final long serialVersionUID = 4366205447417138381L;
@@ -64,7 +63,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private final OAuthStore oAuthStore;
 
-    @Autowired
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
             @ComponentImport EventPublisher eventPublisher,
             OAuthStore oAuthStore,

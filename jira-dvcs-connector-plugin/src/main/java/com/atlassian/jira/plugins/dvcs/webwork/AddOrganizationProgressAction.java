@@ -2,12 +2,12 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import org.springframework.stereotype.Component;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Scanned
 public class AddOrganizationProgressAction extends JiraWebActionSupport
 {
     private static final long serialVersionUID = -8035393686536929940L;

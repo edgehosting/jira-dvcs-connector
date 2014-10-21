@@ -7,12 +7,11 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.plugin.PluginParseException;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.ContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+@Scanned
 public class DvcsTabPanelContextProvider implements ContextProvider
 {
 
@@ -30,7 +29,6 @@ public class DvcsTabPanelContextProvider implements ContextProvider
     private final EventPublisher eventPublisher;
     private final RepositoryService repositoryService;
 
-    @Autowired
     public DvcsTabPanelContextProvider(ChangesetRenderer changesetRenderer, RepositoryService repositoryService,
             @ComponentImport EventPublisher eventPublisher)
     {

@@ -4,15 +4,13 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.github.webwork.RegenerateGithubOauthToken;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
+@Scanned
 public class RegenerateGithubEnterpriseOauthToken extends RegenerateGithubOauthToken
 {
-    @Autowired
     public RegenerateGithubEnterpriseOauthToken(@ComponentImport EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
             @ComponentImport ApplicationProperties applicationProperties)
