@@ -24,6 +24,7 @@ public class DvcsSchedulerJob implements JobHandler
     private final RepositoryService repositoryService;
     private final ActiveObjects activeObjects;
 
+    @Autowired
     public DvcsSchedulerJob(final OrganizationService organizationService, final RepositoryService repositoryService, final ActiveObjects activeObjects)
     {
         this.organizationService = organizationService;
@@ -31,9 +32,7 @@ public class DvcsSchedulerJob implements JobHandler
         this.activeObjects = activeObjects;
     }
 
-    @Autowired
-
-    @Override
+   @Override
     public void execute(final JobInfo jobInfo)
     {
         if (activeObjects.moduleMetaData().isDataSourcePresent())
