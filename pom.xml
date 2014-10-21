@@ -12,7 +12,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>2.2.7-SNAPSHOT</version>
+    <version>2.2.7-D20141021T094246</version>
 
     <licenses>
         <license>
