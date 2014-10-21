@@ -28,7 +28,6 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     {
         return payload.getRepository();
     }
-
     @Override
     protected String getBranch(OldBitbucketSynchronizeCsetMsg payload)
     {
@@ -44,13 +43,13 @@ public class OldBitbucketSynchronizeCsetMsgConsumer extends MessageConsumerSuppo
     @Override
     protected OldBitbucketSynchronizeCsetMsg createNextMessage(OldBitbucketSynchronizeCsetMsg payload, String parentChangesetNode)
     {
-        return new OldBitbucketSynchronizeCsetMsg(payload.getRepository(), //
-                payload.getBranch(), //
-                parentChangesetNode, //
-                payload.getRefreshAfterSynchronizedAt(), //
-                payload.getProgress(),
-                payload.isSoftSync(), payload.getSyncAuditId(),
-                payload.isWebHookSync());
+       return new OldBitbucketSynchronizeCsetMsg(payload.getRepository(), //
+               payload.getBranch(), //
+               parentChangesetNode, //
+               payload.getRefreshAfterSynchronizedAt(), //
+               payload.getProgress(),
+               payload.isSoftSync(), payload.getSyncAuditId(),
+               payload.isWebHookSync());
     }
 
     @Override

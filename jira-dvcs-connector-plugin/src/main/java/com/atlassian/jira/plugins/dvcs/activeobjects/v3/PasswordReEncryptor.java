@@ -14,8 +14,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * PasswordReEncryptor decrypts the password using old key (projectId + repositoryUrl) and reencrypts using new key
- * (organisation name + host url)
+ * PasswordReEncryptor decrypts the password using old key (projectId + repositoryUrl) 
+ * and reencrypts using new key (organisation name + host url) 
  */
 @Component
 class PasswordReEncryptor
@@ -45,9 +45,9 @@ class PasswordReEncryptor
      */
     private String decrypt(String password, String projectKey, String repoURL)
     {
-        if (password == null)
-        { return null; }
-
+        if (password == null) 
+            return null; 
+                
         try
         {
             byte[] ciphertext = hexStringToByteArray(password);
@@ -73,7 +73,7 @@ class PasswordReEncryptor
         }
         catch (Exception e)
         {
-            log.debug("error encrypting", e);
+            log.debug("error encrypting",e);
         }
         return "";
     }
@@ -81,7 +81,6 @@ class PasswordReEncryptor
 
     /**
      * Encrypt the input into a hex encoded string;
-     *
      * @param input the input to encrypt
      * @param organizationName the project key
      * @param hostUrl the repository url
@@ -108,14 +107,14 @@ class PasswordReEncryptor
         }
         catch (Exception e)
         {
-            log.debug("error encrypting", e);
+            log.debug("error encrypting",e);
             encrypted = new byte[0];
         }
 
         BigInteger bi = new BigInteger(1, encrypted);
         return String.format("%0" + (encrypted.length << 1) + "X", bi);
     }
-
+    
     private static byte[] hexStringToByteArray(String s)
     {
         int len = s.length();
@@ -127,5 +126,5 @@ class PasswordReEncryptor
         }
         return data;
     }
-
+    
 }

@@ -349,8 +349,7 @@
                     </testGroups>
                     <extractDependencies>false</extractDependencies>
                     <instructions>
-                        <Atlassian-Plugin-Key>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin
-                        </Atlassian-Plugin-Key>
+                        <Atlassian-Plugin-Key>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</Atlassian-Plugin-Key>
                         <Spring-Context>*</Spring-Context>
                         <!--
                             Set the default version range on an import to open ended current version up. Without this, the default

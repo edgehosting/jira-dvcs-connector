@@ -19,7 +19,7 @@ import java.util.concurrent.locks.Lock;
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-@Component("defferedBitbucketLinker")
+@Component("deferredBitbucketLinker")
 public class DeferredBitbucketLinker implements BitbucketLinker
 {
     /**

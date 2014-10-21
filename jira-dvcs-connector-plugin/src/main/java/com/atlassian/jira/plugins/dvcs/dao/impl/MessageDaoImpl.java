@@ -25,8 +25,9 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * An implementation of {@link MessageDao}.
- *
+ * 
  * @author Stanislav Dvorscak
+ * 
  */
 @Component
 public class MessageDaoImpl implements MessageDao
@@ -38,7 +39,7 @@ public class MessageDaoImpl implements MessageDao
     @Resource
     @ComponentImport
     private ActiveObjects activeObjects;
-
+    
     /**
      * Injected {@link QueryHelper} dependency.
      */
@@ -63,7 +64,7 @@ public class MessageDaoImpl implements MessageDao
                     activeObjects.create(MessageTagMapping.class, //
                             new DBParam(MessageTagMapping.MESSAGE, result.getID()), //
                             new DBParam(MessageTagMapping.TAG, tag) //
-                    );
+                            );
                 }
                 return result;
             }
@@ -127,7 +128,7 @@ public class MessageDaoImpl implements MessageDao
                 where(eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")));
             }
 
-        }.toQuery(Collections.<String, Object>singletonMap("tag", tag)), new EntityStreamCallback<MessageMapping, Integer>()
+        }.toQuery(Collections.<String, Object> singletonMap("tag", tag)), new EntityStreamCallback<MessageMapping, Integer>()
         {
 
             @Override
@@ -169,7 +170,7 @@ public class MessageDaoImpl implements MessageDao
                 ));
             }
 
-        }.toQuery(MapBuilder.<String, Object>build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
+        }.toQuery(MapBuilder.<String, Object> build("tag", tag, "state", new MessageState[] { MessageState.PENDING, MessageState.RUNNING, MessageState.SLEEPING }));
         return activeObjects.count(MessageMapping.class, query);
     }
 }

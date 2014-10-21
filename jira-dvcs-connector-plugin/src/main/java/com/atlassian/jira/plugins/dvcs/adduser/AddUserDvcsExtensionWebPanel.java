@@ -41,9 +41,9 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     {
         super(pluginAccessor);
         this.templateRenderer = checkNotNull(templateRenderer);
-        this.appProperties = appProperties;
-        this.featuresDetector = featuresDetector;
-        this.organizationService = organizationService;
+        this.appProperties = checkNotNull(appProperties);
+        this.featuresDetector = checkNotNull(featuresDetector);
+        this.organizationService = checkNotNull(organizationService);
     }
 
     /**

@@ -98,7 +98,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     private SyncDisabledHelper syncDisabledHelper;
 
     @Autowired
-    public BitbucketCommunicator(@Qualifier ("defferedBitbucketLinker") BitbucketLinker bitbucketLinker,
+    public BitbucketCommunicator(@Qualifier ("deferredBitbucketLinker") BitbucketLinker bitbucketLinker,
             @ComponentImport PluginAccessor pluginAccessor,
             BitbucketClientBuilderFactory bitbucketClientBuilderFactory, @ComponentImport ApplicationProperties ap)
     {
@@ -466,7 +466,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     {
                         found = true;
                     }
-                    else
+                    // If the hook is on localhost then we don't clean up as otherwise the tests mess with each other
+                    else if(!serviceField.getValue().startsWith("http://localhost:"))
                     {
                         servicesRest.deleteService(repository.getOrgName(), repository.getSlug(), bitbucketServiceEnvelope.getId());
                     }

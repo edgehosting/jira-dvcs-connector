@@ -6,7 +6,7 @@ import com.atlassian.sal.api.scheduling.PluginScheduler;
 
 /**
  * This class exists to provide @ComponentImport annotations for scanning for classes that are not annotated
- * on an actual DVCS class i.e. the pluginScheduler for the schedular compat
+ * on an actual DVCS class i.e. the pluginScheduler for the scheduler compat
  *
  * @since v6.3
  */

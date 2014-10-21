@@ -45,7 +45,7 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
 
     private List<String> getStringListValue(String projectKey, String key)
     {
-        @SuppressWarnings ({ "unchecked" })
+        @SuppressWarnings({"unchecked"})
         List<String> list = (List<String>) pluginSettingsFactory.createSettingsForKey(projectKey).get(key);
         return list == null ? new ArrayList<String>() : list;
     }
@@ -53,9 +53,9 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
     private void setStringListValue(String projectKey, String key, List<String> value)
     {
         if (value != null && !value.isEmpty())
-        { pluginSettingsFactory.createSettingsForKey(projectKey).put(key, value); }
+            pluginSettingsFactory.createSettingsForKey(projectKey).put(key, value);
         else
-        { removeValue(projectKey, key); }
+            removeValue(projectKey, key);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
     @Override
     public void setSyncProgress(String projectKey, String repositoryUrl, int revision)
     {
-        logger.debug("setting progress for [ {} ] at [ {} ] to [ {} ]", new Object[] { projectKey, repositoryUrl, revision });
+        logger.debug("setting progress for [ {} ] at [ {} ] to [ {} ]", new Object[]{projectKey, repositoryUrl, revision});
         setStringProperty(projectKey, "currentsync" + repositoryUrl + projectKey, String.valueOf(revision));
     }
 
