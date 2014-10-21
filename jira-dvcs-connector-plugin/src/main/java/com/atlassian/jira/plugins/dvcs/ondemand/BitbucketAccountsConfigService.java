@@ -28,13 +28,17 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
- * <p/>
+ *
  * BitbucketAccountsConfigService
- * <p/>
- * <p/>
- * <br /> <br /> Created on 1.8.2012, 13:41:20 <br /> <br />
+ *
+ *
+ * <br />
+ * <br />
+ * Created on 1.8.2012, 13:41:20 <br />
+ * <br />
  *
  * @author jhocman@atlassian.com
+ *
  */
 @ExportAsService (AccountsConfigService.class)
 @Component
@@ -65,7 +69,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         this.pluginAccessor = pluginAccessor;
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnector.BitbucketAccountsConfigService"));
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -92,7 +96,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
         bitbucketAccountsReloadJob.schedule();
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -113,7 +117,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             }
         });
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -144,25 +148,21 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
                 if (hasIntegratedAccount(configuration))
                 {
                     doNewAccount(configuration);
-                }
-                else
+                } else
                 {
                     log.debug("No integrated account found in provided configuration.");
                 }
-            }
-            else
+            } else
             {
                 // probably not ondemand instance
                 log.debug("No integrated account found and no configuration is provided.");
             }
-        }
-        else
+        } else
         { // integrated account found
             if (configuration != null)
             {
                 doUpdateConfiguration(configuration, existingAccount);
-            }
-            else
+            } else
             {
                 log.info("Integrated account has been found and no configuration is provided. Deleting integrated account.");
                 removeAccount(existingAccount);
@@ -183,8 +183,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             log.info("Creating new integrated account.");
             final Organization newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
-        }
-        else
+        } else
         {
             log.info("Found the same user-added account.");
             markAsIntegratedAccount(userAddedAccount, info);
@@ -233,8 +232,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         if (userAddedAccount != null && StringUtils.isNotBlank(userAddedAccount.getCredential().getAccessToken()))
         {
             return userAddedAccount;
-        }
-        else
+        } else
         {
             return null;
         }
@@ -260,21 +258,18 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
                     log.info("Detected credentials change.");
                     // BBC-513 users probably changed key/secret from UI, ignore
                     // valuse in ondemand.properties files and keep using existing ones
-                }
-                else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
+                } else if (accountNameHasChanged(existingNotNullAccount, providedConfig))
                 {
                     log.info("Detected integrated account name change.");
                     removeAccount(existingNotNullAccount);
                     organizationService.save(createNewOrganization(providedConfig));
-                }
-                else
+                } else
                 {
                     // nothing has changed
                     log.info("No changes detect on integrated account");
                 }
                 enableAppSwitcherLink(providedConfig.accountName);
-            }
-            else
+            } else
             {
                 // should not happen
                 // existing integrated account with the same name as user added
@@ -283,8 +278,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
                 // as provided config is null, remove also integrated account
                 removeAccount(existingNotNullAccount);
             }
-        }
-        else
+        } else
         {
             //
             // delete account
@@ -308,7 +302,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     {
         return StringUtils.equals(info.accountName, existingNotNullAccount.getName()) &&
                 (!StringUtils.equals(info.oauthKey, existingNotNullAccount.getCredential().getOauthKey()) ||
-                        !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
+                 !StringUtils.equals(info.oauthSecret, existingNotNullAccount.getCredential().getOauthSecret()));
     }
 
     private boolean accountNameHasChanged(Organization existingNotNullAccount, AccountInfo providedConfig)
@@ -343,8 +337,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             //
             return info;
 
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             throw new IllegalStateException("Wrong configuration.", e);
         }
@@ -359,8 +352,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         try
         {
             links = configuration.getSysadminApplicationLinks().get(0);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             log.debug("Bitbucket links not present. " + e + ": " + e.getMessage());
             return null;
@@ -373,8 +365,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             try
             {
                 bitbucketAccountInfo = links.getBitbucket().get(0);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 log.debug("Bitbucket accounts info not present. " + e + ": " + e.getMessage());
                 return null;

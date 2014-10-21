@@ -35,32 +35,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * The Class OrganizationDaoImpl.
- */
 @Component
 public class OrganizationDaoImpl implements OrganizationDao
 {
     public static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
 
-    /**
-     * The active objects.
-     */
     private final ActiveObjects activeObjects;
 
-    /**
-     * The encryptor.
-     */
     private final Encryptor encryptor;
 
     private final PluginSettingsFactory pluginSettingsFactory;
 
-    /**
-     * The Constructor.
-     *
-     * @param activeObjects the active objects
-     * @param encryptor the encryptor
-     */
     @Autowired
     public OrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects, Encryptor encryptor,
             @ComponentImport PluginSettingsFactory pluginSettingsFactory)
@@ -73,7 +58,8 @@ public class OrganizationDaoImpl implements OrganizationDao
     /**
      * Transform.
      *
-     * @param organizationMapping the organization mapping
+     * @param organizationMapping
+     *            the organization mapping
      * @return the organization
      */
     protected Organization transform(OrganizationMapping organizationMapping)
@@ -102,8 +88,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     protected Set<Group> deserializeDefaultGroups(String defaultGroupsSlugs)
     {
         Set<Group> slugs = new HashSet<Group>();
-        if (StringUtils.isNotBlank(defaultGroupsSlugs))
-        {
+        if (StringUtils.isNotBlank(defaultGroupsSlugs)) {
             Iterable<String> groupsSlugs = Splitter.on(Organization.GROUP_SLUGS_SEPARATOR).split(defaultGroupsSlugs);
             for (String slug : groupsSlugs)
             {
@@ -129,8 +114,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     {
         String hostUrl = organizationMapping.getHostUrl();
         // normalize
-        if (hostUrl != null && hostUrl.endsWith("/"))
-        {
+        if (hostUrl != null && hostUrl.endsWith("/")) {
             hostUrl = hostUrl.substring(0, hostUrl.length() - 1);
         }
         return hostUrl + "/" + organizationMapping.getName();
@@ -179,14 +163,14 @@ public class OrganizationDaoImpl implements OrganizationDao
     /**
      * Transform collection.
      *
-     * @param organizationMappings the organization mappings
+     * @param organizationMappings
+     *            the organization mappings
      * @return the list< organization>
      */
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     private List<Organization> transformCollection(List<OrganizationMapping> organizationMappings)
     {
-        return (List<Organization>) CollectionUtils.collect(organizationMappings, new Transformer()
-        {
+        return (List<Organization>) CollectionUtils.collect(organizationMappings, new Transformer() {
 
             @Override
             public Object transform(Object input)
@@ -228,11 +212,11 @@ public class OrganizationDaoImpl implements OrganizationDao
             return null;
         }
 
-        OrganizationMapping[] orgs = activeObjects
+        OrganizationMapping [] orgs = activeObjects
                 .executeInTransaction(new TransactionCallback<OrganizationMapping[]>()
                 {
                     @Override
-                    public OrganizationMapping[] doInTransaction()
+                    public OrganizationMapping [] doInTransaction()
                     {
                         Query query = Query.select().where(
                                 OrganizationMapping.HOST_URL + " = ?",
@@ -299,8 +283,7 @@ public class OrganizationDaoImpl implements OrganizationDao
 
                             om = activeObjects.create(OrganizationMapping.class, map);
                             om = activeObjects.find(OrganizationMapping.class, "ID = ?", om.getID())[0];
-                        }
-                        else
+                        } else
                         {
                             om = activeObjects.get(OrganizationMapping.class, organization.getId());
 
@@ -334,8 +317,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     public void remove(int organizationId)
     {
         OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, organizationId);
-        if (organizationMapping != null)
-        {
+        if (organizationMapping != null) {
             activeObjects.delete(organizationMapping);
         }
 
@@ -377,7 +359,7 @@ public class OrganizationDaoImpl implements OrganizationDao
     @Override
     public List<Organization> getAllByIds(Collection<Integer> ids)
     {
-        OrganizationMapping[] orgMappings = activeObjects.get(OrganizationMapping.class, ids.toArray(new Integer[] { }));
+        OrganizationMapping[] orgMappings = activeObjects.get(OrganizationMapping.class, ids.toArray(new Integer[] {}));
         return transformCollection(Arrays.asList(orgMappings));
     }
 
@@ -398,14 +380,11 @@ public class OrganizationDaoImpl implements OrganizationDao
         Query query = Query.select().where(OrganizationMapping.OAUTH_KEY + " IS NOT NULL AND " + OrganizationMapping.OAUTH_SECRET + " IS NOT NULL AND " + OrganizationMapping.ACCESS_TOKEN + " IS NULL");
         OrganizationMapping[] organizations = activeObjects.find(OrganizationMapping.class, query);
 
-        if (organizations != null && organizations.length > 0)
-        {
+        if (organizations != null && organizations.length > 0) {
 
-            return transform(organizations[0]);
+            return transform(organizations [0]);
 
-        }
-        else
-        {
+        } else {
 
             return null;
 
@@ -425,7 +404,7 @@ public class OrganizationDaoImpl implements OrganizationDao
             @Override
             public Boolean doInTransaction()
             {
-                Query query = Query.select().where(ActiveObjectsUtils.renderListOperator(OrganizationMapping.DVCS_TYPE, "IN", "OR", Arrays.asList(types)), (Object[]) types);
+                Query query = Query.select().where(ActiveObjectsUtils.renderListOperator(OrganizationMapping.DVCS_TYPE,"IN", "OR", Arrays.asList(types)), (Object []) types);
 
                 return activeObjects.count(OrganizationMapping.class, query) > 0;
             }

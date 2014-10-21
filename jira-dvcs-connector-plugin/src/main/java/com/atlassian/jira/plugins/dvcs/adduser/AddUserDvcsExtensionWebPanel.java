@@ -18,11 +18,12 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * This panel extends the "add user" form in JIRA. It appends configured bitbucket accounts with their groups so
- * administrator can choose to which groups the user being added should be invited.
- * <p/>
+ * This panel extends the "add user" form in JIRA. It appends configured bitbucket
+ * accounts with their groups so administrator can choose to which groups the
+ * user being added should be invited.
+ * 
  * An error rendering this panel will have no effect on the final "add user" form.
- *
+ * 
  * @author jhocman@atlassian.com
  */
 @Component
@@ -54,7 +55,7 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     public String getHtml(Map<String, Object> model)
     {
 
-        if (!featuresDetector.isUserInvitationsEnabled() || organizationService.getAllCount() == 0)
+        if (!featuresDetector.isUserInvitationsEnabled() || organizationService.getAllCount() == 0) 
         {
             return "";
         }
@@ -62,15 +63,14 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
         StringWriter stringWriter = new StringWriter();
         try
         {
-            model.put("baseurl", appProperties.getBaseUrl());
-
+        	 model.put("baseurl", appProperties.getBaseUrl());
+        	 
             templateRenderer.render("/templates/dvcs/add-user-dvcs-extension.vm", model, stringWriter);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             log.warn("Error while rendering DVCS extension fragment for add user form.", e);
             stringWriter = new StringWriter(); // reset writer so no broken
-            // output goes out TODO should we print the error message to the writer?
+                                               // output goes out TODO should we print the error message to the writer?
         }
 
         return stringWriter.toString();

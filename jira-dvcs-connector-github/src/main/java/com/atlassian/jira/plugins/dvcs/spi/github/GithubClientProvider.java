@@ -25,7 +25,7 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
-@Component("githubClientProvider")
+@Component ("githubClientProvider")
 public class GithubClientProvider
 {
     private final AuthenticationFactory authenticationFactory;
@@ -56,7 +56,7 @@ public class GithubClientProvider
     {
         return createClient(url, userAgent);
     }
-
+    
     public GitHubClient createClient(Organization organization)
     {
         GitHubClient client = createClientInternal(organization.getHostUrl(), userAgent);
@@ -65,8 +65,7 @@ public class GithubClientProvider
         {
             OAuthAuthentication oAuth = (OAuthAuthentication) authentication;
             client.setOAuth2Token(oAuth.getAccessToken());
-        }
-        else
+        } else
         {
             throw new SourceControlException("Failed to get proper OAuth instance for github client.");
         }
@@ -104,9 +103,8 @@ public class GithubClientProvider
     {
         return new CustomPullRequestService(createClient(repository));
     }
-
-    public IssueService getIssueService(Repository repository)
-    {
+    
+    public IssueService getIssueService(Repository repository) {
         return new IssueService(createClient(repository));
     }
 
@@ -114,14 +112,15 @@ public class GithubClientProvider
     {
         return new EventService(createClient(repository));
     }
-
+    
     /**
      * Create a GithubClientWithTimeout to connect to the api.
-     * <p/>
-     * It uses the right host in case we're calling the github.com api. It uses the right protocol in case we're calling
-     * the GitHub Enterprise api.
+     *
+     * It uses the right host in case we're calling the github.com api.
+     * It uses the right protocol in case we're calling the GitHub Enterprise api.
      *
      * @param url is the GitHub's oauth host.
+     * @param userAgent
      * @return a GithubClientWithTimeout
      */
     public static GithubClientWithTimeout createClient(String url, String userAgent)
@@ -139,8 +138,7 @@ public class GithubClientProvider
             GithubClientWithTimeout result = new GithubClientWithTimeout(host, -1, urlObject.getProtocol());
             result.setUserAgent(userAgent);
             return result;
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             throw new IllegalArgumentException(e);
         }

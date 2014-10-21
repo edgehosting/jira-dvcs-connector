@@ -131,27 +131,24 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         try
         {
             return doAddOrganization(getGithubOAuthUtils().requestAccessToken(url, code));
-        }
-        catch (InvalidResponseException ire)
+        } catch (InvalidResponseException ire)
         {
             addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_RESPONSE);
             return INPUT;
 
-        }
-        catch (SourceControlException sce)
+        } catch (SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
-            if (sce.getCause() != null)
+            if ( sce.getCause() != null )
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
 
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             addErrorMessage("Error obtaining access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
@@ -174,8 +171,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
             organizationService.save(newOrganization);
 
-        }
-        catch (SourceControlException e)
+        } catch (SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
@@ -186,7 +182,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
         triggerAddSucceededEvent(EVENT_TYPE_GITHUB_ENTERPRISE);
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
-                getSourceAsUrlParam());
+                            getSourceAsUrlParam());
     }
 
     public static String encode(String url)

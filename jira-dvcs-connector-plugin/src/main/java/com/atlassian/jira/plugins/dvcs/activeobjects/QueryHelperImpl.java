@@ -25,8 +25,9 @@ import static com.atlassian.activeobjects.spi.DatabaseType.ORACLE;
 
 /**
  * An implementation of {@link QueryHelper}.
- *
+ * 
  * @author Stanislav Dvorscak
+ * 
  */
 @Component
 public class QueryHelperImpl implements QueryHelper
@@ -55,41 +56,36 @@ public class QueryHelperImpl implements QueryHelper
     {
         dataSourceMetaData = cacheManager.getCachedReference(getClass().getName() + ".dataSourceMetaData",
                 new Supplier<DataSourceMetaData>()
+        {
+            @Override
+            public DataSourceMetaData get()
+            {
+                Connection connection = null;
+                try
                 {
-                    @Override
-                    public DataSourceMetaData get()
-                    {
-                        Connection connection = null;
+                    connection = dataSourceProvider.getDataSource().getConnection();
+                    final DatabaseType databaseType = dataSourceProvider.getDatabaseType();
+                    final String schema = dataSourceProvider.getSchema();
+                    final String quote = connection.getMetaData().getIdentifierQuoteString();
+                    return new DataSourceMetaData(databaseType, schema, quote);
+
+                } catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+
+                } finally {
+                    if (connection != null) {
                         try
                         {
-                            connection = dataSourceProvider.getDataSource().getConnection();
-                            final DatabaseType databaseType = dataSourceProvider.getDatabaseType();
-                            final String schema = dataSourceProvider.getSchema();
-                            final String quote = connection.getMetaData().getIdentifierQuoteString();
-                            return new DataSourceMetaData(databaseType, schema, quote);
-
-                        }
-                        catch (SQLException e)
+                            connection.close();
+                        } catch (SQLException e)
                         {
-                            throw new RuntimeException(e);
-
-                        }
-                        finally
-                        {
-                            if (connection != null)
-                            {
-                                try
-                                {
-                                    connection.close();
-                                }
-                                catch (SQLException e)
-                                {
-                                    LOGGER.error("Unable to close connection!", e);
-                                }
-                            }
+                            LOGGER.error("Unable to close connection!", e);
                         }
                     }
-                });
+                }
+            }
+        });
     }
 
     /**
@@ -129,8 +125,7 @@ public class QueryHelperImpl implements QueryHelper
         if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
             result += dataSourceMetaData.quote + plainTableName + dataSourceMetaData.quote;
-        }
-        else
+        } else
         {
             result += plainTableName;
         }
@@ -150,8 +145,7 @@ public class QueryHelperImpl implements QueryHelper
         if (StringUtils.isNotBlank(dataSourceMetaData.quote))
         {
             return dataSourceMetaData.quote + plainColumnName + dataSourceMetaData.quote;
-        }
-        else
+        } else
         {
             return plainColumnName;
         }
@@ -180,16 +174,14 @@ public class QueryHelperImpl implements QueryHelper
                     {
                         isFirst = false;
                         return input.getColumn() + ' ' + input.getOrder().name();
-                    }
-                    else
+                    } else
                     {
                         return getSqlColumnName(input.getColumn()) + ' ' + input.getOrder().name();
                     }
                 }
 
             };
-        }
-        else
+        } else
         {
             orderClauseToString = new Function<OrderClause, String>()
             {
@@ -216,8 +208,9 @@ public class QueryHelperImpl implements QueryHelper
 
     /**
      * Constrain for AO version - current AO version must be less than provided version.
-     *
-     * @param version expected version constrain
+     * 
+     * @param version
+     *            expected version constrain
      * @return true if current version is less than provided
      */
     private boolean isBeforeAOVersion(String version)
@@ -244,8 +237,7 @@ public class QueryHelperImpl implements QueryHelper
                 {
                     return false;
                 }
-            }
-            catch (NumberFormatException e)
+            } catch (NumberFormatException e)
             {
                 return false;
             }
@@ -254,8 +246,7 @@ public class QueryHelperImpl implements QueryHelper
         return true;
     }
 
-    private static class DataSourceMetaData
-    {
+    private static class DataSourceMetaData {
 
         private final DatabaseType databaseType;
         private final String schema;

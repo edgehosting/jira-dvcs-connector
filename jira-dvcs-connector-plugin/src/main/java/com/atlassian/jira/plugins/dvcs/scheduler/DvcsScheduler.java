@@ -72,8 +72,8 @@ public class DvcsScheduler implements LifecycleAware
     }
 
     /**
-     * This is received from the plugin system after the plugin is fully initialized.  It is not safe to use Active
-     * Objects before this event is received.
+     * This is received from the plugin system after the plugin is fully initialized.  It is not safe to use
+     * Active Objects before this event is received.
      */
     @EventListener
     public void onPluginEnabled(final PluginEnabledEvent event)
@@ -116,8 +116,8 @@ public class DvcsScheduler implements LifecycleAware
     }
 
     /**
-     * The latch which ensures all of the plugin/application lifecycle progress is completed before we call {@code
-     * launch()}.
+     * The latch which ensures all of the plugin/application lifecycle progress is completed before we call
+     * {@code launch()}.
      */
     private void onLifecycleEvent(final LifecycleEvent event)
     {
@@ -141,10 +141,14 @@ public class DvcsScheduler implements LifecycleAware
     }
 
     /**
-     * The event latch. <p> When something related to the plugin initialization happens, we call this with the
-     * corresponding type of the event.  We will return {@code true} at most once, when the very last type of event is
-     * triggered.  This method is {@code synchronized} because {@code EnumSet} is not thread-safe and because we have
-     * multiple accesses to {@code lifecycleEvents} that need to happen atomically for correct behaviour. </p>
+     * The event latch.
+     * <p>
+     * When something related to the plugin initialization happens, we call this with
+     * the corresponding type of the event.  We will return {@code true} at most once, when the very last type
+     * of event is triggered.  This method is {@code synchronized} because {@code EnumSet} is not
+     * thread-safe and because we have multiple accesses to {@code lifecycleEvents} that need to happen
+     * atomically for correct behaviour.
+     * </p>
      *
      * @param event the lifecycle event that occurred
      * @return {@code true} if this completes the set of initialization-related events; {@code false} otherwise
@@ -155,9 +159,9 @@ public class DvcsScheduler implements LifecycleAware
     }
 
     /**
-     * Keeps track of everything that needs to happen before we are sure that it is safe to talk to all of the
-     * components we need to use, particularly the {@code SchedulerService} and Active Objects.  We will not try to
-     * initialize until all of them have happened.
+     * Keeps track of everything that needs to happen before we are sure that it is safe
+     * to talk to all of the components we need to use, particularly the {@code SchedulerService}
+     * and Active Objects.  We will not try to initialize until all of them have happened.
      */
     static enum LifecycleEvent
     {

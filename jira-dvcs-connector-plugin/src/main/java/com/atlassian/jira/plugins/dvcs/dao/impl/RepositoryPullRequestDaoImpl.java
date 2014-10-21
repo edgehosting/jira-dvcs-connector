@@ -46,30 +46,25 @@ import javax.annotation.Nullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
+ *
  * DefaultRepositoryActivityDao
- * <p/>
- * <p/>
- * <br /> <br /> Created on 15.1.2013, 15:17:03 <br /> <br />
+ *
+ *
+ * <br />
+ * <br />
+ * Created on 15.1.2013, 15:17:03 <br />
+ * <br />
  *
  * @author jhocman@atlassian.com
+ *
  */
 @Component
 public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 {
-
-    /**
-     * Logger of this class.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryPullRequestDaoImpl.class);
 
-    /**
-     * Injected {@link ActiveObjects} dependency.
-     */
     private final ActiveObjects activeObjects;
 
-    /**
-     * Used to create RepositoryPullRequestMapping instances.
-     */
     private final EntityBeanGenerator beanGenerator;
 
     @Autowired
@@ -290,8 +285,8 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
             return Lists.newArrayList();
         }
         final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
-        final Object[] params = ObjectArrays.concat(new Object[] { Boolean.FALSE, Boolean.TRUE }, prIds.toArray(), Object.class);
-
+        final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, prIds.toArray(), Object.class);
+        
         Query select = Query.select()
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryPullRequestMapping.class, "pr")
@@ -304,14 +299,14 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public List<RepositoryPullRequestMapping> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
         Collection<Integer> prIds = findRelatedPullRequests(issueKeys);
-
+        
         if (prIds.isEmpty())
         {
             return Lists.newArrayList();
         }
-
+       
         final String whereClause = ActiveObjectsUtils.renderListOperator("pr.ID", "IN", "OR", prIds).toString();
-        final Object[] params = ObjectArrays.concat(new Object[] { dvcsType, Boolean.FALSE, Boolean.TRUE }, prIds.toArray(), Object.class);
+        final Object [] params = ObjectArrays.concat(new Object[] { dvcsType, Boolean.FALSE, Boolean.TRUE }, prIds.toArray(), Object.class);
 
         Query select = Query.select()
                 .alias(RepositoryMapping.class, "repo")
@@ -320,7 +315,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
                 .join(RepositoryMapping.class, "repo.ID = pr." + RepositoryPullRequestMapping.TO_REPO_ID)
                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
                 .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + whereClause, params);
-
+        
         return Arrays.asList(activeObjects.find(RepositoryPullRequestMapping.class, select));
     }
 
@@ -350,12 +345,12 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
     public void removeAll(Repository domain)
     {
         for (Class<? extends RepositoryDomainMapping> entityType : new Class[]
-                { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class,
+                { RepositoryPullRequestIssueKeyMapping.class, RepositoryPullRequestToCommitMapping.class, PullRequestParticipantMapping.class, RepositoryPullRequestMapping.class, 
                         RepositoryCommitMapping.class })
         {
             ActiveObjectsUtils.delete(activeObjects, entityType,
@@ -419,13 +414,11 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         {
             return null;
 
-        }
-        else if (found.length == 1)
+        } else if (found.length == 1)
         {
             return found[0];
 
-        }
-        else
+        } else
         {
             throw new IllegalStateException("Multiple commits for a same Commit Node and Repository ID. Repository ID: "
                     + repository.getId() + " Commit Node: " + node);

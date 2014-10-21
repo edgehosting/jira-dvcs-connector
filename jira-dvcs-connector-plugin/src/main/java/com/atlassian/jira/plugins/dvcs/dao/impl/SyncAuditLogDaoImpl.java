@@ -43,8 +43,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping newSyncAuditLog(final int repoId, final String syncType, final Date startDate)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -56,15 +55,15 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 data.put(SyncAuditLogMapping.SYNC_TYPE, syncType);
                 data.put(SyncAuditLogMapping.START_DATE, startDate);
                 data.put(SyncAuditLogMapping.SYNC_STATUS, SyncAuditLogMapping.SYNC_STATUS_RUNNING);
-                data.put(SyncAuditLogMapping.TOTAL_ERRORS, 0);
+                data.put(SyncAuditLogMapping.TOTAL_ERRORS , 0);
                 return ao.create(SyncAuditLogMapping.class, data);
             }
 
-            private void rotate(int repoId)
+            private void rotate(int repoId) 
             {
                 ActiveObjectsUtils.delete(ao, SyncAuditLogMapping.class,
-                        Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.START_DATE + " < ?", repoId, new Date(System.currentTimeMillis() - ROTATION_PERIOD))
-                );
+                        Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.START_DATE + " < ?" , repoId, new Date(System.currentTimeMillis() - ROTATION_PERIOD))
+                        );
             }
         });
     }
@@ -72,8 +71,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping finish(final int syncId, final Date firstRequestDate, final int numRequests, final int flightTimeMs, final Date finishDate)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -88,14 +86,13 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                     if (StringUtils.isNotBlank(mapping.getExcTrace()))
                     {
                         mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_FAILED);
-                    }
-                    else
+                    } else
                     {
                         mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SUCCESS);
                     }
 
                     mapping.save();
-
+                    
                     fireAnalyticsEvent(mapping);
                 }
                 return mapping;
@@ -103,7 +100,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 
         });
     }
-
+    
     private void fireAnalyticsEvent(SyncAuditLogMapping sync)
     {
         String syncTypeString = sync.getSyncType() == null ? "" : sync.getSyncType();
@@ -125,8 +122,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 
     protected SyncAuditLogMapping status(final int syncId)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -144,8 +140,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping resume(final int syncId)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -166,8 +161,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public int removeAllForRepo(final int repoId)
     {
-        Integer ret = doTxQuietly(new Callable<Integer>()
-        {
+        Integer ret = doTxQuietly(new Callable<Integer>(){
             @Override
             public Integer call() throws Exception
             {
@@ -180,8 +174,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping setException(final int syncId, final Throwable t, final boolean overwriteOld)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -204,10 +197,9 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping[] getAllForRepo(final int repoId, final Integer page)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping[]>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping []>(){
             @Override
-            public SyncAuditLogMapping[] call() throws Exception
+            public SyncAuditLogMapping [] call() throws Exception
             {
                 return ao.find(SyncAuditLogMapping.class, repoQuery(repoId).page(page).order(SyncAuditLogMapping.START_DATE + " DESC"));
             }
@@ -217,10 +209,9 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping[] getAll(final Integer page)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping[]>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping []>(){
             @Override
-            public SyncAuditLogMapping[] call() throws Exception
+            public SyncAuditLogMapping [] call() throws Exception
             {
                 return ao.find(SyncAuditLogMapping.class, pageQuery(Query.select().order(SyncAuditLogMapping.START_DATE + " DESC"), page));
             }
@@ -230,8 +221,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping getLastForRepo(final int repoId)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -245,8 +235,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping getLastSuccessForRepo(final int repoId)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -260,8 +249,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping getLastFailedForRepo(final int repoId)
     {
-        return doTxQuietly(new Callable<SyncAuditLogMapping>()
-        {
+        return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
             public SyncAuditLogMapping call() throws Exception
             {
@@ -275,8 +263,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public boolean hasException(final int syncId)
     {
-        Boolean ret = doTxQuietly(new Callable<Boolean>()
-        {
+        Boolean ret = doTxQuietly(new Callable<Boolean>(){
             @Override
             public Boolean call() throws Exception
             {
@@ -300,67 +287,56 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     private Query statusQueryLimitOne(int repoId, String status)
     {
         return Query.select()
-                .from(SyncAuditLogMapping.class)
-                .where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.SYNC_STATUS + " = ?", repoId, status)
-                .limit(1)
-                .order(SyncAuditLogMapping.START_DATE + " DESC");
+            .from(SyncAuditLogMapping.class)
+            .where(SyncAuditLogMapping.REPO_ID + " = ? AND " + SyncAuditLogMapping.SYNC_STATUS + " = ?", repoId, status)
+            .limit(1)
+            .order(SyncAuditLogMapping.START_DATE + " DESC");
     }
 
-    private <RET> RET doTxQuietly(final Callable<RET> callable)
-    {
+    private <RET> RET doTxQuietly(final Callable<RET> callable) {
         return
-                ao.executeInTransaction(new TransactionCallback<RET>()
+        ao.executeInTransaction(new TransactionCallback<RET>()
+        {
+            @Override
+            public RET doInTransaction()
+            {
+                try
                 {
-                    @Override
-                    public RET doInTransaction()
+                    return callable.call();
+                } catch (Throwable e)
+                {
+                    log.warn("Problem during sync audit log. " + e.getMessage());
+                    if (log.isDebugEnabled())
                     {
-                        try
-                        {
-                            return callable.call();
-                        }
-                        catch (Throwable e)
-                        {
-                            log.warn("Problem during sync audit log. " + e.getMessage());
-                            if (log.isDebugEnabled())
-                            {
-                                log.debug("Sync audit log.", e);
-                            }
-                            return null;
-                        }
+                        log.debug("Sync audit log.", e);
                     }
-                });
+                    return null;
+                }
+            }
+        });
     }
 
-    class PageableQuery
-    {
+    class PageableQuery {
         private Query q;
-
         private PageableQuery(int repoId)
         {
             super();
             this.q = Query.select().from(SyncAuditLogMapping.class).where(SyncAuditLogMapping.REPO_ID + " = ?", repoId);
         }
-
         PageableQuery offset(int offset)
         {
             q.setOffset(offset);
             return this;
         }
-
-        PageableQuery limit(int limit)
-        {
+        PageableQuery limit (int limit) {
             q.setLimit(limit);
             return this;
         }
-
-        Query page(Integer page)
-        {
+        Query page(Integer page) {
             pageQuery(q, page);
             return q;
         }
-
-        Query q()
-        {
+        Query q() {
             return q;
         }
     }
@@ -371,9 +347,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         if (page == null)
         {
             q.setOffset(0);
-        }
-        else
-        {
+        } else {
             q.setOffset(BIG_DATA_PAGESIZE * page);
         }
         return q;

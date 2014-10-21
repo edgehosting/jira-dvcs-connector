@@ -27,55 +27,62 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * 
  * Listens to user events (just for <code>CREATED</code> type).
- * <p/>
- * Handler methods run asynchronously and are safe to fail. That means that it does not corrupt process of adding the
- * user because of some unexpected error at this place.
- *
- * @author jhocman@atlassian.com
+ * 
+ * Handler methods run asynchronously and are safe to fail. That means that it
+ * does not corrupt process of adding the user because of some unexpected error
+ * at this place.
+ * 
  * @see #onUserAddViaInterface(UserAddedEvent)
  * @see #onUserAddViaCrowd(UserEvent)
- * @see com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean
- * <p/>
- * <br /> <br /> Created on 21.6.2012, 14:07:34 <br /> <br />
+ * 
+ * <br />
+ * <br />
+ *      Created on 21.6.2012, 14:07:34 <br />
+ * <br />
+ * @author jhocman@atlassian.com
+ * 
  */
 public class DvcsAddUserListener
 {
 
-    /**
-     * The Constant log.
-     */
+    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
     private static final String UI_USER_INVITATIONS_PARAM_NAME = "com.atlassian.jira.dvcs.invite.groups";
-
-    /**
-     * The event publisher.
-     */
+    
+    /** The event publisher. */
     private final EventPublisher eventPublisher;
 
-    /**
-     * The organization service.
-     */
+    /** The organization service. */
     private final OrganizationService organizationService;
 
-    /**
-     * The communicator provider.
-     */
+    /** The communicator provider. */
     private final DvcsCommunicatorProvider communicatorProvider;
 
     private final UserManager userManager;
 
     private final GroupManager groupManager;
-
+    
     private final CrowdService crowd;
 
+    /**
+     * The Constructor.
+     * 
+     * @param eventPublisher
+     *            the event publisher
+     * @param organizationService
+     *            the organization service
+     * @param communicatorProvider
+     *            the communicator provider
+     */
     public DvcsAddUserListener(EventPublisher eventPublisher,
-            OrganizationService organizationService,
-            DvcsCommunicatorProvider communicatorProvider,
-            UserManager userManager,
-            GroupManager groupManager,
-            CrowdService crowd)
+                               OrganizationService organizationService,
+                               DvcsCommunicatorProvider communicatorProvider,
+                               UserManager userManager,
+                               GroupManager groupManager,
+                               CrowdService crowd)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
@@ -83,79 +90,73 @@ public class DvcsAddUserListener
         this.userManager = userManager;
         this.groupManager = groupManager;
         this.crowd = crowd;
-
+        
     }
-
+    
     //---------------------------------------------------------------------------------------
     // Handler methods
     //---------------------------------------------------------------------------------------
 
     @EventListener
-    public void onUserAddViaInterface(final UserAddedEvent event)
+    public void onUserAddViaInterface(final UserAddedEvent event) 
     {
         if (event == null)
         {
             return;
         }
-
+        
         try
         {
             log.debug("Running onUserAddViaInterface ...");
-
+            
             String username = event.getRequestParameters().get("username")[0];
             String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
                     UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
-
+      
             User user = userManager.getUser(username);
 
             String userInvitations;
             if (organizationIdsAndGroupSlugs != null)
             {
-                userInvitations = Joiner.on(
-                        UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
-                        organizationIdsAndGroupSlugs);
-                eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
-            }
-            else
+            	userInvitations = Joiner.on(
+	                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
+	                    organizationIdsAndGroupSlugs);
+            	eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
+            } else
             {
-                // setting blank String to be sure that the crowd will not return null
-                // https://sdog.jira.com/browse/BBC-432
-                userInvitations = " ";
+            	// setting blank String to be sure that the crowd will not return null 
+            	// https://sdog.jira.com/browse/BBC-432
+            	userInvitations = " ";
             }
-
+            
             crowd.setUserAttribute(
                     user,
                     UI_USER_INVITATIONS_PARAM_NAME,
                     Collections.singleton(userInvitations)
-            );
-
-        }
-        catch (UserNotFoundException e)
+                    );
+       
+        } catch (UserNotFoundException e)
         {
             log.warn("UserNotFoundException : " + e.getMessage());
-        }
-        catch (OperationFailedException e)
+        } catch (OperationFailedException e)
         {
             log.warn("OperationFailedException : " + e.getMessage());
-        }
-        catch (OperationNotPermittedException e)
+        } catch (OperationNotPermittedException e)
         {
             log.warn("OperationNotPermittedException : " + e.getMessage());
-        }
-        catch (Exception e)
-        {
-            log.warn("Unexpected exception " + e.getClass() + " : " + e.getMessage());
+        } catch (Exception e) {
+            log.warn("Unexpected exception " + e.getClass() +  " : " + e.getMessage());
         }
 
     }
-
+   
     /**
-     * This way we are handling the google user from studio which has not been activated yet. They will get Bitbucket
-     * invitation after the first successful login.
+     * This way we are handling the google user from studio which has not been activated yet.
+     * They will get Bitbucket invitation after the first successful login.
      *
      * @param event the event
      */
-    @SuppressWarnings ("rawtypes")
+    @SuppressWarnings("rawtypes")
     @EventListener
     public void onUserAttributeStore(final UserAttributeStoredEvent event)
     {
@@ -164,7 +165,7 @@ public class DvcsAddUserListener
         {
             return;
         }
-
+        
         safeExecute(new Runnable()
         {
             @Override
@@ -173,15 +174,15 @@ public class DvcsAddUserListener
                 Set attributeNames = event.getAttributeNames();
                 String loginCountAttName = "login.count";
 
-                if (attributeNames != null &&
-                        attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
+                if (attributeNames != null && 
+                    attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
                 {
 
                     Set<String> count = event.getAttributeValues(loginCountAttName);
                     log.debug("Got {} as the 'login.count' values.", count);
 
                     Iterator<String> countValueIterator = count.iterator();
-                    if (!countValueIterator.hasNext())
+                    if (!countValueIterator.hasNext()) 
                     {
                         return;
                     }
@@ -214,24 +215,26 @@ public class DvcsAddUserListener
             new UserAddedExternallyEventProcessor(user, organizationService, communicatorProvider, userManager,
                     groupManager).run();
 
-        }
-        else /* something has been choosed from UI */if (StringUtils.isNotBlank(uiChoice))
+        } else /* something has been choosed from UI */if (StringUtils.isNotBlank(uiChoice))
         {
             new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
                     communicatorProvider, userManager, groupManager).run();
         }
     }
-
+    
     //---------------------------------------------------------------------------------------
     // Handler methods end
     //---------------------------------------------------------------------------------------
 
     /**
-     * Wraps executorService.submit(task) method invocation with <code>try-catch</code> block to ensure that no
-     * exception is propagated up.
-     *
-     * @param task the task
-     * @param onFailMessage the on fail message
+     * Wraps executorService.submit(task) method invocation with
+     * <code>try-catch</code> block to ensure that no exception is propagated
+     * up.
+     * 
+     * @param task
+     *            the task
+     * @param onFailMessage
+     *            the on fail message
      */
     private void safeExecute(Runnable task, String onFailMessage)
     {
@@ -239,10 +242,9 @@ public class DvcsAddUserListener
         {
             if (task != null)
             {
-                task.run();
+               task.run();
             }
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             log.warn(onFailMessage, t);
         }
@@ -254,8 +256,7 @@ public class DvcsAddUserListener
         {
             eventPublisher.unregister(this);
             log.info("Listener unregistered ...");
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             log.warn("Failed to unregister " + this + ", cause message is " + e.getMessage(), e);
         }
@@ -270,7 +271,7 @@ public class DvcsAddUserListener
     public void register() throws Exception
     {
         log.info("Attempting to register listener ... ");
-
+        
         eventPublisher.register(this);
 
     }

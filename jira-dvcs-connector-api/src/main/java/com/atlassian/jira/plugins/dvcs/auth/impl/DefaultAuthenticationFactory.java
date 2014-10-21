@@ -14,60 +14,60 @@ import org.springframework.stereotype.Component;
 public class DefaultAuthenticationFactory implements AuthenticationFactory
 {
 
-    private final Encryptor encryptor;
+	private final Encryptor encryptor;
 
     @Autowired
-    public DefaultAuthenticationFactory(Encryptor encryptor)
-    {
-        this.encryptor = encryptor;
-    }
+	public DefaultAuthenticationFactory(Encryptor encryptor)
+	{
+		this.encryptor = encryptor;
+	}
 
-    @Override
-    public Authentication getAuthentication(Repository repository)
-    {
-        Credential credential = repository.getCredential();
+	@Override
+	public Authentication getAuthentication(Repository repository)
+	{
+		Credential credential = repository.getCredential();
 
-        // oAuth
-        if (StringUtils.isNotBlank(credential.getAccessToken()))
-        {
-            return new OAuthAuthentication(credential.getAccessToken());
-        }
+		// oAuth
+		if (StringUtils.isNotBlank(credential.getAccessToken()))
+		{
+			return new OAuthAuthentication(credential.getAccessToken());
+		}
 
-        // basic
-        if (StringUtils.isNotBlank(credential.getAdminUsername()))
-        {
-            return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
-                    repository.getOrgName(), repository.getOrgHostUrl()));
-        }
+		// basic
+		if (StringUtils.isNotBlank(credential.getAdminUsername()))
+		{
+			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
+					repository.getOrgName(), repository.getOrgHostUrl()));
+		}
 
-        // none
-        return Authentication.ANONYMOUS;
-    }
+		// none
+		return Authentication.ANONYMOUS;
+	}
 
-    @Override
-    public Authentication getAuthentication(Organization organization)
-    {
-        Credential credential = organization.getCredential();
-        // oAuth
-        if (StringUtils.isNotBlank(credential.getAccessToken()))
-        {
-            return new OAuthAuthentication(credential.getAccessToken());
-        }
+	@Override
+	public Authentication getAuthentication(Organization organization)
+	{
+		Credential credential = organization.getCredential();
+		// oAuth
+		if (StringUtils.isNotBlank(credential.getAccessToken()))
+		{
+			return new OAuthAuthentication(credential.getAccessToken());
+		}
 
-        // basic
-        if (StringUtils.isNotBlank(credential.getAdminUsername()))
-        {
-            return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
-                    organization.getName(), organization.getHostUrl()));
-        }
+		// basic
+		if (StringUtils.isNotBlank(credential.getAdminUsername()))
+		{
+			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
+					organization.getName(), organization.getHostUrl()));
+		}
 
-        // none
-        return Authentication.ANONYMOUS;
-    }
+		// none
+		return Authentication.ANONYMOUS;
+	}
 
-    private String decryptPassword(Credential credential, String orgName, String orgHostUrl)
-    {
-        return encryptor.decrypt(credential.getAdminPassword(), orgName, orgHostUrl);
-    }
+	private String decryptPassword(Credential credential, String orgName, String orgHostUrl)
+	{
+		return encryptor.decrypt(credential.getAdminPassword(), orgName, orgHostUrl);
+	}
 
 }

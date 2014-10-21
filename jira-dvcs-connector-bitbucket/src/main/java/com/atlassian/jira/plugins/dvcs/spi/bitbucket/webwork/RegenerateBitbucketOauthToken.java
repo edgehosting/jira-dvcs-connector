@@ -54,8 +54,7 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 
             return SystemUtils.getRedirect(this, authUrl, true);
 
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             addErrorMessage("Cannot proceed authentication, check OAuth credentials for account " + getOrganizationName());
             return INPUT;
@@ -94,13 +93,12 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         if (StringUtils.isBlank(organization))
         {
             addErrorMessage("No organization id has been provided, invalid request");
-        }
-        else
+        } else
         {
             //TODO what if we have more integrated accounts?
             Organization integratedAccount = organizationService.findIntegratedAccount();
-            if (integratedAccount != null
-                    && Integer.valueOf(organization).equals(integratedAccount.getId()))
+            if (    integratedAccount != null
+                &&  Integer.valueOf(organization).equals(integratedAccount.getId()))
             {
                 addErrorMessage("Failed to regenerate token for an integrated account.");
             }
@@ -119,13 +117,11 @@ public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
         try
         {
             accessTokenObj = service.getAccessToken(requestToken, verifier);
-        }
-        catch (OAuthConnectionException e)
+        } catch (OAuthConnectionException e)
         {
             Organization organizationInstance = organizationService.get(Integer.parseInt(organization), false);
             throw new SourceControlException("Error obtaining access token. Cannot access " + organizationInstance.getHostUrl() + " from Jira.", e);
-        }
-        finally
+        } finally
         {
             httpClientProvider.closeIdleConnections();
         }

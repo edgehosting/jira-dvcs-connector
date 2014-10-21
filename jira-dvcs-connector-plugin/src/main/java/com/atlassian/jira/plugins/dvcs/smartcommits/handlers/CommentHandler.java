@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @ExportAsService (CommandHandler.class)
-@Component("smartcommitsCommentHandler")
+@Component ("smartcommitsCommentHandler")
 public class CommentHandler implements CommandHandler<Comment>
 {
 
@@ -32,31 +32,26 @@ public class CommentHandler implements CommandHandler<Comment>
     }
 
     @Override
-    public CommandType getCommandType()
-    {
+	public CommandType getCommandType() {
         return CMD_TYPE;
     }
 
     @Override
-    public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate)
-    {
+	public Either<CommitHookHandlerError, Comment> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
 
-        JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
-
+    	JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
+       
         Comment comment = commentService.create(user,
-                issue,
-                args.isEmpty() ? null : args.get(0),
-                null, null, commitDate,
-                true,
-                jiraServiceContext.getErrorCollection());
-
-        if (jiraServiceContext.getErrorCollection().hasAnyErrors())
-        {
+                                                issue,
+                                                args.isEmpty() ? null : args.get(0),
+                                                null, null, commitDate,
+                                                true,
+                                                jiraServiceContext.getErrorCollection());
+        
+        if (jiraServiceContext.getErrorCollection().hasAnyErrors()) {
             return Either.error(CommitHookHandlerError.fromErrorCollection(
                     CMD_TYPE.getName(), issue.getKey(), jiraServiceContext.getErrorCollection()));
-        }
-        else
-        {
+        } else {
             return Either.value(comment);
         }
 
