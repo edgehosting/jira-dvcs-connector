@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -24,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 /**
@@ -32,20 +32,20 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 @Path ("/event/dev-summary-changed")
 public class DevSummaryChangedEventResource
 {
-    @Resource
-    private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
-
+    private final DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
     private final FeatureManager featureManager;
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
     @Autowired
     public DevSummaryChangedEventResource(@ComponentImport final FeatureManager featureManager,
-            final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
+            final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext,
+            final DevSummaryChangedEventServiceImpl devSummaryChangedEventService)
     {
-        this.featureManager = featureManager;
-        this.permissionManager = permissionManager;
-        this.authenticationContext = authenticationContext;
+        this.featureManager = checkNotNull(featureManager);
+        this.permissionManager = checkNotNull(permissionManager);
+        this.authenticationContext = checkNotNull(authenticationContext);
+        this.devSummaryChangedEventService = checkNotNull(devSummaryChangedEventService);
     }
 
     @Produces (MediaType.TEXT_PLAIN)
