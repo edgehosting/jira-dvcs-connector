@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.adduser;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.model.AbstractWebPanel;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
@@ -11,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This panel extends the "add user" form in JIRA. It appends configured bitbucket
@@ -21,6 +25,7 @@ import java.util.Map;
  * 
  * @author jhocman@atlassian.com
  */
+@Scanned
 public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
 {
     private static final Logger log = LoggerFactory.getLogger(AddUserDvcsExtensionWebPanel.class);
@@ -30,14 +35,15 @@ public class AddUserDvcsExtensionWebPanel extends AbstractWebPanel
     private final OrganizationService organizationService;
     private final TemplateRenderer templateRenderer;
 
-    public AddUserDvcsExtensionWebPanel(PluginAccessor pluginAccessor, TemplateRenderer templateRenderer,
-            ApplicationProperties appProperties, PluginFeatureDetector featuresDetector, OrganizationService organizationService)
+    public AddUserDvcsExtensionWebPanel(@ComponentImport PluginAccessor pluginAccessor,
+            @ComponentImport TemplateRenderer templateRenderer, @ComponentImport ApplicationProperties appProperties,
+            PluginFeatureDetector featuresDetector, OrganizationService organizationService)
     {
         super(pluginAccessor);
-        this.templateRenderer = templateRenderer;
-        this.appProperties = appProperties;
-        this.featuresDetector = featuresDetector;
-        this.organizationService = organizationService;
+        this.templateRenderer = checkNotNull(templateRenderer);
+        this.appProperties = checkNotNull(appProperties);
+        this.featuresDetector = checkNotNull(featuresDetector);
+        this.organizationService = checkNotNull(organizationService);
     }
 
     /**

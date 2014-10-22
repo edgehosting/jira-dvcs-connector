@@ -8,6 +8,8 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.util.concurrent.ThreadFactories;
 import org.apache.commons.lang.StringUtils;
@@ -17,6 +19,8 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +40,8 @@ import java.util.concurrent.TimeUnit;
  * @author jhocman@atlassian.com
  *
  */
+@ExportAsService (AccountsConfigService.class)
+@Component
 public class BitbucketAccountsConfigService implements AccountsConfigService, DisposableBean // TODO move to BB module
 {
 
@@ -51,8 +57,10 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
+    @Autowired
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
-            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob, PluginController pluginController, PluginAccessor pluginAccessor)
+            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob,
+            @ComponentImport PluginController pluginController, @ComponentImport PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;

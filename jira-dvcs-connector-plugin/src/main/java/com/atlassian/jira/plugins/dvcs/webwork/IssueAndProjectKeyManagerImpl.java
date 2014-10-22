@@ -11,6 +11,9 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Set;
@@ -20,6 +23,7 @@ import java.util.Set;
  *
  * @author Miroslav Stencel <mstencel@atlassian.com>
  */
+@Component
 public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
 {
     private final IssueManager issueManager;
@@ -28,7 +32,12 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     private final PermissionManager permissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
-    public IssueAndProjectKeyManagerImpl(final IssueManager issueManager, final ChangeHistoryManager changeHistoryManager, final ProjectManager projectManager, final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext)
+    @Autowired
+    public IssueAndProjectKeyManagerImpl(@ComponentImport final IssueManager issueManager,
+            @ComponentImport final ChangeHistoryManager changeHistoryManager,
+            @ComponentImport final ProjectManager projectManager,
+            @ComponentImport final PermissionManager permissionManager,
+            @ComponentImport final JiraAuthenticationContext authenticationContext)
     {
         this.issueManager = issueManager;
         this.changeHistoryManager = changeHistoryManager;

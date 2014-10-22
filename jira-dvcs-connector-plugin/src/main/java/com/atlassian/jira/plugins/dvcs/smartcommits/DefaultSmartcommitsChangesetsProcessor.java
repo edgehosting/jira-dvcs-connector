@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.atlassian.util.concurrent.ThreadFactories;
@@ -12,12 +13,16 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
+@ExportAsService (SmartcommitsChangesetsProcessor.class)
+@Component
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor, DisposableBean
 {
 
@@ -31,8 +36,9 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     private final CommitMessageParser commitParser;
     private final ChangesetDao changesetDao;
 
+    @Autowired
     public DefaultSmartcommitsChangesetsProcessor(ChangesetDao changesetDao, SmartcommitsService smartcommitService,
-                                                  CommitMessageParser commitParser)
+            CommitMessageParser commitParser)
     {
         this.changesetDao = changesetDao;
         this.smartcommitService = smartcommitService;

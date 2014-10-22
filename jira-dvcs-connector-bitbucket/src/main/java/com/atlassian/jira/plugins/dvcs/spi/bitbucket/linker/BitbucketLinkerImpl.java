@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -18,6 +19,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import java.util.regex.Pattern;
  *
  * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
  */
+@Component ("bitbucketLinker")
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
@@ -42,8 +46,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private final static Pattern PATTERN_PROJECTS_IN_LINK_REX = Pattern.compile("[A-Z|a-z]{2,}(|)+");
 
+    @Autowired
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            ApplicationProperties applicationProperties, ProjectManager projectManager)
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
     {
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.projectManager = projectManager;

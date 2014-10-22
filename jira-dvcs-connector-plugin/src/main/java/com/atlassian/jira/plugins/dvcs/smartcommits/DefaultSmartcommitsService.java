@@ -21,39 +21,47 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.core.CacheControl;
 
+@ExportAsService (SmartcommitsService.class)
+@Component
 public class DefaultSmartcommitsService implements SmartcommitsService
 {
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DefaultSmartcommitsService.class);
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(DefaultSmartcommitsService.class);
 
-	private final CacheControl NO_CACHE;
+    private final CacheControl NO_CACHE;
 
-	private final TransitionHandler transitionHandler;
-	private final CommentHandler commentHandler;
-	private final WorkLogHandler workLogHandler;
+    private final TransitionHandler transitionHandler;
+    private final CommentHandler commentHandler;
+    private final WorkLogHandler workLogHandler;
 
-	private final IssueManager issueManager;
+    private final IssueManager issueManager;
 
-	private final JiraAuthenticationContext jiraAuthenticationContext;
+    private final JiraAuthenticationContext jiraAuthenticationContext;
 
-	private final CrowdService crowdService;
+    private final CrowdService crowdService;
 
-	public DefaultSmartcommitsService(IssueManager issueManager,
-			@Qualifier("smartcommitsTransitionsHandler") TransitionHandler transitionHandler,
-			@Qualifier("smartcommitsCommentHandler") CommentHandler commentHandler,
-			@Qualifier("smartcommitsWorklogHandler") WorkLogHandler workLogHandler,
-			JiraAuthenticationContext jiraAuthenticationContext, CrowdService crowdService)
-	{
+    @Autowired
+    public DefaultSmartcommitsService(@ComponentImport IssueManager issueManager,
+            @Qualifier ("smartcommitsTransitionsHandler") TransitionHandler transitionHandler,
+            @Qualifier ("smartcommitsCommentHandler") CommentHandler commentHandler,
+            @Qualifier ("smartcommitsWorklogHandler") WorkLogHandler workLogHandler,
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
+            @ComponentImport CrowdService crowdService)
+    {
 		this.crowdService = crowdService;
 
 		NO_CACHE = new CacheControl();

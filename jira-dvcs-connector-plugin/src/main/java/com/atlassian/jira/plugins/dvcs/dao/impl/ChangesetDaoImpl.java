@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.ImmutableSet;
 import net.java.ao.EntityStreamCallback;
@@ -30,6 +31,8 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +44,7 @@ import java.util.Set;
 
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
+@Component
 public class ChangesetDaoImpl implements ChangesetDao
 {
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
@@ -49,7 +53,8 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
 
-    public ChangesetDaoImpl(ActiveObjects activeObjects, QueryHelper queryHelper)
+    @Autowired
+    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper)
     {
         this.activeObjects = activeObjects;
         this.queryHelper = queryHelper;

@@ -30,6 +30,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +43,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -66,6 +69,7 @@ import javax.annotation.Resource;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class MessagingServiceImpl implements MessagingService, DisposableBean
 {
     @VisibleForTesting
@@ -81,6 +85,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
 
     /**
@@ -148,7 +153,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().local().build();
 
     /**
-     * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer serializer}.
+     * Maps between {@link MessagePayloadSerializer#getPayloadType()} and appropriate {@link MessagePayloadSerializer
+     * serializer}.
      */
     private final Map<Class<?>, MessagePayloadSerializer<?>> payloadTypeToPayloadSerializer = new ConcurrentHashMap<Class<?>, MessagePayloadSerializer<?>>();
 
@@ -167,8 +173,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
 
-    @SuppressWarnings("unchecked")
-    public MessagingServiceImpl(final CacheManager cacheManager)
+    @SuppressWarnings ("unchecked")
+    @Autowired
+    public MessagingServiceImpl(@ComponentImport final CacheManager cacheManager)
     {
         // altassian-cache 2.0.8 or later will auto clear a local cache
         idToMessageAddress = cacheManager.getCache(

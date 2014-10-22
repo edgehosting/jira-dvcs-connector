@@ -3,14 +3,20 @@ package com.atlassian.jira.plugins.dvcs.service.api;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.google.common.collect.ImmutableList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@ExportAsService (DvcsBranchService.class)
+@Component
 public class DvcsBranchServiceImpl implements DvcsBranchService
 {
     private BranchService branchService;
 
+    @Autowired
     public DvcsBranchServiceImpl(BranchService branchService)
     {
         this.branchService = branchService;

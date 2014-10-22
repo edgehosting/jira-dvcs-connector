@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestProcessor;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
@@ -27,6 +28,7 @@ import org.eclipse.egit.github.core.event.EventPayload;
 import org.eclipse.egit.github.core.service.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,10 +38,10 @@ import javax.annotation.Resource;
 
 /**
  * Implementation of the {@link GitHubEventService}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class GitHubEventServiceImpl implements GitHubEventService
 {
     private static final Logger logger = LoggerFactory.getLogger(GitHubEventServiceImpl.class);
@@ -60,12 +62,13 @@ public class GitHubEventServiceImpl implements GitHubEventService
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
 
     /**
      * Injected {@link GithubClientProvider} dependency.
      */
-    @Resource(name = "githubClientProvider")
+    @Resource (name = "githubClientProvider")
     private GithubClientProvider githubClientProvider;
 
     @Resource
@@ -214,16 +217,13 @@ public class GitHubEventServiceImpl implements GitHubEventService
     }
 
     /**
-     * Stores provided {@link Event} locally as {@link GitHubEventMapping}. It is determined as marker that provided event was already
-     * proceed.
+     * Stores provided {@link Event} locally as {@link GitHubEventMapping}. It is determined as marker that provided
+     * event was already proceed.
      *
-     * @param repository
-     *            over of event
-     * @param event
-     *            GitHub event which was proceed
-     * @param savePoint
-     *            true if it is save point, false otherwise
-     *
+     * @param repository over of event
+     * @param event GitHub event which was proceed
+     * @param savePoint true if it is save point, false otherwise
+     * <p/>
      * static so that we can access it from the nested class
      */
     private static void saveEventCounterpart(Repository repository, Event event, boolean savePoint, final GitHubEventDAO gitHubEventDAO)

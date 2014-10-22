@@ -6,10 +6,13 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Scanned
 public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateGithubOauthToken.class);
@@ -19,9 +22,9 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
 
     protected final String baseUrl;
 
-    public RegenerateGithubOauthToken(EventPublisher eventPublisher,
+    public RegenerateGithubOauthToken(@ComponentImport EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
-            ApplicationProperties applicationProperties)
+            @ComponentImport ApplicationProperties applicationProperties)
     {
         super(eventPublisher, organizationService, repositoryService);
         this.baseUrl = applicationProperties.getBaseUrl();
@@ -57,7 +60,7 @@ public class RegenerateGithubOauthToken extends RegenerateOauthTokenAction
     {
         return getOAuthUtils(getOrganizationObject()).requestAccessToken(getOrganizationObject().getHostUrl(), code);
     }
-    
+
     public String getCode()
     {
         return code;

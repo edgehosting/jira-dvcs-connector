@@ -9,6 +9,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,9 +21,10 @@ import java.util.Map;
  * An implementation of {@link MessagePayloadSerializer} over {@link BitbucketSynchronizeChangesetMessage}.
  *
  * @author Stanislav Dvorscak
- *
  */
-public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<BitbucketSynchronizeChangesetMessage>
+@Component
+public class BitbucketSynchronizeChangesetMessageSerializer
+        extends AbstractMessagePayloadSerializer<BitbucketSynchronizeChangesetMessage>
 {
 
     @Override
@@ -46,7 +48,8 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
     }
 
     @Override
-    protected BitbucketSynchronizeChangesetMessage deserializeInternal(JSONObject json, final int version) throws Exception
+    protected BitbucketSynchronizeChangesetMessage deserializeInternal(JSONObject json, final int version)
+            throws Exception
     {
         Date refreshAfterSynchronizedAt;
         List<String> exclude;
@@ -91,7 +94,7 @@ public class BitbucketSynchronizeChangesetMessageSerializer extends AbstractMess
 
     private ArrayList<String> collectionFromString(String string)
     {
-        return StringUtils.isBlank(string) ? Lists.<String> newArrayList() : Lists.newArrayList(Splitter.on(",").split(string));
+        return StringUtils.isBlank(string) ? Lists.<String>newArrayList() : Lists.newArrayList(Splitter.on(",").split(string));
     }
 
 }

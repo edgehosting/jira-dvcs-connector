@@ -1,17 +1,22 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager {
-    
+@Component
+public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager
+{
     private static final String SETTINGS_KEY = "dvcs.connector.invalidOrganizations";
-    
+
     private final PluginSettingsFactory pluginSettingsFactory;
-    
-    public InvalidOrganizationsManagerImpl(PluginSettingsFactory pluginSettingsFactory)
+
+    @Autowired
+    public InvalidOrganizationsManagerImpl(@ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
         this.pluginSettingsFactory = pluginSettingsFactory;
     }

@@ -10,10 +10,12 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
@@ -27,6 +29,7 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class MessageDaoImpl implements MessageDao
 {
 
@@ -34,6 +37,7 @@ public class MessageDaoImpl implements MessageDao
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
     
     /**

@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.2.5-SNAPSHOT</version>
+        <version>2.2.7-SNAPSHOT</version>
     </parent>
     <organization>
         <name>Atlassian</name>
@@ -255,9 +255,48 @@
             <groupId>com.atlassian.pocketknife</groupId>
             <artifactId>atlassian-pocketknife-querydsl</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>atlassian-spring-scanner</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scannedDependencies>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-bitbucket</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-github</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+                        </dependency>
+                    </scannedDependencies>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
@@ -316,7 +355,10 @@
                             </excludes>
                         </testGroup>
                     </testGroups>
+                    <extractDependencies>false</extractDependencies>
                     <instructions>
+                        <Atlassian-Plugin-Key>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</Atlassian-Plugin-Key>
+                        <Spring-Context>*</Spring-Context>
                         <!--
                             Set the default version range on an import to open ended current version up. Without this, the default
                             is only to the next major version, which is too aggressive for platform modules.
@@ -338,9 +380,35 @@
                             com.atlassian.jira.plugins.dvcs.ondemand
                         </Export-Package>
                         <Import-Package>
+                            org.springframework.osgi.*;resolution:="optional",
+                            org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            com.atlassian.crowd.embedded.api,
+                            com.atlassian.plugin.osgi.bridge.external,
+                            com.atlassian.plugin,
+                            com.atlassian.sal.api,
+                            com.atlassian.sal.api.executor,
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
+                            com.atlassian.jira.plugin.webfragment.conditions,
+                            com.atlassian.jira.bc.issue.comment,
+                            com.atlassian.jira.config.properties,
+                            com.atlassian.jira.security,
+                            com.atlassian.jira.project,
+                            com.atlassian.jira.config,
+                            com.atlassian.jira.issue,
+                            com.atlassian.jira.bc.issue,
+                            com.atlassian.jira.workflow,
+                            com.atlassian.jira.bc.issue.worklog,
+                            com.atlassian.jira.user.util,
+                            com.atlassian.templaterenderer,
+                            com.atlassian.sal.api.pluginsettings,
+                            com.atlassian.jira.issue.changehistory,
+                            com.atlassian.jira.security.groups,
+                            com.atlassian.jira.template.soy,
+                            com.atlassian.event.api,
+                            com.atlassian.cache,
+                            com.atlassian.jira.plugins.dvcs.ondemand,
                             !com.google.gson.stream,
                             !com.ibm.uvm.tools,
                             !com.sun.jdmk.comm,
@@ -354,6 +422,7 @@
                             *
                         </Import-Package>
                     </instructions>
+                    <skipManifestValidation>true</skipManifestValidation>
                 </configuration>
             </plugin>
             <plugin>

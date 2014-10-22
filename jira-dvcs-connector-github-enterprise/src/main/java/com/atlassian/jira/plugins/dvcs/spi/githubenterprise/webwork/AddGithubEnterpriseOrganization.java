@@ -14,6 +14,8 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator.GITHUB_ENTERPRISE;
 
+@Scanned
 public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationAction
 {
     private static final long serialVersionUID = 3680766022095591693L;
@@ -46,10 +49,10 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
 
-    public AddGithubEnterpriseOrganization(ApplicationProperties applicationProperties,
-                                           EventPublisher eventPublisher,
-                                           OAuthStore oAuthStore,
-                                           OrganizationService organizationService)
+    public AddGithubEnterpriseOrganization(@ComponentImport ApplicationProperties applicationProperties,
+            @ComponentImport EventPublisher eventPublisher,
+            OAuthStore oAuthStore,
+            OrganizationService organizationService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;

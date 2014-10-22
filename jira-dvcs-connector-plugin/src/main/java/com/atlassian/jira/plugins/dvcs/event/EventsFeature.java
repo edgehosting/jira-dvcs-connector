@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class EventsFeature
     private final FeatureManager featureManager;
 
     @Autowired
-    public EventsFeature(final FeatureManager featureManager)
+    public EventsFeature(@ComponentImport final FeatureManager featureManager)
     {
         this.featureManager = featureManager;
     }

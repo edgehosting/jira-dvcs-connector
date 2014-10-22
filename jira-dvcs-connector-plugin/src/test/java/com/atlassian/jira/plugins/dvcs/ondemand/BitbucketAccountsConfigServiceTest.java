@@ -8,7 +8,6 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
-import com.atlassian.sal.api.scheduling.PluginScheduler;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -34,9 +33,6 @@ public class BitbucketAccountsConfigServiceTest
 
     @Mock
     private AccountsConfigProvider configProvider;
-
-    @Mock
-    private PluginScheduler pluginScheduler;
 
     @Mock
     private PluginController pluginController;

@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.Lists;
@@ -17,6 +18,8 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -26,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class ChangesetRendererImpl implements ChangesetRenderer
 {
 
@@ -39,14 +45,16 @@ public class ChangesetRendererImpl implements ChangesetRenderer
     private final TemplateRenderer templateRenderer;
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
+    @Autowired
     public ChangesetRendererImpl(ChangesetService changesetService, RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport TemplateRenderer templateRenderer,
+            IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
         this.applicationProperties = applicationProperties;
-        this.templateRenderer = templateRenderer;
+        this.templateRenderer = checkNotNull(templateRenderer);
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }
 
@@ -113,8 +121,9 @@ public class ChangesetRendererImpl implements ChangesetRenderer
             if (repositoryId == changeset.getRepositoryId())
             {
                 firstRepository = repository;
-                repositories.add(0,repository);
-            } else
+                repositories.add(0, repository);
+            }
+            else
             {
                 repositories.add(repository);
             }
@@ -157,7 +166,8 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         try
         {
             templateRenderer.render("/templates/commits-view.vm", templateMap, sw);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             logger.warn(e.getMessage(), e);
         }

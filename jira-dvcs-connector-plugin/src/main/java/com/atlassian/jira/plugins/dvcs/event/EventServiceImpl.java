@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,7 +37,8 @@ public class EventServiceImpl implements EventService
     private final ExecutorService eventDispatcher;
 
     @Autowired
-    public EventServiceImpl(EventPublisher eventPublisher, EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
+    public EventServiceImpl(@ComponentImport EventPublisher eventPublisher,
+            EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
     {
         this(eventPublisher, syncEventDao, eventLimiterFactory, createEventDispatcher());
     }

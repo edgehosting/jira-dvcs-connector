@@ -1,8 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +14,7 @@ import java.util.List;
 /**
  * Uses a plugin Settings Factory to store the state of the plugin
  */
+@Component
 public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
 {
     public static final String PROGRESS_TIP = "tip";
@@ -18,7 +22,8 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
     private final Logger logger = LoggerFactory.getLogger(DefaultBitbucketProjectSettings.class);
     private final PluginSettingsFactory pluginSettingsFactory;
 
-    public DefaultBitbucketProjectSettings(PluginSettingsFactory pluginSettingsFactory)
+    @Autowired
+    public DefaultBitbucketProjectSettings(@ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
         this.pluginSettingsFactory = pluginSettingsFactory;
     }

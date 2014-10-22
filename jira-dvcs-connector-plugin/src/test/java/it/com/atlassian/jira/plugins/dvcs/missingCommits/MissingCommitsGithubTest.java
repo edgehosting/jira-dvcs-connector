@@ -1,13 +1,13 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
-import com.atlassian.plugin.util.zip.FileUnzipper;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
+import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -52,14 +52,18 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeRemoteDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
-
-        // remove expired repositories
-        for ( Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+        // githubRepositoriesREST might not be initialized if AbstractMissingCommitsTest#beforeClass() failed
+        if (githubRepositoriesREST != null)
         {
-            if (timestampNameTestResource.isExpired(repository.getName()))
+            githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
+
+            // remove expired repositories
+            for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
             {
-                githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                if (timestampNameTestResource.isExpired(repository.getName()))
+                {
+                    githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                }
             }
         }
     }

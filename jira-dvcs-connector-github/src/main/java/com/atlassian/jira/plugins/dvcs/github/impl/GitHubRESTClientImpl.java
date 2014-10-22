@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implements GitHubRESTClient
 {
 

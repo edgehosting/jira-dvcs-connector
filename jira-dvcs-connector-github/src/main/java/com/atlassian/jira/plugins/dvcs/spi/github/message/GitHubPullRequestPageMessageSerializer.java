@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,9 +12,10 @@ import java.util.Set;
  * {@link GitHubPullRequestPageMessage} message serializer.
  *
  * @author Miroslav Stencel <mstencel@atlassian.com>
- *
  */
-public class GitHubPullRequestPageMessageSerializer extends AbstractMessagePayloadSerializer<GitHubPullRequestPageMessage>
+@Component
+public class GitHubPullRequestPageMessageSerializer
+        extends AbstractMessagePayloadSerializer<GitHubPullRequestPageMessage>
 {
     @Override
     protected void serializeInternal(final JSONObject json, final GitHubPullRequestPageMessage payload) throws Exception

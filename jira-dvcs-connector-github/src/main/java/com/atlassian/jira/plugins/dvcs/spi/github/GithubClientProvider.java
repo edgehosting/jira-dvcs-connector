@@ -8,12 +8,15 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.EventService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,12 +25,14 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 
+@Component ("githubClientProvider")
 public class GithubClientProvider
 {
     private final AuthenticationFactory authenticationFactory;
     private final String userAgent;
 
-    public GithubClientProvider(AuthenticationFactory authenticationFactory, PluginAccessor pluginAccessor)
+    @Autowired
+    public GithubClientProvider(AuthenticationFactory authenticationFactory, @ComponentImport PluginAccessor pluginAccessor)
     {
         this.authenticationFactory = authenticationFactory;
         this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);

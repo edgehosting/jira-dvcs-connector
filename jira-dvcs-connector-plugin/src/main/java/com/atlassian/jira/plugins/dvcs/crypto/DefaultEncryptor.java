@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.crypto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -12,7 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * An encryption service for storing passwords
  */
-
+@Component
 public class DefaultEncryptor implements Encryptor
 {
     final Logger logger = LoggerFactory.getLogger(DefaultEncryptor.class);

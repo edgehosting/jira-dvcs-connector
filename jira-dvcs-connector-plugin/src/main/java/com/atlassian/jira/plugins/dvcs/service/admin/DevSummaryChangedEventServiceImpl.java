@@ -9,11 +9,14 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.util.concurrent.ThreadFactories;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +28,7 @@ import javax.annotation.Resource;
 /**
  * Service that manages generation of dev summary changed events, typically used for priming the dev summary cache.
  */
+@Component
 public class DevSummaryChangedEventServiceImpl
 {
     private static final ThreadFactory THREAD_FACTORY =
@@ -50,7 +54,8 @@ public class DevSummaryChangedEventServiceImpl
 
     private final Executor executor;
 
-    public DevSummaryChangedEventServiceImpl(final ThreadLocalDelegateExecutorFactory executorFactory)
+    @Autowired
+    public DevSummaryChangedEventServiceImpl(@ComponentImport final ThreadLocalDelegateExecutorFactory executorFactory)
     {
         this.executorFactory = executorFactory;
         executor = executorFactory.createExecutor(Executors.newSingleThreadExecutor(THREAD_FACTORY));

@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -18,19 +19,23 @@ import com.google.common.collect.ObjectArrays;
 import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Component
 public class BranchDaoImpl implements BranchDao
 {
     private static final Logger log = LoggerFactory.getLogger(BranchDaoImpl.class);
 
     private final ActiveObjects activeObjects;
 
-    public BranchDaoImpl(ActiveObjects activeObjects)
+    @Autowired
+    public BranchDaoImpl(@ComponentImport ActiveObjects activeObjects)
     {
         this.activeObjects = activeObjects;
     }
@@ -203,7 +208,7 @@ public class BranchDaoImpl implements BranchDao
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
     {
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
-        final Object [] params = ObjectArrays.concat(new Object[]{Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
+        final Object[] params = ObjectArrays.concat(new Object[] { Boolean.FALSE, Boolean.TRUE }, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
@@ -237,7 +242,7 @@ public class BranchDaoImpl implements BranchDao
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys, final String dvcsType)
     {
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
-        final Object [] params = ObjectArrays.concat(new Object[]{dvcsType, Boolean.FALSE, Boolean.TRUE}, Iterables.toArray(issueKeys, Object.class), Object.class);
+        final Object[] params = ObjectArrays.concat(new Object[] { dvcsType, Boolean.FALSE, Boolean.TRUE }, Iterables.toArray(issueKeys, Object.class), Object.class);
 
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {

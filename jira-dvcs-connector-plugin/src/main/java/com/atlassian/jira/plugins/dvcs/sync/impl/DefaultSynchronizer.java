@@ -25,10 +25,13 @@ import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Date;
@@ -39,6 +42,7 @@ import javax.annotation.Resource;
 /**
  * Synchronization service
  */
+@Component
 public class DefaultSynchronizer implements Synchronizer
 {
     @VisibleForTesting
@@ -68,6 +72,7 @@ public class DefaultSynchronizer implements Synchronizer
     private SyncAuditLogDao syncAudit;
 
     @Resource
+    @ComponentImport
     private EventPublisher eventPublisher;
 
     @Resource
@@ -84,8 +89,9 @@ public class DefaultSynchronizer implements Synchronizer
     // Cache of all synchronisation progresses, both running and finished
     private final Cache<Integer, Progress> progressMap;
 
-
-    public DefaultSynchronizer(final CacheManager cacheManager, final ClusterLockServiceFactory clusterLockServiceFactory)
+    @Autowired
+    public DefaultSynchronizer(@ComponentImport final CacheManager cacheManager,
+            final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
@@ -125,7 +131,7 @@ public class DefaultSynchronizer implements Synchronizer
             }
 
             Progress progress = startProgressSafely(repo, flags);
-            if (progress==null)
+            if (progress == null)
             {
                 return;
             }
@@ -164,13 +170,15 @@ public class DefaultSynchronizer implements Synchronizer
                 }
 
                 communicator.startSynchronisation(repo, flags, auditId);
-            } catch (Throwable t)
+            }
+            catch (Throwable t)
             {
                 LOG.error(t.getMessage(), t);
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
-            } finally
+            }
+            finally
             {
                 repoSync.finish();
                 messagingService.tryEndProgress(repo, progress, null, auditId);
@@ -225,7 +233,8 @@ public class DefaultSynchronizer implements Synchronizer
         try
         {
             messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             LOG.warn("Could not resume failed messages.", e);
         }
@@ -290,7 +299,8 @@ public class DefaultSynchronizer implements Synchronizer
             if (currentFlags == null)
             {
                 progress.setRunAgainFlags(flags);
-            } else
+            }
+            else
             {
                 currentFlags.addAll(flags);
             }
@@ -307,9 +317,12 @@ public class DefaultSynchronizer implements Synchronizer
     @Override
     public void pauseSynchronization(Repository repository, boolean pause)
     {
-        if (pause) {
+        if (pause)
+        {
             messagingService.pause(messagingService.getTagForSynchronization(repository));
-        } else {
+        }
+        else
+        {
             messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
     }
@@ -321,7 +334,7 @@ public class DefaultSynchronizer implements Synchronizer
     }
 
     @Override
-    @SuppressWarnings("deprecation")    // put is un-deprecated in a later version of atlassian-cache
+    @SuppressWarnings ("deprecation")    // put is un-deprecated in a later version of atlassian-cache
     public void putProgress(Repository repository, Progress progress)
     {
         progressMap.put(repository.getId(), progress);

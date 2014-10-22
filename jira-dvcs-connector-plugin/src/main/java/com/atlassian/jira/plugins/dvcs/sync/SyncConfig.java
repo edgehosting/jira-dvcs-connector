@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.event.EventLimit;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.LazyReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
@@ -41,8 +42,8 @@ public class SyncConfig
     private final ApplicationProperties applicationProperties;
 
     /**
-     * Changing the system property after the job has been scheduled does not have any effect so we read it
-     * once and use that value throughout the lifetime of the plugin.
+     * Changing the system property after the job has been scheduled does not have any effect so we read it once and use
+     * that value throughout the lifetime of the plugin.
      */
     private final LazyReference<Long> scheduledSyncInterval = new LazyReference<Long>()
     {
@@ -53,8 +54,12 @@ public class SyncConfig
         }
     };
 
+    /**
+     * The constructor parameter needs a name for its import as it clashes with the SAL class of the same name
+     * @param applicationProperties
+     */
     @Autowired
-    public SyncConfig(ApplicationProperties applicationProperties)
+    public SyncConfig(@ComponentImport("jiraAP") ApplicationProperties applicationProperties)
     {
         this.applicationProperties = applicationProperties;
     }
