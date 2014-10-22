@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-@Path ("QDSL")
+@Path ("/QDSL")
 @AnonymousAllowed
 public class QueryDSLResource
 {
@@ -31,7 +31,7 @@ public class QueryDSLResource
     @GET
     public String getStuff()
     {
-        return "pocket stinks";
+        return "pocket!";
 //        final Connection connection = connectionProvider.borrowConnection();
 //
 //        try

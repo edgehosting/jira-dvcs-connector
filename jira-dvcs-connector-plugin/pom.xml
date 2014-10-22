@@ -248,10 +248,6 @@
             <artifactId>atlassian-scheduler-compat</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mysema.querydsl</groupId>
-            <artifactId>querydsl-sql</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.atlassian.pocketknife</groupId>
             <artifactId>atlassian-pocketknife-querydsl</artifactId>
         </dependency>
@@ -292,6 +288,10 @@
                         <dependency>
                             <groupId>com.atlassian.jira.plugins</groupId>
                             <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.pocketknife</groupId>
+                            <artifactId>atlassian-pocketknife-querydsl</artifactId>
                         </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
@@ -419,7 +419,7 @@
                             !org.apache.avalon.framework*,
                             !org.apache.log,
                             !sun.security.util,
-                            *
+                            *;resolution:=optional
                         </Import-Package>
                     </instructions>
                     <skipManifestValidation>true</skipManifestValidation>
