@@ -55,7 +55,7 @@ public class ChangesetServiceImpl implements ChangesetService
     private ThreadEvents threadEvents;
 
     @Autowired
-    public ChangesetServiceImpl(final ChangesetDao changesetDao, ClusterLockServiceFactory clusterLockServiceFactory)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();

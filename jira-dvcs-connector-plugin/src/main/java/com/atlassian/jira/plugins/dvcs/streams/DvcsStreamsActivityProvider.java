@@ -80,11 +80,13 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 
     public DvcsStreamsActivityProvider(@ComponentImport I18nResolver i18nResolver,
             @ComponentImport ApplicationProperties applicationProperties,
-            @ComponentImport UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
+            @ComponentImport UserProfileAccessor userProfileAccessor,
+            IssueLinker issueLinker,
             @ComponentImport TemplateRenderer templateRenderer,
             @ComponentImport PermissionManager permissionManager,
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
-            @ComponentImport ProjectManager projectManager, ChangesetService changesetService,
+            @ComponentImport ProjectManager projectManager,
+            ChangesetService changesetService,
             RepositoryService repositoryService,
             IssueAndProjectKeyManager issueAndProjectKeyManager)
     {

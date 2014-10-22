@@ -53,9 +53,13 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
             DefaultIssueAction o1d = (DefaultIssueAction) o1;
             DefaultIssueAction o2d = (DefaultIssueAction) o2;
             if (o1 == null || o1.getTimePerformed() == null)
-            { return -1; }
+            {
+                return -1;
+            }
             if (o2 == null || o2.getTimePerformed() == null)
-            { return 1; }
+            {
+                return 1;
+            }
             return new Integer(o1d.getId()).compareTo(o2d.getId());
         }
     };
@@ -83,7 +87,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
         //
         List<RepositoryPullRequestMapping> prs = activityDao.getByIssueKeys(issueKeys);
-        Map<String, Object> ctxt = Maps.newHashMap(new ImmutableMap.Builder<String, Object>().put("prs", prs).build());
+        Map<String, Object> ctxt = Maps.newHashMap(ImmutableMap.of("prs", (Object) prs));
         issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
         //
         //

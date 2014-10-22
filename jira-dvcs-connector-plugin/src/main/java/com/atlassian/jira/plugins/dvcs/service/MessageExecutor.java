@@ -146,7 +146,7 @@ public class MessageExecutor
 
     /**
      * Notifies that a message with the given address was added to the queues. It is necessary because of consumers'
-     * weak-up, which can be slept because of empty queues.
+     * wake-up, which can be slept because of empty queues.
      *
      * @param address destination address of new message
      */

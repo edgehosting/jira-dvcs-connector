@@ -84,11 +84,17 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         public boolean equals(Object obj)
         {
             if (obj == null)
-            { return false; }
+            {
+                return false;
+            }
             if (this == obj)
-            { return true; }
+            {
+                return true;
+            }
             if (this.getClass() != obj.getClass())
-            { return false; }
+            {
+                return false;
+            }
             OrganisationKey that = (OrganisationKey) obj;
             return new EqualsBuilder()
                     .append(organization.getHostUrl(), that.organization.getHostUrl())
