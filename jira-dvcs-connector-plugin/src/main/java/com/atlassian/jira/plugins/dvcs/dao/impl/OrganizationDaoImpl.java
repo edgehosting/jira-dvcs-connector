@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class OrganizationDaoImpl implements OrganizationDao
 {
@@ -50,9 +52,9 @@ public class OrganizationDaoImpl implements OrganizationDao
     public OrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects, Encryptor encryptor,
             @ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.encryptor = encryptor;
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
 
     /**

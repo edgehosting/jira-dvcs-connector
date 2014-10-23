@@ -72,18 +72,37 @@
             <artifactId>atlassian-pageobjects-api</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <!--somehow IDEA is confused by the two versions of atlassian-annoatations brought in by JIRA and this one-->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-elements</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-webdriver-core</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- downgrade selenium-java bundled in atlassian-selenium as it requires guava 14 to be bundled -->
         <dependency>
@@ -99,16 +118,16 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-pageobjects-api</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-pageobjects-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-pageobjects-elements</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-pageobjects-elements</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-webdriver-core</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-webdriver-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <artifactId>junit</artifactId>
@@ -256,6 +275,12 @@
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.annotations</groupId>
+            <artifactId>atlassian-annotations</artifactId>
+            <version>0.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.plugin</groupId>
             <artifactId>atlassian-spring-scanner-runtime</artifactId>
             <scope>runtime</scope>
@@ -380,35 +405,12 @@
                             com.atlassian.jira.plugins.dvcs.ondemand
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.jira.plugin.webfragment.conditions,
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
-                            com.atlassian.crowd.embedded.api,
-                            com.atlassian.plugin.osgi.bridge.external,
-                            com.atlassian.plugin,
-                            com.atlassian.sal.api,
-                            com.atlassian.sal.api.executor,
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
-                            com.atlassian.jira.plugin.webfragment.conditions,
-                            com.atlassian.jira.bc.issue.comment,
-                            com.atlassian.jira.config.properties,
-                            com.atlassian.jira.security,
-                            com.atlassian.jira.project,
-                            com.atlassian.jira.config,
-                            com.atlassian.jira.issue,
-                            com.atlassian.jira.bc.issue,
-                            com.atlassian.jira.workflow,
-                            com.atlassian.jira.bc.issue.worklog,
-                            com.atlassian.jira.user.util,
-                            com.atlassian.templaterenderer,
-                            com.atlassian.sal.api.pluginsettings,
-                            com.atlassian.jira.issue.changehistory,
-                            com.atlassian.jira.security.groups,
-                            com.atlassian.jira.template.soy,
-                            com.atlassian.event.api,
-                            com.atlassian.cache,
-                            com.atlassian.jira.plugins.dvcs.ondemand,
                             !com.google.gson.stream,
                             !com.ibm.uvm.tools,
                             !com.sun.jdmk.comm,
@@ -445,6 +447,8 @@
         <skipTests>false</skipTests>
         <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
         <selenium.version>2.41.0</selenium.version>
+        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
+        <devtoolbox.version>2.0.16</devtoolbox.version>
     </properties>
     <profiles>
         <profile>

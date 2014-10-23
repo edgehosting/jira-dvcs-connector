@@ -53,7 +53,7 @@ public class ChangesetRendererImpl implements ChangesetRenderer
         this.changesetService = changesetService;
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
-        this.applicationProperties = applicationProperties;
+        this.applicationProperties = checkNotNull(applicationProperties);
         this.templateRenderer = checkNotNull(templateRenderer);
         this.issueAndProjectKeyManager = issueAndProjectKeyManager;
     }

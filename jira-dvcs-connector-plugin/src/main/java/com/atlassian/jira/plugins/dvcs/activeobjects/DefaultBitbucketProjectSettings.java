@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Uses a plugin Settings Factory to store the state of the plugin
  */
@@ -25,7 +27,7 @@ public class DefaultBitbucketProjectSettings implements BitbucketProjectSettings
     @Autowired
     public DefaultBitbucketProjectSettings(@ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
 
     private String getStringProperty(String projectKey, String key)

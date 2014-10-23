@@ -39,6 +39,8 @@ import java.util.EnumSet;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Synchronization service
  */
@@ -93,7 +95,7 @@ public class DefaultSynchronizer implements Synchronizer
     public DefaultSynchronizer(@ComponentImport final CacheManager cacheManager,
             final ClusterLockServiceFactory clusterLockServiceFactory)
     {
-        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
+        this.clusterLockService = checkNotNull(clusterLockServiceFactory.getClusterLockService());
         this.progressMap = cacheManager.getCache(getClass().getName() + ".progressMap");
         // clear the cache as a temp fix for BBC-744
         if (LOG.isDebugEnabled())

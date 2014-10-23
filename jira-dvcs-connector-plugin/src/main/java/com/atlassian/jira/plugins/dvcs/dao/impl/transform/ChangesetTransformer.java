@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class ChangesetTransformer
 {
@@ -36,7 +38,7 @@ public class ChangesetTransformer
     @Autowired
     public ChangesetTransformer(@ComponentImport final ActiveObjects activeObjects, final ChangesetDao changesetDao)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.changesetDao = changesetDao;
     }
 

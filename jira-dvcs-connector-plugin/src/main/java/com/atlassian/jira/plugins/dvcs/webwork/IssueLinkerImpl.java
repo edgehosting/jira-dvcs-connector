@@ -12,6 +12,8 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class IssueLinkerImpl implements IssueLinker
 {
@@ -28,7 +30,7 @@ public class IssueLinkerImpl implements IssueLinker
     @Autowired
     public IssueLinkerImpl(@ComponentImport ApplicationProperties applicationProperties)
     {
-        this.applicationProperties = applicationProperties;
+        this.applicationProperties = checkNotNull(applicationProperties);
     }
 
     /**

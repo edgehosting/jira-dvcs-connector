@@ -61,7 +61,7 @@ public class SyncConfig
     @Autowired
     public SyncConfig(@ComponentImport("jiraAP") ApplicationProperties applicationProperties)
     {
-        this.applicationProperties = applicationProperties;
+        this.applicationProperties = checkNotNull(applicationProperties);
     }
 
     /**

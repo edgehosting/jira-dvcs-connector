@@ -64,6 +64,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * A {@link MessagingService} implementation.
  *
@@ -178,7 +180,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public MessagingServiceImpl(@ComponentImport final CacheManager cacheManager)
     {
         // altassian-cache 2.0.8 or later will auto clear a local cache
-        idToMessageAddress = cacheManager.getCache(
+        idToMessageAddress = checkNotNull(cacheManager).getCache(
                 getClass().getName() + ".idToMessageAddress", new MessageAddressLoader(), CACHE_SETTINGS);
     }
 

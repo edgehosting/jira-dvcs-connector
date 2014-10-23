@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.core.CacheControl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (SmartcommitsService.class)
 @Component
 public class DefaultSmartcommitsService implements SmartcommitsService
@@ -62,16 +64,16 @@ public class DefaultSmartcommitsService implements SmartcommitsService
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
             @ComponentImport CrowdService crowdService)
     {
-		this.crowdService = crowdService;
+		this.crowdService = checkNotNull(crowdService);
 
 		NO_CACHE = new CacheControl();
 		NO_CACHE.setNoCache(true);
 
-		this.issueManager = issueManager;
+		this.issueManager = checkNotNull(issueManager);
 		this.transitionHandler = transitionHandler;
 		this.commentHandler = commentHandler;
 		this.workLogHandler = workLogHandler;
-		this.jiraAuthenticationContext = jiraAuthenticationContext;
+		this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
 	}
 
 	/**
