@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (CommandHandler.class)
 @Component ("smartcommitsTransitionsHandler")
 public class TransitionHandler implements CommandHandler<Issue>
@@ -55,9 +57,9 @@ public class TransitionHandler implements CommandHandler<Issue>
             @ComponentImport WorkflowManager workflowManager,
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext)
     {
-        this.issueService = issueService;
-        this.workflowManager = workflowManager;
-        this.jiraAuthenticationContext = jiraAuthenticationContext;
+        this.issueService = checkNotNull(issueService);
+        this.workflowManager = checkNotNull(workflowManager);
+        this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
     }
 
     @Override

@@ -59,7 +59,7 @@ public class DvcsScheduler implements LifecycleAware
     {
         this.dvcsSchedulerJob = dvcsSchedulerJob;
         this.eventPublisher = checkNotNull(eventPublisher);
-        this.messagingService = messagingService;
+        this.messagingService = checkNotNull(messagingService);
         this.scheduler = scheduler;
         this.syncConfig = syncConfig;
     }

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.LINKERS_ENABLED_SETTINGS_PARAM;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Component("deferredBitbucketLinker")
@@ -46,7 +47,7 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     {
         this.bitbucketLinker = bitbucketLinker;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
 
     @Override

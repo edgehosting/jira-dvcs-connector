@@ -51,12 +51,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null)
-            { return false; }
-            if (this == obj)
-            { return true; }
-            if (this.getClass() != obj.getClass())
-            { return false; }
             UserKey that = (UserKey) obj;
             return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username)
                     .isEquals();

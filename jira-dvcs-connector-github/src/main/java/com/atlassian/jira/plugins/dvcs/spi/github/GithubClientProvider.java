@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_API;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_DEFAULT;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
@@ -35,7 +36,7 @@ public class GithubClientProvider
     public GithubClientProvider(AuthenticationFactory authenticationFactory, @ComponentImport PluginAccessor pluginAccessor)
     {
         this.authenticationFactory = authenticationFactory;
-        this.userAgent = DvcsConstants.getUserAgent(pluginAccessor);
+        this.userAgent = DvcsConstants.getUserAgent(checkNotNull(pluginAccessor));
     }
 
     public GithubClientWithTimeout createClient(Repository repository)

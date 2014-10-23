@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (CommandHandler.class)
 @Component ("smartcommitsCommentHandler")
 public class CommentHandler implements CommandHandler<Comment>
@@ -28,7 +30,7 @@ public class CommentHandler implements CommandHandler<Comment>
     @Autowired
     public CommentHandler(@ComponentImport CommentService commentService)
     {
-        this.commentService = commentService;
+        this.commentService = checkNotNull(commentService);
     }
 
     @Override

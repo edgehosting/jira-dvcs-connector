@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
 public class ChangesetDaoImpl implements ChangesetDao
@@ -56,7 +57,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Autowired
     public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = queryHelper;
         this.transformer = new ChangesetTransformer(activeObjects, this);
     }

@@ -13,6 +13,8 @@ import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * PasswordReEncryptor decrypts the password using old key (projectId + repositoryUrl) 
  * and reencrypts using new key (organisation name + host url) 
@@ -26,7 +28,7 @@ class PasswordReEncryptor
     @Autowired
     public PasswordReEncryptor(@ComponentImport ProjectManager projectManager)
     {
-        this.projectManager = projectManager;
+        this.projectManager = checkNotNull(projectManager);
     }
 
     String reEncryptPassword(String password, String projectKey, String repositoryUrl, String organizationName, String hostUrl)

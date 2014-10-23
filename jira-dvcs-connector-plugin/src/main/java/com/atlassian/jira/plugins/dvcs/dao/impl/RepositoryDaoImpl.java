@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class RepositoryDaoImpl implements RepositoryDao
 {
@@ -42,7 +44,7 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Autowired
     public RepositoryDaoImpl(@ComponentImport ActiveObjects activeObjects)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
     }
 
     protected Repository transform(RepositoryMapping repositoryMapping)

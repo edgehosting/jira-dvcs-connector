@@ -71,7 +71,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     public RepositoryPullRequestDaoImpl(@ComponentImport ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
         super();
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.beanGenerator = beanGenerator;
     }
 

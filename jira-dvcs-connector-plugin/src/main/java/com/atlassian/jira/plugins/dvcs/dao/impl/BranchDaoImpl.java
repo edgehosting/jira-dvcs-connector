@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class BranchDaoImpl implements BranchDao
 {
@@ -37,7 +39,7 @@ public class BranchDaoImpl implements BranchDao
     @Autowired
     public BranchDaoImpl(@ComponentImport ActiveObjects activeObjects)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
     }
 
     @Override

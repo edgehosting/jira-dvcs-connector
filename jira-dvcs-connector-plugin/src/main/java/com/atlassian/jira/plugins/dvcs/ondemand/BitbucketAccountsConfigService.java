@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
  *
@@ -65,8 +67,8 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
         this.configProvider = configProvider;
         this.organizationService = organizationService;
         this.bitbucketAccountsReloadJob = bitbucketAccountsReloadJob;
-        this.pluginController = pluginController;
-        this.pluginAccessor = pluginAccessor;
+        this.pluginController = checkNotNull(pluginController);
+        this.pluginAccessor = checkNotNull(pluginAccessor);
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnector.BitbucketAccountsConfigService"));
     }
     

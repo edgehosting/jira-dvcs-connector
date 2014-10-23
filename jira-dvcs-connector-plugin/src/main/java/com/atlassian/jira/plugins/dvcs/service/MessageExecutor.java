@@ -100,7 +100,8 @@ public class MessageExecutor
     }
 
     /**
-     * Creates a new MessageExecutor backed by the given ExecutorService.
+     * Creates a new MessageExecutor backed by the given ExecutorService. This constructor is exposed for use in testing
+     * in production the no argument constructor is used by spring to instantiate things.
      *
      * @param executor an ExecutorService
      */

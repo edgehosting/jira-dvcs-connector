@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManager
 {
@@ -18,7 +20,7 @@ public class InvalidOrganizationsManagerImpl implements InvalidOrganizationManag
     @Autowired
     public InvalidOrganizationsManagerImpl(@ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
     
     @Override

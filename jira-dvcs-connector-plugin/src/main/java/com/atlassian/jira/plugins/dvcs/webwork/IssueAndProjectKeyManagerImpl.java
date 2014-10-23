@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Utility class to retrieve historical issue a project keys for issue
  *
@@ -39,11 +41,11 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
             @ComponentImport final PermissionManager permissionManager,
             @ComponentImport final JiraAuthenticationContext authenticationContext)
     {
-        this.issueManager = issueManager;
-        this.changeHistoryManager = changeHistoryManager;
-        this.projectManager = projectManager;
-        this.permissionManager = permissionManager;
-        this.authenticationContext = authenticationContext;
+        this.issueManager = checkNotNull(issueManager);
+        this.changeHistoryManager = checkNotNull(changeHistoryManager);
+        this.projectManager = checkNotNull(projectManager);
+        this.permissionManager = checkNotNull(permissionManager);
+        this.authenticationContext = checkNotNull(authenticationContext);
     }
 
     @Override

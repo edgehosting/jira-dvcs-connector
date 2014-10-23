@@ -27,7 +27,7 @@ public class PanelVisibilityManager
             @ComponentImport PluginAccessor pluginAccessor,
             @ComponentImport FeatureManager featureManager)
     {
-        this.permissionManager = permissionManager;
+        this.permissionManager = checkNotNull(permissionManager);
         this.pluginAccessor = checkNotNull(pluginAccessor);
         this.featureManager = checkNotNull(featureManager);
     }
