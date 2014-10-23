@@ -6,6 +6,8 @@ import com.google.common.annotations.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Used to determine whether to publish sync events.
  */
@@ -20,7 +22,7 @@ public class EventsFeature
     @Autowired
     public EventsFeature(@ComponentImport final FeatureManager featureManager)
     {
-        this.featureManager = featureManager;
+        this.featureManager = checkNotNull(featureManager);
     }
 
     /**

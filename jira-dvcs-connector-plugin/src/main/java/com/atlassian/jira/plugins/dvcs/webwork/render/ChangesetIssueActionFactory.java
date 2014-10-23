@@ -36,7 +36,7 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
     {
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
-        this.applicationProperties = applicationProperties;
+        this.applicationProperties = checkNotNull(applicationProperties);
         this.changesetService = changesetService;
         this.templateRenderer = checkNotNull(templateRenderer);
     }

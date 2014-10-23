@@ -25,6 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Service that manages generation of dev summary changed events, typically used for priming the dev summary cache.
  */
@@ -57,7 +59,7 @@ public class DevSummaryChangedEventServiceImpl
     @Autowired
     public DevSummaryChangedEventServiceImpl(@ComponentImport final ThreadLocalDelegateExecutorFactory executorFactory)
     {
-        this.executorFactory = executorFactory;
+        this.executorFactory = checkNotNull(executorFactory);
         executor = executorFactory.createExecutor(Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 

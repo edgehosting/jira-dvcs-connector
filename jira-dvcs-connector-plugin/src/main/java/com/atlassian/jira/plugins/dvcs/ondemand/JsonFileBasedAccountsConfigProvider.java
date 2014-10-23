@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (AccountsConfigProvider.class)
 @Component
 public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvider
@@ -40,7 +42,7 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
     @Autowired
     public JsonFileBasedAccountsConfigProvider(@ComponentImport FeatureManager featureManager)
     {
-        this.featureManager = featureManager;
+        this.featureManager = checkNotNull(featureManager);
     }
 
     @Override

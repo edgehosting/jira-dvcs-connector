@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {
@@ -36,8 +38,8 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     public SyncAuditLogDaoImpl(@ComponentImport ActiveObjects ao, @ComponentImport EventPublisher publisher)
     {
         super();
-        this.ao = ao;
-        this.eventPublisher = publisher;
+        this.ao = checkNotNull(ao);
+        this.eventPublisher = checkNotNull(publisher);
     }
 
     @Override

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (CommandHandler.class)
 @Component("smartcommitsWorklogHandler")
 public class WorkLogHandler implements CommandHandler<Worklog>
@@ -36,7 +38,7 @@ public class WorkLogHandler implements CommandHandler<Worklog>
     @Autowired
     public WorkLogHandler(@ComponentImport WorklogService worklogService)
     {
-        this.worklogService = worklogService;
+        this.worklogService = checkNotNull(worklogService);
     }
 
     @Override

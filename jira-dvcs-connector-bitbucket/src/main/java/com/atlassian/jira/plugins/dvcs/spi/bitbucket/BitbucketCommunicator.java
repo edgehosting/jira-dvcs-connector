@@ -71,6 +71,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Component
 public class BitbucketCommunicator implements DvcsCommunicator
 {
@@ -104,8 +106,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
-        this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.applicationProperties = ap;
+        this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
+        this.applicationProperties = checkNotNull(ap);
     }
 
     /**

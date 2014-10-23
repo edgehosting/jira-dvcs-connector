@@ -252,6 +252,12 @@
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.annotations</groupId>
+            <artifactId>atlassian-annotations</artifactId>
+            <version>0.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.plugin</groupId>
             <artifactId>atlassian-spring-scanner-runtime</artifactId>
             <scope>runtime</scope>

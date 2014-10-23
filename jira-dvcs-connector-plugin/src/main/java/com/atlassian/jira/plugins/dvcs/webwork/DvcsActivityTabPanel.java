@@ -18,9 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +30,9 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+/**
+ * Currently unused, see BBC-930
+ */
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
     private final Logger logger = LoggerFactory.getLogger(DvcsActivityTabPanel.class);
@@ -64,18 +64,17 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         }
     };
 
-    @Autowired
     public DvcsActivityTabPanel(@ComponentImport PermissionManager permissionManager,
             RepositoryService repositoryService, RepositoryPullRequestDao activityDao,
             @Qualifier ("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory,
             @ComponentImport TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
-        this.permissionManager = permissionManager;
-        this.repositoryService = repositoryService;
-        this.activityDao = activityDao;
-        this.issueActionFactory = issueActionFactory;
+        this.permissionManager = checkNotNull(permissionManager);
+        this.repositoryService = checkNotNull(repositoryService);
+        this.activityDao = checkNotNull(activityDao);
+        this.issueActionFactory = checkNotNull(issueActionFactory);
         this.templateRenderer = checkNotNull(templateRenderer);
-        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
+        this.issueAndProjectKeyManager = checkNotNull(issueAndProjectKeyManager);
     }
 
     @Override

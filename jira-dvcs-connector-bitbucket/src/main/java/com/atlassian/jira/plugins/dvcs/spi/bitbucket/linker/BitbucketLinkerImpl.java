@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Implementation of BitbucketLinker that configures repository links on
  * bitbucket repositories
@@ -50,8 +52,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
             @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
     {
-        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
-        this.projectManager = projectManager;
+        this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
+        this.projectManager = checkNotNull(projectManager);
         this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl());
     }
 

@@ -22,6 +22,7 @@ import javax.annotation.concurrent.Immutable;
 
 import static com.atlassian.fugue.Option.option;
 import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Component
@@ -46,7 +47,7 @@ public class EventServiceImpl implements EventService
     @VisibleForTesting
     EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
     {
-        this.eventPublisher = eventPublisher;
+        this.eventPublisher = checkNotNull(eventPublisher);
         this.syncEventDao = syncEventDao;
         this.eventLimiterFactory = eventLimiterFactory;
         this.eventDispatcher = executorService;

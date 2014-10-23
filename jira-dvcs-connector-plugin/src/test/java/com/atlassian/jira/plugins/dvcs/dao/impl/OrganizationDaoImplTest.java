@@ -1,18 +1,36 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+@Listeners (MockitoTestNgListener.class)
 public class OrganizationDaoImplTest
 {
-    private final OrganizationDaoImpl oDao = new OrganizationDaoImpl(null, null, null);
+    @Mock
+    private ActiveObjects activeObjects;
+
+    @Mock
+    private Encryptor encryptor;
+
+    @Mock
+    private PluginSettingsFactory pluginSettingsFactory;
+
+    @InjectMocks
+    private OrganizationDaoImpl oDao;
 
     @Test
     public void testDeserializeDefaultGroups()

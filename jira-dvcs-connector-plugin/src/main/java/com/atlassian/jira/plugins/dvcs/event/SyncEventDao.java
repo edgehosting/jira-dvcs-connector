@@ -17,6 +17,7 @@ import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_DATE;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_JSON;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.REPO_ID;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.SCHEDULED_SYNC;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * DAO for SyncEventMapping instances.
@@ -30,7 +31,7 @@ public class SyncEventDao
     @Autowired
     public SyncEventDao(@ComponentImport ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.beanGenerator = beanGenerator;
     }
 
