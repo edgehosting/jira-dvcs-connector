@@ -419,7 +419,7 @@
                             !org.apache.avalon.framework*,
                             !org.apache.log,
                             !sun.security.util,
-                            *;resolution:=optional
+                            *
                         </Import-Package>
                     </instructions>
                     <skipManifestValidation>true</skipManifestValidation>
