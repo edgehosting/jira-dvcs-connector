@@ -72,18 +72,37 @@
             <artifactId>atlassian-pageobjects-api</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <!--somehow IDEA is confused by the two versions of atlassian-annoatations brought in by JIRA and this one-->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-elements</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-webdriver-core</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atlassian.annotations</groupId>
+                    <artifactId>atlassian-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- downgrade selenium-java bundled in atlassian-selenium as it requires guava 14 to be bundled -->
         <dependency>
@@ -99,16 +118,16 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-pageobjects-api</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-pageobjects-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-pageobjects-elements</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-pageobjects-elements</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>com.atlassian.selenium</artifactId>
-                    <groupId>atlassian-webdriver-core</groupId>
+                    <groupId>com.atlassian.selenium</groupId>
+                    <artifactId>atlassian-webdriver-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <artifactId>junit</artifactId>
@@ -368,6 +387,8 @@
         <skipTests>false</skipTests>
         <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
         <selenium.version>2.41.0</selenium.version>
+        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
+        <devtoolbox.version>2.0.16</devtoolbox.version>
     </properties>
     <profiles>
         <profile>
