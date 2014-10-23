@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -21,6 +22,7 @@ import javax.annotation.concurrent.Immutable;
 
 import static com.atlassian.fugue.Option.option;
 import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Component
@@ -36,7 +38,8 @@ public class EventServiceImpl implements EventService
     private final ExecutorService eventDispatcher;
 
     @Autowired
-    public EventServiceImpl(EventPublisher eventPublisher, EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
+    public EventServiceImpl(@ComponentImport EventPublisher eventPublisher,
+            EventLimiterFactory eventLimiterFactory, SyncEventDao syncEventDao)
     {
         this(eventPublisher, syncEventDao, eventLimiterFactory, createEventDispatcher());
     }
@@ -44,7 +47,7 @@ public class EventServiceImpl implements EventService
     @VisibleForTesting
     EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
     {
-        this.eventPublisher = eventPublisher;
+        this.eventPublisher = checkNotNull(eventPublisher);
         this.syncEventDao = syncEventDao;
         this.eventLimiterFactory = eventLimiterFactory;
         this.eventDispatcher = executorService;

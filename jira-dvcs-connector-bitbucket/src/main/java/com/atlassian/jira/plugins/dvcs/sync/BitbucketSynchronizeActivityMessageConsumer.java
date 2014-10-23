@@ -37,6 +37,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -47,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -63,6 +65,7 @@ import javax.annotation.Resource;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsumer<BitbucketSynchronizeActivityMessage>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeActivityMessageConsumer.class);
@@ -85,14 +88,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
     @Resource
+    @ComponentImport
     private FeatureManager featureManager;
     @Resource
     private NotificationService notificationService;
-
-    public BitbucketSynchronizeActivityMessageConsumer()
-    {
-        super();
-    }
 
     @Override
     public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, final BitbucketSynchronizeActivityMessage payload)

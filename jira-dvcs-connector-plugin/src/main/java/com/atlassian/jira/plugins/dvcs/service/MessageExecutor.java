@@ -19,6 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class MessageExecutor
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumer.class);
@@ -98,9 +100,10 @@ public class MessageExecutor
     }
 
     /**
-     * Creates a new MessageExecutor backed by the given ExecutorService.
+     * Creates a new MessageExecutor backed by the given ExecutorService. This constructor is exposed for use in testing
+     * in production the no argument constructor is used by spring to instantiate things.
      *
-     * @param executor    an ExecutorService
+     * @param executor an ExecutorService
      */
     @VisibleForTesting
     public MessageExecutor(@Nonnull ExecutorService executor)
@@ -143,9 +146,8 @@ public class MessageExecutor
     }
 
     /**
-     * Notifies that a message with the given address was added to the queues.
-     * It is necessary because of consumers' weak-up, which can be slept
-     * because of empty queues.
+     * Notifies that a message with the given address was added to the queues. It is necessary because of consumers'
+     * wake-up, which can be slept because of empty queues.
      *
      * @param address destination address of new message
      */
@@ -158,11 +160,10 @@ public class MessageExecutor
     }
 
     /**
-     * Tries to process next message of queue, if there is any message and any available token ({@link MessageConsumer#getParallelThreads()
-     * thread}).
+     * Tries to process next message of queue, if there is any message and any available token ({@link
+     * MessageConsumer#getParallelThreads() thread}).
      *
-     * @param consumer
-     *            for processing
+     * @param consumer for processing
      */
     private <P extends HasProgress> void tryToProcessNextMessage(final MessageConsumer<P> consumer)
     {
@@ -205,8 +206,7 @@ public class MessageExecutor
     /**
      * Gets single available token, if any.
      *
-     * @param consumer
-     *            which need token
+     * @param consumer which need token
      * @return true if free token was acquired - otherwise false is returned
      */
     private <P extends HasProgress> boolean acquireToken(MessageConsumer<P> consumer)
@@ -220,7 +220,8 @@ public class MessageExecutor
             {
                 return false;
             }
-        } while (!remainingTokens.compareAndSet(remainingTokensValue, remainingTokensValue - 1));
+        }
+        while (!remainingTokens.compareAndSet(remainingTokensValue, remainingTokensValue - 1));
 
         return true;
     }
@@ -228,8 +229,7 @@ public class MessageExecutor
     /**
      * Releases single token - counter part of {@link #acquireToken(MessageConsumer)}.
      *
-     * @param consumer
-     *            for which consumer
+     * @param consumer for which consumer
      */
     private <P extends HasProgress> void releaseToken(MessageConsumer<P> consumer)
     {
@@ -237,9 +237,9 @@ public class MessageExecutor
     }
 
     /**
-     * Returns a new ThreadPoolExecutor. Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed
-     * (see the QUEUING section of its javadoc), when using {@link java.util.concurrent.LinkedBlockingQueue}, the 
-     * max value has no impact. We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815.
+     * Returns a new ThreadPoolExecutor. Due to the way {@link java.util.concurrent.ThreadPoolExecutor} is designed (see
+     * the QUEUING section of its javadoc), when using {@link java.util.concurrent.LinkedBlockingQueue}, the max value
+     * has no impact. We would fix it properly in https://jdog.jira-dev.com/browse/BBC-815.
      * <p/>
      * For now, just set it to non-Integer.MAX_VALUE value.
      *
@@ -290,10 +290,8 @@ public class MessageExecutor
     /**
      * Runnable for single message processing.
      *
+     * @param <P> type of message payload
      * @author Stanislav Dvorscak
-     *
-     * @param <P>
-     *            type of message payload
      */
     private final class MessageRunnable<P extends HasProgress> extends ReleaseTokenAndEnqueueNextMessage
     {

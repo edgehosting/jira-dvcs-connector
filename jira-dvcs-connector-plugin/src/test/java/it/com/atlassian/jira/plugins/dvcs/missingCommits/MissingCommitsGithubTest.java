@@ -1,13 +1,13 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
-import com.atlassian.plugin.util.zip.FileUnzipper;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
+import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;

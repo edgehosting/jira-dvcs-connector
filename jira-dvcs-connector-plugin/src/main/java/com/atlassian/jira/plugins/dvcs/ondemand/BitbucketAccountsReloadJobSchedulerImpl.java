@@ -44,8 +44,8 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     private final CompatibilityPluginScheduler scheduler;
 
     @Autowired
-    public BitbucketAccountsReloadJobSchedulerImpl(
-            final CompatibilityPluginScheduler scheduler, final BitbucketAccountsReloadJobHandler jobHandler)
+    public BitbucketAccountsReloadJobSchedulerImpl(final CompatibilityPluginScheduler scheduler,
+            final BitbucketAccountsReloadJobHandler jobHandler)
     {
         this.scheduler = scheduler;
         this.jobHandler = jobHandler;

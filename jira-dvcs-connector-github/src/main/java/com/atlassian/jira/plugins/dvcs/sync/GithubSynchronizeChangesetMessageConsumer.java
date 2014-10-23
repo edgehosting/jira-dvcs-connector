@@ -3,7 +3,9 @@ package com.atlassian.jira.plugins.dvcs.sync;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GithubSynchronizeChangesetMessageConsumer extends MessageConsumerSupport<SynchronizeChangesetMessage>
 {
 

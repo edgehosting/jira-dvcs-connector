@@ -12,12 +12,14 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
+@Component
 public class OrganizationServiceImpl implements OrganizationService
 {
     private static final Logger log = LoggerFactory.getLogger(OrganizationServiceImpl.class);
@@ -28,6 +30,7 @@ public class OrganizationServiceImpl implements OrganizationService
 
     private final RepositoryService repositoryService;
 
+    @Autowired
     public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
             RepositoryService repositoryService)
     {
@@ -41,7 +44,7 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         return getAccountInfo(hostUrl, accountName, null);
     }
-    
+
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType)
     {
@@ -194,7 +197,8 @@ public class OrganizationServiceImpl implements OrganizationService
         if (CollectionUtils.isNotEmpty(ids))
         {
             return organizationDao.getAllByIds(ids);
-        } else
+        }
+        else
         {
             return Collections.emptyList();
         }
@@ -226,7 +230,7 @@ public class OrganizationServiceImpl implements OrganizationService
         DvcsUser currentUser = communicator.getTokenOwner(organization);
         return currentUser;
     }
-    
+
     /**
      * {@inheritDoc}
      */

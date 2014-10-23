@@ -26,6 +26,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
+@Component
 public class ChangesetServiceImpl implements ChangesetService
 {
     private static final Logger logger = LoggerFactory.getLogger(ChangesetServiceImpl.class);
@@ -51,6 +54,7 @@ public class ChangesetServiceImpl implements ChangesetService
     @Resource
     private ThreadEvents threadEvents;
 
+    @Autowired
     public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;

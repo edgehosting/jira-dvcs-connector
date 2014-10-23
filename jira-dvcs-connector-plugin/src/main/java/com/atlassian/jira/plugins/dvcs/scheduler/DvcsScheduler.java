@@ -5,12 +5,16 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
 import com.atlassian.scheduler.compat.JobHandlerKey;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.EnumSet;
@@ -24,7 +28,10 @@ import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleE
 import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleEvent.PLUGIN_ENABLED;
 import static com.atlassian.jira.plugins.dvcs.scheduler.DvcsScheduler.LifecycleEvent.POST_CONSTRUCT;
 import static com.atlassian.jira.plugins.dvcs.util.DvcsConstants.PLUGIN_KEY;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+@ExportAsService (LifecycleAware.class)
+@Component
 public class DvcsScheduler implements LifecycleAware
 {
     @VisibleForTesting
@@ -41,15 +48,18 @@ public class DvcsScheduler implements LifecycleAware
     private final EventPublisher eventPublisher;
     private final MessagingService messagingService;
 
-    @GuardedBy("this")
+    @GuardedBy ("this")
     private final Set<LifecycleEvent> lifecycleEvents = EnumSet.noneOf(LifecycleEvent.class);
 
-    public DvcsScheduler(final MessagingService messagingService, final CompatibilityPluginScheduler scheduler,
-            final DvcsSchedulerJob dvcsSchedulerJob, final EventPublisher eventPublisher, final SyncConfig syncConfig)
+    @Autowired
+    public DvcsScheduler(final MessagingService messagingService,
+            final CompatibilityPluginScheduler scheduler,
+            final DvcsSchedulerJob dvcsSchedulerJob, @ComponentImport final EventPublisher eventPublisher,
+            final SyncConfig syncConfig)
     {
         this.dvcsSchedulerJob = dvcsSchedulerJob;
-        this.eventPublisher = eventPublisher;
-        this.messagingService = messagingService;
+        this.eventPublisher = checkNotNull(eventPublisher);
+        this.messagingService = checkNotNull(messagingService);
         this.scheduler = scheduler;
         this.syncConfig = syncConfig;
     }

@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.impl.IssueKeyExtractor;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -30,6 +31,8 @@ import net.java.ao.Query;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,28 +58,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author jhocman@atlassian.com
  *
  */
+@Component
 public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 {
-
-    /**
-     * Logger of this class.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryPullRequestDaoImpl.class);
 
-    /**
-     * Injected {@link ActiveObjects} dependency.
-     */
     private final ActiveObjects activeObjects;
 
-    /**
-     * Used to create RepositoryPullRequestMapping instances.
-     */
     private final EntityBeanGenerator beanGenerator;
 
-    public RepositoryPullRequestDaoImpl(ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
+    @Autowired
+    public RepositoryPullRequestDaoImpl(@ComponentImport ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
         super();
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.beanGenerator = beanGenerator;
     }
 

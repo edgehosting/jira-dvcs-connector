@@ -16,6 +16,7 @@ import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -30,8 +31,8 @@ import javax.annotation.Nonnull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
- * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for quicker subsequent
- * lookup times
+ * A {@link com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator} implementation that caches results for
+ * quicker subsequent lookup times
  */
 public class CachingCommunicator implements CachingDvcsCommunicator
 {
@@ -50,12 +51,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null)
-                return false;
-            if (this == obj)
-                return true;
-            if (this.getClass() != obj.getClass())
-                return false;
             UserKey that = (UserKey) obj;
             return new EqualsBuilder().append(repository.getOrgHostUrl(), that.repository.getOrgHostUrl()).append(username, that.username)
                     .isEquals();
@@ -83,11 +78,17 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         public boolean equals(Object obj)
         {
             if (obj == null)
+            {
                 return false;
+            }
             if (this == obj)
+            {
                 return true;
+            }
             if (this.getClass() != obj.getClass())
+            {
                 return false;
+            }
             OrganisationKey that = (OrganisationKey) obj;
             return new EqualsBuilder()
                     .append(organization.getHostUrl(), that.organization.getHostUrl())
@@ -108,13 +109,13 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private final Cache<OrganisationKey, List<Group>> groupsCache;
     private DvcsCommunicator delegate;
 
-    public CachingCommunicator(final CacheManager cacheManager)
+    public CachingCommunicator(@ComponentImport final CacheManager cacheManager)
     {
         // self-loading caches returned from getCache are always clean/empty
         usersCache = cacheManager.getCache(getClass().getName() + ".usersCache", new UserLoader(), CACHE_SETTINGS);
         groupsCache = cacheManager.getCache(getClass().getName() + ".groupsCache", new GroupLoader(), CACHE_SETTINGS);
     }
-    
+
     public void setDelegate(DvcsCommunicator delegate)
     {
         this.delegate = delegate;
@@ -126,7 +127,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return usersCache.get(new UserKey(repository, username));
-        } catch (CacheException e)
+        }
+        catch (CacheException e)
         {
             throw unrollException(e);
         }
@@ -144,7 +146,8 @@ public class CachingCommunicator implements CachingDvcsCommunicator
         try
         {
             return groupsCache.get(new OrganisationKey(organization));
-        } catch (CacheException e)
+        }
+        catch (CacheException e)
         {
             throw unrollException(e);
         }
@@ -171,7 +174,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     @Override
     public String getCreatePullRequestUrl(final Repository repository, final String sourceSlug, final String sourceBranch, final String destinationSlug, final String destinationBranch, final String eventSource)
     {
-        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch , destinationSlug, destinationBranch, eventSource);
+        return delegate.getCreatePullRequestUrl(repository, sourceSlug, sourceBranch, destinationSlug, destinationBranch, eventSource);
     }
 
     @Override
@@ -203,7 +206,7 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     {
         return delegate.getRepositories(organization, storedRepositories);
     }
-    
+
     /**
      * {@inheritDoc}
      */

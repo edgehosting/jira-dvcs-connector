@@ -2,14 +2,16 @@ package com.atlassian.jira.plugins.dvcs.spi.github.message;
 
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 /**
  * {@link GitHubPullRequestSynchronizeMessage} message serializer.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
-public class GitHubPullRequestSynchronizeMessageSerializer extends AbstractMessagePayloadSerializer<GitHubPullRequestSynchronizeMessage>
+@Component
+public class GitHubPullRequestSynchronizeMessageSerializer
+        extends AbstractMessagePayloadSerializer<GitHubPullRequestSynchronizeMessage>
 {
 
     @Override
@@ -25,7 +27,8 @@ public class GitHubPullRequestSynchronizeMessageSerializer extends AbstractMessa
     }
 
     @Override
-    protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json, final int version) throws Exception
+    protected GitHubPullRequestSynchronizeMessage deserializeInternal(JSONObject json, final int version)
+            throws Exception
     {
         return new GitHubPullRequestSynchronizeMessage(null, 0, false, null, json.getInt("pullRequestNumber"), false);
     }

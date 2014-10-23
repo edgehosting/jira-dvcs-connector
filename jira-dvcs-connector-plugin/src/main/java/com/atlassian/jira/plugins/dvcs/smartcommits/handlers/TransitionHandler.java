@@ -13,10 +13,14 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.workflow.WorkflowManager;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,10 +30,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-public class TransitionHandler implements CommandHandler<Issue> {
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@ExportAsService (CommandHandler.class)
+@Component ("smartcommitsTransitionsHandler")
+public class TransitionHandler implements CommandHandler<Issue>
+{
 
     private static CommandType CMD_TYPE = CommandType.TRANSITION;
-    
+
     // private Pattern IN_TRANSITION_PATTERN = Pattern.compile("(#\\S*)(.*)");
 
     private static final String NO_STATUS = "fisheye.commithooks.transition.unknownstatus";
@@ -43,10 +52,14 @@ public class TransitionHandler implements CommandHandler<Issue> {
     private final WorkflowManager workflowManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
 
-    public TransitionHandler(IssueService issueService, WorkflowManager workflowManager, JiraAuthenticationContext jiraAuthenticationContext) {
-        this.issueService = issueService;
-        this.workflowManager = workflowManager;
-        this.jiraAuthenticationContext = jiraAuthenticationContext;
+    @Autowired
+    public TransitionHandler(@ComponentImport IssueService issueService,
+            @ComponentImport WorkflowManager workflowManager,
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext)
+    {
+        this.issueService = checkNotNull(issueService);
+        this.workflowManager = checkNotNull(workflowManager);
+        this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
     }
 
     @Override

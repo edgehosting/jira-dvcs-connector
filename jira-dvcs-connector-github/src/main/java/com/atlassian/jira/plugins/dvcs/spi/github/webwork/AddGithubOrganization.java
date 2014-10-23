@@ -13,6 +13,8 @@ import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator.GITHUB;
 
+@Scanned
 public class AddGithubOrganization extends CommonDvcsConfigurationAction
 {
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
@@ -35,17 +38,17 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private String oauthClientId;
     private String oauthSecret;
 
-	// sent by GH on the way back
-	private String code;
+    // sent by GH on the way back
+    private String code;
 
     private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
 
-    public AddGithubOrganization(ApplicationProperties applicationProperties,
-                                 EventPublisher eventPublisher,
-                                 OAuthStore oAuthStore,
-                                 OrganizationService organizationService)
+    public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
+            @ComponentImport EventPublisher eventPublisher,
+            OAuthStore oAuthStore,
+            OrganizationService organizationService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
@@ -110,7 +113,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         try
         {
             return doAddOrganization(getGithubOAuthUtils().requestAccessToken(code));
-        } catch (SourceControlException sce)
+        }
+        catch (SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
@@ -120,7 +124,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             addErrorMessage("Error obtain access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
@@ -143,7 +148,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
             organizationService.save(newOrganization);
 
-        } catch (SourceControlException e)
+        }
+        catch (SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
@@ -153,7 +159,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
         triggerAddSucceededEvent(EVENT_TYPE_GITHUB);
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
-                            getSourceAsUrlParam());
+                getSourceAsUrlParam());
     }
 
     public static String encode(String url)

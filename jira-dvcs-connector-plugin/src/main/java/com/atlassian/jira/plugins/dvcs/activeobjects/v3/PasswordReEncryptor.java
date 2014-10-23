@@ -1,8 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -10,18 +13,22 @@ import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * PasswordReEncryptor decrypts the password using old key (projectId + repositoryUrl) 
  * and reencrypts using new key (organisation name + host url) 
  */
+@Component
 class PasswordReEncryptor
 {
     private static final Logger log = LoggerFactory.getLogger(PasswordReEncryptor.class);
     private final ProjectManager projectManager;
 
-    public PasswordReEncryptor(ProjectManager projectManager)
+    @Autowired
+    public PasswordReEncryptor(@ComponentImport ProjectManager projectManager)
     {
-        this.projectManager = projectManager;
+        this.projectManager = checkNotNull(projectManager);
     }
 
     String reEncryptPassword(String password, String projectKey, String repositoryUrl, String organizationName, String hostUrl)

@@ -3,17 +3,18 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync;
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 /**
- * An implementation of {@link MessagePayloadSerializer} over
- * {@link OldBitbucketSynchronizeCsetMsg}.
+ * An implementation of {@link MessagePayloadSerializer} over {@link OldBitbucketSynchronizeCsetMsg}.
  *
  * @author Stanislav Dvorscak
- *
  */
-public class OldBitbucketSynchronizeCsetMsgSerializer extends AbstractMessagePayloadSerializer<OldBitbucketSynchronizeCsetMsg>
+@Component
+public class OldBitbucketSynchronizeCsetMsgSerializer
+        extends AbstractMessagePayloadSerializer<OldBitbucketSynchronizeCsetMsg>
 {
 
     @Override
