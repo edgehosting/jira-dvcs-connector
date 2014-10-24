@@ -33,6 +33,10 @@ public class QRepositoryToChangesetMapping extends RelationalPathBase<QRepositor
 
     public final NumberPath<Integer> ID = createNumber("ID", Integer.class);
 
+    public final NumberPath<Integer> CHANGESET_ID = createNumber("CHANGESET_ID", Integer.class);
+
+    public final NumberPath<Integer> REPOSITORY_ID = createNumber("REPOSITORY_ID", Integer.class);
+
     // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping getRepository()
 
 
@@ -51,6 +55,7 @@ public class QRepositoryToChangesetMapping extends RelationalPathBase<QRepositor
          */
 
         addMetadata(ID, ColumnMetadata.named("ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
-
+        addMetadata(CHANGESET_ID, ColumnMetadata.named("CHANGESET_ID").ofType(Types.INTEGER));
+        addMetadata(REPOSITORY_ID, ColumnMetadata.named("REPOSITORY_ID").ofType(Types.INTEGER));
     }
 }

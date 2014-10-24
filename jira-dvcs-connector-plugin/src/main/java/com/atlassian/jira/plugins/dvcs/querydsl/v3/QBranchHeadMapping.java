@@ -35,6 +35,8 @@ public class QBranchHeadMapping extends RelationalPathBase<QBranchHeadMapping>
 
     public final NumberPath<Integer> ID = createNumber("ID", Integer.class);
 
+    public final NumberPath<Integer> REPOSITORY_ID = createNumber("REPOSITORY_ID", Integer.class);
+
     // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping getRepository()
 
 
@@ -54,6 +56,6 @@ public class QBranchHeadMapping extends RelationalPathBase<QBranchHeadMapping>
         addMetadata(BRANCH_NAME, ColumnMetadata.named("BRANCH_NAME").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(HEAD, ColumnMetadata.named("HEAD").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(ID, ColumnMetadata.named("ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
-
+        addMetadata(REPOSITORY_ID, ColumnMetadata.named("REPOSITORY_ID").ofType(Types.INTEGER));
     }
 }
