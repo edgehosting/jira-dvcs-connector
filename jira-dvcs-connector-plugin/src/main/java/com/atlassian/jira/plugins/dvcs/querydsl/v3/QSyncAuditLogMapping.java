@@ -18,12 +18,12 @@ public class QSyncAuditLogMapping extends RelationalPathBase<QSyncAuditLogMappin
 
     private static final long serialVersionUID = 869337124L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_SYNCAUDITLOG";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_SYNC_AUDIT_LOG";
 
     public static final QSyncAuditLogMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QSyncAuditLogMapping("SYNCAUDITLOG", schema, AO_TABLE_NAME);
+        return new QSyncAuditLogMapping("SYNC_AUDIT_LOG", schema, AO_TABLE_NAME);
     }
 
     /**

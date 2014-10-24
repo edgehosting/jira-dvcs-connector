@@ -18,12 +18,12 @@ public class QOrganizationMapping extends RelationalPathBase<QOrganizationMappin
 
     private static final long serialVersionUID = -1614992075L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_ORGANIZATIONMAPPING";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_ORGANIZATION_MAPPING";
 
     public static final QOrganizationMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QOrganizationMapping("ORGANIZATIONMAPPING", schema, AO_TABLE_NAME);
+        return new QOrganizationMapping("ORGANIZATION_MAPPING", schema, AO_TABLE_NAME);
     }
 
     /**

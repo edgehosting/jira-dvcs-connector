@@ -18,12 +18,12 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
 
     private static final long serialVersionUID = 1380247266L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_CHANGESETMAPPING";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_CHANGESET_MAPPING";
 
     public static final QChangesetMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QChangesetMapping("CHANGESETMAPPING", schema, AO_TABLE_NAME);
+        return new QChangesetMapping("CHANGESET_MAPPING", schema, AO_TABLE_NAME);
     }
 
     /**

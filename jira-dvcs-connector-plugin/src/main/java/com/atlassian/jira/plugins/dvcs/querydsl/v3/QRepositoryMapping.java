@@ -18,12 +18,12 @@ public class QRepositoryMapping extends RelationalPathBase<QRepositoryMapping>
 
     private static final long serialVersionUID = 345376190L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_REPOSITORYMAPPING";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_REPOSITORY_MAPPING";
 
     public static final QRepositoryMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QRepositoryMapping("REPOSITORYMAPPING", schema, AO_TABLE_NAME);
+        return new QRepositoryMapping("REPOSITORY_MAPPING", schema, AO_TABLE_NAME);
     }
 
     /**

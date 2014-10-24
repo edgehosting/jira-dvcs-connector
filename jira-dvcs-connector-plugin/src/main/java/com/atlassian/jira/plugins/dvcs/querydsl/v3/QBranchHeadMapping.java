@@ -18,12 +18,12 @@ public class QBranchHeadMapping extends RelationalPathBase<QBranchHeadMapping>
 
     private static final long serialVersionUID = -392943770L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_BRANCHHEADMAPPING";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_BRANCH_HEAD_MAPPING";
 
     public static final QBranchHeadMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QBranchHeadMapping("BRANCHHEADMAPPING", schema, AO_TABLE_NAME);
+        return new QBranchHeadMapping("BRANCH_HEAD_MAPPING", schema, AO_TABLE_NAME);
     }
 
     /**

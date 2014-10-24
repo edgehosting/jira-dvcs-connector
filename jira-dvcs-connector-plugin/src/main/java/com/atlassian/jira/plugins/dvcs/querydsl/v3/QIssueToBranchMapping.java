@@ -18,12 +18,12 @@ public class QIssueToBranchMapping extends RelationalPathBase<QIssueToBranchMapp
 
     private static final long serialVersionUID = 130563614L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_ISSUETOBRANCH";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_ISSUE_TO_BRANCH";
 
     public static final QIssueToBranchMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QIssueToBranchMapping("ISSUETOBRANCH", schema, AO_TABLE_NAME);
+        return new QIssueToBranchMapping("ISSUE_TO_BRANCH", schema, AO_TABLE_NAME);
     }
 
     /**

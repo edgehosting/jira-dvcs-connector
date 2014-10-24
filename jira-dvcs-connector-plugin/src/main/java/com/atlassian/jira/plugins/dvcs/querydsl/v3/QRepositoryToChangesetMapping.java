@@ -17,12 +17,12 @@ public class QRepositoryToChangesetMapping extends RelationalPathBase<QRepositor
 
     private static final long serialVersionUID = 1711043431L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_REPOTOCHANGESET";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_REPO_TO_CHANGESET";
 
     public static final QRepositoryToChangesetMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QRepositoryToChangesetMapping("REPOTOCHANGESET", schema, AO_TABLE_NAME);
+        return new QRepositoryToChangesetMapping("REPO_TO_CHANGESET", schema, AO_TABLE_NAME);
     }
 
     /**

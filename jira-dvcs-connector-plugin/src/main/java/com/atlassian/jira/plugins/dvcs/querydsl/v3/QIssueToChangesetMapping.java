@@ -18,12 +18,12 @@ public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChanges
 
     private static final long serialVersionUID = 1225462570L;
 
-    public static final String AO_TABLE_NAME = "AO_E8B6CC_ISSUETOCHANGESET";
+    public static final String AO_TABLE_NAME = "AO_E8B6CC_ISSUE_TO_CHANGESET";
 
     public static final QIssueToChangesetMapping withSchema(SchemaProvider schemaProvider)
     {
         String schema = schemaProvider.getSchema(AO_TABLE_NAME);
-        return new QIssueToChangesetMapping("ISSUETOCHANGESET", schema, AO_TABLE_NAME);
+        return new QIssueToChangesetMapping("ISSUE_TO_CHANGESET", schema, AO_TABLE_NAME);
     }
 
     /**
