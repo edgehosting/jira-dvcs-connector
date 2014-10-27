@@ -34,6 +34,9 @@ public class BitbucketCreateBranchPage implements Page
 
     @WaitUntil
     public void waitUntilVisible() {
+        waitUntilTrue(repositorySelect.timed().isVisible());
+        waitUntilTrue(branchSelect.timed().isVisible());
+        waitUntilTrue(branchNameField.timed().isVisible());
         waitUntilTrue(createBranchButton.timed().isVisible());
     }
 
