@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.pageobjects.Page;
+import com.atlassian.pageobjects.binder.WaitUntil;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.Options;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -10,6 +11,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import java.util.concurrent.TimeUnit;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static org.hamcrest.core.Is.is;
 
 /**
@@ -30,6 +32,14 @@ public class BitbucketCreateBranchPage implements Page
     {
     }
 
+    @WaitUntil
+    public void waitUntilVisible() {
+        waitUntilTrue(repositorySelect.timed().isVisible());
+        waitUntilTrue(branchSelect.timed().isVisible());
+        waitUntilTrue(branchNameField.timed().isVisible());
+        waitUntilTrue(createBranchButton.timed().isVisible());
+    }
+
     public String getUrl()
     {
         return "https://bitbucket.org/branch/create";
@@ -38,10 +48,10 @@ public class BitbucketCreateBranchPage implements Page
     public void createBranch(String repository, String baseBranch, String branchName)
     {
         repositorySelect.select(Options.value(repository));
-        Poller.waitUntilTrue(branchSelect.timed().isEnabled());
+        waitUntilTrue(branchSelect.timed().isEnabled());
         branchSelect.select(Options.value(baseBranch));
         this.branchNameField.clear().type(branchName);
-        Poller.waitUntilTrue(createBranchButton.timed().isEnabled());
+        waitUntilTrue(createBranchButton.timed().isEnabled());
         createBranchButton.click();
         Poller.waitUntil(createBranchButton.timed().isPresent(), is(false), by(15, TimeUnit.SECONDS));
     }
