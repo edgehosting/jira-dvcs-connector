@@ -136,6 +136,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
     private void reloadInternal()
     {
+        log.info("Reloading integrated account");
         //
         AccountsConfig configuration = configProvider.provideConfiguration();
         Organization existingAccount = organizationService.findIntegratedAccount();
