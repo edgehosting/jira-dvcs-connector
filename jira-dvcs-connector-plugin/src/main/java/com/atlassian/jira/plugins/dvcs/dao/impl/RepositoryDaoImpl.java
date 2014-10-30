@@ -8,12 +8,15 @@ import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class RepositoryDaoImpl implements RepositoryDao
 {
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
@@ -35,9 +41,10 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Resource
     private Synchronizer synchronizer;
 
-    public RepositoryDaoImpl(ActiveObjects activeObjects)
+    @Autowired
+    public RepositoryDaoImpl(@ComponentImport ActiveObjects activeObjects)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
     }
 
     protected Repository transform(RepositoryMapping repositoryMapping)

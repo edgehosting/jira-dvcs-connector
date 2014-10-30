@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +14,8 @@ import java.util.regex.Pattern;
  * Originally from com.atlassian.jirafisheyeplugin.notifications.CommitCommentParser
  * @author jhinch
  */
+@ExportAsService (CommitMessageParser.class)
+@Component
 public class DefaultCommitMessageParser implements CommitMessageParser {
 
     public static final Pattern JIRA_ISSUE_PATTERN = Pattern.compile("(?<![&=\\?>^!~/\\-])\\b(\\p{Lu}[\\p{Lu}\\p{Digit}]+-\\p{Digit}+)\\b");

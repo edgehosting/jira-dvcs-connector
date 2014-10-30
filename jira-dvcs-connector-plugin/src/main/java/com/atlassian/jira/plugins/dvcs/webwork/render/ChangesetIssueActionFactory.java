@@ -9,12 +9,18 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.VelocityUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueLinker;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.templaterenderer.TemplateRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class ChangesetIssueActionFactory implements IssueActionFactory
 {
     private final RepositoryService repositoryService;
@@ -23,15 +29,16 @@ public class ChangesetIssueActionFactory implements IssueActionFactory
     private final ChangesetService changesetService;
     private final TemplateRenderer templateRenderer;
 
+    @Autowired
     public ChangesetIssueActionFactory(RepositoryService repositoryService, IssueLinker issueLinker,
-            ApplicationProperties applicationProperties, ChangesetService changesetService,
-            TemplateRenderer templateRenderer)
+            @ComponentImport ApplicationProperties applicationProperties, ChangesetService changesetService,
+            @ComponentImport TemplateRenderer templateRenderer)
     {
         this.repositoryService = repositoryService;
         this.issueLinker = issueLinker;
-        this.applicationProperties = applicationProperties;
+        this.applicationProperties = checkNotNull(applicationProperties);
         this.changesetService = changesetService;
-        this.templateRenderer = templateRenderer;
+        this.templateRenderer = checkNotNull(templateRenderer);
     }
 
     @Override

@@ -13,25 +13,32 @@ import com.atlassian.jira.plugins.dvcs.model.FileData;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
     private final ActiveObjects activeObjects;
     private final ChangesetDao changesetDao;
 
-    public ChangesetTransformer(final ActiveObjects activeObjects, final ChangesetDao changesetDao)
+    @Autowired
+    public ChangesetTransformer(@ComponentImport final ActiveObjects activeObjects, final ChangesetDao changesetDao)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.changesetDao = changesetDao;
     }
 
@@ -43,10 +50,8 @@ public class ChangesetTransformer
             return null;
         }
 
-//        log.debug("Changeset transformation: [{}] ", changesetMapping);
-
         final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
-        
+
         List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
 
@@ -63,7 +68,7 @@ public class ChangesetTransformer
 
                 if (!dvcsType.equals(organizationMapping.getDvcsType()))
                 {
-                   continue;
+                    continue;
                 }
             }
 
@@ -90,7 +95,7 @@ public class ChangesetTransformer
         {
             changeset.setRepositoryId(firstRepository);
         }
-        return CollectionUtils.isEmpty(changeset.getRepositoryIds())? null : changeset;
+        return CollectionUtils.isEmpty(changeset.getRepositoryIds()) ? null : changeset;
     }
 
     public Changeset transform(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
@@ -167,7 +172,7 @@ public class ChangesetTransformer
                 additions = ((ChangesetFileDetail) file).getAdditions();
                 deletions = ((ChangesetFileDetail) file).getDeletions();
             }
-            changesetFileDetails.add(new ChangesetFileDetail(file.getFileAction(), file.getFile(), additions , deletions));
+            changesetFileDetails.add(new ChangesetFileDetail(file.getFileAction(), file.getFile(), additions, deletions));
         }
         return changesetFileDetails;
     }
@@ -178,7 +183,7 @@ public class ChangesetTransformer
         {
             return null;
         }
-        
+
         List<String> parents = new ArrayList<String>();
 
         if (StringUtils.isBlank(parentsData))
@@ -193,7 +198,8 @@ public class ChangesetTransformer
             {
                 parents.add(parentsJson.getString(i));
             }
-        } catch (JSONException e)
+        }
+        catch (JSONException e)
         {
             log.error("Failed parsing parents from ParentsJson data.");
         }

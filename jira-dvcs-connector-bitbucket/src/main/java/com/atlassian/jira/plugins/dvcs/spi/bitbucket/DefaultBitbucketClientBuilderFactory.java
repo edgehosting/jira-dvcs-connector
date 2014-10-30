@@ -12,15 +12,21 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scrib
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.scribe.TwoLeggedOauthProvider;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuilderFactory
 {
 
     private final Encryptor encryptor;
     private final HttpClientProvider httpClientProvider;
 
-    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, PluginAccessor pluginAccessor, HttpClientProvider httpClientProvider)
+    @Autowired
+    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor,
+            @ComponentImport PluginAccessor pluginAccessor, HttpClientProvider httpClientProvider)
     {
         this(encryptor, DvcsConstants.getUserAgent(pluginAccessor), httpClientProvider);
     }
@@ -62,7 +68,7 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
 
     private AuthProvider createProvider(String hostUrl, String name, Credential credential)
     {
-        String username =  credential.getAdminUsername();
+        String username = credential.getAdminUsername();
         String password = credential.getAdminPassword();
         String key = credential.getOauthKey();
         String secret = credential.getOauthSecret();
@@ -85,8 +91,9 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
         else if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
         {
             String decryptedPassword = encryptor.decrypt(password, name, hostUrl);
-            oAuthProvider =  new BasicAuthAuthProvider(hostUrl, username,decryptedPassword, httpClientProvider);
-        } else
+            oAuthProvider = new BasicAuthAuthProvider(hostUrl, username, decryptedPassword, httpClientProvider);
+        }
+        else
         {
             oAuthProvider = new NoAuthAuthProvider(hostUrl, httpClientProvider);
         }

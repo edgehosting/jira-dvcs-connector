@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
@@ -24,6 +25,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,35 +35,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * The Class OrganizationDaoImpl.
- *
- */
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class OrganizationDaoImpl implements OrganizationDao
 {
     public static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
 
-    /** The active objects. */
     private final ActiveObjects activeObjects;
 
-    /** The encryptor. */
     private final Encryptor encryptor;
 
     private final PluginSettingsFactory pluginSettingsFactory;
 
-    /**
-     * The Constructor.
-     *
-     * @param activeObjects
-     *            the active objects
-     * @param encryptor
-     *            the encryptor
-     */
-    public OrganizationDaoImpl(ActiveObjects activeObjects, Encryptor encryptor, PluginSettingsFactory pluginSettingsFactory)
+    @Autowired
+    public OrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects, Encryptor encryptor,
+            @ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.encryptor = encryptor;
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
 
     /**

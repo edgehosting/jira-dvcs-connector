@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityStreamCallback;
@@ -16,6 +17,7 @@ import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_DATE;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.EVENT_JSON;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.REPO_ID;
 import static com.atlassian.jira.plugins.dvcs.event.SyncEventMapping.SCHEDULED_SYNC;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * DAO for SyncEventMapping instances.
@@ -27,9 +29,9 @@ public class SyncEventDao
     private final EntityBeanGenerator beanGenerator;
 
     @Autowired
-    public SyncEventDao(ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
+    public SyncEventDao(@ComponentImport ActiveObjects activeObjects, EntityBeanGenerator beanGenerator)
     {
-        this.activeObjects = activeObjects;
+        this.activeObjects = checkNotNull(activeObjects);
         this.beanGenerator = beanGenerator;
     }
 

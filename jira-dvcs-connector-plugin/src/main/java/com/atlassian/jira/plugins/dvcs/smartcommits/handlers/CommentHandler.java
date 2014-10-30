@@ -8,20 +8,30 @@ import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
-public class CommentHandler implements CommandHandler<Comment> {
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@ExportAsService (CommandHandler.class)
+@Component ("smartcommitsCommentHandler")
+public class CommentHandler implements CommandHandler<Comment>
+{
 
     private static CommandType CMD_TYPE = CommandType.COMMENT;
 
     private final CommentService commentService;
 
-    public CommentHandler(CommentService commentService) {
-        this.commentService = commentService;
+    @Autowired
+    public CommentHandler(@ComponentImport CommentService commentService)
+    {
+        this.commentService = checkNotNull(commentService);
     }
-
 
     @Override
 	public CommandType getCommandType() {

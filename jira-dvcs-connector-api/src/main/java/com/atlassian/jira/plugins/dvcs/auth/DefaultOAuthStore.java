@@ -1,13 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.auth;
 
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DefaultOAuthStore implements OAuthStore
 {
     private final PluginSettingsFactory pluginSettingsFactory;
 
-    public DefaultOAuthStore(PluginSettingsFactory pluginSettingsFactory)
+    @Autowired
+    public DefaultOAuthStore(@ComponentImport PluginSettingsFactory pluginSettingsFactory)
     {
         this.pluginSettingsFactory = pluginSettingsFactory;
     }

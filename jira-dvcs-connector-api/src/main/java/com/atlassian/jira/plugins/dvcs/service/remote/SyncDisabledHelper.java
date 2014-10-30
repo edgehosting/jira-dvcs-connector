@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -22,6 +23,7 @@ public class SyncDisabledHelper
     private final String COMMITS_FALLBACK_FEATURE = "dvcs.connector.pr-synchronization.commits.fallback";
 
     @Resource
+    @ComponentImport
     private FeatureManager featureManager;
 
     public boolean isBitbucketSyncDisabled()

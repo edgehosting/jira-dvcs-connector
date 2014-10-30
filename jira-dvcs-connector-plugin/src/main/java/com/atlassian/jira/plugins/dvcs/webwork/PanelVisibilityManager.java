@@ -6,7 +6,13 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class PanelVisibilityManager
 {
     private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
@@ -16,11 +22,14 @@ public class PanelVisibilityManager
     private final PluginAccessor pluginAccessor;
     private final FeatureManager featureManager;
 
-    public PanelVisibilityManager(PermissionManager permissionManager, PluginAccessor pluginAccessor, FeatureManager featureManager)
+    @Autowired
+    public PanelVisibilityManager(@ComponentImport PermissionManager permissionManager,
+            @ComponentImport PluginAccessor pluginAccessor,
+            @ComponentImport FeatureManager featureManager)
     {
-        this.permissionManager = permissionManager;
-        this.pluginAccessor = pluginAccessor;
-        this.featureManager = featureManager;
+        this.permissionManager = checkNotNull(permissionManager);
+        this.pluginAccessor = checkNotNull(pluginAccessor);
+        this.featureManager = checkNotNull(featureManager);
     }
 
     public boolean showPanel(Issue issue, User user)

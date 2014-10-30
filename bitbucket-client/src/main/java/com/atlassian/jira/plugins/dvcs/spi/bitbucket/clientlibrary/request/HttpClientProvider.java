@@ -14,6 +14,7 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.net.ProxySelector;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ import javax.annotation.PreDestroy;
  * Provides shared HttpClient instance
  *
  */
+@Component
 public class HttpClientProvider
 {
     private final Logger log = LoggerFactory.getLogger(HttpClientProvider.class);

@@ -6,16 +6,18 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.EventPayload;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Aggregator over all {@link GitHubEventProcessor}s.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorAggregator<EventPayload>
 {
     /**
@@ -23,12 +25,7 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
      */
     private final Map<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>> eventProcessorsMapping = new ConcurrentHashMap<Class<? extends EventPayload>, GitHubEventProcessor<? extends EventPayload>>();
 
-    /**
-     * Constructor.
-     * 
-     * @param eventProcessors
-     *            available event processor
-     */
+    @Autowired
     public GitHubEventProcessorAggregatorImpl(GitHubEventProcessor<? extends EventPayload>... eventProcessors)
     {
         for (GitHubEventProcessor<? extends EventPayload> eventProcessor : eventProcessors)
@@ -39,11 +36,8 @@ public class GitHubEventProcessorAggregatorImpl implements GitHubEventProcessorA
 
     /**
      * Resolves the most concrete {@link Event} processor for the provider type of the {@link EventPayload} type.
-     * 
-     * @param eventPayloadType
-     * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     private <T_EventPayload extends EventPayload> GitHubEventProcessor<T_EventPayload> resolveEventProcessor(
             Class<? extends T_EventPayload> eventPayloadType)
     {

@@ -6,18 +6,24 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncEndAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class SyncAuditLogDaoImpl implements SyncAuditLogDao
 {
     private static final int BIG_DATA_PAGESIZE = 200;
@@ -28,11 +34,12 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     private static final Logger log = LoggerFactory.getLogger(SyncAuditLogDaoImpl.class);
     private EventPublisher eventPublisher;
 
-    public SyncAuditLogDaoImpl(ActiveObjects ao, EventPublisher publisher)
+    @Autowired
+    public SyncAuditLogDaoImpl(@ComponentImport ActiveObjects ao, @ComponentImport EventPublisher publisher)
     {
         super();
-        this.ao = ao;
-        this.eventPublisher = publisher;
+        this.ao = checkNotNull(ao);
+        this.eventPublisher = checkNotNull(publisher);
     }
 
     @Override

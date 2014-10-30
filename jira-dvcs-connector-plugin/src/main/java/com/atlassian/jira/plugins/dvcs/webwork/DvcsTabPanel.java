@@ -9,6 +9,8 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
@@ -19,6 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+@Scanned
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
 
@@ -26,7 +29,6 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
      * Represents advertisement content of commit tab panel shown when no repository is linked.
      *
      * @author Stanislav Dvorscak
-     *
      */
     private final class AdvertisementAction implements IssueAction
     {
@@ -58,8 +60,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
             try
             {
                 return soyTemplateRenderer.render(DvcsConstants.SOY_TEMPLATE_PLUGIN_KEY, "dvcs.connector.plugin.soy.advertisement",
-                        Collections.<String, Object> emptyMap());
-            } catch (SoyException e)
+                        Collections.<String, Object>emptyMap());
+            }
+            catch (SoyException e)
             {
                 logger.error("Unable to do appropriate rendering!", e);
                 return "";
@@ -67,6 +70,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         }
 
     }
+
     private final Logger logger = LoggerFactory.getLogger(DvcsTabPanel.class);
 
     private final PanelVisibilityManager panelVisibilityManager;
@@ -81,8 +85,9 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
     private final EventPublisher eventPublisher;
 
     public DvcsTabPanel(PanelVisibilityManager panelVisibilityManager,
-            SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
-            WebResourceManager webResourceManager, ChangesetRenderer renderer, EventPublisher eventPublisher)
+            @ComponentImport SoyTemplateRendererProvider soyTemplateRendererProvider, RepositoryService repositoryService,
+            @ComponentImport WebResourceManager webResourceManager,
+            ChangesetRenderer renderer, @ComponentImport EventPublisher eventPublisher)
     {
         this.panelVisibilityManager = panelVisibilityManager;
         this.renderer = renderer;
@@ -99,7 +104,7 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         if (!repositoryService.existsLinkedRepositories())
         {
             eventPublisher.publish(new DvcsCommitsAnalyticsEvent("issue", "tabshowing", false));
-            return Collections.<IssueAction> singletonList(new AdvertisementAction());
+            return Collections.<IssueAction>singletonList(new AdvertisementAction());
         }
 
         List<IssueAction> actions = renderer.getAsActions(issue);

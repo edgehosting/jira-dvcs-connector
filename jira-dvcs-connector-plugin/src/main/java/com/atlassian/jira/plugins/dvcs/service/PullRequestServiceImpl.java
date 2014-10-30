@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import static com.atlassian.jira.plugins.dvcs.model.PullRequestStatus.OPEN;
  *
  * @since v1.4.4
  */
+@Component
 public class PullRequestServiceImpl implements PullRequestService
 {
     @Resource

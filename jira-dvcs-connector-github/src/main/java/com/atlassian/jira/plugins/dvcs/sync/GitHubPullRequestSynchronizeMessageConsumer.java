@@ -12,16 +12,17 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import javax.annotation.Resource;
 
 /**
  * Message consumer {@link GitHubPullRequestSynchronizeMessage}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsumer<GitHubPullRequestSynchronizeMessage>
 {
 
@@ -49,7 +50,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider} dependency.
      */
-    @Resource(name = "githubClientProvider")
+    @Resource (name = "githubClientProvider")
     private GithubClientProvider gitHubClientProvider;
 
     /**
@@ -83,10 +84,8 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     /**
      * Loads remote {@link PullRequest}.
      *
-     * @param repository
-     *            owner of pull request
-     * @param number
-     *            number of pull request
+     * @param repository owner of pull request
+     * @param number number of pull request
      * @return remote pull request
      */
     private PullRequest getRemotePullRequest(Repository repository, int number)

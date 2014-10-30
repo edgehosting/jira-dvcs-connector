@@ -266,9 +266,54 @@
             <groupId>com.atlassian.scheduler</groupId>
             <artifactId>atlassian-scheduler-compat</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.annotations</groupId>
+            <artifactId>atlassian-annotations</artifactId>
+            <version>0.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>atlassian-spring-scanner</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scannedDependencies>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-bitbucket</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-github</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+                        </dependency>
+                    </scannedDependencies>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
@@ -327,7 +372,10 @@
                             </excludes>
                         </testGroup>
                     </testGroups>
+                    <extractDependencies>false</extractDependencies>
                     <instructions>
+                        <Atlassian-Plugin-Key>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</Atlassian-Plugin-Key>
+                        <Spring-Context>*</Spring-Context>
                         <!--
                             Set the default version range on an import to open ended current version up. Without this, the default
                             is only to the next major version, which is too aggressive for platform modules.
@@ -349,6 +397,9 @@
                             com.atlassian.jira.plugins.dvcs.ondemand
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.jira.plugin.webfragment.conditions,
+                            org.springframework.osgi.*;resolution:="optional",
+                            org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
@@ -365,6 +416,7 @@
                             *
                         </Import-Package>
                     </instructions>
+                    <skipManifestValidation>true</skipManifestValidation>
                 </configuration>
             </plugin>
             <plugin>

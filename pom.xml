@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,8 +45,8 @@
         <connection>scm:git:ssh://git@bitbucket.org/atlassian/jira-dvcs-connector.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/jira-dvcs-connector.git</developerConnection>
         <url>https://bitbucket.org/atlassian/jira-dvcs-connector</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <name>JIRA DVCS Connector Parent POM</name>
     <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
@@ -73,6 +74,7 @@
         <!-- DOG and PRD are still running jdk6
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
+        <atlassian.spring.scanner.version>1.2.5</atlassian.spring.scanner.version>
         <amps.version>5.0.3</amps.version>
 
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
@@ -117,34 +119,34 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
-                   <execution>
-                      <id>copy-license</id>
-                      <phase>process-sources</phase>
-                      <goals>
-                          <goal>copy-resources</goal>
-                      </goals>
-                      <configuration>
-                          <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
-                          <overwrite>true</overwrite>
-                          <resources>
-                            <resource>
+                    <execution>
+                        <id>copy-license</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
                                     <directory>${user.dir}</directory>
                                     <includes>
-                                            <include>LICENSE.txt</include>
-                                            <include>NOTICE.txt</include>
-                                            <include>license.txt</include>
-                                            <include>notice.txt</include>
+                                        <include>LICENSE.txt</include>
+                                        <include>NOTICE.txt</include>
+                                        <include>license.txt</include>
+                                        <include>notice.txt</include>
                                     </includes>
                                     <filtering>true</filtering>
-                            </resource>
-                        </resources>
-                     </configuration>
-                   </execution>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -208,7 +210,7 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-            <groupId>com.atlassian.activeobjects</groupId>
+                <groupId>com.atlassian.activeobjects</groupId>
                 <artifactId>activeobjects-plugin</artifactId>
                 <version>${ao.version}</version>
                 <scope>provided</scope>
@@ -276,6 +278,21 @@
                 <artifactId>spring-beans</artifactId>
                 <version>2.5.6.SEC01</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>2.5.6.SEC01</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-annotation</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-runtime</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

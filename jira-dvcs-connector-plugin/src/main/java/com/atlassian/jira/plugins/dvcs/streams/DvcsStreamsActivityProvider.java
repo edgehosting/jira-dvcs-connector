@@ -15,6 +15,8 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.streams.api.ActivityObjectTypes;
@@ -57,6 +59,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Scanned
 public class DvcsStreamsActivityProvider implements StreamsActivityProvider
 {
     private static final Logger log = LoggerFactory.getLogger(DvcsStreamsActivityProvider.class);
@@ -73,19 +78,23 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
     private final RepositoryService repositoryService;
     private final IssueAndProjectKeyManager issueAndProjectKeyManager;
 
-    public DvcsStreamsActivityProvider(I18nResolver i18nResolver, ApplicationProperties applicationProperties,
-                                       UserProfileAccessor userProfileAccessor, IssueLinker issueLinker,
-                                       TemplateRenderer templateRenderer, PermissionManager permissionManager,
-                                       JiraAuthenticationContext jiraAuthenticationContext,
-                                       ProjectManager projectManager, ChangesetService changesetService,
-                                       RepositoryService repositoryService,
-                                       IssueAndProjectKeyManager issueAndProjectKeyManager)
+    public DvcsStreamsActivityProvider(@ComponentImport I18nResolver i18nResolver,
+            @ComponentImport ApplicationProperties applicationProperties,
+            @ComponentImport UserProfileAccessor userProfileAccessor,
+            IssueLinker issueLinker,
+            @ComponentImport TemplateRenderer templateRenderer,
+            @ComponentImport PermissionManager permissionManager,
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
+            @ComponentImport ProjectManager projectManager,
+            ChangesetService changesetService,
+            RepositoryService repositoryService,
+            IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
         this.applicationProperties = applicationProperties;
         this.i18nResolver = i18nResolver;
         this.userProfileAccessor = userProfileAccessor;
         this.issueLinker = issueLinker;
-        this.templateRenderer = templateRenderer;
+        this.templateRenderer = checkNotNull(templateRenderer);
         this.permissionManager = permissionManager;
         this.jiraAuthenticationContext = jiraAuthenticationContext;
         this.projectManager = projectManager;

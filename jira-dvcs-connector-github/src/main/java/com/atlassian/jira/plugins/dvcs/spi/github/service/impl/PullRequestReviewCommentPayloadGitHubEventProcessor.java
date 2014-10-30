@@ -11,17 +11,19 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.PullRequestReviewCommentPayload;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import javax.annotation.Resource;
 
 /**
  * The {@link PullRequestReviewCommentPayload} implementation of the {@link GitHubEventProcessor}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
-public class PullRequestReviewCommentPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<PullRequestReviewCommentPayload>
+@Component
+public class PullRequestReviewCommentPayloadGitHubEventProcessor
+        extends AbstractGitHubEventProcessor<PullRequestReviewCommentPayload>
 {
 
     /**
@@ -48,12 +50,11 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
     }
 
     /**
-     * Resolves {@link PullRequest} for the provided comment, currently it is only workaround, because information is not available.
-     * 
-     * @param domain
-     *            repository
-     * @param commitComment
-     *            for which comment
+     * Resolves {@link PullRequest} for the provided comment, currently it is only workaround, because information is
+     * not available.
+     *
+     * @param domain repository
+     * @param commitComment for which comment
      * @return resolved {@link PullRequest}
      */
     private PullRequest getPullRequestByComment(Repository domain, CommitComment commitComment)
@@ -89,7 +90,8 @@ public class PullRequestReviewCommentPayloadGitHubEventProcessor extends Abstrac
 
             return null;
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

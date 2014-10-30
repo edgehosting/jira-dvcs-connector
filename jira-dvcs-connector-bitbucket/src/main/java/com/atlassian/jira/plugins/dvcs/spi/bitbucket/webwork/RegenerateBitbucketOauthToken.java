@@ -10,6 +10,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.RegenerateOauthTokenAction;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.builder.ServiceBuilder;
@@ -21,15 +23,16 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Scanned
 public class RegenerateBitbucketOauthToken extends RegenerateOauthTokenAction
 {
     private final Logger log = LoggerFactory.getLogger(RegenerateBitbucketOauthToken.class);
     private final ApplicationProperties ap;
     private final HttpClientProvider httpClientProvider;
 
-    public RegenerateBitbucketOauthToken(EventPublisher eventPublisher,
+    public RegenerateBitbucketOauthToken(@ComponentImport EventPublisher eventPublisher,
             OrganizationService organizationService, RepositoryService repositoryService,
-            ApplicationProperties ap, HttpClientProvider httpClientProvider)
+            @ComponentImport ApplicationProperties ap, HttpClientProvider httpClientProvider)
     {
         super(eventPublisher, organizationService, repositoryService);
         this.ap = ap;
