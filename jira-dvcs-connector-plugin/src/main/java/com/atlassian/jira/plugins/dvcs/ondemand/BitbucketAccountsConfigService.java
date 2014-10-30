@@ -186,10 +186,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             log.info("Creating new integrated account.");
             final Organization newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
+            log.info("Created new integrated account.");
         } else
         {
             log.info("Found the same user-added account.");
             markAsIntegratedAccount(userAddedAccount, info);
+            log.info("Marked the user-added account as integrated account");
         }
     }
 
