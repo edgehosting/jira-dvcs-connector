@@ -372,7 +372,7 @@
                             </excludes>
                         </testGroup>
                     </testGroups>
-                    <extractDependencies>false</extractDependencies>
+                    <extractDependencies>true</extractDependencies>
                     <instructions>
                         <Atlassian-Plugin-Key>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</Atlassian-Plugin-Key>
                         <Spring-Context>*</Spring-Context>
