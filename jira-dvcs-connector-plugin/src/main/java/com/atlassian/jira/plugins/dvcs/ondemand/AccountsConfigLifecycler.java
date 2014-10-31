@@ -1,8 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
 import com.atlassian.jira.plugins.dvcs.scheduler.SchedulerLauncher;
-import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
-import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
