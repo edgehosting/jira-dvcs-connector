@@ -58,7 +58,7 @@
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
 
-        <ao.version>0.23.7</ao.version>
+        <ao.version>0.28.9</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
         <greenhopper.version>6.6.0-D20140904T040435</greenhopper.version>
