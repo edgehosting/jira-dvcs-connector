@@ -66,6 +66,12 @@ public class SchedulerLauncherTest
 
         // Check
         verify(mockJob, never()).run();
+
+        // now try to trigger all events
+        triggerAllEvents();
+
+        // Check
+        verify(mockJob).run();
     }
 
     @Test

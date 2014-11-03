@@ -146,7 +146,10 @@ public class SchedulerLauncher implements LifecycleAware
      * <p>
      * When something related to the plugin initialization happens, we call this with
      * the corresponding type of the event.  We will return {@code true}, when the very last type
-     * of event is triggered.  This method is {@code synchronized} because {@code EnumSet} is not
+     * of event is triggered.
+     * </p>
+     * <p>
+     * The invocation of this method is {@code synchronized} (by the caller) because {@code EnumSet} is not
      * thread-safe and because we have multiple accesses to {@code lifecycleEvents} that need to happen
      * atomically for correct behaviour.
      * </p>
@@ -154,7 +157,7 @@ public class SchedulerLauncher implements LifecycleAware
      * @param event the lifecycle event that occurred
      * @return {@code true} if this completes the set of initialization-related events; {@code false} otherwise
      */
-    synchronized private boolean isLifecycleReady(final LifecycleEvent event)
+    private boolean isLifecycleReady(final LifecycleEvent event)
     {
         lifecycleEvents.add(event);
 
@@ -163,14 +166,16 @@ public class SchedulerLauncher implements LifecycleAware
 
     /**
      * We will return {@code true} at most once, when the very last type
-     * of event is triggered.  This method is {@code synchronized} because {@code EnumSet} is not
+     * of event is triggered.
+     * <p/>
+     * The invocation of this method is {@code synchronized} (by the callers) because {@code EnumSet} is not
      * thread-safe and because we have multiple accesses to {@code lifecycleEvents} that need to happen
      * atomically for correct behaviour.
-     * </p>
+     * <p/>
      *
      * @return {@code true} if the set of initialization-related events have all occurred; {@code false} otherwise
      */
-    synchronized private boolean isLifecycleReady()
+    private boolean isLifecycleReady()
     {
         return lifecycleEvents.size() == LifecycleEvent.values().length;
     }
