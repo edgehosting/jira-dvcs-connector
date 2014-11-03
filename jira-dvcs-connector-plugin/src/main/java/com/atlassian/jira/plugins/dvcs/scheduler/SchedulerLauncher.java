@@ -6,7 +6,6 @@ import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
-import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +80,14 @@ public class SchedulerLauncher implements LifecycleAware
         log.debug("SchedulerLauncher destroyed");
     }
 
-    public void runWhenReady(SchedulerLauncherJob job)
+    /**
+     * Schedule a job to be run after all events have been received.
+     * The job will be run immediately in the current thread, if all events have already been received.
+     * <p/>
+     * This is {@code synchronized} so that we could keep {@code jobs} in a consistent state
+     *  when this method and {@link #onLifecycleEvent(LifecycleEvent)} are accessed from multiple threads.
+     */
+    public synchronized void runWhenReady(SchedulerLauncherJob job)
     {
         if (isLifecycleReady())
         {
@@ -93,18 +99,18 @@ public class SchedulerLauncher implements LifecycleAware
         {
             // otherwise add the job to the list so that it could be run later when ready
             log.debug("not all events have been received, adding job to queue: {}", job);
-            synchronized (jobs)
-            {
-                jobs.add(job);
-            }
+            jobs.add(job);
         }
     }
 
     /**
      * The latch which ensures all of the plugin/application lifecycle progress is completed before we call
      * {@code launch()}.
+     * <p/>
+     * This is {@code synchronized} so that we could keep {@code jobs} in a consistent state
+     *  when this method and {@link #runWhenReady(SchedulerLauncherJob)} are accessed from multiple threads.
      */
-    private void onLifecycleEvent(final LifecycleEvent event)
+    private synchronized void onLifecycleEvent(final LifecycleEvent event)
     {
         log.debug("onLifecycleEvent: {}", event);
         if (isLifecycleReady(event))
@@ -113,21 +119,13 @@ public class SchedulerLauncher implements LifecycleAware
             // we don't need to listen to events anymore
             eventPublisher.unregister(this);
 
-            runAllJobs();
-        }
-    }
+            // now run all jobs
+            for (SchedulerLauncherJob job : jobs)
+            {
+                runSingleJob(job);
+            }
 
-    private void runAllJobs()
-    {
-        final List<SchedulerLauncherJob> copies;
-        synchronized (jobs)
-        {
-            copies = ImmutableList.copyOf(jobs);
-        }
-
-        for (SchedulerLauncherJob job : copies)
-        {
-            runSingleJob(job);
+            jobs.clear();
         }
     }
 
@@ -158,7 +156,9 @@ public class SchedulerLauncher implements LifecycleAware
      */
     synchronized private boolean isLifecycleReady(final LifecycleEvent event)
     {
-        return lifecycleEvents.add(event) && isLifecycleReady();
+        lifecycleEvents.add(event);
+
+        return isLifecycleReady();
     }
 
     /**

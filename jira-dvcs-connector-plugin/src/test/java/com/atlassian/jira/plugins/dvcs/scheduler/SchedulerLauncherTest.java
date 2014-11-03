@@ -19,9 +19,7 @@ public class SchedulerLauncherTest
 {
     private SchedulerLauncher schedulerLauncher;
 
-    @Mock
-    private EventPublisher mockEventPublisher;
-    @Mock private Plugin mockPlugin;
+    @Mock private EventPublisher mockEventPublisher;
     @Mock private PluginEnabledEvent mockPluginEnabledEvent;
     @Mock private SchedulerLauncherJob mockJob;
 
@@ -29,8 +27,9 @@ public class SchedulerLauncherTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(mockPluginEnabledEvent.getPlugin()).thenReturn(mockPlugin);
-        when(mockPlugin.getKey()).thenReturn(PLUGIN_KEY);
+
+        mockPluginEnabledEventWithPluginKey(mockPluginEnabledEvent, PLUGIN_KEY);
+
         schedulerLauncher = new SchedulerLauncher(mockEventPublisher);
     }
 
@@ -51,6 +50,19 @@ public class SchedulerLauncherTest
         // Invoke
         schedulerLauncher.runWhenReady(mockJob);
         schedulerLauncher.onPluginEnabled(mockPluginEnabledEvent);
+
+        // Check
+        verify(mockJob, never()).run();
+    }
+
+    @Test
+    public void pluginEnabledEventWithNonMatchingPluginKeyShouldNotTriggerJob() throws Exception
+    {
+        // Invoke
+        schedulerLauncher.runWhenReady(mockJob);
+        PluginEnabledEvent eventWithDifferentPluginKey = mock(PluginEnabledEvent.class);
+        mockPluginEnabledEventWithPluginKey(eventWithDifferentPluginKey, "some-other-key");
+        schedulerLauncher.onPluginEnabled(eventWithDifferentPluginKey);
 
         // Check
         verify(mockJob, never()).run();
@@ -112,6 +124,20 @@ public class SchedulerLauncherTest
         // Check
         verify(mockJob).run();
         verify(mockJob2).run();
+    }
+
+    private Plugin mockPluginWithKey(final String pluginKey)
+    {
+        Plugin mockPlugin = mock(Plugin.class);
+        when(mockPlugin.getKey()).thenReturn(pluginKey);
+
+        return mockPlugin;
+    }
+
+    private void mockPluginEnabledEventWithPluginKey(final PluginEnabledEvent mockPluginEnabledEvent, final String pluginKey)
+    {
+        Plugin mockPlugin = mockPluginWithKey(pluginKey);
+        when(mockPluginEnabledEvent.getPlugin()).thenReturn(mockPlugin);
     }
 
     private void triggerAllEvents()
