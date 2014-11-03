@@ -60,6 +60,8 @@ public class SchedulerLauncherTest
     {
         // Invoke
         schedulerLauncher.runWhenReady(mockJob);
+        schedulerLauncher.onStart();
+
         PluginEnabledEvent eventWithDifferentPluginKey = mock(PluginEnabledEvent.class);
         mockPluginEnabledEventWithPluginKey(eventWithDifferentPluginKey, "some-other-key");
         schedulerLauncher.onPluginEnabled(eventWithDifferentPluginKey);
@@ -67,7 +69,9 @@ public class SchedulerLauncherTest
         // Check
         verify(mockJob, never()).run();
 
-        // now try to trigger all events
+        // This should be the last event required. If this doesn't cause mockJob to run, this test is broken,
+        // because it's not running above on account of a different missing event.
+        schedulerLauncher.onPluginEnabled(mockPluginEnabledEvent);
         triggerAllEvents();
 
         // Check
