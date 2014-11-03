@@ -72,7 +72,6 @@ public class SchedulerLauncherTest
         // This should be the last event required. If this doesn't cause mockJob to run, this test is broken,
         // because it's not running above on account of a different missing event.
         schedulerLauncher.onPluginEnabled(mockPluginEnabledEvent);
-        triggerAllEvents();
 
         // Check
         verify(mockJob).run();
