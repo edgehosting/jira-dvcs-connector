@@ -318,7 +318,20 @@ public class GitDvcs implements Dvcs
     @Override
     public void deleteAllRepositories()
     {
-        throw new UnsupportedOperationException("Not implemented");
+        for (Git git : uriToLocalRepository.values())
+        {
+            final Repository repository = git.getRepository();
+            repository.close();
+            try
+            {
+                FileUtils.deleteDirectory(repository.getDirectory());
+
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private String getUriKey(String owner, String slug)

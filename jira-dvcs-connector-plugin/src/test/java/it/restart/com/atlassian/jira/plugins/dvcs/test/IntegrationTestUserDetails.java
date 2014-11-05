@@ -6,4 +6,6 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 public final class IntegrationTestUserDetails
 {
     public static final String ACCOUNT_NAME = "jirabitbucketconnector";
+
+    public static final String PASSWORD = System.getProperty("jirabitbucketconnector.password");
 }
