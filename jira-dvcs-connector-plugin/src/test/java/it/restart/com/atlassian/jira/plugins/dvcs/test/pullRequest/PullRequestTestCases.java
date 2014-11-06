@@ -23,6 +23,9 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
+
 /**
  * Base class that contains the test cases for the PullRequest scenarios.
  * <p/>
@@ -43,19 +46,9 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com"; // fake email
 
     /**
-     * Repository owner.
-     */
-    protected static final String ACCOUNT_NAME = "jirabitbucketconnector";
-
-    /**
      * Fork repository owner.
      */
     protected static final String FORK_ACCOUNT_NAME = "dvcsconnectortest";
-
-    /**
-     * Appropriate {@link #ACCOUNT_NAME} password.
-     */
-    protected static final String PASSWORD = System.getProperty("jirabitbucketconnector.password");
 
     /**
      * Appropriate {@link #FORK_ACCOUNT_NAME} password.
