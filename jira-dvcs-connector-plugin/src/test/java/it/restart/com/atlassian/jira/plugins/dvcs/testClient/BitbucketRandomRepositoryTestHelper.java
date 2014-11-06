@@ -97,6 +97,7 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
         {
             repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
         }
+        testRepositories.clear();
 
         removeExpiredRepositories(timestampNameTestResource);
     }
