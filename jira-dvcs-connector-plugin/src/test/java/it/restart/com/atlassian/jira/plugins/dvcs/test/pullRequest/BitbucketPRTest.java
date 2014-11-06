@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
+import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
@@ -8,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRandomRepositoryTestHelper;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RandomRepositoryTestHelper;
+import org.mockito.MockitoAnnotations;
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
@@ -32,6 +34,9 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         forkRepositoryTestHelper = new BitbucketRandomRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(), false);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
+        MockitoAnnotations.initMocks(this);
+        final MockComponentWorker mockComponentWorker = new MockComponentWorker().init();
+        mockComponentWorker.getMockApplicationProperties().setEncoding("US-ASCII");
         pullRequestClient = new BitbucketPRClient();
     }
 
