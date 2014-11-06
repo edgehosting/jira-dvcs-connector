@@ -11,25 +11,36 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
 public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHelper
 {
-    private final boolean useGit;
+    public enum DvcsType
+    {
+        GIT, MERCURIAL
+    }
 
+    ;
+    private final DvcsType dvcsType;
+
+    /**
+     * Default constructor uses Git
+     */
     public BitbucketRandomRepositoryTestHelper(final String userName, final String password,
             final JiraTestedProduct jiraTestedProduct)
     {
         super(userName, password, jiraTestedProduct);
-        useGit = true;
+        dvcsType = DvcsType.GIT;
     }
 
+    /**
+     * Constructor that can be used to setup a specific based dvcs
+     */
     public BitbucketRandomRepositoryTestHelper(final String userName, final String password,
-            final JiraTestedProduct jiraTestedProduct, final boolean useGit)
+            final JiraTestedProduct jiraTestedProduct, final DvcsType dvcsType)
     {
         super(userName, password, jiraTestedProduct);
-        this.useGit = useGit;
+        this.dvcsType = dvcsType;
     }
 
     @Override
@@ -37,13 +48,13 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
     {
         if (dvcs == null)
         {
-            if (useGit)
+            if (dvcsType == DvcsType.MERCURIAL)
             {
-                this.dvcs = new GitDvcs();
+                this.dvcs = new MercurialDvcs();
             }
             else
             {
-                this.dvcs = new MercurialDvcs();
+                this.dvcs = new GitDvcs();
             }
         }
         else
@@ -70,6 +81,7 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
     @Override
     public void cleanupAccountAndOAuth()
     {
+        super.cleanupAccountAndOAuth();
         new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class, userName).removeConsumer(oAuth.applicationId);
     }
 
@@ -100,24 +112,6 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
         testRepositories.clear();
 
         removeExpiredRepositories(timestampNameTestResource);
-    }
-
-    private void removeExpiredRepositories(TimestampNameTestResource timestampNameTestResource)
-    {
-        BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(userName, password);
-        RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
-
-        for (BitbucketRepository repository : repositoryService.getAllRepositories(userName))
-        {
-            if (timestampNameTestResource.isExpired(repository.getName()))
-            {
-                try
-                {
-                    repositoryService.removeRepository(repository.getName(), userName);
-                }
-                catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
-            }
-        }
     }
 
     @Override

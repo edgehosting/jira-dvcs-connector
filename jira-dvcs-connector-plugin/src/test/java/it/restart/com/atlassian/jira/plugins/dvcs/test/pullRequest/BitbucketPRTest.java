@@ -11,6 +11,9 @@ import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRandomRepo
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RandomRepositoryTestHelper;
 import org.mockito.MockitoAnnotations;
 
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
+
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
     private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
@@ -25,13 +28,15 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @Override
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
-        repositoryTestHelper = new BitbucketRandomRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(), false);
+        repositoryTestHelper = new BitbucketRandomRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
+                BitbucketRandomRepositoryTestHelper.DvcsType.MERCURIAL);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
-        forkRepositoryTestHelper = new BitbucketRandomRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(), false);
+        forkRepositoryTestHelper = new BitbucketRandomRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD,
+                getJiraTestedProduct(), BitbucketRandomRepositoryTestHelper.DvcsType.MERCURIAL);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
         MockitoAnnotations.initMocks(this);
