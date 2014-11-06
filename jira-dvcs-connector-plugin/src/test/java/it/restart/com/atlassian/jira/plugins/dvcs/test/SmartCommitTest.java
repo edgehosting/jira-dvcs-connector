@@ -84,12 +84,9 @@ public class SmartCommitTest extends AbstractDVCSTest
     public void runSmartCommitTest(boolean shouldProcessSmartCommit)
     {
         Dvcs dvcs = repositoryTestHelper.getDvcs();
+        addCommit(dvcs, "hello world");
 
-        // Initial push and sync to get the repository ready
-        dvcs.addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
-        dvcs.commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
-
+        // The first sync of the account will not trigger smart commits.
         if (shouldProcessSmartCommit)
         {
             AccountsPage.refreshAccountAndSync(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
@@ -97,19 +94,14 @@ public class SmartCommitTest extends AbstractDVCSTest
         }
         String commentText = "this is my comment";
         String smartCommitMessage = issueKey + " #time 2d 2h 2m #comment " + commentText;
-
-        dvcs.addFile(ACCOUNT_NAME, repositoryName, "README2.txt", "Hello World2!".getBytes());
-        dvcs.commit(ACCOUNT_NAME, repositoryName, smartCommitMessage, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
-
+        addCommit(dvcs, smartCommitMessage);
         AccountsPage.refreshAccountAndSync(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
                 ACCOUNT_NAME, repositoryName);
 
-        ViewIssuePage viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
-        Iterable<Comment> comments = viewIssuePage.getComments();
-        Iterator<Comment> commentIterator = comments.iterator();
+        Iterator<Comment> commentIterator = getComments(issueKey);
 
         boolean foundComment = false;
+        // Can take a while for smart commits to be processed, we will retry a few times
         for (int i = 0; i < 4; i++)
         {
             if (commentIterator.hasNext())
@@ -118,9 +110,7 @@ public class SmartCommitTest extends AbstractDVCSTest
                 foundComment = true;
                 break;
             }
-            viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
-            comments = viewIssuePage.getComments();
-            commentIterator = comments.iterator();
+            commentIterator = getComments(issueKey);
         }
 
         if (shouldProcessSmartCommit)
@@ -131,5 +121,19 @@ public class SmartCommitTest extends AbstractDVCSTest
         {
             assertThat("Smart commits were meant to be disabled", !foundComment);
         }
+    }
+
+    private void addCommit(Dvcs dvcs, String commitMessage)
+    {
+        dvcs.addFile(ACCOUNT_NAME, repositoryName, "README2.txt", "Hello World2!".getBytes());
+        dvcs.commit(ACCOUNT_NAME, repositoryName, commitMessage, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
+        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
+    }
+
+    private Iterator<Comment> getComments(String issueKey)
+    {
+        ViewIssuePage viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
+        Iterable<Comment> comments = viewIssuePage.getComments();
+        return comments.iterator();
     }
 }
