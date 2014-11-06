@@ -32,7 +32,6 @@ import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUse
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.testng.Assert.fail;
 
 public class SmartCommitTest extends AbstractDVCSTest
 {
@@ -135,6 +134,7 @@ public class SmartCommitTest extends AbstractDVCSTest
     {
         getJiraTestedProduct().backdoor().usersAndGroups().addUser(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
 
+        // Initial push and sync to get the repository ready
         dvcs.addFile(ACCOUNT_NAME, repositoryName, "README.txt", "Hello World!".getBytes());
         dvcs.commit(ACCOUNT_NAME, repositoryName, "Initial commit!", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
         dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
@@ -151,8 +151,6 @@ public class SmartCommitTest extends AbstractDVCSTest
         dvcs.commit(ACCOUNT_NAME, repositoryName, smartCommitMessage, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
         dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
 
-        System.out.println("issue key is " + issueKey + " sc message is " + smartCommitMessage);
-
         accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
         account.refresh();
@@ -162,57 +160,19 @@ public class SmartCommitTest extends AbstractDVCSTest
         Iterable<Comment> comments = viewIssuePage.getComments();
         Iterator<Comment> commentIterator = comments.iterator();
 
-        for (int i = 0; i < 10; i++)
+        boolean foundComment = false;
+        for (int i = 0; i < 4; i++)
         {
-            System.out.println("------------------------------");
-            System.out.println("iteration " + i);
             if (commentIterator.hasNext())
             {
                 assertThat(commentIterator.next().getText(), equalTo(commentText));
-                return;
+                foundComment = true;
             }
             viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
             comments = viewIssuePage.getComments();
             commentIterator = comments.iterator();
         }
 
-        Thread.sleep(30000);
-//
-//        System.out.println("SECOND TUN");
-//
-//        dvcs.addFile(ACCOUNT_NAME, repositoryName, "README3.txt", "Hello World2!".getBytes());
-//        dvcs.commit(ACCOUNT_NAME, repositoryName, smartCommitMessage, COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL);
-//
-//        dvcs.push(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD, "master", false);
-//
-//        System.out.println("issue key is " + issueKey + " sc message is " + smartCommitMessage);
-//
-//        accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-//        account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
-//        account.refresh();
-//        account.synchronizeRepository(repositoryName);
-//
-//        viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
-//        comments = viewIssuePage.getComments();
-//        commentIterator = comments.iterator();
-//
-//        for (int i = 0; i < 10; i++)
-//        {
-//            System.out.println("------------------------------");
-//            System.out.println("iteration " + i);
-//            if (commentIterator.hasNext())
-//            {
-//                assertThat(commentIterator.next().getText(), equalTo(commentText));
-//                return;
-//            }
-//            viewIssuePage = getJiraTestedProduct().goToViewIssue(issueKey);
-//            comments = viewIssuePage.getComments();
-//            commentIterator = comments.iterator();
-//        }
-//
-//        Thread.sleep(30000);
-
-
-        fail("should have found the comment");
+        assertThat("We should have found the comment during one of the page loads", foundComment);
     }
 }
