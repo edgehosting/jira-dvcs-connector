@@ -102,13 +102,18 @@ public class SmartCommitTest extends AbstractDVCSTest
 
         boolean foundComment = false;
         // Can take a while for smart commits to be processed, we will retry a few times
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 10; i++)
         {
             if (commentIterator.hasNext())
             {
+                System.out.println("found a comment, we are asserting it");
                 assertThat(commentIterator.next().getText(), equalTo(commentText));
                 foundComment = true;
                 break;
+            }
+            else
+            {
+                System.out.println("no comment found on iteration " + i);
             }
             commentIterator = getComments(issueKey);
         }
