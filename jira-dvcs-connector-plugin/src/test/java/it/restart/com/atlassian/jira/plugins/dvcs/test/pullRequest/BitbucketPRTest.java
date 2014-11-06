@@ -7,8 +7,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRandomRepositoryTestHelper;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RandomRepositoryTestHelper;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepositoryTestHelper;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
 import org.mockito.MockitoAnnotations;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
@@ -18,8 +18,8 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
     private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
 
-    private RandomRepositoryTestHelper repositoryTestHelper;
-    private RandomRepositoryTestHelper forkRepositoryTestHelper;
+    private RepositoryTestHelper repositoryTestHelper;
+    private RepositoryTestHelper forkRepositoryTestHelper;
 
     public BitbucketPRTest()
     {
@@ -28,15 +28,15 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @Override
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
-        repositoryTestHelper = new BitbucketRandomRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
-                BitbucketRandomRepositoryTestHelper.DvcsType.MERCURIAL);
+        repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
+                BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
-        forkRepositoryTestHelper = new BitbucketRandomRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD,
-                getJiraTestedProduct(), BitbucketRandomRepositoryTestHelper.DvcsType.MERCURIAL);
+        forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD,
+                getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
         MockitoAnnotations.initMocks(this);

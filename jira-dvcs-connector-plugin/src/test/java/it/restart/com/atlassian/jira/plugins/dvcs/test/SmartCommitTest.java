@@ -6,9 +6,9 @@ import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRandomRepositoryTestHelper;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepositoryTestHelper;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RandomRepositoryTestHelper;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -36,7 +36,7 @@ public class SmartCommitTest extends AbstractDVCSTest
 
     private String repositoryName;
 
-    private RandomRepositoryTestHelper repositoryTestHelper;
+    private RepositoryTestHelper repositoryTestHelper;
 
     @BeforeClass
     public void beforeClass()
@@ -44,7 +44,7 @@ public class SmartCommitTest extends AbstractDVCSTest
         new JiraLoginPageController(getJiraTestedProduct()).login();
         getJiraTestedProduct().backdoor().usersAndGroups().addUser(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
 
-        repositoryTestHelper = new BitbucketRandomRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
+        repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
     }
 

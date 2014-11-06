@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.Bitbuc
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
-public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHelper
+public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
 {
     public enum DvcsType
     {
@@ -26,7 +26,7 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
     /**
      * Default constructor uses Git
      */
-    public BitbucketRandomRepositoryTestHelper(final String userName, final String password,
+    public BitbucketRepositoryTestHelper(final String userName, final String password,
             final JiraTestedProduct jiraTestedProduct)
     {
         super(userName, password, jiraTestedProduct);
@@ -36,7 +36,7 @@ public class BitbucketRandomRepositoryTestHelper extends RandomRepositoryTestHel
     /**
      * Constructor that can be used to setup a specific based dvcs
      */
-    public BitbucketRandomRepositoryTestHelper(final String userName, final String password,
+    public BitbucketRepositoryTestHelper(final String userName, final String password,
             final JiraTestedProduct jiraTestedProduct, final DvcsType dvcsType)
     {
         super(userName, password, jiraTestedProduct);

@@ -25,7 +25,7 @@ import java.util.Collection;
  *     <li>#cleanupLocalRepositories will be called per test method to remove created repositories</li>
  * </ul>
  */
-public abstract class RandomRepositoryTestHelper
+public abstract class RepositoryTestHelper
 {
     protected final Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
     protected Dvcs dvcs;
@@ -34,7 +34,7 @@ public abstract class RandomRepositoryTestHelper
     protected final String password;
     protected final JiraTestedProduct jiraTestedProduct;
 
-    protected RandomRepositoryTestHelper(final String userName, final String password,
+    protected RepositoryTestHelper(final String userName, final String password,
             final JiraTestedProduct jiraTestedProduct)
     {
         this.userName = userName;
