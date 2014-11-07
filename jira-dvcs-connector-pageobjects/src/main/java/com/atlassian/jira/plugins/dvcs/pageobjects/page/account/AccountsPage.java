@@ -72,4 +72,14 @@ public class AccountsPage implements Page
 
         return account;
     }
+
+    public static AccountsPageAccount syncAccount(JiraTestedProduct jiraTestedProduct,
+            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
+    {
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        account.synchronizeRepository(repositoryName);
+
+        return account;
+    }
 }
