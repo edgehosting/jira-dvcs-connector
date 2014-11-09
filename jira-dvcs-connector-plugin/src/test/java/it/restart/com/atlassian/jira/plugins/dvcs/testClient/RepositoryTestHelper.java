@@ -20,7 +20,7 @@ import java.util.Collection;
  * Github Enterprise) and Dvcs type (Git, Mercurial). The methods are expected to be used as follows:
  * <ul>
  *     <li>#initialiseOrganizationsAndDvcs will be called during the once per class initialisation</li>
- *     <li>#cleanupAccountAndOAuth will be called during the once per class teardown</li>
+ *     <li>#deleteAllOrganizations will be called during the once per class teardown</li>
  *     <li>#setupTestRepository will be called per test method to create a repository</li>
  *     <li>#cleanupLocalRepositories will be called per test method to remove created repositories</li>
  * </ul>
@@ -50,9 +50,10 @@ public abstract class RepositoryTestHelper
     public abstract void initialiseOrganizationsAndDvcs(final Dvcs dvcs, final OAuth oauth);
 
     /**
-     * Remove the OAuth token from the provider and any other cleanup, should also remove the Dvcs Organization
+     * Removes all organizations that are associated, implementing classes should also delete any OAuth tokens or other
+     * specific configuration.
      */
-    public void cleanupAccountAndOAuth()
+    public void deleteAllOrganizations()
     {
         RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jiraTestedProduct);
         repositoriesPageController.getPage().deleteAllOrganizations();

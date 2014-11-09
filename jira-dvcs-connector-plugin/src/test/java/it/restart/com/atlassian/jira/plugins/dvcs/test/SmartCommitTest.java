@@ -69,7 +69,7 @@ public class SmartCommitTest extends AbstractDVCSTest
         TimeTrackingAdminPage timePage = getJiraTestedProduct().goTo(TimeTrackingAdminPage.class);
         timePage.deactivateTimeTrackingWithDefaults();
 
-        repositoryTestHelper.cleanupAccountAndOAuth();
+        repositoryTestHelper.deleteAllOrganizations();
     }
 
     @BeforeMethod

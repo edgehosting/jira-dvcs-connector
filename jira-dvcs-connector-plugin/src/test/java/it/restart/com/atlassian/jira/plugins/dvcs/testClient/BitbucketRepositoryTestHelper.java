@@ -20,7 +20,6 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
         GIT, MERCURIAL
     }
 
-    ;
     private final DvcsType dvcsType;
 
     /**
@@ -29,8 +28,7 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
     public BitbucketRepositoryTestHelper(final String userName, final String password,
             final JiraTestedProduct jiraTestedProduct)
     {
-        super(userName, password, jiraTestedProduct);
-        dvcsType = DvcsType.GIT;
+        this(userName, password, jiraTestedProduct, DvcsType.GIT);
     }
 
     /**
@@ -79,9 +77,9 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
     }
 
     @Override
-    public void cleanupAccountAndOAuth()
+    public void deleteAllOrganizations()
     {
-        super.cleanupAccountAndOAuth();
+        super.deleteAllOrganizations();
         new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class, userName).removeConsumer(oAuth.applicationId);
     }
 
