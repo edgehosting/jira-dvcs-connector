@@ -4,7 +4,7 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 
-public class TimeTrackingPage implements Page
+public class TimeTrackingAdminPage implements Page
 {
     @ElementBy (id = "activate_submit")
     private PageElement activateSubmit;
@@ -18,6 +18,11 @@ public class TimeTrackingPage implements Page
         {
             activateSubmit.click();
         }
+        else
+        {
+            throw new AssertionError("To activate time tracking the activate_submit button should be present. "
+                    + "Check that you have not previously activated time tracking");
+        }
     }
 
     public void deactivateTimeTrackingWithDefaults()
@@ -25,6 +30,11 @@ public class TimeTrackingPage implements Page
         if (deactivateSubmit.isPresent())
         {
             deactivateSubmit.click();
+        }
+        else
+        {
+            throw new AssertionError("To deactivate time tracking the deactivate_submit button should be present. "
+                    + "Check that you have not previously deactivated time tracking");
         }
     }
 
