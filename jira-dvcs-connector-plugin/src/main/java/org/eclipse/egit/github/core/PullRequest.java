@@ -16,8 +16,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Pull request model class. This class has been copied to jira-dvcs-connector-plugin to make the monkey patching
- * work. If you change it here then you must update the jira-dvcs-connector-plugin version as well.
+ * Pull request model class. This is copied from the jira-dvcs-connector-github project to make sure that the
+ * monkey patch succeeds as otherwise maven may overwrite it the the version from egit.
  */
 public class PullRequest implements Serializable {
 

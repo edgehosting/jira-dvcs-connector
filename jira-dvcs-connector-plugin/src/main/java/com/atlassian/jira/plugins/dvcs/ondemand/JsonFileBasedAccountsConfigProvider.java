@@ -86,9 +86,10 @@ public class JsonFileBasedAccountsConfigProvider implements AccountsConfigProvid
     @Override
     public boolean supportsIntegratedAccounts()
     {
-        log.debug("ondemand = {} | devMode = {}", new Object[] { featureManager.isEnabled(CoreFeatures.ON_DEMAND),
-                JiraSystemProperties.isDevMode() });
-        return featureManager.isEnabled(CoreFeatures.ON_DEMAND) || JiraSystemProperties.isDevMode();
+        final boolean isOnDemand = featureManager.isEnabled(CoreFeatures.ON_DEMAND);
+        final boolean isDevMode = JiraSystemProperties.isDevMode();
+        log.debug("ondemand = {} | devMode = {}", new Object[] { isOnDemand, isDevMode });
+        return isOnDemand || isDevMode;
     }
 
 }

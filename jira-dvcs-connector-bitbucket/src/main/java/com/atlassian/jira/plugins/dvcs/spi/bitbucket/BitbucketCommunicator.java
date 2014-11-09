@@ -491,7 +491,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         catch (Exception e)
         {
-            log.warn("Failed to link repository " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
+            log.warn("Failed to link repository " + repository.getName(), e);
         }
     }
 
@@ -507,7 +507,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         catch (Exception e)
         {
-            log.warn("Failed to do incremental repository linking " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
+            log.warn("Failed to do incremental repository linking " + repository.getName(), e);
         }
     }
 
