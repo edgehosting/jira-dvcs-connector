@@ -95,15 +95,15 @@ public class SmartCommitTest extends AbstractDVCSTest
         addCommit(dvcs, ignoredSmartCommitMessage);
 
         // The first sync of the account will not trigger smart commits.
-        AccountsPage.refreshAccountAndSync(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
-                ACCOUNT_NAME, repositoryName);
+        AccountsPage.syncAccount(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
+                ACCOUNT_NAME, repositoryName, true);
 
         String commentText = "this is my comment";
         String timeSpent = "2d 2h 2m";
         String smartCommitMessage = issueKey + " #Resolve #time " + timeSpent + " #comment " + commentText;
         addCommit(dvcs, smartCommitMessage);
         AccountsPage.syncAccount(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
-                ACCOUNT_NAME, repositoryName);
+                ACCOUNT_NAME, repositoryName, false);
 
         boolean issueIsResolved = false;
         boolean issueHasComment = false;

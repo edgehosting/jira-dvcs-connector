@@ -210,8 +210,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-        AccountsPageAccount account = AccountsPage.refreshAccountAndSync(getJiraTestedProduct(), getAccountType(),
-                ACCOUNT_NAME, repositoryName);
+        AccountsPageAccount account = AccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
+                ACCOUNT_NAME, repositoryName, true);
 
         // Event processing can take some time to complete, poll the endpoint to find our PR
         RestDevResponse<RestPrRepository> response = null;

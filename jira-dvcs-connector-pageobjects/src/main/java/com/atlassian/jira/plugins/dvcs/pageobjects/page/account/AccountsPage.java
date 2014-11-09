@@ -62,24 +62,17 @@ public class AccountsPage implements Page
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
 
-    public static AccountsPageAccount refreshAccountAndSync(JiraTestedProduct jiraTestedProduct,
-            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
-    {
-        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
-        account.refresh();
-        account.synchronizeRepository(repositoryName);
-
-        return account;
-    }
-
     public static AccountsPageAccount syncAccount(JiraTestedProduct jiraTestedProduct,
-            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
+            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName,
+            boolean refresh)
     {
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        if (refresh)
+        {
+            account.refresh();
+        }
         account.synchronizeRepository(repositoryName);
-
         return account;
     }
 }
