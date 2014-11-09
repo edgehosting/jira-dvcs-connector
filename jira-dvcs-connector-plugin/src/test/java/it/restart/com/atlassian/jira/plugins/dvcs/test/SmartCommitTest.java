@@ -136,7 +136,7 @@ public class SmartCommitTest extends AbstractDVCSTest
                 workHasBeenLogged = true;
             }
 
-            if(issueIsResolved && issueHasComment && workHasBeenLogged)
+            if (issueIsResolved && issueHasComment && workHasBeenLogged)
             {
                 // all done, finish the test
                 return;
@@ -144,7 +144,7 @@ public class SmartCommitTest extends AbstractDVCSTest
 
             try
             {
-                Thread.sleep(50);
+                Thread.sleep(100);
             }
             catch (InterruptedException e)
             {
