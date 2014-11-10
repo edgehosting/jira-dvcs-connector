@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSL;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QBranchHeadMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
@@ -25,6 +27,7 @@ import javax.annotation.Nullable;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 @Path ("/QDSL")
 @AnonymousAllowed
@@ -34,6 +37,9 @@ public class QueryDSLResource
 
     private ConnectionProvider connectionProvider;
     private QueryFactory queryFactory;
+
+    @Autowired
+    private ChangesetQDSL changesetQDSL;
 
     public QueryDSLResource()
     {
@@ -65,6 +71,8 @@ public class QueryDSLResource
                     .join(rtcMapping).on(mappingInstance.ID.eq(rtcMapping.CHANGESET_ID))
                     .where(rtcMapping.REPOSITORY_ID.eq(repositoryId));
             List<Tuple> result = sql.list(mappingInstance.ID, mappingInstance.NODE, mappingInstance.PARENTS_DATA);
+
+//            queryFactory.select()
 
             StringBuilder resultBuilder = new StringBuilder("result is: \n");
 
@@ -173,5 +181,19 @@ public class QueryDSLResource
         {
             connectionProvider.returnConnection(connection);
         }
+    }
+
+    @GET
+    @Path ("/CDSL")
+    public String getCDSL(@QueryParam ("issueKey") List<String> issueKeys) throws JSONException
+    {
+        List<Changeset> result = changesetQDSL.getByIssueKey(issueKeys, "bitbucket", false);
+        String sResult = "";
+        for (Changeset changeset : result)
+        {
+            sResult += changeset.getId();
+            sResult += " ";
+        }
+        return sResult;
     }
 }

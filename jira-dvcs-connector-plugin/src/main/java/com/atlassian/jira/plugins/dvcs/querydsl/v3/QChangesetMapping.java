@@ -3,10 +3,13 @@ package com.atlassian.jira.plugins.dvcs.querydsl.v3;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.mysema.query.sql.ColumnMetadata;
 import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.types.path.BooleanPath;
+import com.mysema.query.types.path.DateTimePath;
 import com.mysema.query.types.path.NumberPath;
 import com.mysema.query.types.path.StringPath;
 
 import java.sql.Types;
+import java.util.Date;
 
 import static com.mysema.query.types.PathMetadataFactory.forVariable;
 
@@ -35,8 +38,7 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
 
     public final StringPath BRANCH = createString("BRANCH");
 
-    // We have not yet built QueryDSL type support for java.util.Date getDate()
-
+    public final DateTimePath<Date> DATE = createDateTime("DATE", Date.class);
 
     public final StringPath FILES_DATA = createString("FILES_DATA");
 
@@ -70,6 +72,7 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
 
     public final NumberPath<Integer> VERSION = createNumber("VERSION", Integer.class);
 
+    public final BooleanPath SMART_COMMIT_AVAILABLE = createBoolean("SMARTCOMMIT_AVAILABLE");
 
     public final com.mysema.query.sql.PrimaryKey<QChangesetMapping> CHANGESETMAPPING_PK = createPrimaryKey(ID);
 
@@ -103,5 +106,8 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
 
         addMetadata(REPOSITORY_ID, ColumnMetadata.named("REPOSITORY_ID").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(VERSION, ColumnMetadata.named("VERSION").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
+
+        addMetadata(SMART_COMMIT_AVAILABLE, ColumnMetadata.named("SMARTCOMMIT_AVAILABLE").ofType(Types.BOOLEAN));
+        addMetadata(DATE, ColumnMetadata.named("DATE").ofType(Types.TIMESTAMP));
     }
 }

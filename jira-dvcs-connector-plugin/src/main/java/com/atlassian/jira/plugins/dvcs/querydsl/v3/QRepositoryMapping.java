@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.querydsl.v3;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.mysema.query.sql.ColumnMetadata;
 import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.types.path.BooleanPath;
 import com.mysema.query.types.path.NumberPath;
 import com.mysema.query.types.path.StringPath;
 
@@ -53,6 +54,9 @@ public class QRepositoryMapping extends RelationalPathBase<QRepositoryMapping>
 
     public final StringPath SLUG = createString("SLUG");
 
+    public final BooleanPath DELETED = createBoolean("DELETED");
+
+    public final BooleanPath LINKED = createBoolean("LINKED");
 
     public final com.mysema.query.sql.PrimaryKey<QRepositoryMapping> REPOSITORYMAPPING_PK = createPrimaryKey(ID);
 
@@ -78,5 +82,7 @@ public class QRepositoryMapping extends RelationalPathBase<QRepositoryMapping>
         addMetadata(NAME, ColumnMetadata.named("NAME").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(ORGANIZATION_ID, ColumnMetadata.named("ORGANIZATION_ID").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(SLUG, ColumnMetadata.named("SLUG").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
+        addMetadata(DELETED, ColumnMetadata.named("DELETED").ofType(Types.BOOLEAN));
+        addMetadata(LINKED, ColumnMetadata.named("LINKED").ofType(Types.BOOLEAN));
     }
 }
