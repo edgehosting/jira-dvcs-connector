@@ -29,10 +29,9 @@ public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChanges
     /**
      * Database Columns
      */
-    // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping getChangeset()
-
-
     public final NumberPath<Integer> ID = createNumber("ID", Integer.class);
+
+    public final NumberPath<Integer> CHANGESET_ID = createNumber("CHANGESET_ID", Integer.class);
 
     public final StringPath ISSUE_KEY = createString("ISSUE_KEY");
 
@@ -56,5 +55,6 @@ public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChanges
         addMetadata(ID, ColumnMetadata.named("ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
         addMetadata(ISSUE_KEY, ColumnMetadata.named("ISSUE_KEY").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(PROJECT_KEY, ColumnMetadata.named("PROJECT_KEY").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
+        addMetadata(CHANGESET_ID, ColumnMetadata.named("CHANGESET_ID").ofType(Types.INTEGER));
     }
 }

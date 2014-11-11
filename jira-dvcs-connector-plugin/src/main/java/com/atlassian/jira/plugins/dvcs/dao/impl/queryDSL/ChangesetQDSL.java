@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
@@ -46,7 +47,7 @@ public class ChangesetQDSL
     }
 
     @Autowired
-    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory) throws Exception
+    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory)
     {
         this.connectionProvider = connectionProvider;
         this.queryFactory = queryFactory;
@@ -60,6 +61,7 @@ public class ChangesetQDSL
         try
         {
             final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
+            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
             final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
             final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
             final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
@@ -71,6 +73,7 @@ public class ChangesetQDSL
                 {
                     final Collection<String> issueKeysCollection = Lists.newArrayList(issueKeys);
                     SelectQuery sql = select.from(changesetMapping)
+                            .join(issueToChangesetMapping).on(changesetMapping.ID.eq(issueToChangesetMapping.CHANGESET_ID))
                             .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
                             .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
                             .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
@@ -78,7 +81,7 @@ public class ChangesetQDSL
                                     repositoryMapping.DELETED.eq(false)
                                             .and(repositoryMapping.LINKED.eq(true))
                                             .and(orgMapping.DVCS_TYPE.eq(dvcsType))
-                                            .and(changesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+                                            .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
 
                     return sql.stream(changesetMapping.FILE_DETAILS_JSON,
                             repositoryMapping.ID,
