@@ -294,6 +294,23 @@
     <build>
         <plugins>
             <plugin>
+                <!-- explicitly declaring it here as the base pom has the following excludes that
+                     somehow would trigger the integration-test but without starting up jira.
+                     And somehow this has to be in <plugins> instead of <pluginManagement> for it to work.
+                <configuration>
+                    <excludes>
+                        <exclude>**/*$*</exclude>
+                    </excludes>
+                </configuration>
+                -->
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.atlassian.plugin</groupId>
                 <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
                 <version>${atlassian.spring.scanner.version}</version>

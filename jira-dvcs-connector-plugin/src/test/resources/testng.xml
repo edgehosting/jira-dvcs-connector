@@ -1,0 +1,19 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="default">
+    <test name="default">
+        <packages>
+            <!--<package name="it.*">-->
+                <!--<exclude name=".*"/>-->
+            <!--</package>-->
+            <package name="com.atlassian.jira.plugins.dvcs.*">
+                <!--<include name="com.atlassian.jira.plugins.dvcs.*"/>-->
+            </package>
+        </packages>
+    </test>
+    <test name="junit" junit="true">
+        <classes>
+            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSLDBTest" />
+        </classes>
+    </test>
+</suite>
