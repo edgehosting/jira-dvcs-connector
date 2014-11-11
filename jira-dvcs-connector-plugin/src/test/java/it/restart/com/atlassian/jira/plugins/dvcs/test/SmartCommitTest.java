@@ -1,7 +1,5 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
-import com.atlassian.jira.functest.framework.Administration;
-import com.atlassian.jira.functest.framework.Navigation;
 import com.atlassian.jira.functest.framework.backdoor.Backdoor;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
@@ -43,9 +41,6 @@ public class SmartCommitTest extends AbstractDVCSTest
     private String repositoryName;
 
     private RepositoryTestHelper repositoryTestHelper;
-
-    private Navigation navigation;
-    private Administration administration;
 
     @BeforeClass
     public void beforeClass()

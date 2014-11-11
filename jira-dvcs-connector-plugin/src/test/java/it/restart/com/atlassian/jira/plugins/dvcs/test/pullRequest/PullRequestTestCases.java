@@ -107,6 +107,10 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         cleanupAfterClass();
     }
 
+    /**
+     * Note that we are moving some of the common code from this into #RepositoryTestHelper, Github and GHE are not
+     * done at this stage.
+     */
     protected abstract void cleanupAfterClass();
 
     @BeforeMethod
