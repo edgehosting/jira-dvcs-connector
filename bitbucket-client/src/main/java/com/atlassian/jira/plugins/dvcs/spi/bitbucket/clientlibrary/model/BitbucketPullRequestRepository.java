@@ -29,6 +29,17 @@ public class BitbucketPullRequestRepository
         super();
     }
 
+    public BitbucketPullRequestRepository(final String owner, final String slug)
+    {
+        this.owner = owner;
+        this.slug = slug;
+    }
+
+    public BitbucketPullRequestRepository(final String fullName)
+    {
+        this.fullName = fullName;
+    }
+
     public String getOwner()
     {
         return owner;

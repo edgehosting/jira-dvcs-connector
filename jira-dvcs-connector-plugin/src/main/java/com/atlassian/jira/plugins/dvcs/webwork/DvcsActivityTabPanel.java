@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -27,6 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+/**
+ * Currently unused, see BBC-930
+ */
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
     private final Logger logger = LoggerFactory.getLogger(DvcsActivityTabPanel.class);
@@ -47,23 +53,28 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
             DefaultIssueAction o1d = (DefaultIssueAction) o1;
             DefaultIssueAction o2d = (DefaultIssueAction) o2;
             if (o1 == null || o1.getTimePerformed() == null)
+            {
                 return -1;
+            }
             if (o2 == null || o2.getTimePerformed() == null)
+            {
                 return 1;
+            }
             return new Integer(o1d.getId()).compareTo(o2d.getId());
         }
     };
 
-    public DvcsActivityTabPanel(PermissionManager permissionManager,
+    public DvcsActivityTabPanel(@ComponentImport PermissionManager permissionManager,
             RepositoryService repositoryService, RepositoryPullRequestDao activityDao,
-            @Qualifier("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory, TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
+            @Qualifier ("aggregatedIssueActionFactory") IssueActionFactory issueActionFactory,
+            @ComponentImport TemplateRenderer templateRenderer, IssueAndProjectKeyManager issueAndProjectKeyManager)
     {
-        this.permissionManager = permissionManager;
-        this.repositoryService = repositoryService;
-        this.activityDao = activityDao;
-        this.issueActionFactory = issueActionFactory;
-        this.templateRenderer = templateRenderer;
-        this.issueAndProjectKeyManager = issueAndProjectKeyManager;
+        this.permissionManager = checkNotNull(permissionManager);
+        this.repositoryService = checkNotNull(repositoryService);
+        this.activityDao = checkNotNull(activityDao);
+        this.issueActionFactory = checkNotNull(issueActionFactory);
+        this.templateRenderer = checkNotNull(templateRenderer);
+        this.issueAndProjectKeyManager = checkNotNull(issueAndProjectKeyManager);
     }
 
     @Override
@@ -73,12 +84,9 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
         List<IssueAction> issueActions = new ArrayList<IssueAction>();
 
-        //
-        List<RepositoryPullRequestMapping> prs = activityDao.getPullRequestsForIssue(issueKeys);
-        Map<String, Object> ctxt = Maps.newHashMap(new  ImmutableMap.Builder<String, Object>().put("prs", prs).build());
+        List<RepositoryPullRequestMapping> prs = activityDao.getByIssueKeys(issueKeys);
+        Map<String, Object> ctxt = Maps.newHashMap(ImmutableMap.<String, Object>of("prs", prs));
         issueActions.add(new DefaultIssueAction(templateRenderer, "/templates/activity/pr-view.vm", ctxt, new Date()));
-        //
-        //
         if (issueActions.isEmpty())
         {
             issueActions.add(DEFAULT_MESSAGE);

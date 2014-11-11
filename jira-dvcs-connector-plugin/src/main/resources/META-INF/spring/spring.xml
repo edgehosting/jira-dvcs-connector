@@ -3,25 +3,29 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:osgi="http://www.springframework.org/schema/osgi"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:atlassian-scanner="http://www.atlassian.com/schema/atlassian-scanner"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
                            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
-                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-                           
-	<context:component-scan base-package="com.atlassian.jira.plugins.dvcs" />
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.atlassian.com/schema/atlassian-scanner http://www.atlassian.com/schema/atlassian-scanner/atlassian-scanner.xsd">
+
+    <context:component-scan base-package="com.atlassian.jira.plugins.dvcs"/>
+    <atlassian-scanner:scan-indexes/>
 
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <property name="delegate" ref="bitbucketCommunicator" />
+        <property name="delegate" ref="bitbucketCommunicator"/>
     </bean>
 
     <bean id="cachingGithubCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <property name="delegate" ref="githubCommunicator" />
+        <property name="delegate" ref="githubCommunicator"/>
     </bean>
 
-    <bean id="cachingGithubEnterpriseCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
+    <bean id="cachingGithubEnterpriseCommunicator"
+          class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <property name="delegate" ref="githubEnterpriseCommunicator" />
+        <property name="delegate" ref="githubEnterpriseCommunicator"/>
     </bean>
 
     <bean class="com.atlassian.beehive.compat.ClusterLockServiceFactory"/>
@@ -34,7 +38,8 @@
         <osgi:service-properties>
             <entry key="plugin" value="com.atlassian.plugins.rest"/>
         </osgi:service-properties>
-        <bean class="com.atlassian.jira.plugins.dvcs.rest.filter.AdminOnlyResourceFilterFactory" autowire="constructor"/>
+        <bean class="com.atlassian.jira.plugins.dvcs.rest.filter.AdminOnlyResourceFilterFactory"
+              autowire="constructor"/>
     </osgi:service>
- 
+
 </beans>

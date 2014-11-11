@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.scheduler;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class DvcsSchedulerJobTest
@@ -37,18 +40,23 @@ public class DvcsSchedulerJobTest
     @Mock private JobInfo mockJobInfo;
     @Mock private OrganizationService mockOrganizationService;
     @Mock private RepositoryService mockRepositoryService;
+    @Mock private ActiveObjects activeObjects;
+    @Mock private ActiveObjectsModuleMetaData activeObjectsModuleMetaData;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        job = new DvcsSchedulerJob(mockOrganizationService, mockRepositoryService);
+        when(activeObjects.moduleMetaData()).thenReturn(activeObjectsModuleMetaData);
+        job = new DvcsSchedulerJob(mockOrganizationService, mockRepositoryService, activeObjects);
     }
 
     @Test
-    public void testRunJob() throws Exception
+    public void jobRunDoesTheJobWhenDataSourceIsPresent() throws Exception
     {
         // Set up
+        mockDataSourcePresent(true);
+
         final Organization mockOrganization = mock(Organization.class);
         when(mockOrganizationService.getAll(false)).thenReturn(singletonList(mockOrganization));
         final Repository mockActiveRepository = getMockRepository(ACTIVE_ORGANIZATION_ID, mockOrganization);
@@ -81,6 +89,25 @@ public class DvcsSchedulerJobTest
         verify(mockRepositoryService).syncRepositoryList(org1);
         verify(mockRepositoryService).syncRepositoryList(org2);
         verify(mockRepositoryService).syncRepositoryList(org3);
+    }
+
+    @Test
+    public void jobRunDoesNotDoTheJobWhenDataSourceIsNOTPresent() throws Exception
+    {
+        // Set up
+        mockDataSourcePresent(false);
+
+        // Invoke
+        job.execute(mockJobInfo);
+
+        // Check
+        verifyNoMoreInteractions(mockOrganizationService);
+        verifyNoMoreInteractions(mockRepositoryService);
+    }
+
+    private void mockDataSourcePresent(final boolean isPresent)
+    {
+        when(activeObjectsModuleMetaData.isDataSourcePresent()).thenReturn(isPresent);
     }
 
     private Repository getMockRepository(final int organizationId, final Organization organization)

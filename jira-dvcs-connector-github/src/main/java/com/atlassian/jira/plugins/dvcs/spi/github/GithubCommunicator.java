@@ -25,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -47,7 +48,9 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -65,6 +68,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
 
+@Component
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
@@ -94,11 +98,13 @@ public class GithubCommunicator implements DvcsCommunicator
     protected SyncDisabledHelper syncDisabledHelper;
 
     @Resource
+    @ComponentImport
     private ApplicationProperties applicationProperties;
 
     protected final GithubClientProvider githubClientProvider;
     protected final OAuthStore oAuthStore;
 
+    @Autowired
     public GithubCommunicator(OAuthStore oAuthStore,
             @Qualifier ("githubClientProvider") GithubClientProvider githubClientProvider)
     {
@@ -320,7 +326,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     public PageIterator<RepositoryCommit> getPageIterator(Repository repository, String branch)
     {
         final CommitService commitService = githubClientProvider.getCommitService(repository);
@@ -331,9 +337,8 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     /**
-     * The git library encodes parameters using ISO-8859-1. Let's trick it and
-     * encode using UTF-8 instead.
-     * 
+     * The git library encodes parameters using ISO-8859-1. Let's trick it and encode using UTF-8 instead.
+     *
      * @param branch the branch name to encode as UTF-8
      * @return the UTF-8 encoded branch name
      */

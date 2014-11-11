@@ -17,7 +17,9 @@ import javax.annotation.Nonnull;
  */
 public interface PullRequestService
 {
-    public List<PullRequest> getByIssueKeys(Iterable<String> issueKeys);
+    List<PullRequest> getByIssueKeys(Iterable<String> issueKeys);
+
+    List<PullRequest> getByIssueKeys(Iterable<String> issueKeys, boolean withCommits);
 
     List<PullRequest> getByIssueKeys(Iterable<String> issueKeys, String dvcsType);
 

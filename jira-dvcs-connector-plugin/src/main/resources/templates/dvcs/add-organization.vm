@@ -235,7 +235,7 @@
                         <span id="sync_status_message_$repo.id" class="gh_messages">
                             <span class="content"></span>
                         </span>
-                        <span id="sync_error_message_$repo.id" class="gh_messages">
+                        <span id="sync_error_message_$repo.id" class="gh_messages repo_sync_error_msg">
                         </span>
                     </div>
                     

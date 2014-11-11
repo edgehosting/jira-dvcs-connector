@@ -3,7 +3,10 @@ package com.atlassian.jira.plugins.dvcs.ondemand;
 import com.atlassian.scheduler.compat.CompatibilityPluginScheduler;
 import com.atlassian.scheduler.compat.JobHandler;
 import com.atlassian.scheduler.compat.JobHandlerKey;
+import com.atlassian.scheduler.compat.JobInfo;
 import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +21,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Component
 public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccountsReloadJobScheduler
 {
+    private static final Logger log = LoggerFactory.getLogger(BitbucketAccountsReloadJobSchedulerImpl.class);
+
     @VisibleForTesting
     static final String JOB_ID = "bitbucket-accounts-reload";
 
@@ -44,8 +49,8 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     private final CompatibilityPluginScheduler scheduler;
 
     @Autowired
-    public BitbucketAccountsReloadJobSchedulerImpl(
-            final CompatibilityPluginScheduler scheduler, final BitbucketAccountsReloadJobHandler jobHandler)
+    public BitbucketAccountsReloadJobSchedulerImpl(final CompatibilityPluginScheduler scheduler,
+            final BitbucketAccountsReloadJobHandler jobHandler)
     {
         this.scheduler = scheduler;
         this.jobHandler = jobHandler;
@@ -67,10 +72,16 @@ public class BitbucketAccountsReloadJobSchedulerImpl implements BitbucketAccount
     @Override
     public void schedule()
     {
-        if (scheduler.getJobInfo(JOB_ID) == null)
+        final JobInfo jobInfo = scheduler.getJobInfo(JOB_ID);
+        if (jobInfo == null)
         {
             scheduler.scheduleClusteredJob(
                     JOB_ID, JOB_HANDLER_KEY, new Date(currentTimeMillis() + DELAY), A_VERY_LONG_TIME_INDEED);
+            log.debug("job is now scheduled: {}", scheduler.getJobInfo(JOB_ID));
+        }
+        else
+        {
+            log.debug("job has been scheduled previously: {}", jobInfo);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -23,6 +24,7 @@ public class SyncEventDaoTest
     @BeforeMethod
     public void setUp() throws Exception
     {
+        MockitoAnnotations.initMocks(this);
         dao = new SyncEventDao(activeObjects, new EntityBeanGenerator());
     }
 

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.1.22-SNAPSHOT</version>
+        <version>2.2.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-api</artifactId>
@@ -24,8 +24,12 @@
             <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
-        	<groupId>com.atlassian.activeobjects</groupId>
-        	<artifactId>activeobjects-plugin</artifactId>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
     </dependencies>
     <build>

@@ -11,13 +11,21 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.util.lang.Pair;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@ExportAsService (CommandHandler.class)
+@Component("smartcommitsWorklogHandler")
 public class WorkLogHandler implements CommandHandler<Worklog>
 {
 
@@ -27,19 +35,20 @@ public class WorkLogHandler implements CommandHandler<Worklog>
 
     private Pattern IN_WORKLOG_PATTERN = Pattern.compile("((\\d+(w|d|h|m)\\s*)+)");
 
-    public WorkLogHandler(WorklogService worklogService)
+    @Autowired
+    public WorkLogHandler(@ComponentImport WorklogService worklogService)
     {
-        this.worklogService = worklogService;
+        this.worklogService = checkNotNull(worklogService);
     }
 
     @Override
-	public CommandType getCommandType()
+    public CommandType getCommandType()
     {
         return CMD_TYPE;
     }
 
     @Override
-	public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
+    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
             List<String> args, Date commitDate)
     {
 
@@ -59,7 +68,8 @@ public class WorkLogHandler implements CommandHandler<Worklog>
 
             return Either.value(worklogService.createAndAutoAdjustRemainingEstimate(jiraServiceContext, result, true));
 
-        } else
+        }
+        else
         {
 
             return Either.error(CommitHookHandlerError.fromErrorCollection(CMD_TYPE.getName(), issue.getKey(),

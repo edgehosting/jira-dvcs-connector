@@ -49,12 +49,15 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -68,6 +71,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.annotation.Resource;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component
 public class BitbucketCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(BitbucketCommunicator.class);
@@ -93,13 +99,15 @@ public class BitbucketCommunicator implements DvcsCommunicator
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
 
-    public BitbucketCommunicator(@Qualifier("defferedBitbucketLinker") BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
-            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
+    @Autowired
+    public BitbucketCommunicator(@Qualifier ("deferredBitbucketLinker") BitbucketLinker bitbucketLinker,
+            @ComponentImport PluginAccessor pluginAccessor,
+            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, @ComponentImport ApplicationProperties ap)
     {
         this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
-        this.pluginVersion = DvcsConstants.getPluginVersion(pluginAccessor);
-        this.applicationProperties = ap;
+        this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
+        this.applicationProperties = checkNotNull(ap);
     }
 
     /**
@@ -483,7 +491,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         catch (Exception e)
         {
-            log.warn("Failed to link repository " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
+            log.warn("Failed to link repository " + repository.getName(), e);
         }
     }
 
@@ -499,7 +507,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
         catch (Exception e)
         {
-            log.warn("Failed to do incremental repository linking " + repository.getName() + " : " + e.getClass() + " :: " + e.getMessage());
+            log.warn("Failed to do incremental repository linking " + repository.getName(), e);
         }
     }
 

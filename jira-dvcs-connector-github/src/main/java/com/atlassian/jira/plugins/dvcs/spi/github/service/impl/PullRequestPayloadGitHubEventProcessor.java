@@ -6,13 +6,14 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventContext;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.PullRequestPayload;
+import org.springframework.stereotype.Component;
 
 /**
  * Processors responsible for processing events, which are about {@link PullRequestPayload}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class PullRequestPayloadGitHubEventProcessor extends AbstractGitHubEventProcessor<PullRequestPayload>
 {
     /**

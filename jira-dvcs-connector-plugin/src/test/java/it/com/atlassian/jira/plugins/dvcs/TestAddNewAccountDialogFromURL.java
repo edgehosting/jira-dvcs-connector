@@ -91,9 +91,9 @@ public class TestAddNewAccountDialogFromURL extends BaseOrganizationTest
         @Override
         public BaseConfigureOrganizationsPage addOrganizationFailingStep1(String url) {return null;}
         @Override
-        public BaseConfigureOrganizationsPage addOrganizationFailingOAuth() {return null;}
+        public BaseConfigureOrganizationsPage addOrganizationFailingOAuth(String username, String password) {return null;}
         @Override
-        public BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync) {return null;}
+        public BaseConfigureOrganizationsPage addOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autosync, String username, String password) {return null;}
 
         private final String selectHost;
         private final Boolean expand;

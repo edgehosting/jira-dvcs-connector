@@ -20,6 +20,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +49,7 @@ import javax.annotation.Nullable;
  * BaseRemoteRequestor
  * <p/>
  * <p/>
- * <br />
- * <br />
- * Created on 13.7.2012, 10:25:24 <br />
- * <br />
+ * <br /> <br /> Created on 13.7.2012, 10:25:24 <br /> <br />
  *
  * @author jhocman@atlassian.com
  */
@@ -79,7 +78,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (parameters == null)
         {
             return null;
-        } else
+        }
+        else
         {
             return Maps.transformValues(parameters, STRING_TO_LIST_STRING);
         }
@@ -104,9 +104,23 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     @Override
+    public <T> T post(final String uri, final String body, final ContentType contentType, final ResponseCallback<T> callback)
+    {
+        HttpPost method = new HttpPost();
+        return requestWithBody(method, uri, body, contentType, callback);
+    }
+
+    @Override
     public <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback)
     {
         return putWithRetry(uri, parameters, callback);
+    }
+
+    @Override
+    public <T> T put(String uri, String body, ContentType contentType, ResponseCallback<T> callback)
+    {
+        HttpPut method = new HttpPut();
+        return requestWithBody(method, uri, body, contentType, callback);
     }
 
     // --------------------------------------------------------------------------------------------------
@@ -114,7 +128,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     // --------------------------------------------------------------------------------------------------
 
     private <T> T getWithRetry(final String uri, final Map<String, List<String>> parameters,
-                               final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -128,7 +142,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T deleteWithRetry(final String uri, final Map<String, List<String>> parameters,
-                                  final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -142,7 +156,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T postWithRetry(final String uri, final Map<String, ? extends Object> parameters,
-                                final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -156,7 +170,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
     }
 
     private <T> T putWithRetry(final String uri, final Map<String, String> parameters,
-                               final ResponseCallback<T> callback)
+            final ResponseCallback<T> callback)
     {
         return new BadRequestRetryer<T>().retry(new Callable<T>()
         {
@@ -223,38 +237,92 @@ public class BaseRemoteRequestor implements RemoteRequestor
 
         if (log.isDebugEnabled())
         {
-            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[]{method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders())});
+            log.debug("[REST call {} {}, Params: {} \nHeaders: {}]", new Object[] { method.getMethod(), finalUrl, sb.toString(), sanitizeHeadersForLogging(method.getAllHeaders()) });
         }
     }
 
-    private <T> T requestWithPayload(HttpEntityEnclosingRequestBase method, String uri, Map<String, ? extends Object> params, ResponseCallback<T> callback)
+    private <T> T requestWithPayload(final HttpEntityEnclosingRequestBase method, final String uri, final Map<String, ? extends Object> params, final ResponseCallback<T> callback)
     {
-        HttpClient client = httpClientProvider.getHttpClient();
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri, params);
+                        setPayloadParams(method, params);
+                    }
+                },
+                callback,
+                false);
+    }
+
+    private <T> T requestWithBody(final HttpEntityEnclosingRequestBase method, final String uri, final String body, final ContentType contentType,
+            ResponseCallback<T> callback)
+    {
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri, null);
+                        setBody(method, body, contentType);
+                    }
+                },
+                callback,
+                false);
+    }
+
+    private <T> T requestWithoutPayload(final HttpRequestBase method, final String uri, final Map<String, List<String>> parameters, final ResponseCallback<T> callback)
+    {
+        return request(
+                method,
+                new ClientConfigurator()
+                {
+                    @Override
+                    public void configureClient(HttpClient client) throws IOException, URISyntaxException
+                    {
+                        createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
+                    }
+                },
+                callback,
+                apiProvider.isCached());
+    }
+
+    private static interface ClientConfigurator {
+
+        public void configureClient(HttpClient client) throws IOException, URISyntaxException;
+    }
+
+    private <T, U extends HttpRequestBase> T request(U method, ClientConfigurator c, ResponseCallback<T> callback, boolean cached) {
+        HttpClient client = httpClientProvider.getHttpClient(cached);
         RemoteResponse response = null;
 
         HttpResponse httpResponse = null;
         try
         {
-            createConnection(client, method, uri, params);
-            setPayloadParams(method, params);
+            c.configureClient(client);
 
             httpResponse = client.execute(method);
             response = checkAndCreateRemoteResponse(method, client, httpResponse);
 
             return callback.onResponse(response);
 
-        } catch (BitbucketRequestException e)
-        {
-            throw e; // Unauthorized or NotFound exceptions will be rethrown
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             log.debug("Failed to execute request: " + method.getURI(), e);
             throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
+        }
+        finally
         {
             closeResponse(response);
             SystemUtils.releaseConnection(method, httpResponse);
@@ -273,39 +341,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         }
     }
 
-    private <T> T requestWithoutPayload(HttpRequestBase method, String uri, Map<String, List<String>> parameters, ResponseCallback<T> callback)
-    {
-        HttpClient client = httpClientProvider.getHttpClient(apiProvider.isCached());
-
-        RemoteResponse response = null;
-
-        HttpResponse httpResponse = null;
-        try
-        {
-            createConnection(client, method, uri + multiParamsToString(parameters, uri.contains("?")), parameters);
-
-            httpResponse = client.execute(method);
-            response = checkAndCreateRemoteResponse(method, client, httpResponse);
-
-            return callback.onResponse(response);
-
-        } catch (IOException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-
-        } catch (URISyntaxException e)
-        {
-            log.debug("Failed to execute request: " + method.getURI(), e);
-            throw new BitbucketRequestException("Failed to execute request " + method.getURI(), e);
-        } finally
-        {
-            closeResponse(response);
-            SystemUtils.releaseConnection(method, httpResponse);
-        }
-    }
-
-    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse) throws IOException
+    private RemoteResponse checkAndCreateRemoteResponse(HttpRequestBase method, HttpClient client, HttpResponse httpResponse)
+            throws IOException
     {
 
         RemoteResponse response = new RemoteResponse();
@@ -330,7 +367,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                     toBeThrown = new BitbucketRequestException.Forbidden_403();
                     break;
                 case HttpStatus.SC_NOT_FOUND:
-                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI()+" content "+content);
+                    toBeThrown = new BitbucketRequestException.NotFound_404(method.getMethod() + " " + method.getURI() + " content " + content);
                     break;
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     toBeThrown = new BitbucketRequestException.InternalServerError_500(content);
@@ -349,7 +386,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         return response;
     }
 
-    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode) throws IOException
+    private String logRequestAndResponse(HttpRequestBase method, HttpResponse httpResponse, int statusCode)
+            throws IOException
     {
         String responseAsString = null;
         if (httpResponse.getEntity() != null)
@@ -363,14 +401,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
         if (log.isWarnEnabled())
         {
             log.warn("Failed to properly execute request [{} {}], \nParams: {}, \nResponse code {}",
-                    new Object[]{method.getMethod(), method.getURI(), method.getParams(), statusCode});
+                    new Object[] { method.getMethod(), method.getURI(), method.getParams(), statusCode });
         }
 
         if (log.isDebugEnabled())
         {
             log.debug("Failed to properly execute request [{} {}], \nHeaders: {}, \nParams: {}, \nResponse code {}, response: {}",
-                    new Object[]{method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
-                            statusCode, responseAsString});
+                    new Object[] { method.getMethod(), method.getURI(), sanitizeHeadersForLogging(method.getAllHeaders()), method.getParams(),
+                            statusCode, responseAsString }
+            );
         }
 
         return responseAsString;
@@ -404,7 +443,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
             if (!urlAlreadyHasParams)
             {
                 queryStringBuilder.append("?");
-            } else
+            }
+            else
             {
                 queryStringBuilder.append("&");
             }
@@ -452,7 +492,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         try
         {
             return URLEncoder.encode(str, "UTF-8");
-        } catch (UnsupportedEncodingException e)
+        }
+        catch (UnsupportedEncodingException e)
         {
             throw new BitbucketRequestException("Required encoding not found", e);
         }
@@ -466,7 +507,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             remoteUrl = uri;
 
-        } else
+        }
+        else
         {
             String apiUrl = uri.startsWith("/api/") ? apiProvider.getHostUrl() : apiProvider.getApiUrl();
             remoteUrl = apiUrl + uri;
@@ -488,7 +530,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
         void process(String key, String value);
     }
 
-    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, ? extends Object> params) throws IOException
+    private void setPayloadParams(HttpEntityEnclosingRequestBase method, Map<String, ? extends Object> params)
+            throws IOException
     {
         if (params != null)
         {
@@ -504,6 +547,15 @@ public class BaseRemoteRequestor implements RemoteRequestor
             });
 
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            method.setEntity(entity);
+        }
+    }
+
+    private void setBody(HttpEntityEnclosingRequestBase method, String body, ContentType contentType)
+    {
+        if (body != null)
+        {
+            StringEntity entity = new StringEntity(body, contentType);
             method.setEntity(entity);
         }
     }
@@ -527,7 +579,8 @@ public class BaseRemoteRequestor implements RemoteRequestor
                         processParameter.process(entry.getKey(), v.toString());
                     }
                 }
-            } else
+            }
+            else
             {
                 if (value != null)
                 {

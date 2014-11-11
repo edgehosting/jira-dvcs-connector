@@ -2,40 +2,44 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.atlassian.jira.plugins</groupId>
-		<artifactId>jira-dvcs-connector-parent</artifactId>
-		<version>2.1.22-SNAPSHOT</version>
-	</parent>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.jira.plugins</groupId>
+        <artifactId>jira-dvcs-connector-parent</artifactId>
+        <version>2.2.8-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>jira-dvcs-connector-github-enterprise</artifactId>
-	<packaging>jar</packaging>
-	<name>Jira DVCS Connector GitHub Enterprise module</name>
-	<description>Jira DVCS Connector GitHub Enterprise module</description>
+    <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
+    <packaging>jar</packaging>
+    <name>Jira DVCS Connector GitHub Enterprise module</name>
+    <description>Jira DVCS Connector GitHub Enterprise module</description>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.atlassian.jira.plugins</groupId>
-			<artifactId>jira-dvcs-connector-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.atlassian.jira.plugins</groupId>
-			<artifactId>jira-dvcs-connector-github</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.mylyn.github</groupId>
-			<artifactId>org.eclipse.egit.github.core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-github</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.mylyn.github</groupId>
+            <artifactId>org.eclipse.egit.github.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
         </dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+        </dependency>
+    </dependencies>
 </project>

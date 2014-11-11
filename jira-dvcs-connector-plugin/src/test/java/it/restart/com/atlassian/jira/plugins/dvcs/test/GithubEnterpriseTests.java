@@ -7,37 +7,41 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
-import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
-import static it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController.AccountType.getGHEAccountType;
+import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType.getGHEAccountType;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
     private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
+    private static final String REPOSITORY_NAME = "test-project";
     private OAuth oAuth;
-    
+
+    private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList(new String[] { "missingcommits", "repo1", "test", "test-project", "noauthor" });
+
     @BeforeClass
     public void beforeClass()
     {
@@ -45,7 +49,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         new JiraLoginPageController(jira).login();
         // log in to github enterprise
         new MagicVisitor(jira).visit(GithubLoginPage.class, GITHUB_ENTERPRISE_URL).doLogin();
-        
+
         // setup up OAuth from github
         oAuth = new MagicVisitor(jira).visit(GithubOAuthPage.class, GITHUB_ENTERPRISE_URL)
                 .addConsumer(jira.getProductInstance().getBaseUrl());
@@ -63,7 +67,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         // log out from github enterprise
         new MagicVisitor(jira).visit(GithubLoginPage.class, GITHUB_ENTERPRISE_URL).doLogout();
     }
-    
+
     @BeforeMethod
     public void beforeMethod()
     {
@@ -80,7 +84,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "atlassian", new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization.containsRepository("private-dvcs-connector-test"));
-    }    
+    }
 
     @Test
     @Override
@@ -90,8 +94,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
-        assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
+        assertThat(organization).isNotNull();
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
     }
 
     @Test
@@ -101,26 +105,26 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
-        
-        assertThat(organization).isNotNull(); 
-        assertThat(organization.getRepositories(true).size()).isEqualTo(5);
 
-        assertThat(getCommitsForIssue("QA-2",6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        assertThat(organization).isNotNull();
+        assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
+
+        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\n.*Error retrieving list of repositories.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\n.*Error retrieving list of repositories.*")
     public void addOrganizationInvalidAccount()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "I_AM_SURE_THIS_ACCOUNT_IS_INVALID",
                 getOAuthCredentials(), false, true);
     }
-    
+
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -129,7 +133,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     }
 
     @Override
-    @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
+    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -144,9 +148,9 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
-        
+
         // QA-2
-        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3",1);
+        List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1);
         assertThat(commitMessages).hasSize(1);
 
         BitBucketCommitEntry commitMessage = commitMessages.get(0);
@@ -156,7 +160,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         assertThat(commitMessage.getDeletions(statistics.get(0))).isEqualTo("-");
 
         // QA-4
-        commitMessages = getCommitsForIssue("QA-4",1);
+        commitMessages = getCommitsForIssue("QA-4", 1);
         assertThat(commitMessages).hasSize(1);
 
         commitMessage = commitMessages.get(0);
@@ -174,21 +178,15 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Test
     public void testPostCommitHookAddedAndRemoved()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME, getOAuthCredentials(), true);
+        RepositoriesPageController.AccountType gheAccountType = getGHEAccountType(GITHUB_ENTERPRISE_URL);
+        testPostCommitHookAddedAndRemoved(gheAccountType, REPOSITORY_NAME, jira, getOAuthCredentials());
+    }
 
-        // check that it created postcommit hook
-        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
-        String hooksURL = GITHUB_ENTERPRISE_URL + "/jirabitbucketconnector/test-project/admin/hooks";
-        jira.getTester().gotoUrl(hooksURL);
-        String hooksPage = jira.getTester().getDriver().getPageSource();
-        assertThat(hooksPage).contains(githubServiceConfigUrlPath);
-        // delete repository
-        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
-        // check that postcommit hook is removed
-        jira.getTester().gotoUrl(hooksURL);
-        hooksPage = jira.getTester().getDriver().getPageSource();
-        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
+    @Override
+    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    {
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls(GITHUB_ENTERPRISE_URL, REPOSITORY_NAME);
+        return actualHookUrls.contains(jiraCallbackUrl);
     }
 
     @Test
@@ -216,7 +214,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("test-project", false);
+        AccountsPageAccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -255,7 +253,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
             Assert.assertFalse(repository.hasWarning());
         }
     }
-    
+
     private List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits)
     {
         return jira.visit(JiraViewIssuePage.class, issueKey)

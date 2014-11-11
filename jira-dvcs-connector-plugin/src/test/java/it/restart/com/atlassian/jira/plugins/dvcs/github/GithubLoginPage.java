@@ -14,6 +14,9 @@ public class GithubLoginPage implements Page
     @ElementBy(id = "login_field")
     private PageElement githubWebLoginField;
 
+    @ElementBy(id = "logout")
+    private PageElement oldGithubWebLogoutLink;
+
     @ElementBy(xpath = "//*[@aria-label='Sign out']")
     private PageElement githubWebLogoutLink;
 
@@ -73,20 +76,27 @@ public class GithubLoginPage implements Page
      */
     public void doLogout()
     {
-        // if the logout button is not there, we don't need to logout
         if (githubWebLogoutLink.isPresent())
         {
             githubWebLogoutLink.click();
-            try
-            {
-                // GitHub sometimes requires logout confirm
-                Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
-                getGithubWebLogoutConfirm.click();
-            }
-            catch (AssertionError e)
-            {
-                // GitHub doesn't requires logout confirm
-            }
+        }
+        else if (oldGithubWebLogoutLink.isPresent())
+        {
+            oldGithubWebLogoutLink.click();
+        }
+        else
+        {
+            return; // skip if user has already logged out
+        }
+        try
+        {
+            // GitHub sometimes requires logout confirm
+            Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
+            getGithubWebLogoutConfirm.click();
+        }
+        catch (AssertionError e)
+        {
+            // GitHub doesn't requires logout confirm
         }
     }
 }

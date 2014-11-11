@@ -41,7 +41,7 @@ public final class DefaultAuthenticationFactoryTest {
         when(credentialMock.getAccessToken())  .thenReturn(null); // not necessary, but null value has to be handled
         when(credentialMock.getAdminUsername()).thenReturn(null); // not necessary, but null value has to be handled
 
-        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
+        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(encryptorMock);
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
 
         assertThat(authentication).isEqualTo(Authentication.ANONYMOUS);
@@ -54,7 +54,7 @@ public final class DefaultAuthenticationFactoryTest {
         when(credentialMock.getAccessToken())  .thenReturn("");
         when(credentialMock.getAdminUsername()).thenReturn("");
 
-        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
+        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(encryptorMock);
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
 
         assertThat(authentication).isEqualTo(Authentication.ANONYMOUS);
@@ -67,7 +67,7 @@ public final class DefaultAuthenticationFactoryTest {
         when(credentialMock.getAccessToken())  .thenReturn("accessToken");
         when(credentialMock.getAdminUsername()).thenReturn(null);
 
-        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(null); // no encryptor needed
+        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(encryptorMock);
         Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
 
         assertThat(authentication).isInstanceOf(OAuthAuthentication.class);

@@ -3,6 +3,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.entity.ContentType;
+
 public interface RemoteRequestor
 {
 
@@ -36,12 +38,38 @@ public interface RemoteRequestor
     <T> T post(String uri,  Map<String, ? extends Object> parameters, ResponseCallback<T> callback);
 
     /**
+     * Executes post request with the provided body and appropriate content type.
+     * 
+     * @param uri
+     *            correctly encoded uri required
+     * @param body
+     *            e.g.: json body
+     * @param contentType
+     *            content type of body
+     * @param callback
+     * @return response of callback
+     */
+    <T> T post(String uri, String body, ContentType contentType, ResponseCallback<T> callback);
+
+    /**
      * Executes put request with the provided parameters.
      * After successful request, {@link ResponseCallback#onResponse(RemoteResponse)} is called on the provided callback.
      *
      * @param uri correctly encoded uri required
      */
     <T> T put(String uri, Map<String, String> parameters, ResponseCallback<T> callback);
+
+    /**
+     * Executes put request with the provided parameters.
+     * After successful request, {@link ResponseCallback#onResponse(RemoteResponse)} is called on the provided callback.
+     *
+     * @param uri correctly encoded uri required
+     * @param body  e.g.: json body
+     * @param contentType content type of body
+     * @param callback
+     *
+     */
+    <T> T put(String uri, String body, ContentType contentType, ResponseCallback<T> callback);
 
     /**
      * Executes delete request with the provided parameters.

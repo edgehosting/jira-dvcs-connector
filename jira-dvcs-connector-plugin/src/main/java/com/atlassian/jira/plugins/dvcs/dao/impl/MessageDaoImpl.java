@@ -10,14 +10,18 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Resource;
+
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * An implementation of {@link MessageDao}.
@@ -25,6 +29,7 @@ import javax.annotation.Resource;
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class MessageDaoImpl implements MessageDao
 {
 
@@ -32,6 +37,7 @@ public class MessageDaoImpl implements MessageDao
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
     
     /**
@@ -117,7 +123,7 @@ public class MessageDaoImpl implements MessageDao
                 alias(MessageMapping.class, "message");
                 alias(MessageTagMapping.class, "messageTag");
 
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
+                join(MessageTagMapping.class, column(MessageMapping.class, ID), MessageTagMapping.MESSAGE);
 
                 where(eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")));
             }
@@ -155,8 +161,8 @@ public class MessageDaoImpl implements MessageDao
                 alias(MessageTagMapping.class, "messageTag");
                 alias(MessageQueueItemMapping.class, "messageQueueItem");
 
-                join(MessageTagMapping.class, column(MessageMapping.class, "ID"), MessageTagMapping.MESSAGE);
-                join(MessageQueueItemMapping.class, column(MessageMapping.class, "ID"), MessageQueueItemMapping.MESSAGE);
+                join(MessageTagMapping.class, column(MessageMapping.class, ID), MessageTagMapping.MESSAGE);
+                join(MessageQueueItemMapping.class, column(MessageMapping.class, ID), MessageQueueItemMapping.MESSAGE);
 
                 where(and( //
                         eq(column(MessageTagMapping.class, MessageTagMapping.TAG), parameter("tag")), //

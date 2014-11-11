@@ -11,9 +11,11 @@ import com.atlassian.jira.plugins.dvcs.model.MessageState;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.util.ao.QueryTemplate;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,6 +23,7 @@ import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.service.message.MessagingService.DEFAULT_PRIORITY;
 import static com.atlassian.jira.plugins.dvcs.service.message.MessagingService.SOFTSYNC_PRIORITY;
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
 /**
  * {@link MessageQueueItemDao} implementation over AO.
@@ -28,6 +31,7 @@ import static com.atlassian.jira.plugins.dvcs.service.message.MessagingService.S
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class MessageQueueItemDaoImpl implements MessageQueueItemDao
 {
 
@@ -41,6 +45,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
+    @ComponentImport
     private ActiveObjects activeObjects;
 
     /**
@@ -252,7 +257,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                 alias(MessageQueueItemMapping.class, "queueItem");
                 alias(MessageMapping.class, "message");
 
-                join(MessageMapping.class, column(MessageQueueItemMapping.class, MessageQueueItemMapping.MESSAGE), "ID");
+                join(MessageMapping.class, column(MessageQueueItemMapping.class, MessageQueueItemMapping.MESSAGE), ID);
 
                 where(and(//
                         eq(column(MessageMapping.class, MessageMapping.ADDRESS), parameter("address")), //
@@ -261,7 +266,7 @@ public class MessageQueueItemDaoImpl implements MessageQueueItemDao
                         eq(column(MessageQueueItemMapping.class, MessageQueueItemMapping.STATE), parameter("state")) //
                 ));
 
-                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName("ID")), true));
+                order(orderBy(column(MessageMapping.class, queryHelper.getSqlColumnName(ID)), true));
             }
         }.toQuery(MapBuilder.<String, Object> build("address", address, "priority", priority, "queue", queue, "state", MessageState.PENDING));
         query.limit(1);

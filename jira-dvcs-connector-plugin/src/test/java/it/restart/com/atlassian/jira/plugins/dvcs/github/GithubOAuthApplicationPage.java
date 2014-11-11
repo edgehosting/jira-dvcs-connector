@@ -3,7 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.github;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 

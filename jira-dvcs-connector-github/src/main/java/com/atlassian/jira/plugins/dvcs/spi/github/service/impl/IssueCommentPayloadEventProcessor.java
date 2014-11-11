@@ -9,16 +9,17 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.event.IssueCommentPayload;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import javax.annotation.Resource;
 
 /**
  * The {@link IssueCommentPayload} event processor.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
+@Component
 public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProcessor<IssueCommentPayload>
 {
 
@@ -63,11 +64,9 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
 
     /**
      * Resolves {@link PullRequest} for the provided pull request PR HTML URL.
-     * 
-     * @param repository
-     *            PR owner
-     * @param htmlUrl
-     *            of the {@link PullRequest}
+     *
+     * @param repository PR owner
+     * @param htmlUrl of the {@link PullRequest}
      * @return resolved {@link PullRequest}
      */
     private PullRequest getPullRequestByHtmlUrl(Repository repository, String htmlUrl)
@@ -97,7 +96,8 @@ public class IssueCommentPayloadEventProcessor extends AbstractGitHubEventProces
 
             return null;
 
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

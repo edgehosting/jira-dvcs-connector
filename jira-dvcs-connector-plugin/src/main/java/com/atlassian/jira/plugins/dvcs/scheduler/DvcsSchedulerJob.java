@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -22,20 +23,25 @@ public class DvcsSchedulerJob implements JobHandler
 
     private final OrganizationService organizationService;
     private final RepositoryService repositoryService;
+    private final ActiveObjects activeObjects;
 
     @Autowired
-    public DvcsSchedulerJob(final OrganizationService organizationService, final RepositoryService repositoryService)
+    public DvcsSchedulerJob(final OrganizationService organizationService, final RepositoryService repositoryService, final ActiveObjects activeObjects)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
+        this.activeObjects = activeObjects;
     }
 
     @Override
     public void execute(final JobInfo jobInfo)
     {
-        LOG.debug("Running DvcsSchedulerJob");
-        syncOrganizations();
-        cleanOrphanRepositories();
+        if (activeObjects.moduleMetaData().isDataSourcePresent())
+        {
+            LOG.debug("Running DvcsSchedulerJob");
+            syncOrganizations();
+            cleanOrphanRepositories();
+        }
     }
 
     private void syncOrganizations()
@@ -54,7 +60,8 @@ public class DvcsSchedulerJob implements JobHandler
     }
 
     /**
-     * Cleans orphan repositories - repositories mark as deleted with not existing organization.
+     * Cleans orphan repositories - deletes repositories with no existing organization,
+     * whether or not the repository deleted flag is set.
      */
     private void cleanOrphanRepositories()
     {

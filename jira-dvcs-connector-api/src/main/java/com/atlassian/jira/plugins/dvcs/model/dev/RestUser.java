@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
+import com.google.gson.annotations.SerializedName;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -9,6 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestUser
 {
     private String avatar;
+    @SerializedName("emailAddress")
     private String emailAddress;
     private String name;
     private String username;

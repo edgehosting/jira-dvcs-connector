@@ -24,6 +24,15 @@ public class BitbucketBranch implements Serializable
     private String name;
     private boolean mainbranch;
 
+    public BitbucketBranch()
+    {
+    }
+
+    public BitbucketBranch(final String name)
+    {
+        this.name = name;
+    }
+
     public String getName()
     {
         return name;

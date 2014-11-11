@@ -8,6 +8,8 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginController;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.descriptors.WebFragmentModuleDescriptor;
 import com.atlassian.util.concurrent.ThreadFactories;
 import org.apache.commons.lang.StringUtils;
@@ -17,10 +19,14 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
@@ -36,6 +42,8 @@ import java.util.concurrent.TimeUnit;
  * @author jhocman@atlassian.com
  *
  */
+@ExportAsService (AccountsConfigService.class)
+@Component
 public class BitbucketAccountsConfigService implements AccountsConfigService, DisposableBean // TODO move to BB module
 {
 
@@ -51,14 +59,16 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
     private final PluginAccessor pluginAccessor;
     private final ExecutorService executorService;
 
+    @Autowired
     public BitbucketAccountsConfigService(AccountsConfigProvider configProvider, OrganizationService organizationService,
-            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob, PluginController pluginController, PluginAccessor pluginAccessor)
+            BitbucketAccountsReloadJobScheduler bitbucketAccountsReloadJob,
+            @ComponentImport PluginController pluginController, @ComponentImport PluginAccessor pluginAccessor)
     {
         this.configProvider = configProvider;
         this.organizationService = organizationService;
         this.bitbucketAccountsReloadJob = bitbucketAccountsReloadJob;
-        this.pluginController = pluginController;
-        this.pluginAccessor = pluginAccessor;
+        this.pluginController = checkNotNull(pluginController);
+        this.pluginAccessor = checkNotNull(pluginAccessor);
         this.executorService = Executors.newFixedThreadPool(1, ThreadFactories.namedThreadFactory("DVCSConnector.BitbucketAccountsConfigService"));
     }
     
@@ -126,6 +136,7 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
 
     private void reloadInternal()
     {
+        log.info("Reloading integrated account");
         //
         AccountsConfig configuration = configProvider.provideConfiguration();
         Organization existingAccount = organizationService.findIntegratedAccount();
@@ -175,10 +186,12 @@ public class BitbucketAccountsConfigService implements AccountsConfigService, Di
             log.info("Creating new integrated account.");
             final Organization newOrganization = createNewOrganization(info);
             organizationService.save(newOrganization);
+            log.info("Created new integrated account.");
         } else
         {
             log.info("Found the same user-added account.");
             markAsIntegratedAccount(userAddedAccount, info);
+            log.info("Marked the user-added account as integrated account");
         }
     }
 

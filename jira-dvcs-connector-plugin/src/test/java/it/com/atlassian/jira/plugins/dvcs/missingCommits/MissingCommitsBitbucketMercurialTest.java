@@ -1,6 +1,11 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -9,11 +14,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Basic
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.ZipUtils;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
-import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
-import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.BeforeClass;
 
@@ -33,7 +33,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
     public static void initializeBitbucketRepositoriesREST()
     {
         HttpClientProvider httpClientProvider = new HttpClientProvider();
-        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+        httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
 
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
                                                                    DVCS_REPO_OWNER,
@@ -49,19 +49,23 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         {
             bitbucketRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
         }
-        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
     }
 
     @Override
     void removeRemoteDvcsRepository()
     {
-        removeRepository(getMissingCommitsRepositoryName());
-
-        for ( BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
+        // bitbucketRepositoriesREST might not be initialized if AbstractMissingCommitsTest#beforeClass() failed
+        if (bitbucketRepositoriesREST != null)
         {
-            if (timestampNameTestResource.isExpired(repository.getName()))
+            removeRepository(getMissingCommitsRepositoryName());
+
+            for (BitbucketRepository repository : bitbucketRepositoriesREST.getAllRepositories(DVCS_REPO_OWNER))
             {
-                removeRepository(repository.getName());
+                if (timestampNameTestResource.isExpired(repository.getName()))
+                {
+                    removeRepository(repository.getName());
+                }
             }
         }
     }
@@ -72,7 +76,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
         {
             bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
         }
-        catch (BitbucketRequestException.NotFound_404 e) {} // the repo does not exist
+        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
     }
 
     @Override
@@ -146,7 +150,7 @@ public class MissingCommitsBitbucketMercurialTest extends AbstractMissingCommits
             new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(oAuth.applicationId);
         }
         // log out from bitbucket
-        new MagicVisitor(jira).visit(it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage.class).doLogout();
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }
 
     @Override

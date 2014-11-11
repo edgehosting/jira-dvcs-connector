@@ -5,11 +5,13 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
+import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.NotificationService;
 import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -35,15 +37,18 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.Bitbu
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -60,6 +65,7 @@ import javax.annotation.Resource;
  *
  * @author Stanislav Dvorscak
  */
+@Component
 public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsumer<BitbucketSynchronizeActivityMessage>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitbucketSynchronizeActivityMessageConsumer.class);
@@ -82,12 +88,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
     @Resource
+    @ComponentImport
     private FeatureManager featureManager;
-    
-    public BitbucketSynchronizeActivityMessageConsumer()
-    {
-        super();
-    }
+    @Resource
+    private NotificationService notificationService;
 
     @Override
     public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, final BitbucketSynchronizeActivityMessage payload)
@@ -139,7 +143,12 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             try
             {
                 int localPrId = processActivity(payload, info, pullRestpoint);
+                final Set<String> oldIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
                 prIssueKeysCount = dao.updatePullRequestIssueKeys(repo, localPrId);
+                final Set<String> newIssueKeys = dao.getIssueKeys(repo.getId(), localPrId);
+
+                ImmutableSet<String> allIssueKeys = ImmutableSet.<String>builder().addAll(newIssueKeys).addAll(oldIssueKeys).build();
+                notificationService.broadcast(new DevSummaryChangedEvent(repo.getId(), repo.getDvcsType(), allIssueKeys));
             }
             catch (IllegalStateException e)
             {
@@ -283,7 +292,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     @VisibleForTesting
-    boolean  hasStatusChanged(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
+    boolean hasStatusChanged(BitbucketPullRequest remote, RepositoryPullRequestMapping local)
     {
         return !PullRequestStatus.fromBitbucketStatus(remote.getState()).name().equals(local.getLastStatus());
     }
@@ -418,17 +427,32 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
                         {
                             localCommit = saveCommit(repo, commit);
                             linkCommit(repo, localCommit, savedPullRequest);
-                        } else
+                        }
+                        else
                         {
                             if (syncDisabledHelper.isPullRequestCommitsFallback())
                             {
                                 remainingCommitsToDelete.clear();
                                 break;
                             }
-                            remainingCommitsToDelete.remove(localCommit);
+                            // handle the case of upgrading from 2.0.12 and the MERGE column not being there
+                            //  we need to make sure that merge commits sync-ed previously will now have the correct value of MERGE
+                            // only do this when not in fallback mode
+                            if (localCommit.isMerge() != isMergeCommit(commit))
+                            {
+                                // create a new commit that should have the correct MERGE flag
+                                //  and keep the old one in remainingCommitsToDelete so that it gets deleted later
+                                final RepositoryCommitMapping newLocalCommit = saveCommit(repo, commit);
+                                linkCommit(repo, newLocalCommit, savedPullRequest);
+                            }
+                            else
+                            {
+                                remainingCommitsToDelete.remove(localCommit);
+                            }
                         }
                     }
-                } catch(BitbucketRequestException.NotFound_404 e)
+                }
+                catch (BitbucketRequestException.NotFound_404 e)
                 {
                     LOGGER.info("There are no commits for pull request " + pullRequest.getId(), e);
                 }
@@ -443,7 +467,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             dao.unlinkCommits(repo, savedPullRequest, remainingCommitsToDelete);
             dao.removeCommits(remainingCommitsToDelete);
         }
-}
+    }
 
     private Iterable<BitbucketPullRequestCommit> getCommits(Repository repo, BitbucketPullRequest remotePullRequest, PullRequestRemoteRestpoint pullRestpoint)
     {
@@ -452,7 +476,8 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         if (commitsLink != null && !StringUtils.isBlank(commitsLink.getHref()))
         {
             commitsIterator = pullRestpoint.getPullRequestCommits(commitsLink.getHref(), getRequestLimit());
-        } else
+        }
+        else
         {
             // if there is no commits link, fall back to use generated commits url
             commitsIterator = pullRestpoint.getPullRequestCommits(repo.getOrgName(), repo.getSlug(), remotePullRequest.getId() + "", getRequestLimit());
@@ -462,10 +487,10 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     }
 
     private int getRequestLimit()
-    {                                      
+    {
         return featureManager.isEnabled(BITBUCKET_COMMITS_FALLBACK_FEATURE) ? BitbucketPageIterator.REQUEST_LIMIT : COMMITS_REQUEST_LIMIT;
     }
-    
+
     private void linkCommit(Repository domainRepository, RepositoryCommitMapping commitMapping,
             RepositoryPullRequestMapping request)
     {
@@ -497,9 +522,14 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         ret.put(RepositoryCommitMapping.MESSAGE, commit.getMessage());
         ret.put(RepositoryCommitMapping.NODE, commit.getHash());
         ret.put(RepositoryCommitMapping.DATE, commit.getDate());
-        ret.put(RepositoryCommitMapping.MERGE, commit.getParents() != null && commit.getParents().size() > 1);
+        ret.put(RepositoryCommitMapping.MERGE, isMergeCommit(commit));
 
         return ret;
+    }
+
+    private boolean isMergeCommit(final BitbucketPullRequestCommit commit)
+    {
+        return commit.getParents() != null && commit.getParents().size() > 1;
     }
 
 

@@ -1,9 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model.dev;
 
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.google.gson.annotations.SerializedName;
 
 /**
  *
@@ -14,7 +17,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestPullRequest
 {
     private RestUser author;
+    @SerializedName("createdOn")
     private long createdOn;
+    @SerializedName("updatedOn")
     private long updatedOn;
     private long id;
     private String title;
@@ -23,7 +28,9 @@ public class RestPullRequest
     private RestRef source;
     private RestRef destination;
     private List<RestParticipant> participants;
+    @SerializedName("commentCount")
     private int commentCount;
+    private List<RestPrCommit> commits;
 
     public RestUser getAuthor()
     {
@@ -133,6 +140,16 @@ public class RestPullRequest
     public void setCommentCount(final int commentCount)
     {
         this.commentCount = commentCount;
+    }
+
+    public List<RestPrCommit> getCommits()
+    {
+        return commits;
+    }
+
+    public void setCommits(final List<RestPrCommit> commits)
+    {
+        this.commits = commits;
     }
 }
 

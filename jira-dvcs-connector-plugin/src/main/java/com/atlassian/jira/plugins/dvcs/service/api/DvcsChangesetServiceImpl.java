@@ -5,15 +5,21 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
+import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.google.common.collect.ImmutableList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@ExportAsService (DvcsChangesetService.class)
+@Component
 public class DvcsChangesetServiceImpl implements DvcsChangesetService
 {
     private ChangesetService changesetService;
 
+    @Autowired
     public DvcsChangesetServiceImpl(ChangesetService changesetService)
     {
         this.changesetService = changesetService;

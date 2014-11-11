@@ -1,21 +1,43 @@
 package com.atlassian.jira.plugins.dvcs.ondemand;
 
-import com.atlassian.sal.api.lifecycle.LifecycleAware;
+import com.atlassian.jira.plugins.dvcs.scheduler.SchedulerLauncher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class AccountsConfigLifecycler implements LifecycleAware
+import javax.annotation.PostConstruct;
+
+import static com.atlassian.jira.plugins.dvcs.scheduler.SchedulerLauncher.SchedulerLauncherJob;
+
+@Component
+public class AccountsConfigLifecycler
 {
-    private final AccountsConfigService configService;
+    private static final Logger log = LoggerFactory.getLogger(AccountsConfigLifecycler.class);
 
-    public AccountsConfigLifecycler(AccountsConfigService configService)
+    private final AccountsConfigService configService;
+    private final SchedulerLauncher schedulerLauncher;
+
+    @Autowired
+    public AccountsConfigLifecycler(AccountsConfigService configService, final SchedulerLauncher schedulerLauncher)
     {
         this.configService = configService;
+        this.schedulerLauncher = schedulerLauncher;
     }
 
-    @Override
-    public void onStart()
+    @PostConstruct
+    public void postConstruct()
     {
-        configService.scheduleReload();
+        schedulerLauncher.runWhenReady(new SchedulerLauncherJob()
+        {
+            @Override
+            public void run()
+            {
+                configService.scheduleReload();
+                log.debug("executed launcher job");
+            }
+        });
+        log.debug("scheduled launcher job");
     }
-
 }
 

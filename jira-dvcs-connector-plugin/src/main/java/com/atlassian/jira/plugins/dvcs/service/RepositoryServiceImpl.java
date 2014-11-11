@@ -20,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
@@ -29,6 +30,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -47,9 +49,7 @@ import javax.annotation.Resource;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_PULL_REQUESTS;
 
-/**
- * The Class RepositoryServiceImpl.
- */
+@Component
 public class RepositoryServiceImpl implements RepositoryService
 {
     @VisibleForTesting
@@ -76,9 +76,11 @@ public class RepositoryServiceImpl implements RepositoryService
     private BranchService branchService;
 
     @Resource
+    @ComponentImport
     private ApplicationProperties applicationProperties;
 
     @Resource
+    @ComponentImport
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Resource
@@ -611,26 +613,20 @@ public class RepositoryServiceImpl implements RepositoryService
     {
         for (Repository repository : repositories)
         {
-            prepareForRemove(repository);
+            if (!repository.isDeleted())
+            {
+                repository.setDeleted(true);
+                repositoryDao.save(repository);
+                synchronizer.pauseSynchronization(repository, true);
+            }
+
             // try remove postcommit hook
             if (repository.isLinked())
             {
                 removePostcommitHook(repository);
                 repository.setLinked(false);
+                repositoryDao.save(repository);
             }
-
-            repositoryDao.save(repository);
-        }
-    }
-
-    @Override
-    public void prepareForRemove(Repository repository)
-    {
-        if (!repository.isDeleted())
-        {
-    	    synchronizer.pauseSynchronization(repository, true);
-            repository.setDeleted(true);
-            repositoryDao.save(repository);
         }
     }
 

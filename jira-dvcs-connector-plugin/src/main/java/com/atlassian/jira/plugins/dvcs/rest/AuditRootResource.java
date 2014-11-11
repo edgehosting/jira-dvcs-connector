@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.util.collect.MapBuilder;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/audit")
+@Path ("/audit")
 public class AuditRootResource
 {
     private static final Logger log = LoggerFactory.getLogger(AuditRootResource.class);
@@ -27,6 +28,7 @@ public class AuditRootResource
     private SyncAuditLogDao syncAuditDao;
 
     @Resource
+    @ComponentImport
     private TemplateRenderer templateRender;
 
 
@@ -36,10 +38,10 @@ public class AuditRootResource
     }
 
     @AdminOnly
-    @Produces(MediaType.TEXT_HTML)
-    @Path("/repository/all/")
+    @Produces (MediaType.TEXT_HTML)
+    @Path ("/repository/all/")
     @GET
-    public Response showSyncAll(@QueryParam("page") Integer page)
+    public Response showSyncAll(@QueryParam ("page") Integer page)
     {
         try
         {
@@ -49,7 +51,8 @@ public class AuditRootResource
             return Response.ok(writer.toString()).build();
 
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             log.warn("", e);
             return Response.serverError().entity("Failed to render.").build();
@@ -57,10 +60,10 @@ public class AuditRootResource
     }
 
     @AdminOnly
-    @Produces(MediaType.TEXT_HTML)
-    @Path("/repository/{id}/")
+    @Produces (MediaType.TEXT_HTML)
+    @Path ("/repository/{id}/")
     @GET
-    public Response showSyncByRepo(@PathParam("id") int repoId, @QueryParam("page") Integer page)
+    public Response showSyncByRepo(@PathParam ("id") int repoId, @QueryParam ("page") Integer page)
     {
         try
         {
@@ -69,7 +72,8 @@ public class AuditRootResource
             templateRender.render("/templates/dvcs/audit/sync.vm", data, writer);
             return Response.ok(writer.toString()).build();
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             log.warn("", e);
             return Response.serverError().entity("Failed to render.").build();

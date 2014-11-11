@@ -6,12 +6,15 @@ import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,26 +29,30 @@ import static com.atlassian.activeobjects.spi.DatabaseType.ORACLE;
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class QueryHelperImpl implements QueryHelper
 {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryHelperImpl.class);
 
     /**
      * Injected {@link PluginAccessor} dependency.
      */
     @Resource
+    @ComponentImport
     private PluginAccessor pluginAccessor;
 
     /**
      * Injected {@link DataSourceProvider} dependency.
      */
     @Resource
+    @ComponentImport
     private DataSourceProvider dataSourceProvider;
 
     private final CachedReference<DataSourceMetaData> dataSourceMetaData;
 
-    public QueryHelperImpl(final CacheManager cacheManager)
+    @Autowired
+    public QueryHelperImpl(@ComponentImport final CacheManager cacheManager)
     {
         dataSourceMetaData = cacheManager.getCachedReference(getClass().getName() + ".dataSourceMetaData",
                 new Supplier<DataSourceMetaData>()
