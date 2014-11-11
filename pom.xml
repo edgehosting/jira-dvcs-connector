@@ -228,6 +228,18 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>net.java.dev.activeobjects</groupId>
+                <artifactId>activeobjects-test</artifactId>
+                <version>${ao.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>net.java.dev.activeobjects</groupId>
+                        <artifactId>activeobjects</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>${org.codehaus.jackson.version}</version>

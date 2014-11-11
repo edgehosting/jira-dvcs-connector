@@ -285,6 +285,11 @@
             <artifactId>atlassian-spring-scanner-runtime</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>net.java.dev.activeobjects</groupId>
+            <artifactId>activeobjects-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
