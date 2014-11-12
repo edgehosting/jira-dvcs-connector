@@ -174,15 +174,15 @@ public class ChangesetQDSL
             }
         };
 
-        final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Integer>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Integer>>()
+        final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Long>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Long>>()
         {
             @Override
-            public Function<Tuple, Integer> apply(@Nullable final ChangesetQueryMappings changesetQueryMappings, @Nullable final Connection connection)
+            public Function<Tuple, Long> apply(@Nullable final ChangesetQueryMappings changesetQueryMappings, @Nullable final Connection connection)
             {
-                return new Function<Tuple, Integer>()
+                return new Function<Tuple, Long>()
                 {
                     @Override
-                    public Integer apply(@Nullable final Tuple tuple)
+                    public Long apply(@Nullable final Tuple tuple)
                     {
                         final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
 
@@ -193,21 +193,29 @@ public class ChangesetQDSL
 
                         String fileDetailsJson = tuple.get(changesetMapping.FILE_DETAILS_JSON);
                         SQLUpdateClause update = buildUpdateChangesetFileDetails(connection, dvcsType, fileDetailsJson, fileData, node, id);
-                        update.execute();
-
-                        return 1;
+                        return update.execute();
                     }
                 };
             }
         };
-        return performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction).size();
+
+        // This should be a list of 1s but we might as well check
+        List<Long> numbersUpdated = performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
+
+        Integer result = 0;
+        for (Long aLong : numbersUpdated)
+        {
+            result += aLong.intValue();
+        }
+        return result;
     }
 
     SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, final String dvcsType,
             final String fileDetailsJson, final FileData fileData, String node, Integer id)
     {
         final QChangesetMapping updateChangesetMapping = new QChangesetMapping("CSV", "", QChangesetMapping.AO_TABLE_NAME);
-        SQLUpdateClause update = queryFactory.update(connection, updateChangesetMapping);
+        SQLUpdateClause update = queryFactory.update(connection, updateChangesetMapping)
+                .where(updateChangesetMapping.ID.eq(id));
 
         // we can use the file count in file data directly
         // https://jdog.jira-dev.com/browse/BBC-709 migrating file count from file data to separate column

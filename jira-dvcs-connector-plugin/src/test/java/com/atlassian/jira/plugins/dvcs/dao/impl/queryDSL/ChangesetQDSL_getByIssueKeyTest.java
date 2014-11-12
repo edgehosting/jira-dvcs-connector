@@ -115,8 +115,7 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
     public void testMultipleRepository() throws Exception
     {
         RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
-        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
-        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(2));
@@ -131,8 +130,7 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
     public void testMultipleRepositoryOneDisabled() throws Exception
     {
         RepositoryMapping secondRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
-        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
-        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
@@ -145,8 +143,7 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
     {
         OrganizationMapping secondOrganization = organizationAOPopulator.create("bogus");
         RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(secondOrganization);
-        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
-        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
@@ -160,27 +157,22 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         // Changeset for a different DVCS Type
         OrganizationMapping bogusOrganization = organizationAOPopulator.create("bogus");
         RepositoryMapping repositoryForBogusOrg = repositoryAOPopulator.createEnabledRepository(bogusOrganization);
-        final ImmutableMap<String, Object> boguesCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
-        changesetAOPopulator.createCSM(boguesCsParams, ISSUE_KEY, repositoryForBogusOrg);
+        changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, repositoryForBogusOrg);
 
         // Second changeset in this org, separate repository
         RepositoryMapping secondEnabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
-        final ImmutableMap<String, Object> secondCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "a3d91a6bdf0e59dbc5b793baa2b4a289c91fd931");
-        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(secondCsParams, ISSUE_KEY, secondEnabledRepository);
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM("a3d91a6bdf0e59dbc5b793baa2b4a289c91fd931", ISSUE_KEY, secondEnabledRepository);
         changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         // Disabled repository in this org
         RepositoryMapping thirdDisabledRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
-        final ImmutableMap<String, Object> disabledCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "0b137d202a56b712f4ef326e9900c7bc4d0835c6");
-        changesetAOPopulator.createCSM(disabledCsParams, ISSUE_KEY, thirdDisabledRepository);
+        changesetAOPopulator.createCSM("0b137d202a56b712f4ef326e9900c7bc4d0835c6", ISSUE_KEY, thirdDisabledRepository);
 
         // Another CS in this repo
-        final ImmutableMap<String, Object> secondCSInFirstRepoParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "9bd67f04ab3ff831741e3edb7ff8edfa5623cd93");
-        ChangesetMapping secondCSInFirstRepo = changesetAOPopulator.createCSM(secondCSInFirstRepoParams, ISSUE_KEY, enabledRepository);
+        ChangesetMapping secondCSInFirstRepo = changesetAOPopulator.createCSM( "9bd67f04ab3ff831741e3edb7ff8edfa5623cd93", ISSUE_KEY, enabledRepository);
 
         // Some other random CS that is unrelated
-        final ImmutableMap<String, Object> thirdCSInFirstRepoParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "721101938287c5dfcdc56b35a210761f6bc5d4ba");
-        changesetAOPopulator.createCSM(thirdCSInFirstRepoParams, "TTT-222", enabledRepository);
+        changesetAOPopulator.createCSM("721101938287c5dfcdc56b35a210761f6bc5d4ba", "TTT-222", enabledRepository);
 
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 

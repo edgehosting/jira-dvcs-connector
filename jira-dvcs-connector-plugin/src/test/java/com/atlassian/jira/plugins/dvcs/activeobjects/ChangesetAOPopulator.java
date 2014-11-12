@@ -25,6 +25,12 @@ public class ChangesetAOPopulator extends AOPopulator
         return create(ChangesetMapping.class, new HashMap<String, Object>());
     }
 
+    public ChangesetMapping createCSM(String node, String issueKey, RepositoryMapping repositoryMapping)
+    {
+        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, node);
+        return createCSM(csParams, issueKey, repositoryMapping);
+    }
+
     public ChangesetMapping createCSM(Map<String, Object> params)
     {
         return create(ChangesetMapping.class, params);

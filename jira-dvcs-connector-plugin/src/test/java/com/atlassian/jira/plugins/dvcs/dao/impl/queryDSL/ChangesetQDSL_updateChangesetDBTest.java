@@ -48,15 +48,15 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
 
     @Test
     @NonTransactional
-    public void testReturnsResults() throws Exception
+    public void testUpdates1() throws Exception
     {
-        final String filesData = "";
         changesetMappingWithIssue.setFilesData(FILES_JSON_WITH_DETAILS);
         changesetMappingWithIssue.setFileDetailsJson(null);
         changesetMappingWithIssue.setFileCount(0);
         changesetMappingWithIssue.save();
 
-        changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
+        int numberUpdated = changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
+        assertThat(numberUpdated, equalTo(1));
 
         ChangesetMapping retrievedChangeSetMapping = entityManager.get(ChangesetMapping.class, changesetMappingWithIssue.getID());
 
@@ -64,6 +64,37 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
         String expectedJson = ChangesetFileDetails.toJSON(ChangesetTransformer.transfromFileData(FileData.from(FILES_JSON_WITH_DETAILS, null)));
         String newJson = retrievedChangeSetMapping.getFileDetailsJson();
         assertThat(newJson, equalTo(expectedJson));
-//        assertThat(changesets.get(0).getID(), equalTo(changesetMappingWithIssue.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testUpdatesMany() throws Exception
+    {
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM("foo1", ISSUE_KEY, enabledRepository);
+        updateChangesetWithFileDetailsThatNeedUpdating(secondMapping);
+
+        ChangesetMapping thirdMapping = changesetAOPopulator.createCSM("foo2", ISSUE_KEY, enabledRepository);
+        updateChangesetWithFileDetailsThatNeedUpdating(thirdMapping);
+
+        ChangesetMapping fourthMapping = changesetAOPopulator.createCSM("foo3", ISSUE_KEY, enabledRepository);
+        updateChangesetWithFileDetailsThatNeedUpdating(fourthMapping);
+
+        // This one should not be picked up as the default values should be excluded from the query;
+        ChangesetMapping ignoredCS = changesetAOPopulator.createCSM(changesetAOPopulator.getDefaultCSParams());
+        ignoredCS.setNode("ignored");
+        ignoredCS.setFileDetailsJson("foo");
+        ignoredCS.setFilesData(null);
+        ignoredCS.save();
+
+        int numberUpdated = changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
+        assertThat(numberUpdated, equalTo(3));
+    }
+
+    private void updateChangesetWithFileDetailsThatNeedUpdating(ChangesetMapping changesetMapping)
+    {
+        changesetMapping.setFilesData(FILES_JSON_WITH_DETAILS);
+        changesetMapping.setFileDetailsJson(null);
+        changesetMapping.setFileCount(0);
+        changesetMapping.save();
     }
 }
