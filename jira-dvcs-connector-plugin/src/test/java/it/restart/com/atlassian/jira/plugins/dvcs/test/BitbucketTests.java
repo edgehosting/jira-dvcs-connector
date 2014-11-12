@@ -149,7 +149,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testCommitStatistics()
     {
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-2", 1); // throws AssertionError with other than 1 message
@@ -197,7 +199,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void testActivityPresentedForQA5()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
         DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, true);
 
@@ -228,7 +232,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         try
         {
             // add organization
-            addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+            addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+            enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
             // Activity streams gadget expected at dashboard page!
             DashboardActivityStreamsPage page = visitActivityStreamGadget(GADGET_ID, false);
@@ -254,7 +260,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void greenHopperIntegration_ShouldAddDvcsCommitsTab()
     {
         // add organization
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
         setSize(new Dimension(1024, 1280));
 
@@ -269,7 +277,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
 
-        support.getDriver().manage().window().setPosition(new Point(0,0));
+        support.getDriver().manage().window().setPosition(new Point(0, 0));
         support.getDriver().manage().window().setSize(dimension);
         // _not_ a mistake... don't ask
         support.getDriver().manage().window().setSize(dimension);
@@ -279,7 +287,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     public void moveIssue_ShouldKeepAlsoCommits()
     {
         // add organization
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+
+        enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
         final String issueKey = "QA-1";
 
@@ -300,9 +310,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+        AccountsPageAccountRepository repository = enableRepository(OTHER_ACCOUNT_NAME, "testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -315,9 +323,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository("private-git-repo", false);
+        AccountsPageAccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -423,6 +429,26 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class, isEditMode);
         return page;
+    }
+
+    /**
+     * enable a repo under the {@link IntegrationTestUserDetails#ACCOUNT_NAME} account.
+     */
+    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String repositoryName)
+    {
+        return enableRepositoryAsAdmin(ACCOUNT_NAME, repositoryName);
+    }
+
+    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String accountName, final String repositoryName)
+    {
+        return enableRepository(accountName, repositoryName, false);
+    }
+
+    private AccountsPageAccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
+    {
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, accountName);
+        return account.enableRepository(repositoryName, noAdminPermission);
     }
 
     private void moveIssueToProject(final String issueKey, final String newProject)
