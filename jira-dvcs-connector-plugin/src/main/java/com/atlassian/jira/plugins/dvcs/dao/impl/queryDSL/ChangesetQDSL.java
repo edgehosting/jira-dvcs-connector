@@ -53,7 +53,19 @@ public class ChangesetQDSL
         this.queryFactory = queryFactory;
     }
 
-    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final String dvcsType, final boolean newestFirst)
+    /**
+     * Returns the changesets that are associated with the supplied issue key and are in a enabled, linked repository
+     * for the specified type of dvcs NOTE that this method does not filter duplicates and you will receive one
+     * Changeset per link to an issue key. This is intentional as it will allow us to modify this in future so that we
+     * match changeset information with issue key information. Also note that it does not limit the number of issue
+     * keys, if you supply more than the database can handle with an in it will fail.
+     * <p/>
+     * Recommended usage is to break up the keys prior to calling and de-duplicate on the outside as this provides us
+     * with a path to replace with a call that does the issue key grouping (probably involves changing the return
+     * signature as well).
+     */
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
+            final boolean newestFirst)
             throws JSONException
     {
         final Connection connection = connectionProvider.borrowConnection();
@@ -77,11 +89,14 @@ public class ChangesetQDSL
                             .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
                             .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
                             .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
-                            .where(
-                                    repositoryMapping.DELETED.eq(false)
-                                            .and(repositoryMapping.LINKED.eq(true))
-                                            .and(orgMapping.DVCS_TYPE.eq(dvcsType))
-                                            .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+                            .where(repositoryMapping.DELETED.eq(false)
+                                    .and(repositoryMapping.LINKED.eq(true))
+                                    .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+
+                    if (StringUtils.isNotBlank(dvcsType))
+                    {
+                        sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
+                    }
 
                     return sql.stream(changesetMapping.FILE_DETAILS_JSON,
                             repositoryMapping.ID,
@@ -97,7 +112,7 @@ public class ChangesetQDSL
                             changesetMapping.AUTHOR_EMAIL,
                             changesetMapping.ID,
                             changesetMapping.VERSION,
-                            changesetMapping.SMART_COMMIT_AVAILABLE);
+                            changesetMapping.SMARTCOMMIT_AVAILABLE);
                 }
             });
             try
@@ -125,7 +140,7 @@ public class ChangesetQDSL
 
                         changeset.setId(input.get(changesetMapping.ID));
                         changeset.setVersion(input.get(changesetMapping.VERSION));
-                        changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMART_COMMIT_AVAILABLE));
+                        changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMARTCOMMIT_AVAILABLE));
 
                         changeset.setFileDetails(fileDetails);
 

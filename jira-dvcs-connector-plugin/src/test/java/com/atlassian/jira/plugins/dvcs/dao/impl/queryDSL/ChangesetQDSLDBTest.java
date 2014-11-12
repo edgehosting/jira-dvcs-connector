@@ -1,61 +1,55 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.ChangesetAOPopulator;
+import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
+import com.atlassian.jira.plugins.dvcs.activeobjects.OrganizationAOPopulator;
+import com.atlassian.jira.plugins.dvcs.activeobjects.RepositoryAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
-import com.atlassian.pocketknife.api.querydsl.SelectQuery;
-import com.atlassian.pocketknife.api.querydsl.StreamyResult;
 import com.atlassian.pocketknife.internal.querydsl.QueryFactoryImpl;
 import com.atlassian.pocketknife.spi.querydsl.DefaultDialectConfiguration;
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.mysema.query.Tuple;
-import com.mysema.query.sql.SQLQuery;
-import net.java.ao.RawEntity;
-import net.java.ao.atlassian.AtlassianTableNameConverter;
-import net.java.ao.atlassian.TablePrefix;
-import net.java.ao.schema.TableNameConverter;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
 import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.*;
-import static junit.framework.TestCase.assertNotNull;
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * TODO: Document this class / interface here
- *
- * @since v6.3
+ * This is a database integration test that uses the AO database test parent class to provide us with a working
+ * database and connection.
  */
-@NameConverters (table = ChangesetQDSLDBTest.TestCreateTableTableNameConverter.class)
+@NameConverters (table = DvcsConnectorTableNameConverter.class)
 public class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 {
     private static final String ISSUE_KEY = "QDSL-1";
+
+    private ChangesetAOPopulator changesetAOPopulator;
+    private RepositoryAOPopulator repositoryAOPopulator;
+    private OrganizationAOPopulator organizationAOPopulator;
 
     private ConnectionProvider connectionProvider;
     private QueryFactory queryFactory;
@@ -63,13 +57,16 @@ public class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
     private ChangesetQDSL changesetQDSL;
 
     private ChangesetMapping changesetMappingWithIssue;
-    private IssueToChangesetMapping issueToChangesetMapping;
     private RepositoryMapping enabledRepository;
     private OrganizationMapping bitbucketOrganization;
 
     @Before
     public void setup() throws SQLException
     {
+        changesetAOPopulator = new ChangesetAOPopulator(entityManager);
+        repositoryAOPopulator = new RepositoryAOPopulator(entityManager);
+        organizationAOPopulator = new OrganizationAOPopulator(entityManager);
+
         connectionProvider = new TestConnectionProvider(entityManager);
 
         final DialectProvider dialectProvider = new DefaultDialectConfiguration(connectionProvider);
@@ -86,142 +83,200 @@ public class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         bitbucketOrganization.setDvcsType(BITBUCKET);
         bitbucketOrganization.save();
 
-        enabledRepository = entityManager.create(RepositoryMapping.class);
-        enabledRepository.setDeleted(false);
-        enabledRepository.setLinked(true);
-        enabledRepository.setOrganizationId(bitbucketOrganization.getID());
-        enabledRepository.save();
+        enabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
 
-        changesetMappingWithIssue = entityManager.create(ChangesetMapping.class);
-        changesetMappingWithIssue.save();
-
-        issueToChangesetMapping = entityManager.create(IssueToChangesetMapping.class);
-        issueToChangesetMapping.setIssueKey(ISSUE_KEY);
-        issueToChangesetMapping.setChangeset(changesetMappingWithIssue);
-        issueToChangesetMapping.save();
-
-        Map<String, Object> rtcMapping = ImmutableMap.of(
-                RepositoryToChangesetMapping.REPOSITORY_ID, (Object) enabledRepository.getID(),
-                RepositoryToChangesetMapping.CHANGESET_ID, changesetMappingWithIssue.getID());
-        RepositoryToChangesetMapping rtc = entityManager.create(RepositoryToChangesetMapping.class, rtcMapping);
+        changesetMappingWithIssue = changesetAOPopulator.createCSM(changesetAOPopulator.getDefaultCSParams(), ISSUE_KEY, enabledRepository);
     }
 
     @Test
     @NonTransactional
-    public void testSimpleSearch() throws Exception
+    public void testSimpleSearchMapsPropertly() throws Exception
     {
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
 
-//        final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-//        final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
-//        final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-//        final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
-//
-//        final Connection connection = connectionProvider.borrowConnection();
-//
-//        try
-//        {
-//            SQLQuery select = queryFactory.select(connection).from(changesetMapping)
-//                    .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
-//                    .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
-//                    .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
-//                    .where(
-//                            repositoryMapping.DELETED.eq(false)
-//                                    .and(repositoryMapping.LINKED.eq(true))
-//                                    .and(orgMapping.DVCS_TYPE.eq(BITBUCKET))
-//                                    .and(changesetMapping.ISSUE_KEY.in(Lists.newArrayList(ISSUE_KEY))));
-//
-//            List<Tuple> res = select.list(changesetMapping.FILE_DETAILS_JSON,
-//                    repositoryMapping.ID,
-//                    changesetMapping.NODE,
-//                    changesetMapping.RAW_AUTHOR,
-//                    changesetMapping.AUTHOR,
-//                    changesetMapping.DATE,
-//                    changesetMapping.RAW_NODE,
-//                    changesetMapping.BRANCH,
-//                    changesetMapping.MESSAGE,
-//                    changesetMapping.PARENTS_DATA,
-//                    changesetMapping.FILE_COUNT,
-//                    changesetMapping.AUTHOR_EMAIL,
-//                    changesetMapping.ID,
-//                    changesetMapping.VERSION,
-//                    changesetMapping.SMART_COMMIT_AVAILABLE);
-//
-//
-//            assertThat(res.size(), equalTo(1));
-//        }
-//        finally
-//        {
-//            connectionProvider.returnConnection(connection);
-//        }
-
-//        entityManager.migrate(ChangesetMapping.class);
-//
-//
-//        ChangesetMapping csm = entityManager.create(ChangesetMapping.class);
-//
-//        System.out.println(getTableName(ChangesetMapping.class));
-//
-//        assertNotNull(csm);
-//
-//        System.out.println(csm.getID());
-//
-//
-//        final Connection connection = connectionProvider.borrowConnection();
-//
-//        try
-//        {
-//            SQLQuery select = queryFactory.select(connection);
-//            QChangesetMapping mappingInstance = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-//            SQLQuery sql = select.from(mappingInstance);
-//            List<Tuple> result = sql.list(mappingInstance.ID, mappingInstance.NODE, mappingInstance.PARENTS_DATA);
-//
-//            StringBuilder resultBuilder = new StringBuilder("result is: \n");
-//
-//            for (Tuple tuple : result)
-//            {
-//                String resultLine = String.format("result is %s, %s, %s", new Object[] {
-//                        tuple.get(mappingInstance.ID), tuple.get(mappingInstance.NODE),
-//                        tuple.get(mappingInstance.PARENTS_DATA)
-//                });
-//
-//                resultBuilder.append(resultLine);
-//                resultBuilder.append("\nParents:");
-//
-//                String parents = tuple.get(mappingInstance.PARENTS_DATA);
-//                System.out.println("parents" + parents);
-//            }
-//            System.out.println(resultBuilder.toString());
-//        }
-//        finally
-//        {
-//            connectionProvider.returnConnection(connection);
-//        }
+        Changeset changeset = changeSets.get(0);
+        Map<String, Object> defaultValues = changesetAOPopulator.getDefaultCSParams();
+        assertThat(changeset.getNode(), equalTo(defaultValues.get(ChangesetMapping.NODE)));
+        assertThat(changeset.getFileDetails().size(), equalTo(0));
+        assertThat(changeset.getRawAuthor(), equalTo(defaultValues.get(ChangesetMapping.RAW_AUTHOR)));
+        assertThat(changeset.getAuthor(), equalTo(defaultValues.get(ChangesetMapping.AUTHOR)));
+        // Too hard for now
+//        assertThat(changeset.getDate(), equalTo(defaultValues.get(ChangesetMapping.DATE)));
+        assertThat(changeset.getRawNode(), equalTo(defaultValues.get(ChangesetMapping.RAW_NODE)));
+        assertThat(changeset.getBranch(), equalTo(defaultValues.get(ChangesetMapping.BRANCH)));
+        assertThat(changeset.getMessage(), equalTo(defaultValues.get(ChangesetMapping.MESSAGE)));
+        assertThat(changeset.getParents().size(), equalTo(0));
+        assertThat(changeset.getAllFileCount(), equalTo(defaultValues.get(ChangesetMapping.FILE_COUNT)));
+        assertThat(changeset.getAuthorEmail(), equalTo(defaultValues.get(ChangesetMapping.AUTHOR_EMAIL)));
+        assertThat(changeset.getVersion(), equalTo(defaultValues.get(ChangesetMapping.VERSION)));
+        assertThat(changeset.isSmartcommitAvaliable(), equalTo(defaultValues.get(ChangesetMapping.SMARTCOMMIT_AVAILABLE)));
     }
 
-    public static final class TestCreateTableTableNameConverter implements TableNameConverter
+    @Test
+    @NonTransactional
+    public void testMultipleIssueKeys() throws Exception
     {
-        private final TableNameConverter delegate;
+        final String secondKey = "TST-1";
+        changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
 
-        public TestCreateTableTableNameConverter()
-        {
-            delegate = new AtlassianTableNameConverter(new TestPrefix());
-        }
+        assertThat(changeSets.size(), equalTo(2));
+        // Should return duplicates
+        assertThat((new HashSet<Changeset>(changeSets)).size(), equalTo(1));
 
-        @Override
-        public String getName(Class<? extends RawEntity<?>> clazz)
-        {
-            return delegate.getName(clazz);
-        }
+        Collection<Integer> returnedIds = extractIds(changeSets);
+
+        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), changesetMappingWithIssue.getID()));
     }
 
-    public static final class TestPrefix implements TablePrefix
+    @Test
+    @NonTransactional
+    public void testMultipleChangesets() throws Exception
     {
-        public String prepend(String string)
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(new HashMap<String, Object>(), ISSUE_KEY, enabledRepository);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(2));
+
+        Collection<Integer> returnedIds = extractIds(changeSets);
+
+        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleRepository() throws Exception
+    {
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(2));
+
+        Collection<Integer> returnedIds = extractIds(changeSets);
+
+        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleRepositoryOneDisabled() throws Exception
+    {
+        RepositoryMapping secondRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
+        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+        assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleOrganization() throws Exception
+    {
+        OrganizationMapping secondOrganization = organizationAOPopulator.create("bogus");
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(secondOrganization);
+        final ImmutableMap<String, Object> csParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(csParams, ISSUE_KEY, secondRepository);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+        assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleEverything() throws Exception
+    {
+        // Changeset for a different DVCS Type
+        OrganizationMapping bogusOrganization = organizationAOPopulator.create("bogus");
+        RepositoryMapping repositoryForBogusOrg = repositoryAOPopulator.createEnabledRepository(bogusOrganization);
+        final ImmutableMap<String, Object> boguesCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921");
+        changesetAOPopulator.createCSM(boguesCsParams, ISSUE_KEY, repositoryForBogusOrg);
+
+        // Second changeset in this org, separate repository
+        RepositoryMapping secondEnabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        final ImmutableMap<String, Object> secondCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "a3d91a6bdf0e59dbc5b793baa2b4a289c91fd931");
+        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(secondCsParams, ISSUE_KEY, secondEnabledRepository);
+        changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        // Disabled repository in this org
+        RepositoryMapping thirdDisabledRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
+        final ImmutableMap<String, Object> disabledCsParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "0b137d202a56b712f4ef326e9900c7bc4d0835c6");
+        changesetAOPopulator.createCSM(disabledCsParams, ISSUE_KEY, thirdDisabledRepository);
+
+        // Another CS in this repo
+        final ImmutableMap<String, Object> secondCSInFirstRepoParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "9bd67f04ab3ff831741e3edb7ff8edfa5623cd93");
+        ChangesetMapping secondCSInFirstRepo = changesetAOPopulator.createCSM(secondCSInFirstRepoParams, ISSUE_KEY, enabledRepository);
+
+        // Some other random CS that is unrelated
+        final ImmutableMap<String, Object> thirdCSInFirstRepoParams = ImmutableMap.<String, Object>of(ChangesetMapping.NODE, "721101938287c5dfcdc56b35a210761f6bc5d4ba");
+        changesetAOPopulator.createCSM(thirdCSInFirstRepoParams, "TTT-222", enabledRepository);
+
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(3));
+
+        Collection<Integer> returnedIds = extractIds(changeSets);
+
+        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID(), secondCSInFirstRepo.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testUnlinkedOrganization() throws Exception
+    {
+        enabledRepository.setLinked(false);
+        enabledRepository.save();
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(0));
+    }
+
+    @Test
+    @NonTransactional
+    public void testDeletedOrganization() throws Exception
+    {
+        enabledRepository.setDeleted(true);
+        enabledRepository.save();
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(0));
+    }
+
+    @Test
+    @NonTransactional
+    public void testWrongDvcsType() throws Exception
+    {
+        bitbucketOrganization.setDvcsType("bogus");
+        bitbucketOrganization.save();
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(0));
+    }
+
+    @Test
+    @NonTransactional
+    public void testNoDvcsType() throws Exception
+    {
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY), null, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+    }
+
+    private Collection<Integer> extractIds(Collection<Changeset> changeSets)
+    {
+        return Collections2.transform(changeSets, new Function<Changeset, Integer>()
         {
-            return new StringBuilder().append("AO_E8B6CC_").append(string).toString();
-        }
+            @Override
+            public Integer apply(@Nullable final Changeset input)
+            {
+                return input.getId();
+            }
+        });
     }
 }

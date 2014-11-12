@@ -72,7 +72,7 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
 
     public final NumberPath<Integer> VERSION = createNumber("VERSION", Integer.class);
 
-    public final BooleanPath SMART_COMMIT_AVAILABLE = createBoolean("SMARTCOMMIT_AVAILABLE");
+    public final BooleanPath SMARTCOMMIT_AVAILABLE = createBoolean("SMARTCOMMIT_AVAILABLE");
 
     public final com.mysema.query.sql.PrimaryKey<QChangesetMapping> CHANGESETMAPPING_PK = createPrimaryKey(ID);
 
@@ -107,7 +107,7 @@ public class QChangesetMapping extends RelationalPathBase<QChangesetMapping>
         addMetadata(REPOSITORY_ID, ColumnMetadata.named("REPOSITORY_ID").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(VERSION, ColumnMetadata.named("VERSION").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
 
-        addMetadata(SMART_COMMIT_AVAILABLE, ColumnMetadata.named("SMARTCOMMIT_AVAILABLE").ofType(Types.BOOLEAN));
+        addMetadata(SMARTCOMMIT_AVAILABLE, ColumnMetadata.named("SMARTCOMMIT_AVAILABLE").ofType(Types.BOOLEAN));
         addMetadata(DATE, ColumnMetadata.named("DATE").ofType(Types.TIMESTAMP));
     }
 }
