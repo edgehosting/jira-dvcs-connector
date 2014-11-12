@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.fugue.Function2;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -12,8 +12,6 @@ import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
@@ -23,8 +21,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysema.query.Tuple;
-import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import com.mysema.query.types.Expression;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +31,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -69,66 +66,56 @@ public class ChangesetQDSL
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        final Connection connection = connectionProvider.borrowConnection();
-
-        try
+        final Function2<ChangesetQueryMappings, SelectQuery, SelectQuery> selectQueryCallback = new Function2<ChangesetQueryMappings, SelectQuery, SelectQuery>()
         {
-            final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
-
-            StreamyResult resultStream = queryFactory.select(new Function<SelectQuery, StreamyResult>()
+            @Override
+            public SelectQuery apply(final ChangesetQueryMappings changesetQueryMappings, final SelectQuery selectQuery)
             {
-                @Override
-                public StreamyResult apply(@Nullable final SelectQuery select)
-                {
-                    final Collection<String> issueKeysCollection = Lists.newArrayList(issueKeys);
-                    SelectQuery sql = select.from(changesetMapping)
-                            .join(issueToChangesetMapping).on(changesetMapping.ID.eq(issueToChangesetMapping.CHANGESET_ID))
-                            .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
-                            .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
-                            .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
-                            .where(repositoryMapping.DELETED.eq(false)
-                                    .and(repositoryMapping.LINKED.eq(true))
-                                    .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+                final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+                return selectQuery.orderBy(newestFirst ? changesetMapping.DATE.desc() : changesetMapping.DATE.asc());
+            }
+        };
 
-                    if (StringUtils.isNotBlank(dvcsType))
-                    {
-                        sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
-                    }
-                    sql = sql.orderBy(newestFirst ? changesetMapping.DATE.desc() : changesetMapping.DATE.asc());
-
-                    return sql.stream(repositoryMapping.ID,
-                            issueToChangesetMapping.ISSUE_KEY,
-                            changesetMapping.FILE_DETAILS_JSON,
-                            changesetMapping.NODE,
-                            changesetMapping.RAW_AUTHOR,
-                            changesetMapping.AUTHOR,
-                            changesetMapping.DATE,
-                            changesetMapping.RAW_NODE,
-                            changesetMapping.BRANCH,
-                            changesetMapping.MESSAGE,
-                            changesetMapping.PARENTS_DATA,
-                            changesetMapping.FILE_COUNT,
-                            changesetMapping.AUTHOR_EMAIL,
-                            changesetMapping.ID,
-                            changesetMapping.VERSION,
-                            changesetMapping.SMARTCOMMIT_AVAILABLE);
-                }
-            });
-            try
+        final Function<ChangesetQueryMappings, Expression<?>[]> fields = new Function<ChangesetQueryMappings, Expression<?>[]>()
+        {
+            @Override
+            public Expression<?>[] apply(@Nullable final ChangesetQueryMappings changesetQueryMappings)
             {
-                CloseableIterable<Changeset> result = resultStream.map(new Function<Tuple, Changeset>()
+                final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+                return new Expression[] { changesetQueryMappings.repositoryMapping.ID,
+                        changesetQueryMappings.issueToChangesetMapping.ISSUE_KEY,
+                        changesetMapping.FILE_DETAILS_JSON,
+                        changesetMapping.NODE,
+                        changesetMapping.RAW_AUTHOR,
+                        changesetMapping.AUTHOR,
+                        changesetMapping.DATE,
+                        changesetMapping.RAW_NODE,
+                        changesetMapping.BRANCH,
+                        changesetMapping.MESSAGE,
+                        changesetMapping.PARENTS_DATA,
+                        changesetMapping.FILE_COUNT,
+                        changesetMapping.AUTHOR_EMAIL,
+                        changesetMapping.ID,
+                        changesetMapping.VERSION,
+                        changesetMapping.SMARTCOMMIT_AVAILABLE };
+            }
+        };
+
+        final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Changeset>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Changeset>>()
+        {
+            @Override
+            public Function<Tuple, Changeset> apply(@Nullable final ChangesetQueryMappings changesetQueryMappings, @Nullable final Connection connection)
+            {
+                return new Function<Tuple, Changeset>()
                 {
                     @Override
                     public Changeset apply(@Nullable final Tuple input)
                     {
+                        final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
 
                         List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(input.get(changesetMapping.FILE_DETAILS_JSON));
 
-                        final Changeset changeset = new Changeset(input.get(repositoryMapping.ID),
+                        final Changeset changeset = new Changeset(input.get(changesetQueryMappings.repositoryMapping.ID),
                                 input.get(changesetMapping.NODE),
                                 input.get(changesetMapping.RAW_AUTHOR),
                                 input.get(changesetMapping.AUTHOR),
@@ -136,7 +123,7 @@ public class ChangesetQDSL
                                 input.get(changesetMapping.RAW_NODE),
                                 input.get(changesetMapping.BRANCH),
                                 input.get(changesetMapping.MESSAGE),
-                                parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
+                                ChangesetTransformer.parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
                                 fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
                                 input.get(changesetMapping.FILE_COUNT),
                                 input.get(changesetMapping.AUTHOR_EMAIL));
@@ -149,120 +136,75 @@ public class ChangesetQDSL
 
                         return changeset;
                     }
-                });
-
-                return Lists.newArrayList(result);
+                };
             }
-            finally
-            {
-                resultStream.close();
-            }
-        }
-        finally
-        {
-            connectionProvider.returnConnection(connection);
-        }
-    }
-
-    private List<String> parseParentsData(String parentsData)
-    {
-        if (ChangesetMapping.TOO_MANY_PARENTS.equals(parentsData))
-        {
-            return null;
-        }
-
-        List<String> parents = new ArrayList<String>();
-
-        if (StringUtils.isBlank(parentsData))
-        {
-            return parents;
-        }
-
-        try
-        {
-            JSONArray parentsJson = new JSONArray(parentsData);
-            for (int i = 0; i < parentsJson.length(); i++)
-            {
-                parents.add(parentsJson.getString(i));
-            }
-        }
-        catch (JSONException e)
-        {
-            log.error("Failed parsing parents from ParentsJson data.");
-        }
-
-        return parents;
+        };
+        return performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
     }
 
     /**
      * The logic here and in #buildUpdateChangesetFileDetails is taken from ChangesetTransformer.transform including
      * comments etc and modified to work mostly with primitives or push the logic into the query.
-     * @param issueKeys
-     * @param dvcsType
      */
-    public void updateChangesetMappingsThatHaveOldFileData(final Iterable<String> issueKeys, @Nullable final String dvcsType)
+    public int updateChangesetMappingsThatHaveOldFileData(final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
-        final Connection connection = connectionProvider.borrowConnection();
-
-        try
+        final Function2<ChangesetQueryMappings, SelectQuery, SelectQuery> selectQueryCallback = new Function2<ChangesetQueryMappings, SelectQuery, SelectQuery>()
         {
-            final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
-
-            final Collection<String> issueKeysCollection = Lists.newArrayList(issueKeys);
-            SQLQuery sql = queryFactory.select(connection).from(changesetMapping)
-                    .join(issueToChangesetMapping).on(changesetMapping.ID.eq(issueToChangesetMapping.CHANGESET_ID))
-                    .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
-                    .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
-                    .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
-                    .where(repositoryMapping.DELETED.eq(false)
-                            .and(repositoryMapping.LINKED.eq(true))
-                            .and(changesetMapping.FILES_DATA.isNotNull())
-                            .and(changesetMapping.FILE_COUNT.eq(0))
-                            .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)))
-                    .distinct();
-
-            if (StringUtils.isNotBlank(dvcsType))
+            @Override
+            public SelectQuery apply(final ChangesetQueryMappings changesetQueryMappings, final SelectQuery selectQuery)
             {
-                sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
-            }
+                final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
 
-            List<Tuple> result = sql.list(changesetMapping.ID,
-                    changesetMapping.NODE,
-                    changesetMapping.FILES_DATA,
-                    changesetMapping.FILE_DETAILS_JSON);
+                return selectQuery.where(changesetMapping.FILES_DATA.isNotNull()
+                        .and(changesetMapping.FILE_COUNT.eq(0)))
+                        .distinct();
+            }
+        };
 
-            for (Tuple tuple : result)
-            {
-                String node = tuple.get(changesetMapping.NODE);
-                Integer id = tuple.get(changesetMapping.ID);
-                final FileData fileData = FileData.from(tuple.get(changesetMapping.FILES_DATA), tuple.get(changesetMapping.FILE_DETAILS_JSON));
-                log.debug("Migrating file count from old file data structure for changeset ID {} Hash {}.", id, node);
-
-                String fileDetailsJson = tuple.get(changesetMapping.FILE_DETAILS_JSON);
-                SQLUpdateClause update = buildUpdateChangesetFileDetails(connection, dvcsType, fileDetailsJson, fileData, node, id);
-                update.execute();
-            }
-            try
-            {
-                connection.commit();
-            }
-            catch (SQLException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-        finally
+        final Function<ChangesetQueryMappings, Expression<?>[]> fields = new Function<ChangesetQueryMappings, Expression<?>[]>()
         {
-            connectionProvider.returnConnection(connection);
-        }
+            @Override
+            public Expression<?>[] apply(@Nullable final ChangesetQueryMappings changesetQueryMappings)
+            {
+                final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+                return new Expression[] { changesetMapping.ID,
+                        changesetMapping.NODE,
+                        changesetMapping.FILES_DATA,
+                        changesetMapping.FILE_DETAILS_JSON };
+            }
+        };
+
+        final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Integer>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Integer>>()
+        {
+            @Override
+            public Function<Tuple, Integer> apply(@Nullable final ChangesetQueryMappings changesetQueryMappings, @Nullable final Connection connection)
+            {
+                return new Function<Tuple, Integer>()
+                {
+                    @Override
+                    public Integer apply(@Nullable final Tuple tuple)
+                    {
+                        final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+
+                        String node = tuple.get(changesetMapping.NODE);
+                        Integer id = tuple.get(changesetMapping.ID);
+                        final FileData fileData = FileData.from(tuple.get(changesetMapping.FILES_DATA), tuple.get(changesetMapping.FILE_DETAILS_JSON));
+                        log.debug("Migrating file count from old file data structure for changeset ID {} Hash {}.", id, node);
+
+                        String fileDetailsJson = tuple.get(changesetMapping.FILE_DETAILS_JSON);
+                        SQLUpdateClause update = buildUpdateChangesetFileDetails(connection, dvcsType, fileDetailsJson, fileData, node, id);
+                        update.execute();
+
+                        return 1;
+                    }
+                };
+            }
+        };
+        return performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction).size();
     }
 
-    SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, String dvcsType, String fileDetailsJson,
-            final FileData fileData, String node, Integer id)
+    SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, final String dvcsType,
+            final String fileDetailsJson, final FileData fileData, String node, Integer id)
     {
         final QChangesetMapping updateChangesetMapping = new QChangesetMapping("CSV", "", QChangesetMapping.AO_TABLE_NAME);
         SQLUpdateClause update = queryFactory.update(connection, updateChangesetMapping);
@@ -286,5 +228,108 @@ public class ChangesetQDSL
         }
 
         return update;
+    }
+
+    /**
+     * Runs the 'Standard' query for changesets by issue key
+     *
+     * @param dvcsType The dvcs type (if any) that we should restrict the result to
+     * @param selectQueryCallback A callback that allows the select query to be updated
+     * @param fields The fields that are going to be streamed back
+     * @param streamFunctionBuilder A function that given the mappings provides the Function to be mapped over the
+     * result
+     * @return A List of type T that is the result of applying the #streamFunctionBuilder's result to the results.
+     * <p/>
+     * This method will also handle breaking the issue keys up by database IN limits
+     */
+    private <T> List<T> performChangesetQueryByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
+            final Function2<ChangesetQueryMappings, SelectQuery, SelectQuery> selectQueryCallback,
+            final Function<ChangesetQueryMappings, Expression<?>[]> fields,
+            final Function2<ChangesetQueryMappings, Connection, Function<Tuple, T>> streamFunctionBuilder)
+    {
+        final Connection connection = connectionProvider.borrowConnection();
+
+        try
+        {
+            final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
+            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
+            final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
+            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
+            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
+
+            final ChangesetQueryMappings mappings = new ChangesetQueryMappings(changesetMapping, issueToChangesetMapping,
+                    rtcMapping, repositoryMapping, orgMapping);
+
+            StreamyResult resultStream = queryFactory.select(new Function<SelectQuery, StreamyResult>()
+            {
+                @Override
+                public StreamyResult apply(@Nullable final SelectQuery select)
+                {
+                    final Collection<String> issueKeysCollection = Lists.newArrayList(issueKeys);
+                    SelectQuery sql = select.from(changesetMapping)
+                            .join(issueToChangesetMapping).on(changesetMapping.ID.eq(issueToChangesetMapping.CHANGESET_ID))
+                            .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
+                            .join(repositoryMapping).on(repositoryMapping.ID.eq(rtcMapping.REPOSITORY_ID))
+                            .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
+                            .where(repositoryMapping.DELETED.eq(false)
+                                    .and(repositoryMapping.LINKED.eq(true))
+                                    .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+
+                    if (StringUtils.isNotBlank(dvcsType))
+                    {
+                        sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
+                    }
+                    sql = selectQueryCallback.apply(mappings, sql);
+
+                    return sql.stream(fields.apply(mappings));
+                }
+            });
+            try
+            {
+                Function<Tuple, T> f = streamFunctionBuilder.apply(mappings, connection);
+                CloseableIterable<T> resultIterable = resultStream.map(f);
+
+                List<T> result = Lists.newArrayList(resultIterable);
+                resultIterable.close();
+                try
+                {
+                    connection.commit();
+                }
+                catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+                }
+                return result;
+            }
+            finally
+            {
+                resultStream.close();
+            }
+        }
+        finally
+        {
+            connectionProvider.returnConnection(connection);
+        }
+    }
+
+    private class ChangesetQueryMappings
+    {
+        final QChangesetMapping changesetMapping;
+        final QIssueToChangesetMapping issueToChangesetMapping;
+        final QRepositoryToChangesetMapping rtcMapping;
+        final QRepositoryMapping repositoryMapping;
+        final QOrganizationMapping orgMapping;
+
+        private ChangesetQueryMappings(final QChangesetMapping changesetMapping,
+                final QIssueToChangesetMapping issueToChangesetMapping,
+                final QRepositoryToChangesetMapping rtcMapping, final QRepositoryMapping repositoryMapping,
+                final QOrganizationMapping orgMapping)
+        {
+            this.changesetMapping = changesetMapping;
+            this.issueToChangesetMapping = issueToChangesetMapping;
+            this.rtcMapping = rtcMapping;
+            this.repositoryMapping = repositoryMapping;
+            this.orgMapping = orgMapping;
+        }
     }
 }

@@ -177,7 +177,7 @@ public class ChangesetTransformer
         return changesetFileDetails;
     }
 
-    private List<String> parseParentsData(String parentsData)
+    public static List<String> parseParentsData(String parentsData)
     {
         if (ChangesetMapping.TOO_MANY_PARENTS.equals(parentsData))
         {
