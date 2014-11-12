@@ -1,20 +1,9 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseClientProvider;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
-import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
-import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
-import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.client.GitHubClient;
-
+/**
+ * This class is commented out as it is flaky. If you are going to enable this it needs to be updated to use a
+ * #it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper built for GitHub
+ */
 public class GithubEnterprisePRTest //extends PullRequestTestCases<PullRequest>
 {
 //    private static final String GITHUB_ENTERPRISE_USER_AGENT = "jira-dvcs-plugin-test";
