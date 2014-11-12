@@ -194,6 +194,12 @@ public class ChangesetQDSL
         return parents;
     }
 
+    /**
+     * The logic here and in #buildUpdateChangesetFileDetails is taken from ChangesetTransformer.transform including
+     * comments etc and modified to work mostly with primitives or push the logic into the query.
+     * @param issueKeys
+     * @param dvcsType
+     */
     public void updateChangesetMappingsThatHaveOldFileData(final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
         final Connection connection = connectionProvider.borrowConnection();

@@ -30,7 +30,7 @@ public class FileDataTest
             new ChangesetFile(ChangesetFileAction.MODIFIED, "file4")
     );
 
-    public static final String FILES_JSON = "{\"count\":2,\"files\":[{\"filename\":\"file3\",\"status\":\"modified\"},{\"filename\":\"file4\",\"status\":\"modified\"}]}";
+    final String filesJson = "{\"count\":2,\"files\":[{\"filename\":\"file3\",\"status\":\"modified\"},{\"filename\":\"file4\",\"status\":\"modified\"}]}";
 
     @Mock Changeset changeset;
     @Mock ChangesetMapping changesetMapping;
@@ -48,7 +48,7 @@ public class FileDataTest
         when(changeset.getFiles()).thenReturn(files);
         when(changeset.getFileDetails()).thenReturn(null);
 
-        assertThat(FileData.toJSON(changeset), jsonEqualTo(FILES_JSON));
+        assertThat(FileData.toJSON(changeset), jsonEqualTo(filesJson));
     }
 
     @Test
@@ -64,9 +64,7 @@ public class FileDataTest
     @Test
     public void fromShouldPreferToReadFromFileDetailsRatherThanFileData() throws Exception
     {
-        System.out.println(ChangesetFileDetails.toJSON(fileDetails));
-        System.out.println(FILES_JSON);
-        when(changesetMapping.getFilesData()).thenReturn(FILES_JSON); // only count should be read
+        when(changesetMapping.getFilesData()).thenReturn(filesJson); // only count should be read
         when(changesetMapping.getFileDetailsJson()).thenReturn(ChangesetFileDetails.toJSON(fileDetails));
 
         assertThat(FileData.from(changesetMapping), equalTo(new FileData(ImmutableList.<ChangesetFile>copyOf(fileDetails), 2, true)));
@@ -75,7 +73,7 @@ public class FileDataTest
     @Test
     public void fromShouldUseFileDataIfNoDetailsAvailable() throws Exception
     {
-        when(changesetMapping.getFilesData()).thenReturn(FILES_JSON);
+        when(changesetMapping.getFilesData()).thenReturn(filesJson);
         when(changesetMapping.getFileDetailsJson()).thenReturn(null);
 
         assertThat(FileData.from(changesetMapping), equalTo(new FileData(files, 2, false)));

@@ -12,15 +12,6 @@
     <context:component-scan base-package="com.atlassian.jira.plugins.dvcs"/>
     <atlassian-scanner:scan-indexes/>
 
-    <!--<bean name="JCPI" class="com.atlassian.pocketknife.internal.querydsl.JiraConnectionProviderImpl"/>-->
-    <!--<bean name="DDC" class="com.atlassian.pocketknife.spi.querydsl.DefaultDialectConfiguration">-->
-        <!--<constructor-arg ref="JCPI"/>-->
-    <!--</bean>-->
-    <!--<bean name="QFI" class="com.atlassian.pocketknife.internal.querydsl.QueryFactoryImpl">-->
-        <!--<constructor-arg ref="JCPI"/>-->
-        <!--<constructor-arg ref="DDC"/>-->
-    <!--</bean>-->
-
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
         <property name="delegate" ref="bitbucketCommunicator"/>

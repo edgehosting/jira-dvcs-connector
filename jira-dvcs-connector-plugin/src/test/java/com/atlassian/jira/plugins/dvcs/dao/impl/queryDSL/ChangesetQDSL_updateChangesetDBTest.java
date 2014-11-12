@@ -26,10 +26,11 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
     {
         changesetMappingWithIssue.setFilesData(null);
         changesetMappingWithIssue.save();
+        int oldFileCount = changesetMappingWithIssue.getFileCount();
 
         changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
 
-//        assertThat(changesets.size(), equalTo(0));
+        assertThat(changesetMappingWithIssue.getFileCount(), equalTo(oldFileCount));
     }
 
     @Test
@@ -38,10 +39,11 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
     {
         changesetMappingWithIssue.setFileCount(0);
         changesetMappingWithIssue.save();
+        int oldFileCount = changesetMappingWithIssue.getFileCount();
 
         changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
 
-//        assertThat(changesets.size(), equalTo(0));
+        assertThat(changesetMappingWithIssue.getFileCount(), equalTo(oldFileCount));
     }
 
     @Test
