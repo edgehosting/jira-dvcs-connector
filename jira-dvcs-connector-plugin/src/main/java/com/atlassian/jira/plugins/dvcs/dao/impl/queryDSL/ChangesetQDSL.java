@@ -99,6 +99,7 @@ public class ChangesetQDSL
                     {
                         sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
                     }
+                    sql = sql.orderBy(newestFirst ? changesetMapping.DATE.desc() : changesetMapping.DATE.asc());
 
                     return sql.stream(repositoryMapping.ID,
                             issueToChangesetMapping.ISSUE_KEY,

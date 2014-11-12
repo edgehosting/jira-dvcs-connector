@@ -11,8 +11,9 @@ import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
+import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
  * and connection.
  */
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public class ChangesetQDSLDB_getByIssueKeyTest extends ChangesetQDSLDBTest
+public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
 {
     @Test
     @NonTransactional
@@ -76,14 +77,37 @@ public class ChangesetQDSLDB_getByIssueKeyTest extends ChangesetQDSLDBTest
     @NonTransactional
     public void testMultipleChangesets() throws Exception
     {
-        ChangesetMapping secondMapping = changesetAOPopulator.createCSM(new HashMap<String, Object>(), ISSUE_KEY, enabledRepository);
+        ChangesetMapping olderChangeset = createOlderChangeset();
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, true);
+
+        assertThat(changeSets.size(), equalTo(2));
+        assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
+        assertThat(changeSets.get(1).getId(), equalTo(olderChangeset.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleChangesetsWithSortingOldestFirst() throws Exception
+    {
+        ChangesetMapping olderChangeset = createOlderChangeset();
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(2));
+        assertThat(changeSets.get(0).getId(), equalTo(olderChangeset.getID()));
+        assertThat(changeSets.get(1).getId(), equalTo(changesetMappingWithIssue.getID()));
+    }
 
-        Collection<Integer> returnedIds = extractIds(changeSets);
+    private ChangesetMapping createOlderChangeset()
+    {
 
-        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID()));
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(changesetMappingWithIssue.getDate());
+        calendar.add(Calendar.YEAR, -1);
+        Date olderDate = calendar.getTime();
+        final ImmutableMap<String, Object> secondCSParams = ImmutableMap.<String, Object>of(
+                ChangesetMapping.NODE, "ecd732b3f41ad7ac501ef8408931fe1f80ab2921",
+                ChangesetMapping.DATE, olderDate);
+        return changesetAOPopulator.createCSM(secondCSParams, ISSUE_KEY, enabledRepository);
     }
 
     @Test

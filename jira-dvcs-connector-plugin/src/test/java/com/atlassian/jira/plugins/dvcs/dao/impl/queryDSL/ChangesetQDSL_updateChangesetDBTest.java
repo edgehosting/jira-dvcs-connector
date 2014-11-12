@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public class ChangesetQDSLDB_updateChangesetDBTest extends ChangesetQDSLDBTest
+public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
 {
     public static final String FILES_JSON_WITH_DETAILS = "{\"count\":2,\"files\":["
             + "{\"filename\":\"file3\",\"status\":\"modified\",\"additions\":2,\"deletions\":0},"
