@@ -68,7 +68,6 @@ public class ChangesetQDSL
      */
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
-            throws JSONException
     {
         final Connection connection = connectionProvider.borrowConnection();
 

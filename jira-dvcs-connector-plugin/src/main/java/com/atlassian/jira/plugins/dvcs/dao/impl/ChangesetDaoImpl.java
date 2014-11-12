@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
+import com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -53,13 +55,16 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
+    private final ChangesetQDSL changesetQDSL;
 
     @Autowired
-    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper)
+    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
+            ChangesetQDSL changesetQDSL)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = queryHelper;
         this.transformer = new ChangesetTransformer(activeObjects, this);
+        this.changesetQDSL = changesetQDSL;
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -75,11 +80,6 @@ public class ChangesetDaoImpl implements ChangesetDao
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
         return transform(changesetMappings, 0, null);
-    }
-
-    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
-    {
-        return transform(changesetMappings, 0, dvcsType);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings, int defaultRepositoryId, String dvcsType)
@@ -342,17 +342,14 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
-
-        return transform(changesetMappings);
+        return getByIssueKey(issueKeys, null, newestFirst);
     }
 
     @Override
-    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, final boolean newestFirst)
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
-
-        return transform(changesetMappings, dvcsType);
+        changesetQDSL.updateChangesetMappingsThatHaveOldFileData(issueKeys, dvcsType);
+        return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
     }
 
     @Override
