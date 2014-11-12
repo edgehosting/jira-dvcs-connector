@@ -160,7 +160,7 @@ public class ChangesetTransformer
         return changeset;
     }
 
-    private List<ChangesetFileDetail> transfromFileData(final FileData fileData)
+    public static List<ChangesetFileDetail> transfromFileData(final FileData fileData)
     {
         List<ChangesetFileDetail> changesetFileDetails = new LinkedList<ChangesetFileDetail>();
         for (ChangesetFile file : fileData.getFiles())

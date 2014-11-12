@@ -13,7 +13,7 @@
     </test>
     <test name="junit" junit="true">
         <classes>
-            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSLDBTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSLDB_getByIssueKeyTest" />
         </classes>
     </test>
 </suite>

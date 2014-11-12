@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
+package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import com.atlassian.pocketknife.spi.querydsl.AbstractConnectionProvider;
 import net.java.ao.EntityManager;
@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * TODO: Document this class / interface here
- *
- * @since v6.3
+ * Connection provider that wraps around an AO entity manager and returns connections from its provider
  */
 public class TestConnectionProvider extends AbstractConnectionProvider
 {
