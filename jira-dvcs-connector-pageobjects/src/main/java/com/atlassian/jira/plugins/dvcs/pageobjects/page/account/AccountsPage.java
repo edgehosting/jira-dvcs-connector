@@ -1,22 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.webdriver.AtlassianWebDriver;
-import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
  * Holds available DVCS accounts.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 public class AccountsPage implements Page
 {
@@ -32,7 +28,7 @@ public class AccountsPage implements Page
     /**
      * Reference to all accounts.
      */
-    @ElementBy(className = "dvcs-orgdata-container", pageElementClass = AccountsPageAccount.class)
+    @ElementBy (className = "dvcs-orgdata-container", pageElementClass = AccountsPageAccount.class)
     private Iterable<AccountsPageAccount> accounts;
 
     /**
@@ -45,11 +41,9 @@ public class AccountsPage implements Page
 
     /**
      * Constructor.
-     * 
-     * @param accountType
-     *            type of account
-     * @param accountName
-     *            name of account
+     *
+     * @param accountType type of account
+     * @param accountName name of account
      * @return founded account element
      */
     public AccountsPageAccount getAccount(AccountsPageAccount.AccountType accountType, String accountName)
@@ -66,5 +60,19 @@ public class AccountsPage implements Page
     public String getUrl()
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
+    }
+
+    public static AccountsPageAccount syncAccount(JiraTestedProduct jiraTestedProduct,
+            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName,
+            boolean refresh)
+    {
+        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        if (refresh)
+        {
+            account.refresh();
+        }
+        account.synchronizeRepository(repositoryName);
+        return account;
     }
 }

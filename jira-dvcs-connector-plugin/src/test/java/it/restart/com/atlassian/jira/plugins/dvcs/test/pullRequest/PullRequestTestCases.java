@@ -6,10 +6,10 @@ import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
@@ -22,6 +22,9 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
 
 /**
  * Base class that contains the test cases for the PullRequest scenarios.
@@ -43,19 +46,9 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com"; // fake email
 
     /**
-     * Repository owner.
-     */
-    protected static final String ACCOUNT_NAME = "jirabitbucketconnector";
-
-    /**
      * Fork repository owner.
      */
     protected static final String FORK_ACCOUNT_NAME = "dvcsconnectortest";
-
-    /**
-     * Appropriate {@link #ACCOUNT_NAME} password.
-     */
-    protected static final String PASSWORD = System.getProperty("jirabitbucketconnector.password");
 
     /**
      * Appropriate {@link #FORK_ACCOUNT_NAME} password.
@@ -114,6 +107,10 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         cleanupAfterClass();
     }
 
+    /**
+     * Note that we are moving some of the common code from this into #RepositoryTestHelper, Github and GHE are not
+     * done at this stage.
+     */
     protected abstract void cleanupAfterClass();
 
     @BeforeMethod
@@ -217,8 +214,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
-        account.synchronizeRepository(repositoryName);
+        AccountsPageAccount account = AccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
+                ACCOUNT_NAME, repositoryName, true);
 
         // Event processing can take some time to complete, poll the endpoint to find our PR
         RestDevResponse<RestPrRepository> response = null;
@@ -234,15 +231,6 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         Assert.assertEquals(response.getRepositories().size(), 1);
         return response.getRepositories().get(0);
-    }
-
-    protected AccountsPageAccount refreshAccount(final String accountName)
-    {
-        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), accountName);
-        account.refresh();
-
-        return account;
     }
 
     protected void sleep(final long millis)
