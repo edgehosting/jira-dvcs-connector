@@ -3,17 +3,16 @@
 <suite name="default">
     <test name="default">
         <packages>
-            <!--<package name="it.*">-->
-                <!--<exclude name=".*"/>-->
-            <!--</package>-->
             <package name="com.atlassian.jira.plugins.dvcs.*">
-                <!--<include name="com.atlassian.jira.plugins.dvcs.*"/>-->
             </package>
         </packages>
     </test>
     <test name="junit" junit="true">
         <classes>
             <class name="com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSL_getByIssueKeyTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSL_updateChangesetDBTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.service.remote.OrganisationKeyTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.service.remote.UserKeyTest" />
         </classes>
     </test>
 </suite>
