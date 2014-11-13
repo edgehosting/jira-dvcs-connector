@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
@@ -63,13 +62,8 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
 
-        assertThat(changeSets.size(), equalTo(2));
-        // Should return duplicates
-        assertThat((new HashSet<Changeset>(changeSets)).size(), equalTo(1));
-
-        Collection<Integer> returnedIds = extractIds(changeSets);
-
-        assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), changesetMappingWithIssue.getID()));
+        assertThat(changeSets.size(), equalTo(1));
+        assertThat(changeSets.get(0).getIssueKeys(), containsInAnyOrder(ISSUE_KEY, secondKey));
     }
 
     @Test
@@ -122,6 +116,57 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         Collection<Integer> returnedIds = extractIds(changeSets);
 
         assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleRepositoryWithFork() throws Exception
+    {
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        changesetAOPopulator.associateToRepository(changesetMappingWithIssue, secondRepository);
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+
+        assertThat(changeSets.get(0).getRepositoryIds(), containsInAnyOrder(enabledRepository.getID(), secondRepository.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testSingleChangeSetMultipleIssueAndRepository() throws Exception
+    {
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        changesetAOPopulator.associateToRepository(changesetMappingWithIssue, secondRepository);
+
+        final String secondKey = "TST-1";
+        changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
+
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+        assertThat(changeSets.get(0).getRepositoryIds(), containsInAnyOrder(enabledRepository.getID(), secondRepository.getID()));
+        assertThat(changeSets.get(0).getIssueKeys(), containsInAnyOrder(ISSUE_KEY, secondKey));
+    }
+
+    @Test
+    @NonTransactional
+    public void testTwoChangeSetMultipleIssueAndRepositoryMaintainsOrder() throws Exception
+    {
+        ChangesetMapping secondChangeset = createOlderChangeset();
+
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        changesetAOPopulator.associateToRepository(changesetMappingWithIssue, secondRepository);
+        changesetAOPopulator.associateToRepository(secondChangeset, secondRepository);
+
+        final String secondKey = "TST-1";
+        changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
+        changesetAOPopulator.associateToIssue(secondChangeset, secondKey);
+
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(2));
+        assertThat(changeSets.get(0).getId(), equalTo(secondChangeset.getID()));
+        assertThat(changeSets.get(1).getId(), equalTo(changesetMappingWithIssue.getID()));
     }
 
     @Test
@@ -211,7 +256,9 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         {
             final String issueKey = projectKey + i;
             issueKeys.add(issueKey);
-            changesetAOPopulator.createCSM("f" + i, issueKey, enabledRepository);
+            ChangesetMapping changeset = changesetAOPopulator.createCSM("f" + i, issueKey, enabledRepository);
+            changeset.setDate(new Date());
+            changeset.save();
         }
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(issueKeys, BITBUCKET, false);
         assertThat(changeSets.size(), equalTo(number));

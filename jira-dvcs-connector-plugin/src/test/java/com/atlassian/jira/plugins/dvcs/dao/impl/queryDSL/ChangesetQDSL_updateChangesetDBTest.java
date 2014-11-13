@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.model.FileData;
@@ -89,6 +90,26 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
         int numberUpdated = changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
         assertThat(numberUpdated, equalTo(3));
     }
+
+    @Test
+    @NonTransactional
+    public void testUpdateChangesetAcrossMultipleIssueAndRepository() throws Exception
+    {
+        RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
+        changesetAOPopulator.associateToRepository(changesetMappingWithIssue, secondRepository);
+
+        final String secondKey = "TST-1";
+        changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
+
+        changesetMappingWithIssue.setFilesData(FILES_JSON_WITH_DETAILS);
+        changesetMappingWithIssue.setFileDetailsJson(null);
+        changesetMappingWithIssue.setFileCount(0);
+        changesetMappingWithIssue.save();
+
+        int numberUpdated = changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
+        assertThat(numberUpdated, equalTo(1));
+    }
+
 
     private void updateChangesetWithFileDetailsThatNeedUpdating(ChangesetMapping changesetMapping)
     {

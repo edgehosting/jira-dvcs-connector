@@ -36,7 +36,13 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
@@ -75,8 +81,7 @@ public class ChangesetQDSL
             @Override
             public SelectQuery apply(final ChangesetQueryMappings changesetQueryMappings, final SelectQuery selectQuery)
             {
-                final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
-                return selectQuery.orderBy(newestFirst ? changesetMapping.DATE.desc() : changesetMapping.DATE.asc());
+                return selectQuery;
             }
         };
 
@@ -105,6 +110,8 @@ public class ChangesetQDSL
             }
         };
 
+        final Map<Integer, Changeset> changesetsById = new HashMap<Integer, Changeset>();
+
         final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Changeset>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Changeset>>()
         {
             @Override
@@ -116,34 +123,56 @@ public class ChangesetQDSL
                     public Changeset apply(@Nullable final Tuple input)
                     {
                         final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+                        final Integer changesetId = input.get(changesetMapping.ID);
+                        final Integer repositoryId = input.get(changesetQueryMappings.repositoryMapping.ID);
+                        final String issueKey = input.get(changesetQueryMappings.issueToChangesetMapping.ISSUE_KEY);
 
-                        List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(input.get(changesetMapping.FILE_DETAILS_JSON));
+                        Changeset changeset = changesetsById.get(changesetId);
 
-                        final Changeset changeset = new Changeset(input.get(changesetQueryMappings.repositoryMapping.ID),
-                                input.get(changesetMapping.NODE),
-                                input.get(changesetMapping.RAW_AUTHOR),
-                                input.get(changesetMapping.AUTHOR),
-                                input.get(changesetMapping.DATE),
-                                input.get(changesetMapping.RAW_NODE),
-                                input.get(changesetMapping.BRANCH),
-                                input.get(changesetMapping.MESSAGE),
-                                ChangesetTransformer.parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
-                                fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
-                                input.get(changesetMapping.FILE_COUNT),
-                                input.get(changesetMapping.AUTHOR_EMAIL));
+                        if (changeset == null)
+                        {
+                            List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(input.get(changesetMapping.FILE_DETAILS_JSON));
 
-                        changeset.setId(input.get(changesetMapping.ID));
-                        changeset.setVersion(input.get(changesetMapping.VERSION));
-                        changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMARTCOMMIT_AVAILABLE));
+                            changeset = new Changeset(repositoryId,
+                                    input.get(changesetMapping.NODE),
+                                    input.get(changesetMapping.RAW_AUTHOR),
+                                    input.get(changesetMapping.AUTHOR),
+                                    input.get(changesetMapping.DATE),
+                                    input.get(changesetMapping.RAW_NODE),
+                                    input.get(changesetMapping.BRANCH),
+                                    input.get(changesetMapping.MESSAGE),
+                                    ChangesetTransformer.parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
+                                    fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
+                                    input.get(changesetMapping.FILE_COUNT),
+                                    input.get(changesetMapping.AUTHOR_EMAIL));
 
-                        changeset.setFileDetails(fileDetails);
+                            changeset.setId(changesetId);
+                            changeset.setVersion(input.get(changesetMapping.VERSION));
+                            changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMARTCOMMIT_AVAILABLE));
+
+                            changeset.setFileDetails(fileDetails);
+                            changesetsById.put(changesetId, changeset);
+                        }
+
+                        if (!changeset.getRepositoryIds().contains(repositoryId))
+                        {
+                            changeset.getRepositoryIds().add(repositoryId);
+                        }
+                        if (!changeset.getIssueKeys().contains(issueKey))
+                        {
+                            changeset.getIssueKeys().add(issueKey);
+                        }
 
                         return changeset;
                     }
                 };
             }
         };
-        return performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
+        performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
+
+        final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
+        Collections.sort(result, new ChangesetDateComparator(newestFirst));
+        return result;
     }
 
     /**
@@ -255,6 +284,9 @@ public class ChangesetQDSL
      * @return A List of type T that is the result of applying the #streamFunctionBuilder's result to the results.
      * <p/>
      * This method will also handle breaking the issue keys up by database IN limits
+     * <p/>
+     * Note that there is one result per changeset - repository combination. If you have forks there will be duplicates
+     * in the return values!!!
      */
     private <T> List<T> performChangesetQueryByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final Function2<ChangesetQueryMappings, SelectQuery, SelectQuery> selectQueryCallback,
@@ -366,6 +398,56 @@ public class ChangesetQDSL
             this.rtcMapping = rtcMapping;
             this.repositoryMapping = repositoryMapping;
             this.orgMapping = orgMapping;
+        }
+    }
+
+    private class ChangesetDateComparator implements Comparator<Changeset>
+    {
+        private final boolean newestFirst;
+
+        private ChangesetDateComparator(final boolean newestFirst)
+        {
+            this.newestFirst = newestFirst;
+        }
+
+        @Override
+        public int compare(final Changeset o1, final Changeset o2)
+        {
+            if (newestFirst)
+            {
+                // Invert the result so that newest come first
+                return -1 * compareInternal(o1, o2);
+            }
+            else
+            {
+                return compareInternal(o1, o2);
+            }
+        }
+
+        /**
+         * Generally the dates should not be null but as we are sorting in the application now we need to be safe
+         * @param cs1
+         * @param cs2
+         * @return
+         */
+        private int compareInternal(final Changeset cs1, final Changeset cs2)
+        {
+            final Date cs1Date = cs1.getDate();
+            final Date cs2Date = cs2.getDate();
+            if (cs1Date == null && cs2Date == null)
+            {
+                return 0;
+            }
+            if (cs2Date == null)
+            {
+                return -1;
+            }
+            if (cs1Date == null)
+            {
+                return 1;
+            }
+
+            return cs1Date.compareTo(cs2Date);
         }
     }
 }

@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonCreator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -15,14 +16,14 @@ public class Changeset
     public static final int MAX_VISIBLE_FILES = 5;
 
     private int id;
-    
+
     private Date synchronizedAt;
 
     // the main repository
     private int repositoryId;
     private String node;
-      // list of all repositories the changeset is in
-    private List<Integer> repositoryIds;
+    // list of all repositories the changeset is in
+    private List<Integer> repositoryIds = new ArrayList<Integer>();
     private String rawAuthor;
     private String author;
     private Date date;
@@ -40,6 +41,8 @@ public class Changeset
 
     private Integer version;
 
+    private List<String> issueKeys = new ArrayList<String>();
+
     @JsonCreator
     private Changeset() {}
 
@@ -49,7 +52,7 @@ public class Changeset
     }
 
 
-    public Changeset(int repositoryId,String node,
+    public Changeset(int repositoryId, String node,
                      String rawAuthor, String author, Date date,
                      String rawNode, String branch, String message,
                      List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
@@ -67,12 +70,12 @@ public class Changeset
         this.allFileCount = allFileCount;
         this.authorEmail = authorEmail;
     }
-    
+
     public Date getSynchronizedAt()
     {
         return synchronizedAt;
     }
-    
+
     public void setSynchronizedAt(Date synchronizedAt)
     {
         this.synchronizedAt = synchronizedAt;
@@ -107,7 +110,7 @@ public class Changeset
     {
         this.repositoryIds = repositoryIds;
     }
-    
+
     public String getRawAuthor()
     {
         return rawAuthor;
@@ -211,8 +214,14 @@ public class Changeset
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
 
         Changeset that = (Changeset) o;
 
@@ -250,40 +259,50 @@ public class Changeset
     }
 
 
-	public String getAuthorEmail()
-	{
-		return authorEmail;
-	}
+    public String getAuthorEmail()
+    {
+        return authorEmail;
+    }
 
 
-	public void setAuthorEmail(String authorEmail)
-	{
-		this.authorEmail = authorEmail;
-	}
+    public void setAuthorEmail(String authorEmail)
+    {
+        this.authorEmail = authorEmail;
+    }
 
 
-	public Boolean isSmartcommitAvaliable()
-	{
-		return smartcommitAvaliable;
-	}
+    public Boolean isSmartcommitAvaliable()
+    {
+        return smartcommitAvaliable;
+    }
 
 
-	public void setSmartcommitAvaliable(Boolean smartcommitAvaliable)
-	{
-		this.smartcommitAvaliable = smartcommitAvaliable;
-	}
+    public void setSmartcommitAvaliable(Boolean smartcommitAvaliable)
+    {
+        this.smartcommitAvaliable = smartcommitAvaliable;
+    }
 
 
-	public int getId()
-	{
-		return id;
-	}
+    public int getId()
+    {
+        return id;
+    }
 
 
-	public void setId(int id)
-	{
-		this.id = id;
-	}
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
+    public List<String> getIssueKeys()
+    {
+        return issueKeys;
+    }
+
+    public void setIssueKeys(final List<String> issueKeys)
+    {
+        this.issueKeys = issueKeys;
+    }
 
     /**
      * Returns a list of file details or null if the details have not been loaded yet.
