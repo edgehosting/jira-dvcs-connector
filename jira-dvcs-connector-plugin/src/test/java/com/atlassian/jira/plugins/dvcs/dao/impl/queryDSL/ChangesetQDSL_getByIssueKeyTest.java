@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLAUSE_MAX;
@@ -41,21 +40,19 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         assertThat(changeSets.size(), equalTo(1));
 
         Changeset changeset = changeSets.get(0);
-        Map<String, Object> defaultValues = changesetAOPopulator.getDefaultCSParams();
-        assertThat(changeset.getNode(), equalTo(defaultValues.get(ChangesetMapping.NODE)));
+        assertThat(changeset.getNode(), equalTo(changesetMappingWithIssue.getNode()));
         assertThat(changeset.getFileDetails().size(), equalTo(0));
-        assertThat(changeset.getRawAuthor(), equalTo(defaultValues.get(ChangesetMapping.RAW_AUTHOR)));
-        assertThat(changeset.getAuthor(), equalTo(defaultValues.get(ChangesetMapping.AUTHOR)));
-        // Too hard for now
-//        assertThat(changeset.getDate(), equalTo(defaultValues.get(ChangesetMapping.DATE)));
-        assertThat(changeset.getRawNode(), equalTo(defaultValues.get(ChangesetMapping.RAW_NODE)));
-        assertThat(changeset.getBranch(), equalTo(defaultValues.get(ChangesetMapping.BRANCH)));
-        assertThat(changeset.getMessage(), equalTo(defaultValues.get(ChangesetMapping.MESSAGE)));
+        assertThat(changeset.getRawAuthor(), equalTo(changesetMappingWithIssue.getRawAuthor()));
+        assertThat(changeset.getAuthor(), equalTo(changesetMappingWithIssue.getAuthor()));
+        assertThat(changeset.getDate(), equalTo(changesetMappingWithIssue.getDate()));
+        assertThat(changeset.getRawNode(), equalTo(changesetMappingWithIssue.getRawNode()));
+        assertThat(changeset.getBranch(), equalTo(changesetMappingWithIssue.getBranch()));
+        assertThat(changeset.getMessage(), equalTo(changesetMappingWithIssue.getMessage()));
         assertThat(changeset.getParents().size(), equalTo(0));
-        assertThat(changeset.getAllFileCount(), equalTo(defaultValues.get(ChangesetMapping.FILE_COUNT)));
-        assertThat(changeset.getAuthorEmail(), equalTo(defaultValues.get(ChangesetMapping.AUTHOR_EMAIL)));
-        assertThat(changeset.getVersion(), equalTo(defaultValues.get(ChangesetMapping.VERSION)));
-        assertThat(changeset.isSmartcommitAvaliable(), equalTo(defaultValues.get(ChangesetMapping.SMARTCOMMIT_AVAILABLE)));
+        assertThat(changeset.getAllFileCount(), equalTo(changesetMappingWithIssue.getFileCount()));
+        assertThat(changeset.getAuthorEmail(), equalTo(changesetMappingWithIssue.getAuthorEmail()));
+        assertThat(changeset.getVersion(), equalTo(changesetMappingWithIssue.getVersion()));
+        assertThat(changeset.isSmartcommitAvaliable(), equalTo(changesetMappingWithIssue.isSmartcommitAvailable()));
     }
 
     @Test

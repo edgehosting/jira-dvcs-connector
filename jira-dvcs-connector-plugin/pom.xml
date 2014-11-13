@@ -428,9 +428,6 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.jira.plugin.webfragment.conditions,
-                            <!--com.atlassian.pocketknife.internal.querydsl,-->
-                            <!--com.atlassian.pocketknife.api.querydsl,-->
-                            <!--com.atlassian.pocketknife.spi.querydsl,-->
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
