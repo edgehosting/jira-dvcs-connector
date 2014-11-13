@@ -8,6 +8,7 @@ import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.Predicate;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -63,6 +64,7 @@ public class ChangesetQDSL_buildUpdateChangesetFileDetails
         sqlSetCaptor = ArgumentCaptor.forClass(Object.class);
         when(sqlUpdateClause.set(any(Path.class), sqlSetCaptor.capture())).thenReturn(sqlUpdateClause);
         when(sqlUpdateClause.setNull(any(Path.class))).thenReturn(sqlUpdateClause);
+        when(sqlUpdateClause.where(any(Predicate.class))).thenReturn(sqlUpdateClause);
         when(queryFactory.update(any(Connection.class), any(RelationalPath.class))).thenReturn(sqlUpdateClause);
         fileData = fileData.from(FILES_JSON_WITH_DETAILS, null);
         expectedJsonFromFileData = ChangesetFileDetails.toJSON(ChangesetTransformer.transfromFileData(fileData));
