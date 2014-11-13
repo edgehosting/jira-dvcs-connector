@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
 
 import com.atlassian.fugue.Function2;
+import com.atlassian.fugue.Functions;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -202,12 +203,14 @@ public class ChangesetQDSL
         // This should be a list of 1s but we might as well check
         List<Long> numbersUpdated = performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
 
-        Integer result = 0;
-        for (Long aLong : numbersUpdated)
+        return Functions.fold(new Function2<Integer, Long, Integer>()
         {
-            result += aLong.intValue();
-        }
-        return result;
+            @Override
+            public Integer apply(final Integer accumulator, final Long value)
+            {
+                return accumulator + value.intValue();
+            }
+        }, 0, numbersUpdated);
     }
 
     SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, final String dvcsType,
