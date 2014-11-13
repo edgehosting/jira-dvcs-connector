@@ -11,6 +11,7 @@ import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLAUSE_MAX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -169,7 +171,7 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         changesetAOPopulator.createCSM("0b137d202a56b712f4ef326e9900c7bc4d0835c6", ISSUE_KEY, thirdDisabledRepository);
 
         // Another CS in this repo
-        ChangesetMapping secondCSInFirstRepo = changesetAOPopulator.createCSM( "9bd67f04ab3ff831741e3edb7ff8edfa5623cd93", ISSUE_KEY, enabledRepository);
+        ChangesetMapping secondCSInFirstRepo = changesetAOPopulator.createCSM("9bd67f04ab3ff831741e3edb7ff8edfa5623cd93", ISSUE_KEY, enabledRepository);
 
         // Some other random CS that is unrelated
         changesetAOPopulator.createCSM("721101938287c5dfcdc56b35a210761f6bc5d4ba", "TTT-222", enabledRepository);
@@ -181,6 +183,41 @@ public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
         Collection<Integer> returnedIds = extractIds(changeSets);
 
         assertThat(returnedIds, containsInAnyOrder(changesetMappingWithIssue.getID(), secondMapping.getID(), secondCSInFirstRepo.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testAtInLimit() throws Exception
+    {
+        runMultipleChangeSetTest(SQL_IN_CLAUSE_MAX);
+    }
+
+    @Test
+    @NonTransactional
+    public void testOneMoreThanInLimit() throws Exception
+    {
+        runMultipleChangeSetTest(SQL_IN_CLAUSE_MAX + 1);
+    }
+
+    @Test
+    @NonTransactional
+    public void testMultipleOverInLimit() throws Exception
+    {
+        runMultipleChangeSetTest(SQL_IN_CLAUSE_MAX * 3 + 1);
+    }
+
+    private void runMultipleChangeSetTest(int number)
+    {
+        final ArrayList<String> issueKeys = new ArrayList<String>();
+        final String projectKey = "NOT-";
+        for (int i = 0; i < number; i++)
+        {
+            final String issueKey = projectKey + i;
+            issueKeys.add(issueKey);
+            changesetAOPopulator.createCSM("f" + i, issueKey, enabledRepository);
+        }
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(issueKeys, BITBUCKET, false);
+        assertThat(changeSets.size(), equalTo(number));
     }
 
     @Test

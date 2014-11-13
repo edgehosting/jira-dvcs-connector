@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
 
 import com.atlassian.fugue.Function2;
 import com.atlassian.fugue.Functions;
+import com.atlassian.fugue.Iterables;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -13,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
@@ -24,6 +26,8 @@ import com.google.common.collect.Lists;
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import com.mysema.query.types.Expression;
+import com.mysema.query.types.Predicate;
+import com.mysema.query.types.expr.BooleanExpression;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +36,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -276,7 +279,8 @@ public class ChangesetQDSL
                 @Override
                 public StreamyResult apply(@Nullable final SelectQuery select)
                 {
-                    final Collection<String> issueKeysCollection = Lists.newArrayList(issueKeys);
+                    Predicate issueKeyPredicate = buildIssueKeyPredicate(issueKeys, issueToChangesetMapping);
+
                     SelectQuery sql = select.from(changesetMapping)
                             .join(issueToChangesetMapping).on(changesetMapping.ID.eq(issueToChangesetMapping.CHANGESET_ID))
                             .join(rtcMapping).on(changesetMapping.ID.eq(rtcMapping.CHANGESET_ID))
@@ -284,7 +288,7 @@ public class ChangesetQDSL
                             .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
                             .where(repositoryMapping.DELETED.eq(false)
                                     .and(repositoryMapping.LINKED.eq(true))
-                                    .and(issueToChangesetMapping.ISSUE_KEY.in(issueKeysCollection)));
+                                    .and(issueKeyPredicate));
 
                     if (StringUtils.isNotBlank(dvcsType))
                     {
@@ -321,6 +325,27 @@ public class ChangesetQDSL
         {
             connectionProvider.returnConnection(connection);
         }
+    }
+
+    private Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final QIssueToChangesetMapping issueToChangesetMapping)
+    {
+        final List<String> issueKeysList = Lists.newArrayList(issueKeys);
+
+        if (issueKeysList.size() <= ActiveObjectsUtils.SQL_IN_CLAUSE_MAX)
+        {
+            return issueToChangesetMapping.ISSUE_KEY.in(issueKeysList);
+        }
+
+        List<List<String>> partititionedIssueKeys = Lists.partition(issueKeysList, ActiveObjectsUtils.SQL_IN_CLAUSE_MAX);
+
+        BooleanExpression issueKeyPredicate = issueToChangesetMapping.ISSUE_KEY.in(partititionedIssueKeys.get(0));
+
+        for (List<String> keys : Iterables.drop(1, partititionedIssueKeys))
+        {
+            issueKeyPredicate = issueKeyPredicate.or(issueToChangesetMapping.ISSUE_KEY.in(keys));
+        }
+
+        return issueKeyPredicate;
     }
 
     private class ChangesetQueryMappings
