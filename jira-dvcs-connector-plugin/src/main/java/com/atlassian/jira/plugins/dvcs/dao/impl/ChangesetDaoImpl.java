@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
-import com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL.ChangesetQDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;

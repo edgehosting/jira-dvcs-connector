@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
+package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
 import com.atlassian.fugue.Functions;

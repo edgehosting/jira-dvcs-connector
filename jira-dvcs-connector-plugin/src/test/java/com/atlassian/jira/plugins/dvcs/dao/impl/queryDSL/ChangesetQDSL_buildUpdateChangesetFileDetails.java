@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.dao.impl.queryDSL;
+package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
