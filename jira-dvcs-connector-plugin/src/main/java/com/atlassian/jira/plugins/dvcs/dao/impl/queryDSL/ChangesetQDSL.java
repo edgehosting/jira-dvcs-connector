@@ -117,55 +117,7 @@ public class ChangesetQDSL
             @Override
             public Function<Tuple, Changeset> apply(@Nullable final ChangesetQueryMappings changesetQueryMappings, @Nullable final Connection connection)
             {
-                return new Function<Tuple, Changeset>()
-                {
-                    @Override
-                    public Changeset apply(@Nullable final Tuple input)
-                    {
-                        final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
-                        final Integer changesetId = input.get(changesetMapping.ID);
-                        final Integer repositoryId = input.get(changesetQueryMappings.repositoryMapping.ID);
-                        final String issueKey = input.get(changesetQueryMappings.issueToChangesetMapping.ISSUE_KEY);
-
-                        Changeset changeset = changesetsById.get(changesetId);
-
-                        if (changeset == null)
-                        {
-                            List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(input.get(changesetMapping.FILE_DETAILS_JSON));
-
-                            changeset = new Changeset(repositoryId,
-                                    input.get(changesetMapping.NODE),
-                                    input.get(changesetMapping.RAW_AUTHOR),
-                                    input.get(changesetMapping.AUTHOR),
-                                    input.get(changesetMapping.DATE),
-                                    input.get(changesetMapping.RAW_NODE),
-                                    input.get(changesetMapping.BRANCH),
-                                    input.get(changesetMapping.MESSAGE),
-                                    ChangesetTransformer.parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
-                                    fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
-                                    input.get(changesetMapping.FILE_COUNT),
-                                    input.get(changesetMapping.AUTHOR_EMAIL));
-
-                            changeset.setId(changesetId);
-                            changeset.setVersion(input.get(changesetMapping.VERSION));
-                            changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMARTCOMMIT_AVAILABLE));
-
-                            changeset.setFileDetails(fileDetails);
-                            changesetsById.put(changesetId, changeset);
-                        }
-
-                        if (!changeset.getRepositoryIds().contains(repositoryId))
-                        {
-                            changeset.getRepositoryIds().add(repositoryId);
-                        }
-                        if (!changeset.getIssueKeys().contains(issueKey))
-                        {
-                            changeset.getIssueKeys().add(issueKey);
-                        }
-
-                        return changeset;
-                    }
-                };
+                return new GetByIssueKeyProcessor(changesetQueryMappings, changesetsById);
             }
         };
         performChangesetQueryByIssueKey(issueKeys, dvcsType, selectQueryCallback, fields, streamFunction);
@@ -173,6 +125,69 @@ public class ChangesetQDSL
         final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
         Collections.sort(result, new ChangesetDateComparator(newestFirst));
         return result;
+    }
+
+    /**
+     * Processes the results from the query to populate the supplied map with #Changeset objects that have their
+     * issue keys and repository Ids populated. Note that the #Changeset.repositoryId is set to the first one we find
+     */
+    class GetByIssueKeyProcessor implements Function<Tuple, Changeset>
+    {
+        private final ChangesetQueryMappings changesetQueryMappings;
+        private final Map<Integer, Changeset> changesetsById;
+
+        GetByIssueKeyProcessor(final ChangesetQueryMappings changesetQueryMappings, final Map<Integer, Changeset> changesetsById)
+        {
+            this.changesetQueryMappings = changesetQueryMappings;
+            this.changesetsById = changesetsById;
+        }
+
+        @Override
+        public Changeset apply(@Nullable final Tuple input)
+        {
+            final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+            final Integer changesetId = input.get(changesetMapping.ID);
+            final Integer repositoryId = input.get(changesetQueryMappings.repositoryMapping.ID);
+            final String issueKey = input.get(changesetQueryMappings.issueToChangesetMapping.ISSUE_KEY);
+
+            Changeset changeset = changesetsById.get(changesetId);
+
+            if (changeset == null)
+            {
+                List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(input.get(changesetMapping.FILE_DETAILS_JSON));
+
+                changeset = new Changeset(repositoryId,
+                        input.get(changesetMapping.NODE),
+                        input.get(changesetMapping.RAW_AUTHOR),
+                        input.get(changesetMapping.AUTHOR),
+                        input.get(changesetMapping.DATE),
+                        input.get(changesetMapping.RAW_NODE),
+                        input.get(changesetMapping.BRANCH),
+                        input.get(changesetMapping.MESSAGE),
+                        ChangesetTransformer.parseParentsData(input.get(changesetMapping.PARENTS_DATA)),
+                        fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
+                        input.get(changesetMapping.FILE_COUNT),
+                        input.get(changesetMapping.AUTHOR_EMAIL));
+
+                changeset.setId(changesetId);
+                changeset.setVersion(input.get(changesetMapping.VERSION));
+                changeset.setSmartcommitAvaliable(input.get(changesetMapping.SMARTCOMMIT_AVAILABLE));
+
+                changeset.setFileDetails(fileDetails);
+                changesetsById.put(changesetId, changeset);
+            }
+
+            if (!changeset.getRepositoryIds().contains(repositoryId))
+            {
+                changeset.getRepositoryIds().add(repositoryId);
+            }
+            if (!changeset.getIssueKeys().contains(issueKey))
+            {
+                changeset.getIssueKeys().add(issueKey);
+            }
+
+            return changeset;
+        }
     }
 
     /**
@@ -380,7 +395,7 @@ public class ChangesetQDSL
         return issueKeyPredicate;
     }
 
-    private class ChangesetQueryMappings
+    class ChangesetQueryMappings
     {
         final QChangesetMapping changesetMapping;
         final QIssueToChangesetMapping issueToChangesetMapping;
@@ -388,7 +403,7 @@ public class ChangesetQDSL
         final QRepositoryMapping repositoryMapping;
         final QOrganizationMapping orgMapping;
 
-        private ChangesetQueryMappings(final QChangesetMapping changesetMapping,
+        ChangesetQueryMappings(final QChangesetMapping changesetMapping,
                 final QIssueToChangesetMapping issueToChangesetMapping,
                 final QRepositoryToChangesetMapping rtcMapping, final QRepositoryMapping repositoryMapping,
                 final QOrganizationMapping orgMapping)
@@ -426,9 +441,6 @@ public class ChangesetQDSL
 
         /**
          * Generally the dates should not be null but as we are sorting in the application now we need to be safe
-         * @param cs1
-         * @param cs2
-         * @return
          */
         private int compareInternal(final Changeset cs1, final Changeset cs2)
         {
