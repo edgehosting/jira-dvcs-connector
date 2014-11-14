@@ -19,6 +19,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
+import net.java.ao.test.jdbc.Data;
 import org.junit.Before;
 
 import java.sql.SQLException;
@@ -28,6 +29,7 @@ import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
+@Data()
 public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";

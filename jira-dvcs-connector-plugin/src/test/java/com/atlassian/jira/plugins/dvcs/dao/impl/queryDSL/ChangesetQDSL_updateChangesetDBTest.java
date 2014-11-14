@@ -106,10 +106,10 @@ public class ChangesetQDSL_updateChangesetDBTest extends ChangesetQDSLDBTest
         changesetMappingWithIssue.setFileCount(0);
         changesetMappingWithIssue.save();
 
+        // We will do two updates as we need to catch the case where bitbucket might have the magic file count of Changeset.MAX_VISIBLE_FILES
         int numberUpdated = changesetQDSL.updateChangesetMappingsThatHaveOldFileData(ISSUE_KEYS, BITBUCKET);
-        assertThat(numberUpdated, equalTo(1));
+        assertThat(numberUpdated, equalTo(2));
     }
-
 
     private void updateChangesetWithFileDetailsThatNeedUpdating(ChangesetMapping changesetMapping)
     {

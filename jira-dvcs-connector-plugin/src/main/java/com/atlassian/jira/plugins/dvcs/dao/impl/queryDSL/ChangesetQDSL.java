@@ -128,8 +128,8 @@ public class ChangesetQDSL
     }
 
     /**
-     * Processes the results from the query to populate the supplied map with #Changeset objects that have their
-     * issue keys and repository Ids populated. Note that the #Changeset.repositoryId is set to the first one we find
+     * Processes the results from the query to populate the supplied map with #Changeset objects that have their issue
+     * keys and repository Ids populated. Note that the #Changeset.repositoryId is set to the first one we find
      */
     class GetByIssueKeyProcessor implements Function<Tuple, Changeset>
     {
@@ -204,8 +204,7 @@ public class ChangesetQDSL
                 final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
 
                 return selectQuery.where(changesetMapping.FILES_DATA.isNotNull()
-                        .and(changesetMapping.FILE_COUNT.eq(0)))
-                        .distinct();
+                        .and(changesetMapping.FILE_COUNT.eq(0)));
             }
         };
 
@@ -222,6 +221,7 @@ public class ChangesetQDSL
             }
         };
 
+        // May process multiple times as we need to catch bitbucket with six (Changeset.MAX_VISIBLE_FILES) files
         final Function2<ChangesetQueryMappings, Connection, Function<Tuple, Long>> streamFunction = new Function2<ChangesetQueryMappings, Connection, Function<Tuple, Long>>()
         {
             @Override
@@ -233,9 +233,9 @@ public class ChangesetQDSL
                     public Long apply(@Nullable final Tuple tuple)
                     {
                         final QChangesetMapping changesetMapping = changesetQueryMappings.changesetMapping;
+                        Integer id = tuple.get(changesetMapping.ID);
 
                         String node = tuple.get(changesetMapping.NODE);
-                        Integer id = tuple.get(changesetMapping.ID);
                         final FileData fileData = FileData.from(tuple.get(changesetMapping.FILES_DATA), tuple.get(changesetMapping.FILE_DETAILS_JSON));
                         log.debug("Migrating file count from old file data structure for changeset ID {} Hash {}.", id, node);
 
