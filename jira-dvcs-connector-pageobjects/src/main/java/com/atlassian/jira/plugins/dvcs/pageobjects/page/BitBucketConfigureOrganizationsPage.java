@@ -45,7 +45,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         fillInDetailsAndSubmit(organizationAccount, oAuthCredentials);
 
-        if (isFormOpen().by(15, SECONDS))
+        if (isFormOpen().by(5, SECONDS))
         {
             // if form still open, assume it hits the weird clear text error, where some or all fields are cleared after filled in
             //  just retry the filling and submit again.
