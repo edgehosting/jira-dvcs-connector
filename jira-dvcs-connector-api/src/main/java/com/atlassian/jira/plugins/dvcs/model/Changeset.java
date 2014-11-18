@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class Changeset
+public class Changeset implements IssueKeyedEntity
 {
     public static final int MAX_VISIBLE_FILES = 5;
 

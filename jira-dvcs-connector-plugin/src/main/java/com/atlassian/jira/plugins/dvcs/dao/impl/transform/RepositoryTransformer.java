@@ -87,7 +87,7 @@ public class RepositoryTransformer
         return createRepositoryUrl(organizationMapping.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
     }
 
-    private String createRepositoryUrl(String hostUrl, String owner, String slug)
+    public static String createRepositoryUrl(String hostUrl, String owner, String slug)
     {
         // normalize
         if (hostUrl != null && hostUrl.endsWith("/"))

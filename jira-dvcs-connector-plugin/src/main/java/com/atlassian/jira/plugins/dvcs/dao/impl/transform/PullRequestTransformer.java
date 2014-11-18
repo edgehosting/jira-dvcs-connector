@@ -42,7 +42,8 @@ public class PullRequestTransformer
         pullRequest.setName(pullRequestMapping.getName());
         pullRequest.setUrl(pullRequestMapping.getUrl());
 
-        pullRequest.setSource(new PullRequestRef(pullRequestMapping.getSourceBranch(), pullRequestMapping.getSourceRepo(), createRepositoryUrl(repository.getOrgHostUrl(), pullRequestMapping.getSourceRepo())));
+        pullRequest.setSource(new PullRequestRef(pullRequestMapping.getSourceBranch(), pullRequestMapping.getSourceRepo(),
+                createRepositoryUrl(repository.getOrgHostUrl(), pullRequestMapping.getSourceRepo())));
         pullRequest.setDestination(new PullRequestRef(pullRequestMapping.getDestinationBranch(), createRepositoryLabel(repository), repository.getRepositoryUrl()));
 
         pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(pullRequestMapping.getLastStatus()));
@@ -96,7 +97,7 @@ public class PullRequestTransformer
         return commits;
     }
 
-    private String createRepositoryUrl(String hostUrl, String repositoryLabel)
+    public static String createRepositoryUrl(String hostUrl, String repositoryLabel)
     {
         if (repositoryLabel == null)
         {
@@ -113,6 +114,11 @@ public class PullRequestTransformer
 
     private String createRepositoryLabel(Repository repository)
     {
-        return repository.getOrgName() + "/" + repository.getSlug();
+        return createRepositoryLabel(repository.getOrgName(), repository.getSlug());
+    }
+
+    public static String createRepositoryLabel(String orgName, String slug)
+    {
+        return orgName + "/" + slug;
     }
 }

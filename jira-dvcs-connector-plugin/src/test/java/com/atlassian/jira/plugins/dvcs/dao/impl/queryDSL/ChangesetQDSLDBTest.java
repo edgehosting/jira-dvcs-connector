@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.ChangesetAOPopulator;
+import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
 import com.atlassian.jira.plugins.dvcs.activeobjects.OrganizationAOPopulator;
+import com.atlassian.jira.plugins.dvcs.activeobjects.PullRequestAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.RepositoryAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.TestConnectionProvider;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
@@ -9,6 +11,9 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
+import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
@@ -19,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
+import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.Data;
 import org.junit.Before;
 
@@ -29,7 +35,7 @@ import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
-@Data()
+@NameConverters (table = DvcsConnectorTableNameConverter.class)
 public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";
@@ -38,15 +44,20 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
     protected ChangesetAOPopulator changesetAOPopulator;
     protected RepositoryAOPopulator repositoryAOPopulator;
     protected OrganizationAOPopulator organizationAOPopulator;
+    protected PullRequestAOPopulator pullRequestAOPopulator;
 
     protected ConnectionProvider connectionProvider;
     protected QueryFactory queryFactory;
 
     protected ChangesetQDSL changesetQDSL;
+    protected PullRequestQDSL pullRequestQDSL;
 
-    protected ChangesetMapping changesetMappingWithIssue;
     protected RepositoryMapping enabledRepository;
     protected OrganizationMapping bitbucketOrganization;
+
+    protected ChangesetMapping changesetMappingWithIssue;
+    protected RepositoryPullRequestMapping pullRequestMappingWithIssue;
+    protected PullRequestParticipantMapping pullRequestParticipant;
 
     @Before
     public void setup() throws SQLException
@@ -54,6 +65,7 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         changesetAOPopulator = new ChangesetAOPopulator(entityManager);
         repositoryAOPopulator = new RepositoryAOPopulator(entityManager);
         organizationAOPopulator = new OrganizationAOPopulator(entityManager);
+        pullRequestAOPopulator = new PullRequestAOPopulator(entityManager);
 
         connectionProvider = new TestConnectionProvider(entityManager);
 
@@ -61,9 +73,12 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         queryFactory = new QueryFactoryImpl(connectionProvider, dialectProvider);
 
         entityManager.migrateDestructively(ChangesetMapping.class, RepositoryToChangesetMapping.class,
-                RepositoryMapping.class, OrganizationMapping.class, IssueToChangesetMapping.class);
+                RepositoryMapping.class, OrganizationMapping.class, IssueToChangesetMapping.class,
+                RepositoryPullRequestMapping.class, PullRequestParticipantMapping.class,
+                RepositoryPullRequestIssueKeyMapping.class);
 
         changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory);
+        pullRequestQDSL = new PullRequestQDSL(connectionProvider, queryFactory);
 
         bitbucketOrganization = entityManager.create(OrganizationMapping.class);
         bitbucketOrganization.setDvcsType(BITBUCKET);
@@ -72,6 +87,10 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         enabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
 
         changesetMappingWithIssue = changesetAOPopulator.createCSM(changesetAOPopulator.getDefaultCSParams(), ISSUE_KEY, enabledRepository);
+
+        pullRequestMappingWithIssue = pullRequestAOPopulator.createPR("PR FOR" + ISSUE_KEY, ISSUE_KEY, enabledRepository);
+        pullRequestParticipant = pullRequestAOPopulator.createParticipant("hoo", false, "reviewer", pullRequestMappingWithIssue);
+        pullRequestMappingWithIssue = entityManager.get(RepositoryPullRequestMapping.class, pullRequestMappingWithIssue.getID());
     }
 
     protected Collection<Integer> extractIds(Collection<Changeset> changeSets)
