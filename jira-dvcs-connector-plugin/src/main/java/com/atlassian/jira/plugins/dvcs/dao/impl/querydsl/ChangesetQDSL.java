@@ -18,8 +18,10 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
 import com.atlassian.pocketknife.api.querydsl.StreamyResult;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -54,12 +56,14 @@ public class ChangesetQDSL
 
     private final ConnectionProvider connectionProvider;
     private final QueryFactory queryFactory;
+    private final SchemaProvider schemaProvider;
 
     @Autowired
-    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory)
+    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
         this.connectionProvider = connectionProvider;
         this.queryFactory = queryFactory;
+        this.schemaProvider = schemaProvider;
     }
 
     /**
@@ -131,6 +135,7 @@ public class ChangesetQDSL
      * Processes the results from the query to populate the supplied map with #Changeset objects that have their issue
      * keys and repository Ids populated. Note that the #Changeset.repositoryId is set to the first one we find
      */
+    @VisibleForTesting
     class GetByIssueKeyProcessor implements Function<Tuple, Changeset>
     {
         private final ChangesetQueryMappings changesetQueryMappings;
@@ -260,6 +265,7 @@ public class ChangesetQDSL
         }, 0, numbersUpdated);
     }
 
+    @VisibleForTesting
     SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, final String dvcsType,
             final String fileDetailsJson, final FileData fileData, String node, Integer id)
     {
@@ -312,11 +318,11 @@ public class ChangesetQDSL
 
         try
         {
-            final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
+            final QChangesetMapping changesetMapping = QChangesetMapping.withSchema(schemaProvider);
+            final QIssueToChangesetMapping issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
+            final QRepositoryToChangesetMapping rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
+            final QRepositoryMapping repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
+            final QOrganizationMapping orgMapping = QOrganizationMapping.withSchema(schemaProvider);
 
             final ChangesetQueryMappings mappings = new ChangesetQueryMappings(changesetMapping, issueToChangesetMapping,
                     rtcMapping, repositoryMapping, orgMapping);
@@ -395,6 +401,7 @@ public class ChangesetQDSL
         return issueKeyPredicate;
     }
 
+    @VisibleForTesting
     class ChangesetQueryMappings
     {
         final QChangesetMapping changesetMapping;

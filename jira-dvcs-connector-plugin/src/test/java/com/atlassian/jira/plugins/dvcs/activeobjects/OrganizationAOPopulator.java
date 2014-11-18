@@ -9,8 +9,6 @@ import java.util.Map;
 
 public class OrganizationAOPopulator extends AOPopulator
 {
-    EntityManager entityManager;
-
     public OrganizationAOPopulator(final EntityManager entityManager)
     {
         super(entityManager);

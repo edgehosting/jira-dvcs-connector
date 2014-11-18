@@ -18,6 +18,8 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
+import com.atlassian.pocketknife.internal.querydsl.DefaultSchemaProvider;
 import com.atlassian.pocketknife.internal.querydsl.QueryFactoryImpl;
 import com.atlassian.pocketknife.spi.querydsl.DefaultDialectConfiguration;
 import com.google.common.base.Function;
@@ -25,7 +27,6 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
 import net.java.ao.test.converters.NameConverters;
-import net.java.ao.test.jdbc.Data;
 import org.junit.Before;
 
 import java.sql.SQLException;
@@ -48,6 +49,7 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 
     protected ConnectionProvider connectionProvider;
     protected QueryFactory queryFactory;
+    protected SchemaProvider schemaProvider;
 
     protected ChangesetQDSL changesetQDSL;
     protected PullRequestQDSL pullRequestQDSL;
@@ -72,17 +74,17 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         final DialectProvider dialectProvider = new DefaultDialectConfiguration(connectionProvider);
         queryFactory = new QueryFactoryImpl(connectionProvider, dialectProvider);
 
+        schemaProvider = new DefaultSchemaProvider(connectionProvider);
+
         entityManager.migrateDestructively(ChangesetMapping.class, RepositoryToChangesetMapping.class,
                 RepositoryMapping.class, OrganizationMapping.class, IssueToChangesetMapping.class,
                 RepositoryPullRequestMapping.class, PullRequestParticipantMapping.class,
                 RepositoryPullRequestIssueKeyMapping.class);
 
-        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory);
+        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
         pullRequestQDSL = new PullRequestQDSL(connectionProvider, queryFactory);
 
-        bitbucketOrganization = entityManager.create(OrganizationMapping.class);
-        bitbucketOrganization.setDvcsType(BITBUCKET);
-        bitbucketOrganization.save();
+        bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 
         enabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
 

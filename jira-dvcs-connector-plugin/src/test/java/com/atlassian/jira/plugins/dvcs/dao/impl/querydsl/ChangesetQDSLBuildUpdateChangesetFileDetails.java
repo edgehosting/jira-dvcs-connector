@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
-public class ChangesetQDSL_buildUpdateChangesetFileDetails
+public class ChangesetQDSLBuildUpdateChangesetFileDetails
 {
     public static final String FILES_JSON_WITH_DETAILS = "{\"count\":2,\"files\":["
             + "{\"filename\":\"file3\",\"status\":\"modified\",\"additions\":2,\"deletions\":0},"
