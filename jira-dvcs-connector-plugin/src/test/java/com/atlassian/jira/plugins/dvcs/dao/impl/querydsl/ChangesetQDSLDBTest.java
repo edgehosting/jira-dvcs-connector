@@ -65,9 +65,7 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 
         changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory);
 
-        bitbucketOrganization = entityManager.create(OrganizationMapping.class);
-        bitbucketOrganization.setDvcsType(BITBUCKET);
-        bitbucketOrganization.save();
+        bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 
         enabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
 

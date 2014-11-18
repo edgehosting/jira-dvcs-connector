@@ -13,8 +13,6 @@ import java.util.Map;
 
 public class ChangesetAOPopulator extends AOPopulator
 {
-    private EntityManager entityManager;
-
     public ChangesetAOPopulator(final EntityManager entityManager)
     {
         super(entityManager);
