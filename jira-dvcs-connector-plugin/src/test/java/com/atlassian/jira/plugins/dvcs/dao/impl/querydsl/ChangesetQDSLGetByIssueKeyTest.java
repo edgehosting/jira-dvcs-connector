@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
  * and connection.
  */
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public class ChangesetQDSL_getByIssueKeyTest extends ChangesetQDSLDBTest
+public class ChangesetQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
 {
     @Test
     @NonTransactional
