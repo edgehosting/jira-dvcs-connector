@@ -20,6 +20,7 @@ import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
 import com.atlassian.pocketknife.api.querydsl.StreamyResult;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -131,6 +132,7 @@ public class ChangesetQDSL
      * Processes the results from the query to populate the supplied map with #Changeset objects that have their issue
      * keys and repository Ids populated. Note that the #Changeset.repositoryId is set to the first one we find
      */
+    @VisibleForTesting
     class GetByIssueKeyProcessor implements Function<Tuple, Changeset>
     {
         private final ChangesetQueryMappings changesetQueryMappings;
@@ -260,6 +262,7 @@ public class ChangesetQDSL
         }, 0, numbersUpdated);
     }
 
+    @VisibleForTesting
     SQLUpdateClause buildUpdateChangesetFileDetails(final Connection connection, final String dvcsType,
             final String fileDetailsJson, final FileData fileData, String node, Integer id)
     {
@@ -395,6 +398,7 @@ public class ChangesetQDSL
         return issueKeyPredicate;
     }
 
+    @VisibleForTesting
     class ChangesetQueryMappings
     {
         final QChangesetMapping changesetMapping;
