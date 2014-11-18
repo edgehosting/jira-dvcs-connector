@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
 import com.atlassian.pocketknife.api.querydsl.StreamyResult;
 import com.google.common.annotations.VisibleForTesting;
@@ -55,12 +56,14 @@ public class ChangesetQDSL
 
     private final ConnectionProvider connectionProvider;
     private final QueryFactory queryFactory;
+    private final SchemaProvider schemaProvider;
 
     @Autowired
-    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory)
+    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
         this.connectionProvider = connectionProvider;
         this.queryFactory = queryFactory;
+        this.schemaProvider = schemaProvider;
     }
 
     /**
@@ -315,11 +318,11 @@ public class ChangesetQDSL
 
         try
         {
-            final QChangesetMapping changesetMapping = new QChangesetMapping("CSM", "", QChangesetMapping.AO_TABLE_NAME);
-            final QIssueToChangesetMapping issueToChangesetMapping = new QIssueToChangesetMapping("ITCS", "", QIssueToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryToChangesetMapping rtcMapping = new QRepositoryToChangesetMapping("RTC", "", QRepositoryToChangesetMapping.AO_TABLE_NAME);
-            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
+            final QChangesetMapping changesetMapping = QChangesetMapping.withSchema(schemaProvider);
+            final QIssueToChangesetMapping issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
+            final QRepositoryToChangesetMapping rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
+            final QRepositoryMapping repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
+            final QOrganizationMapping orgMapping = QOrganizationMapping.withSchema(schemaProvider);
 
             final ChangesetQueryMappings mappings = new ChangesetQueryMappings(changesetMapping, issueToChangesetMapping,
                     rtcMapping, repositoryMapping, orgMapping);

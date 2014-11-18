@@ -13,6 +13,8 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
+import com.atlassian.pocketknife.internal.querydsl.DefaultSchemaProvider;
 import com.atlassian.pocketknife.internal.querydsl.QueryFactoryImpl;
 import com.atlassian.pocketknife.spi.querydsl.DefaultDialectConfiguration;
 import com.google.common.base.Function;
@@ -29,7 +31,7 @@ import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
-@Data()
+@Data ()
 public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";
@@ -41,6 +43,7 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
 
     protected ConnectionProvider connectionProvider;
     protected QueryFactory queryFactory;
+    protected SchemaProvider schemaProvider;
 
     protected ChangesetQDSL changesetQDSL;
 
@@ -60,10 +63,12 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
         final DialectProvider dialectProvider = new DefaultDialectConfiguration(connectionProvider);
         queryFactory = new QueryFactoryImpl(connectionProvider, dialectProvider);
 
+        schemaProvider = new DefaultSchemaProvider(connectionProvider);
+
         entityManager.migrateDestructively(ChangesetMapping.class, RepositoryToChangesetMapping.class,
                 RepositoryMapping.class, OrganizationMapping.class, IssueToChangesetMapping.class);
 
-        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory);
+        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 
