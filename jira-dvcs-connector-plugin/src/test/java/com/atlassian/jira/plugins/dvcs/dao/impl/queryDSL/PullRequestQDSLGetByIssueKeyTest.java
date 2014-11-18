@@ -56,12 +56,29 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         assertThat(pullRequest.getCommentCount(), equalTo(pullRequestMappingWithIssue.getCommentCount()));
         assertThat(pullRequest.getExecutedBy(), equalTo(pullRequestMappingWithIssue.getExecutedBy()));
 
+        assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
+
         assertThat(pullRequest.getParticipants().size(), equalTo(1));
         Participant participant = pullRequest.getParticipants().get(0);
 
         assertThat(participant.getUsername(), equalTo(participant.getUsername()));
         assertThat(participant.isApproved(), equalTo(participant.isApproved()));
         assertThat(participant.getRole(), equalTo(participant.getRole()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testTwoIssueKeys()
+    {
+        final String secondKey = "SCN-2";
+        pullRequestAOPopulator.associateToIssue(pullRequestMappingWithIssue, secondKey);
+
+        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
+
+        assertThat(pullRequests.size(), equalTo(1));
+
+        PullRequest pullRequest = pullRequests.get(0);
+        assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY, secondKey));
     }
 
     @Test

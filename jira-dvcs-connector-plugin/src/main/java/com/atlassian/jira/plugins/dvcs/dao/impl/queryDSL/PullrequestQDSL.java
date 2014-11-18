@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Iterables;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -106,7 +107,8 @@ public class PullRequestQDSL
                             orgMapping.HOST_URL,
                             prMapping.DESTINATION_BRANCH,
                             orgMapping.NAME,
-                            repositoryMapping.SLUG);
+                            repositoryMapping.SLUG,
+                            issueMapping.ISSUE_KEY);
                 }
             });
             try
@@ -172,6 +174,13 @@ public class PullRequestQDSL
                             {
                                 pullRequest.getParticipants().add(participant);
                             }
+                        }
+
+                        final String issueKey = input.get(issueMapping.ISSUE_KEY);
+
+                        if (!pullRequest.getIssueKeys().contains(issueKey))
+                        {
+                            pullRequest.getIssueKeys().add(issueKey);
                         }
 
 //                        if (withCommits)
