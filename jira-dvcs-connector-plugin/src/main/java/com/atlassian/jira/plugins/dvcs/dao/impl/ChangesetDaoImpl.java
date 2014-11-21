@@ -208,6 +208,29 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
+    @Override
+    public Changeset migrateFilesData(final Changeset changeset, final String dvcsType)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        {
+            @Override
+            public ChangesetMapping doInTransaction()
+            {
+                ChangesetMapping chm = getChangesetMapping(changeset);
+                if (chm != null)
+                {
+                    transformer.migrateChangesetFileData(chm, dvcsType, changeset);
+                }
+                else
+                {
+                    log.warn("Changest with node {} is not exists.", changeset.getNode());
+                }
+                return chm;
+            }
+        });
+        return changeset;
+    }
+
     private ChangesetMapping getChangesetMapping(Changeset changeset)
     {
         // A Query is little bit more complicated, but:
