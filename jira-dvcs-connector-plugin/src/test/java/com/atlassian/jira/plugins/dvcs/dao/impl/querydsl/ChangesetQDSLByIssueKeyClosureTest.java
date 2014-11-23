@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.when;
 
-public class ChangesetQDSLByIssueKeyClojureTest
+public class ChangesetQDSLByIssueKeyClosureTest
 {
     private static final Integer CHANGESET_MAPPING_ID = 5;
     private static final Integer REPOSITORY_MAPPING_ID = 10;
@@ -41,7 +41,7 @@ public class ChangesetQDSLByIssueKeyClojureTest
     @Mock
     private Tuple tuple;
 
-    private ChangesetQDSL.ByIssueKeyClojure issueKeyProcesor;
+    private ChangesetQDSL.ByIssueKeyClosure issueKeyProcesor;
     private Map<Integer, Changeset> changesetsById;
     private Changeset existingChangeset;
 
@@ -57,7 +57,7 @@ public class ChangesetQDSLByIssueKeyClojureTest
         changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
-        issueKeyProcesor = changesetQDSL.new ByIssueKeyClojure(BITBUCKET, ImmutableList.of(ISSUE_KEY));
+        issueKeyProcesor = changesetQDSL.new ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY));
 
         when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
         when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);

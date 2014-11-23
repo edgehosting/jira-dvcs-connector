@@ -71,9 +71,9 @@ public class ChangesetQDSL
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        ByIssueKeyClojure clojure = new ByIssueKeyClojure(dvcsType, issueKeys);
-        StreamyResult streamyResult = queryFactory.select(clojure.query());
-        Map<Integer, Changeset> changesetsById = streamyResult.foldLeft(clojure.getInitialValue(), clojure.getFoldFunction());
+        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys);
+        StreamyResult streamyResult = queryFactory.select(closure.query());
+        Map<Integer, Changeset> changesetsById = streamyResult.foldLeft(closure.getInitialValue(), closure.getFoldFunction());
 
         final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
         Collections.sort(result, new ChangesetDateComparator(newestFirst));
@@ -81,7 +81,7 @@ public class ChangesetQDSL
     }
 
     @VisibleForTesting
-    class ByIssueKeyClojure
+    class ByIssueKeyClosure
     {
         final String dvcsType;
         final Iterable<String> issueKeys;
@@ -91,7 +91,7 @@ public class ChangesetQDSL
         final QRepositoryMapping repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
         final QOrganizationMapping orgMapping = QOrganizationMapping.withSchema(schemaProvider);
 
-        ByIssueKeyClojure(final String dvcsType, final Iterable<String> issueKeys)
+        ByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys)
         {
             super();
             this.dvcsType = dvcsType;
