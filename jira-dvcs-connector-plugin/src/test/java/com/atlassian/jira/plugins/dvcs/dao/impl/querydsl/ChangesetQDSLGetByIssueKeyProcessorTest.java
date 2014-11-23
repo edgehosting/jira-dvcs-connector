@@ -1,28 +1,26 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
-import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
-import com.atlassian.pocketknife.api.querydsl.QueryFactory;
-import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
-import com.mysema.query.Tuple;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Mockito.when;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
+import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
+import com.google.common.collect.ImmutableList;
+import com.mysema.query.Tuple;
 
 public class ChangesetQDSLGetByIssueKeyProcessorTest
 {
@@ -44,8 +42,7 @@ public class ChangesetQDSLGetByIssueKeyProcessorTest
     @Mock
     private Tuple tuple;
 
-    private ChangesetQDSL.GetByIssueKeyProcessor issueKeyProcesor;
-    private ChangesetQDSL.ChangesetQueryMappings mappings;
+    private ChangesetQDSL.ByIssueKeyClojure issueKeyProcesor;
     private Map<Integer, Changeset> changesetsById;
     private Changeset existingChangeset;
 
@@ -61,26 +58,17 @@ public class ChangesetQDSLGetByIssueKeyProcessorTest
         changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
-        final QChangesetMapping changesetMapping = QChangesetMapping.withSchema(schemaProvider);
-        final QIssueToChangesetMapping issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
-        final QRepositoryToChangesetMapping rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
-        final QRepositoryMapping repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
-        final QOrganizationMapping orgMapping = QOrganizationMapping.withSchema(schemaProvider);
+        issueKeyProcesor = changesetQDSL.new ByIssueKeyClojure(BITBUCKET, ImmutableList.of(ISSUE_KEY));
 
-        mappings = changesetQDSL.new ChangesetQueryMappings(changesetMapping, issueToChangesetMapping,
-                rtcMapping, repositoryMapping, orgMapping);
+        when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
+        when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);
+        when(tuple.get(issueKeyProcesor.changesetMapping.VERSION)).thenReturn(3);
+        when(tuple.get(issueKeyProcesor.changesetMapping.SMARTCOMMIT_AVAILABLE)).thenReturn(true);
+        when(tuple.get(issueKeyProcesor.changesetMapping.DATE)).thenReturn(new Date());
 
-        issueKeyProcesor = changesetQDSL.new GetByIssueKeyProcessor(mappings, changesetsById);
+        when(tuple.get(issueKeyProcesor.repositoryMapping.ID)).thenReturn(REPOSITORY_MAPPING_ID);
 
-        when(tuple.get(changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
-        when(tuple.get(changesetMapping.FILE_COUNT)).thenReturn(2);
-        when(tuple.get(changesetMapping.VERSION)).thenReturn(3);
-        when(tuple.get(changesetMapping.SMARTCOMMIT_AVAILABLE)).thenReturn(true);
-        when(tuple.get(changesetMapping.DATE)).thenReturn(new Date());
-
-        when(tuple.get(repositoryMapping.ID)).thenReturn(REPOSITORY_MAPPING_ID);
-
-        when(tuple.get(issueToChangesetMapping.ISSUE_KEY)).thenReturn(ISSUE_KEY);
+        when(tuple.get(issueKeyProcesor.issueToChangesetMapping.ISSUE_KEY)).thenReturn(ISSUE_KEY);
         // let the other values return null, they won't hurt
 
         changesetsById.put(CHANGESET_MAPPING_ID, existingChangeset);
@@ -90,7 +78,7 @@ public class ChangesetQDSLGetByIssueKeyProcessorTest
     public void testSimplePopulateOnEmpty()
     {
         changesetsById.clear();
-        issueKeyProcesor.apply(tuple);
+        issueKeyProcesor.getFoldFunction().apply(changesetsById, tuple);
 
         assertThat(changesetsById.size(), equalTo(1));
         assertThat(changesetsById.get(CHANGESET_MAPPING_ID).getRepositoryIds(), containsInAnyOrder(REPOSITORY_MAPPING_ID));
@@ -100,7 +88,7 @@ public class ChangesetQDSLGetByIssueKeyProcessorTest
     @Test
     public void testPopulateExistingChangesetOverlapOnRepoAndIssue()
     {
-        issueKeyProcesor.apply(tuple);
+        issueKeyProcesor.getFoldFunction().apply(changesetsById, tuple);
 
         assertThat(changesetsById.size(), equalTo(1));
         assertThat(changesetsById.get(CHANGESET_MAPPING_ID).getRepositoryIds(), containsInAnyOrder(REPOSITORY_MAPPING_ID));
@@ -117,7 +105,7 @@ public class ChangesetQDSLGetByIssueKeyProcessorTest
         final String existingIssueKey = "III-213";
         existingChangeset.getIssueKeys().clear();
         existingChangeset.getIssueKeys().add(existingIssueKey);
-        issueKeyProcesor.apply(tuple);
+        issueKeyProcesor.getFoldFunction().apply(changesetsById, tuple);
 
         assertThat(changesetsById.size(), equalTo(1));
         assertThat(changesetsById.get(CHANGESET_MAPPING_ID).getRepositoryIds(), containsInAnyOrder(existingRepoId, REPOSITORY_MAPPING_ID));

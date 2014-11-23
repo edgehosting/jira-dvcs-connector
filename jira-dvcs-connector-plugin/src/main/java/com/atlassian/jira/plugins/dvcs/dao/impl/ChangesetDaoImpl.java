@@ -371,7 +371,6 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        changesetQDSL.updateChangesetMappingsThatHaveOldFileData(issueKeys, dvcsType);
         return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
     }
 
