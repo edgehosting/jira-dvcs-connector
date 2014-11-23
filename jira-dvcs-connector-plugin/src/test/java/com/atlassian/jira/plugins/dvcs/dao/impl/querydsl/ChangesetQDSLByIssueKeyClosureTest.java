@@ -16,9 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
 public class ChangesetQDSLByIssueKeyClosureTest
@@ -57,7 +59,8 @@ public class ChangesetQDSLByIssueKeyClosureTest
         changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
-        issueKeyProcesor = changesetQDSL.new ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY));
+        when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
+        issueKeyProcesor = new ChangesetQDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
 
         when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
         when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);

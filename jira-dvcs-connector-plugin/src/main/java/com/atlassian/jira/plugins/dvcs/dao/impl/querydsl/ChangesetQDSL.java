@@ -71,7 +71,7 @@ public class ChangesetQDSL
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys);
+        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
         StreamyResult streamyResult = queryFactory.select(closure.query());
         Map<Integer, Changeset> changesetsById = streamyResult.foldLeft(closure.getInitialValue(), closure.getFoldFunction());
 
@@ -81,21 +81,26 @@ public class ChangesetQDSL
     }
 
     @VisibleForTesting
-    class ByIssueKeyClosure
+    static class ByIssueKeyClosure
     {
         final String dvcsType;
         final Iterable<String> issueKeys;
-        final QChangesetMapping changesetMapping = QChangesetMapping.withSchema(schemaProvider);
-        final QIssueToChangesetMapping issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
-        final QRepositoryToChangesetMapping rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
-        final QRepositoryMapping repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
-        final QOrganizationMapping orgMapping = QOrganizationMapping.withSchema(schemaProvider);
+        final QChangesetMapping changesetMapping;
+        final QIssueToChangesetMapping issueToChangesetMapping;
+        final QRepositoryToChangesetMapping rtcMapping;
+        final QRepositoryMapping repositoryMapping;
+        final QOrganizationMapping orgMapping;
 
-        ByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys)
+        ByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
         {
             super();
             this.dvcsType = dvcsType;
             this.issueKeys = issueKeys;
+            this.changesetMapping = QChangesetMapping.withSchema(schemaProvider);
+            this.issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
+            this.rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
+            this.repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
+            this.orgMapping = QOrganizationMapping.withSchema(schemaProvider);
         }
 
         Function<SelectQuery, StreamyResult> query()
@@ -186,28 +191,29 @@ public class ChangesetQDSL
                 }
             };
         }
+
+        private Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final QIssueToChangesetMapping issueToChangesetMapping)
+        {
+            final List<String> issueKeysList = Lists.newArrayList(issueKeys);
+
+            if (issueKeysList.size() <= ActiveObjectsUtils.SQL_IN_CLAUSE_MAX)
+            {
+                return issueToChangesetMapping.ISSUE_KEY.in(issueKeysList);
+            }
+
+            List<List<String>> partititionedIssueKeys = Lists.partition(issueKeysList, ActiveObjectsUtils.SQL_IN_CLAUSE_MAX);
+
+            BooleanExpression issueKeyPredicate = issueToChangesetMapping.ISSUE_KEY.in(partititionedIssueKeys.get(0));
+
+            for (List<String> keys : Iterables.drop(1, partititionedIssueKeys))
+            {
+                issueKeyPredicate = issueKeyPredicate.or(issueToChangesetMapping.ISSUE_KEY.in(keys));
+            }
+
+            return issueKeyPredicate;
+        }
     }
 
-    private Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final QIssueToChangesetMapping issueToChangesetMapping)
-    {
-        final List<String> issueKeysList = Lists.newArrayList(issueKeys);
-
-        if (issueKeysList.size() <= ActiveObjectsUtils.SQL_IN_CLAUSE_MAX)
-        {
-            return issueToChangesetMapping.ISSUE_KEY.in(issueKeysList);
-        }
-
-        List<List<String>> partititionedIssueKeys = Lists.partition(issueKeysList, ActiveObjectsUtils.SQL_IN_CLAUSE_MAX);
-
-        BooleanExpression issueKeyPredicate = issueToChangesetMapping.ISSUE_KEY.in(partititionedIssueKeys.get(0));
-
-        for (List<String> keys : Iterables.drop(1, partititionedIssueKeys))
-        {
-            issueKeyPredicate = issueKeyPredicate.or(issueToChangesetMapping.ISSUE_KEY.in(keys));
-        }
-
-        return issueKeyPredicate;
-    }
 
     private class ChangesetDateComparator implements Comparator<Changeset>
     {
