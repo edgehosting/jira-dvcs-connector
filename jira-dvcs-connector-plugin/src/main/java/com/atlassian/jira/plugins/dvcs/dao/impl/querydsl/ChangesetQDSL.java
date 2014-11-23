@@ -1,21 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
-import com.atlassian.fugue.Functions;
 import com.atlassian.fugue.Iterables;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
-import com.atlassian.jira.plugins.dvcs.model.FileData;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
@@ -26,8 +23,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysema.query.Tuple;
-import com.mysema.query.sql.dml.SQLUpdateClause;
-import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.expr.BooleanExpression;
 import org.apache.commons.lang.StringUtils;
@@ -36,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,8 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
 @Component
 public class ChangesetQDSL
@@ -143,12 +134,12 @@ public class ChangesetQDSL
                 }
             };
         }
-        
+
         Map<Integer, Changeset> getInitialValue()
         {
             return new HashMap<Integer, Changeset>();
         }
-        
+
         Function2<Map<Integer, Changeset>, Tuple, Map<Integer, Changeset>> getFoldFunction()
         {
             return new Function2<Map<Integer, Changeset>, Tuple, Map<Integer, Changeset>>()
@@ -172,7 +163,7 @@ public class ChangesetQDSL
                                 tuple.get(changesetMapping.DATE), tuple.get(changesetMapping.RAW_NODE),
                                 tuple.get(changesetMapping.BRANCH), tuple.get(changesetMapping.MESSAGE),
                                 ChangesetTransformer.parseParentsData(tuple.get(changesetMapping.PARENTS_DATA)),
-                                fileDetails != null ? ImmutableList.<ChangesetFile> copyOf(fileDetails) : null,
+                                fileDetails != null ? ImmutableList.<ChangesetFile>copyOf(fileDetails) : null,
                                 tuple.get(changesetMapping.FILE_COUNT), tuple.get(changesetMapping.AUTHOR_EMAIL));
 
                         changeset.setId(changesetId);

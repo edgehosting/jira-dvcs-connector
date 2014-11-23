@@ -1,28 +1,27 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-public class ChangesetQDSLGetByIssueKeyProcessorTest
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.when;
+
+public class ChangesetQDSLByIssueKeyClojureTest
 {
     private static final Integer CHANGESET_MAPPING_ID = 5;
     private static final Integer REPOSITORY_MAPPING_ID = 10;
