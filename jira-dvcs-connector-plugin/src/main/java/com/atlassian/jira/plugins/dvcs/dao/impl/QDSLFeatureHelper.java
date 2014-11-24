@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QDSLFeatureHelper
 {
-    public static final String RETRIEVE_CHANGESETS_USING_QDSL =  "dvcs.connector.changesets.retrieved.by.qdsl";
+    public static final String RETRIEVE_USING_QDSL =  "dvcs.connector.retrieved.using.qdsl";
 
     @ComponentImport
     private final FeatureManager featureManager;
@@ -24,6 +24,6 @@ public class QDSLFeatureHelper
 
     public boolean isChangesetRetrievalUsingQDSLEnabled()
     {
-        return featureManager.isEnabled(RETRIEVE_CHANGESETS_USING_QDSL);
+        return featureManager.isEnabled(RETRIEVE_USING_QDSL);
     }
 }
