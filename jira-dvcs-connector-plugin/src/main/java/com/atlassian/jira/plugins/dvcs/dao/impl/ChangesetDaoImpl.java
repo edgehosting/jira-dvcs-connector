@@ -56,15 +56,17 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
     private final ChangesetQDSL changesetQDSL;
+    private final QDSLFeatureHelper qdslFeatureHelper;
 
     @Autowired
     public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
-            ChangesetQDSL changesetQDSL)
+            ChangesetQDSL changesetQDSL, final QDSLFeatureHelper qdslFeatureHelper)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = queryHelper;
         this.transformer = new ChangesetTransformer(activeObjects, this);
         this.changesetQDSL = changesetQDSL;
+        this.qdslFeatureHelper = qdslFeatureHelper;
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -80,6 +82,11 @@ public class ChangesetDaoImpl implements ChangesetDao
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
         return transform(changesetMappings, 0, null);
+    }
+
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
+    {
+        return transform(changesetMappings, 0, dvcsType);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings, int defaultRepositoryId, String dvcsType)
@@ -371,7 +378,15 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
+        if (qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled())
+        {
+            return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
+        }
+        else
+        {
+            List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+            return transform(changesetMappings, dvcsType);
+        }
     }
 
     @Override

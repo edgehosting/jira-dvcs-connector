@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.google.common.collect.ImmutableList;
@@ -32,9 +31,6 @@ public class ChangesetQDSLByIssueKeyClosureTest
     private ChangesetQDSL changesetQDSL;
 
     @Mock
-    private ConnectionProvider connectionProvider;
-
-    @Mock
     private QueryFactory queryFactory;
 
     @Mock
@@ -56,7 +52,7 @@ public class ChangesetQDSLByIssueKeyClosureTest
         existingChangeset.setId(CHANGESET_MAPPING_ID);
         existingChangeset.getIssueKeys().add(ISSUE_KEY);
 
-        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
+        changesetQDSL = new ChangesetQDSL(queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");

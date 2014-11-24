@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
@@ -45,14 +45,14 @@ public class ChangesetQDSL
 {
     private final Logger log = LoggerFactory.getLogger(ChangesetQDSL.class);
 
-    private final ConnectionProvider connectionProvider;
+    @ComponentImport
     private final QueryFactory queryFactory;
+    @ComponentImport
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public ChangesetQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public ChangesetQDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
-        this.connectionProvider = connectionProvider;
         this.queryFactory = queryFactory;
         this.schemaProvider = schemaProvider;
     }
