@@ -7,6 +7,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import org.openqa.selenium.By;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -37,18 +38,19 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(0));
 
-        organization.clear().type(organizationAccount);
-
-        oauthBbClientId.clear().type(oAuthCredentials.key);
-        oauthBbSecret.clear().type(oAuthCredentials.secret);
-
-
         if (!autoSync)
         {
             autoLinkNewRepos.click();
         }
 
-        addOrgButton.click();
+        fillInDetailsAndSubmit(organizationAccount, oAuthCredentials);
+
+        if (isFormOpen().by(5, SECONDS))
+        {
+            // if form still open, assume it hits the weird clear text error, where some or all fields are cleared after filled in
+            //  just retry the filling and submit again.
+            fillInDetailsAndSubmit(organizationAccount, oAuthCredentials);
+        }
 
         Poller.waitUntilFalse(atlassianTokenMeta.timed().isPresent());
         pageBinder.bind(BitbucketGrandOAuthAccessPage.class).grantAccess();
@@ -60,6 +62,16 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         }
 
         return this;
+    }
+
+    private void fillInDetailsAndSubmit(final String organizationAccount, final OAuthCredentials oAuthCredentials)
+    {
+        organization.clear().type(organizationAccount);
+
+        oauthBbClientId.clear().type(oAuthCredentials.key);
+        oauthBbSecret.clear().type(oAuthCredentials.secret);
+
+        addOrgButton.click();
     }
 
     /**

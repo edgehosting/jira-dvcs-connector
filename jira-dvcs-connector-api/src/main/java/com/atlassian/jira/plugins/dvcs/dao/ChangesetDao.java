@@ -42,6 +42,15 @@ public interface ChangesetDao
     Changeset update(Changeset changeset);
 
     /**
+     * Attempt to migrate the Changeset#FileDetails and return the updated changeset object, FileDetails will be null
+     * if migration failed.
+     * @param changeset
+     * @param dvcsType
+     * @return
+     */
+    Changeset migrateFilesData(Changeset changeset, String dvcsType);
+
+    /**
      * @param repositoryId
      * @param changesetNode
      * @return

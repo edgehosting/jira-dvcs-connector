@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -127,9 +128,24 @@ public class ChangesetServiceImpl implements ChangesetService
         {
             final Repository repository = repositoryDao.get(repoChangesets.getKey());
             final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+            processRepository(repository, repoChangesets.getValue(), communicator, detailedChangesets);
+        }
 
-            for (Changeset changeset : repoChangesets.getValue())
+        return detailedChangesets.build();
+    }
+
+    @VisibleForTesting
+    void processRepository(Repository repository, final Collection<Changeset> changesets,
+            final DvcsCommunicator communicator, final ImmutableList.Builder<Changeset> detailedChangesets)
+    {
+        for (Changeset changeset : changesets)
+        {
+            if (changeset.getFileDetails() == null)
             {
+                // Attempt to migrate from database first
+                changeset = changesetDao.migrateFilesData(changeset, repository.getDvcsType());
+
+                // Still null, go to the remote source
                 if (changeset.getFileDetails() == null)
                 {
                     try
@@ -152,12 +168,10 @@ public class ChangesetServiceImpl implements ChangesetService
                         logger.debug("Error getting file details for: " + changeset, e);
                     }
                 }
-
-                detailedChangesets.add(changeset);
             }
-        }
 
-        return detailedChangesets.build();
+            detailedChangesets.add(changeset);
+        }
     }
 
     @Override

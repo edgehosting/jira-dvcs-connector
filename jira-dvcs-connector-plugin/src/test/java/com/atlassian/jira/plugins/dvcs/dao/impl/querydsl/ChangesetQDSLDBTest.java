@@ -81,7 +81,7 @@ public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
                 RepositoryPullRequestMapping.class, PullRequestParticipantMapping.class,
                 RepositoryPullRequestIssueKeyMapping.class);
 
-        changesetQDSL = new ChangesetQDSL(connectionProvider, queryFactory, schemaProvider);
+        changesetQDSL = new ChangesetQDSL(queryFactory, schemaProvider);
         pullRequestQDSL = new PullRequestQDSL(connectionProvider, queryFactory);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);

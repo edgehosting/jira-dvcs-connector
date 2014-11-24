@@ -127,6 +127,14 @@ public class ChangesetTransformer
 
         changeset.setFileDetails(fileDetails);
 
+        migrateChangesetFileData(changesetMapping, dvcsType, changeset);
+
+        return changeset;
+    }
+
+    public void migrateChangesetFileData(final ChangesetMapping changesetMapping, final String dvcsType,
+            final Changeset changeset)
+    {
         if (changesetMapping.getFilesData() != null)
         {
             // file data still there, we need to migrate
@@ -156,8 +164,6 @@ public class ChangesetTransformer
 
             changesetDao.update(changeset);
         }
-
-        return changeset;
     }
 
     public static List<ChangesetFileDetail> transfromFileData(final FileData fileData)
