@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.fugue.Iterables;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v2.IssueMapping;
+import com.atlassian.fugue.Function2;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -13,66 +12,85 @@ import com.atlassian.jira.plugins.dvcs.querydsl.v3.QPullRequestParticipantMappin
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
-import com.atlassian.pocketknife.api.querydsl.CloseableIterable;
-import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
+import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
 import com.atlassian.pocketknife.api.querydsl.StreamyResult;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
-import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.expr.BooleanExpression;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+@SuppressWarnings ("SpringJavaAutowiringInspection")
 @Component
 public class PullRequestQDSL
 {
     private final Logger log = LoggerFactory.getLogger(PullRequestQDSL.class);
 
-    private final ConnectionProvider connectionProvider;
     private final QueryFactory queryFactory;
+    private final SchemaProvider schemaProvider;
 
     @Autowired
-    public PullRequestQDSL(ConnectionProvider connectionProvider, QueryFactory queryFactory)
+    public PullRequestQDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
-        this.connectionProvider = connectionProvider;
         this.queryFactory = queryFactory;
+        this.schemaProvider = schemaProvider;
     }
 
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        final Connection connection = connectionProvider.borrowConnection();
+        PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
+        Map<Integer, PullRequest> mapResult = queryFactory.streamyFold(closure);
 
-        try
+        return ImmutableList.copyOf(mapResult.values());
+    }
+
+    @VisibleForTesting
+    static class PullRequestByIssueKeyClosure implements QueryFactory.StreamyFoldClosure<Map<Integer, PullRequest>>
+    {
+        final String dvcsType;
+        final Iterable<String> issueKeys;
+
+        final QRepositoryPullRequestMapping prMapping;
+        final QRepositoryPullRequestIssueKeyMapping issueMapping;
+        final QPullRequestParticipantMapping participantMapping;
+        final QRepositoryMapping repositoryMapping;
+        final QOrganizationMapping orgMapping;
+
+        PullRequestByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
         {
-            final QRepositoryPullRequestMapping prMapping = new QRepositoryPullRequestMapping("PRM", "", QRepositoryPullRequestMapping.AO_TABLE_NAME);
-            final QRepositoryPullRequestIssueKeyMapping issueMapping = new QRepositoryPullRequestIssueKeyMapping("PRIK", "", QRepositoryPullRequestIssueKeyMapping.AO_TABLE_NAME);
-            final QRepositoryMapping repositoryMapping = new QRepositoryMapping("REPO", "", QRepositoryMapping.AO_TABLE_NAME);
-            final QOrganizationMapping orgMapping = new QOrganizationMapping("ORG", "", QOrganizationMapping.AO_TABLE_NAME);
-            final QPullRequestParticipantMapping participantMapping = new QPullRequestParticipantMapping("PRTM", "", QPullRequestParticipantMapping.AO_TABLE_NAME);
+            super();
+            this.dvcsType = dvcsType;
+            this.issueKeys = issueKeys;
+            this.prMapping = QRepositoryPullRequestMapping.withSchema(schemaProvider);
+            this.issueMapping = QRepositoryPullRequestIssueKeyMapping.withSchema(schemaProvider);
+            this.participantMapping = QPullRequestParticipantMapping.withSchema(schemaProvider);
+            this.repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
+            this.orgMapping = QOrganizationMapping.withSchema(schemaProvider);
+        }
 
-            final Predicate predicate = buildIssueKeyPredicate(issueKeys, issueMapping);
-
-            StreamyResult resultStream = queryFactory.select(new Function<SelectQuery, StreamyResult>()
+        @Override
+        public Function<SelectQuery, StreamyResult> query()
+        {
+            return new Function<SelectQuery, StreamyResult>()
             {
                 @Override
                 public StreamyResult apply(@Nullable final SelectQuery select)
                 {
+                    final Predicate predicate = IssueKeyPredicateFactory.buildIssueKeyPredicate(issueKeys, issueMapping);
+
                     SelectQuery sql = select.from(prMapping)
                             .join(issueMapping).on(prMapping.ID.eq(issueMapping.PULL_REQUEST_ID))
                             .join(repositoryMapping).on(repositoryMapping.ID.eq(prMapping.TO_REPOSITORY_ID))
@@ -110,134 +128,103 @@ public class PullRequestQDSL
                             repositoryMapping.SLUG,
                             issueMapping.ISSUE_KEY);
                 }
-            });
-            try
+            };
+        }
+
+        @Override
+        public Function2<Map<Integer, PullRequest>, Tuple, Map<Integer, PullRequest>> getFoldFunction()
+        {
+            return new Function2<Map<Integer, PullRequest>, Tuple, Map<Integer, PullRequest>>()
             {
-                final Map<Integer, PullRequest> pullRequestsById = new HashMap<Integer, PullRequest>();
-
-                Function<Tuple, PullRequest> f = new Function<Tuple, PullRequest>()
+                @Override
+                public Map<Integer, PullRequest> apply(final Map<Integer, PullRequest> pullRequestsById, final Tuple tuple)
                 {
-                    @Override
-                    public PullRequest apply(@Nullable final Tuple input)
+                    Integer pullRequestId = tuple.get(prMapping.ID);
+                    PullRequest pullRequest = pullRequestsById.get(pullRequestId);
+                    if (pullRequest == null)
                     {
-                        Integer pullRequestId = input.get(prMapping.ID);
-                        PullRequest pullRequest = pullRequestsById.get(pullRequestId);
-                        if (pullRequest == null)
+                        pullRequest = new PullRequest(pullRequestId);
+
+                        final Long remoteId = tuple.get(prMapping.REMOTE_ID);
+                        pullRequest.setRemoteId(remoteId == null ? -1 : remoteId);
+                        final Integer repositoryId = tuple.get(prMapping.TO_REPOSITORY_ID);
+                        pullRequest.setRepositoryId(repositoryId == null ? -1 : repositoryId);
+                        pullRequest.setName(tuple.get(prMapping.NAME));
+                        pullRequest.setUrl(tuple.get(prMapping.URL));
+                        final String lastStatus = tuple.get(prMapping.LAST_STATUS);
+                        if (lastStatus != null)
                         {
-                            pullRequest = new PullRequest(pullRequestId);
-                            pullRequestsById.put(pullRequestId, pullRequest);
+                            pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(lastStatus));
+                        }
+                        pullRequest.setCreatedOn(tuple.get(prMapping.CREATED_ON));
+                        pullRequest.setUpdatedOn(tuple.get(prMapping.UPDATED_ON));
+                        pullRequest.setAuthor(tuple.get(prMapping.AUTHOR));
+                        final Integer commentCount = tuple.get(prMapping.COMMENT_COUNT);
+                        pullRequest.setCommentCount(commentCount == null ? 0 : commentCount);
+                        pullRequest.setExecutedBy(tuple.get(prMapping.EXECUTED_BY));
 
-                            pullRequest.setRemoteId(input.get(prMapping.REMOTE_ID));
-                            pullRequest.setRepositoryId(input.get(prMapping.TO_REPOSITORY_ID));
-                            pullRequest.setName(input.get(prMapping.NAME));
-                            pullRequest.setUrl(input.get(prMapping.URL));
-                            pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(input.get(prMapping.LAST_STATUS)));
-                            pullRequest.setCreatedOn(input.get(prMapping.CREATED_ON));
-                            pullRequest.setUpdatedOn(input.get(prMapping.UPDATED_ON));
-                            pullRequest.setAuthor(input.get(prMapping.AUTHOR));
-                            pullRequest.setCommentCount(input.get(prMapping.COMMENT_COUNT));
-                            pullRequest.setExecutedBy(input.get(prMapping.EXECUTED_BY));
+                        String sourceBranch = tuple.get(prMapping.SOURCE_BRANCH);
+                        String sourceRepo = tuple.get(prMapping.SOURCE_REPO);
+                        String orgHostUrl = tuple.get(orgMapping.HOST_URL);
 
-                            String sourceBranch = input.get(prMapping.SOURCE_BRANCH);
-                            String sourceRepo = input.get(prMapping.SOURCE_REPO);
-                            String orgHostUrl = input.get(orgMapping.HOST_URL);
+                        pullRequest.setSource(new PullRequestRef(sourceBranch, sourceRepo,
+                                PullRequestTransformer.createRepositoryUrl(orgHostUrl, sourceRepo)));
 
-                            pullRequest.setSource(new PullRequestRef(sourceBranch, sourceRepo,
-                                    PullRequestTransformer.createRepositoryUrl(orgHostUrl, sourceRepo)));
+                        String destinationBranch = tuple.get(prMapping.DESTINATION_BRANCH);
+                        String orgName = tuple.get(orgMapping.NAME);
+                        String slug = tuple.get(repositoryMapping.SLUG);
 
-                            String destinationBranch = input.get(prMapping.DESTINATION_BRANCH);
-                            String orgName = input.get(orgMapping.NAME);
-                            String slug = input.get(repositoryMapping.SLUG);
+                        String repositoryLabel = PullRequestTransformer.createRepositoryLabel(orgName, slug);
+                        String repositoryUrl = RepositoryTransformer.createRepositoryUrl(orgHostUrl, orgName, slug);
 
-                            String repositoryLabel = PullRequestTransformer.createRepositoryLabel(orgName, slug);
-                            String repositoryUrl = RepositoryTransformer.createRepositoryUrl(orgHostUrl, orgName, slug);
+                        pullRequest.setDestination(new PullRequestRef(destinationBranch, repositoryLabel, repositoryUrl));
 
-                            pullRequest.setDestination(new PullRequestRef(destinationBranch, repositoryLabel, repositoryUrl));
+                        pullRequestsById.put(pullRequestId, pullRequest);
+                    }
+
+                    final String participantUsername = tuple.get(participantMapping.USERNAME);
+                    final Boolean participantApproved = tuple.get(participantMapping.APPROVED);
+                    final String participantRole = tuple.get(participantMapping.ROLE);
+
+                    // We are left joining so only include the participant if it is available
+                    if (participantUsername != null || participantApproved != null || participantRole != null)
+                    {
+                        boolean participantApprovedPrim = participantApproved == null ? false : participantApproved;
+                        Participant participant = new Participant(participantUsername,
+                                participantApprovedPrim, participantRole);
+
+                        if (pullRequest.getParticipants() == null)
+                        {
+                            pullRequest.setParticipants(new ArrayList<Participant>());
                         }
 
-                        final String participantUsername = input.get(participantMapping.USERNAME);
-                        final Boolean participantApproved = input.get(participantMapping.APPROVED);
-                        final String participantRole = input.get(participantMapping.ROLE);
-
-                        // We are left joining so only include the participant if it is available
-                        if (participantUsername != null && participantApproved != null && participantRole != null)
+                        if (!pullRequest.getParticipants().contains(participant))
                         {
-                            Participant participant = new Participant(participantUsername,
-                                    participantApproved, participantRole);
-
-                            if (pullRequest.getParticipants() == null)
-                            {
-                                pullRequest.setParticipants(new ArrayList<Participant>());
-                            }
-
-                            if (!pullRequest.getParticipants().contains(participant))
-                            {
-                                pullRequest.getParticipants().add(participant);
-                            }
+                            pullRequest.getParticipants().add(participant);
                         }
+                    }
 
-                        final String issueKey = input.get(issueMapping.ISSUE_KEY);
+                    final String issueKey = tuple.get(issueMapping.ISSUE_KEY);
 
-                        if (!pullRequest.getIssueKeys().contains(issueKey))
-                        {
-                            pullRequest.getIssueKeys().add(issueKey);
-                        }
+                    if (!pullRequest.getIssueKeys().contains(issueKey))
+                    {
+                        pullRequest.getIssueKeys().add(issueKey);
+                    }
 
+                    // Not doing commits at this point as it is unecessary
 //                        if (withCommits)
 //                        {
 //                            pullRequest.setCommits(transform(pullRequestMapping.getCommits()));
 //                        }
-                        return pullRequest;
-                    }
-                };
-
-                CloseableIterable<PullRequest> resultIterable = resultStream.map(f);
-
-                // Do the magic by iterating over to trigger the map call
-                Lists.newArrayList(resultIterable);
-
-                List<PullRequest> result = Lists.newArrayList(pullRequestsById.values());
-                resultIterable.close();
-                try
-                {
-                    connection.commit();
+                    return pullRequestsById;
                 }
-                catch (SQLException e)
-                {
-                    throw new RuntimeException(e);
-                }
-                return result;
-            }
-            finally
-            {
-                resultStream.close();
-            }
+            };
         }
-        finally
+
+        @Override
+        public Map<Integer, PullRequest> getInitialValue()
         {
-            connectionProvider.returnConnection(connection);
+            return new HashMap<Integer, PullRequest>();
         }
-    }
-
-    private Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys,
-            final QRepositoryPullRequestIssueKeyMapping issueMapping)
-    {
-        final List<String> issueKeysList = Lists.newArrayList(issueKeys);
-
-        if (issueKeysList.size() <= ActiveObjectsUtils.SQL_IN_CLAUSE_MAX)
-        {
-            return issueMapping.ISSUE_KEY.in(issueKeysList);
-        }
-
-        List<List<String>> partititionedIssueKeys = Lists.partition(issueKeysList, ActiveObjectsUtils.SQL_IN_CLAUSE_MAX);
-
-        BooleanExpression issueKeyPredicate = issueMapping.ISSUE_KEY.in(partititionedIssueKeys.get(0));
-
-        for (List<String> keys : Iterables.drop(1, partititionedIssueKeys))
-        {
-            issueKeyPredicate = issueKeyPredicate.or(issueMapping.ISSUE_KEY.in(keys));
-        }
-
-        return issueKeyPredicate;
     }
 }

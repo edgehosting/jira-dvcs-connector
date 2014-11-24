@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
-import com.atlassian.fugue.Iterables;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -12,7 +11,6 @@ import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QRepositoryToChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.atlassian.pocketknife.api.querydsl.SelectQuery;
@@ -20,10 +18,8 @@ import com.atlassian.pocketknife.api.querydsl.StreamyResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.expr.BooleanExpression;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,7 +103,7 @@ public class ChangesetQDSL
                 @Override
                 public StreamyResult apply(@Nullable final SelectQuery select)
                 {
-                    Predicate issueKeyPredicate = buildIssueKeyPredicate(issueKeys, issueToChangesetMapping);
+                    Predicate issueKeyPredicate = IssueKeyPredicateFactory.buildIssueKeyPredicate(issueKeys, issueToChangesetMapping);
 
                     SelectQuery sql = select
                             .from(changesetMapping)
@@ -187,27 +183,6 @@ public class ChangesetQDSL
                     return changesetsById;
                 }
             };
-        }
-
-        private Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final QIssueToChangesetMapping issueToChangesetMapping)
-        {
-            final List<String> issueKeysList = Lists.newArrayList(issueKeys);
-
-            if (issueKeysList.size() <= ActiveObjectsUtils.SQL_IN_CLAUSE_MAX)
-            {
-                return issueToChangesetMapping.ISSUE_KEY.in(issueKeysList);
-            }
-
-            List<List<String>> partititionedIssueKeys = Lists.partition(issueKeysList, ActiveObjectsUtils.SQL_IN_CLAUSE_MAX);
-
-            BooleanExpression issueKeyPredicate = issueToChangesetMapping.ISSUE_KEY.in(partititionedIssueKeys.get(0));
-
-            for (List<String> keys : Iterables.drop(1, partititionedIssueKeys))
-            {
-                issueKeyPredicate = issueKeyPredicate.or(issueToChangesetMapping.ISSUE_KEY.in(keys));
-            }
-
-            return issueKeyPredicate;
         }
     }
 
