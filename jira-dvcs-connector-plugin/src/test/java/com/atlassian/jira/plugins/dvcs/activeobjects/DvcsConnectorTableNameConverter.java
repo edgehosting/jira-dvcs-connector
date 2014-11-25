@@ -6,7 +6,7 @@ import net.java.ao.atlassian.TablePrefix;
 import net.java.ao.schema.TableNameConverter;
 
 /**
- * AO #TableNameConverter that hard codes the DVCS prefix for testing
+ * AO {@link net.java.ao.schema.TableNameConverter} that hard codes the DVCS prefix for testing
  */
 public class DvcsConnectorTableNameConverter implements TableNameConverter
 {
