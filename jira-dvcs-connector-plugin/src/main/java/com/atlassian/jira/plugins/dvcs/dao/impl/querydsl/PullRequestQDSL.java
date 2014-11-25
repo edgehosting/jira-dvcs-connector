@@ -52,7 +52,7 @@ public class PullRequestQDSL
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, PullRequest> mapResult = queryFactory.streamyFold(closure);
+        Map<Integer, PullRequest> mapResult = queryFactory.streamyFold(new HashMap<Integer, PullRequest>(), closure);
 
         return ImmutableList.copyOf(mapResult.values());
     }
@@ -219,12 +219,6 @@ public class PullRequestQDSL
                     return pullRequestsById;
                 }
             };
-        }
-
-        @Override
-        public Map<Integer, PullRequest> getInitialValue()
-        {
-            return new HashMap<Integer, PullRequest>();
         }
     }
 }
