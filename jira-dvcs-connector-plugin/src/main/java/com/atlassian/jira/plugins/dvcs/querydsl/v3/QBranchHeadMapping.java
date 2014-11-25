@@ -37,9 +37,6 @@ public class QBranchHeadMapping extends RelationalPathBase<QBranchHeadMapping>
 
     public final NumberPath<Integer> REPOSITORY_ID = createNumber("REPOSITORY_ID", Integer.class);
 
-    // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping getRepository()
-
-
     public final com.mysema.query.sql.PrimaryKey<QBranchHeadMapping> BRANCHHEADMAPPING_PK = createPrimaryKey(ID);
 
     public QBranchHeadMapping(String variable, String schema, String table)

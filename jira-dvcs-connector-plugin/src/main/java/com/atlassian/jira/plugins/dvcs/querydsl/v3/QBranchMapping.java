@@ -33,8 +33,7 @@ public class QBranchMapping extends RelationalPathBase<QBranchMapping>
 
     public final StringPath NAME = createString("NAME");
 
-    // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping getRepository()
-
+    public final NumberPath<Integer> REPOSITORY_ID = createNumber("REPOSITORY_ID", Integer.class);
 
     public final com.mysema.query.sql.PrimaryKey<QBranchMapping> BRANCH_PK = createPrimaryKey(ID);
 
@@ -51,6 +50,7 @@ public class QBranchMapping extends RelationalPathBase<QBranchMapping>
          */
         addMetadata(ID, ColumnMetadata.named("ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
         addMetadata(NAME, ColumnMetadata.named("NAME").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
+        addMetadata(REPOSITORY_ID, ColumnMetadata.named("REPOSITORY_ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
 
     }
 }

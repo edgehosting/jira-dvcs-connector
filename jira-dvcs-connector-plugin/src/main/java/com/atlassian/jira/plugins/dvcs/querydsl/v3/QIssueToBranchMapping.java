@@ -30,13 +30,11 @@ public class QIssueToBranchMapping extends RelationalPathBase<QIssueToBranchMapp
     /**
      * Database Columns
      */
-    // We have not yet built QueryDSL type support for com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping getBranch()
-
-
     public final NumberPath<Integer> ID = createNumber("ID", Integer.class);
 
     public final StringPath ISSUE_KEY = createString("ISSUE_KEY");
 
+    public final NumberPath<Integer> BRANCH_ID = createNumber("BRANCH_ID", Integer.class);
 
     public final com.mysema.query.sql.PrimaryKey<QIssueToBranchMapping> ISSUETOBRANCH_PK = createPrimaryKey(ID);
 
@@ -54,6 +52,7 @@ public class QIssueToBranchMapping extends RelationalPathBase<QIssueToBranchMapp
 
         addMetadata(ID, ColumnMetadata.named("ID").ofType(Types.INTEGER)); // .withSize(0).withNotNull()); // until detect primitive types, int ..
         addMetadata(ISSUE_KEY, ColumnMetadata.named("ISSUE_KEY").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
+        addMetadata(BRANCH_ID, ColumnMetadata.named("BRANCH_ID").ofType(Types.INTEGER)); // .withSize(0)); // until detect primitive types, int ..
     }
 
     @Override
