@@ -22,11 +22,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
@@ -212,7 +214,7 @@ public class BranchDaoImpl implements BranchDao
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
         final Object[] params = ObjectArrays.concat(new Object[] { Boolean.FALSE, Boolean.TRUE }, Iterables.toArray(issueKeys, Object.class), Object.class);
 
-        final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
+        List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
             @Override
             public List<BranchMapping> doInTransaction()
@@ -224,11 +226,20 @@ public class BranchDaoImpl implements BranchDao
                                 .alias(RepositoryMapping.class, "repo")
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
-                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params));
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params)
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY + 1));
 
                 return Arrays.asList(mappings);
             }
         });
+
+        if (branches.size() > MAXIMUM_ENTITIES_PER_ISSUE_KEY)
+        {
+            log.warn("Too many branches so result truncated for issue keys {}", issueKeys);
+
+            branches = new ArrayList<BranchMapping>(branches);
+            branches.remove(branches.size() - 1);
+        }
 
         return Lists.transform(branches, new Function<BranchMapping, Branch>()
         {
