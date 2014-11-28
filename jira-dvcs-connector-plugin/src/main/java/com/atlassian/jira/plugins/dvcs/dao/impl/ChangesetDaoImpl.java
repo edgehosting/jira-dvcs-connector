@@ -395,20 +395,11 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
                                 .where(baseWhereClause.getSql(), baseWhereClause.getParams())
                                 .order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC"))
-                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY + 1));
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
         });
-
-        if (changesetMappings.size() > MAXIMUM_ENTITIES_PER_ISSUE_KEY)
-        {
-            log.warn("Too many change sets so result truncated for issue keys {}", issueKeys);
-
-            ArrayList changesetMappingsMinusOne = new ArrayList(changesetMappings);
-            changesetMappingsMinusOne.remove(changesetMappings.size() - 1);
-            return changesetMappingsMinusOne;
-        }
 
         return changesetMappings;
     }

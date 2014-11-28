@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -227,19 +226,11 @@ public class BranchDaoImpl implements BranchDao
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
                                 .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params)
-                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY + 1));
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
         });
-
-        if (branches.size() > MAXIMUM_ENTITIES_PER_ISSUE_KEY)
-        {
-            log.warn("Too many branches so result truncated for issue keys {}", issueKeys);
-
-            branches = new ArrayList<BranchMapping>(branches);
-            branches.remove(branches.size() - 1);
-        }
 
         return Lists.transform(branches, new Function<BranchMapping, Branch>()
         {

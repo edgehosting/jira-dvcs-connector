@@ -343,13 +343,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
         final List<RepositoryPullRequestIssueKeyMapping> repositoryPullRequestIssueKeyMappings = Arrays.asList(mappings);
 
-        if (repositoryPullRequestIssueKeyMappings.size() > MAXIMUM_ENTITIES_PER_ISSUE_KEY)
-        {
-            LOGGER.warn("Too many pull requests so result truncated for issue keys {}", issueKeys);
-
-            repositoryPullRequestIssueKeyMappings.remove(repositoryPullRequestIssueKeyMappings.size() - 1);
-        }
-
         return repositoryPullRequestIssueKeyMappings;
     }
 
