@@ -338,6 +338,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 
         final Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
                 .where(whereClause, Iterables.toArray(issueKeys, Object.class))
+                .order(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)
                 .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY + 1);
 
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
