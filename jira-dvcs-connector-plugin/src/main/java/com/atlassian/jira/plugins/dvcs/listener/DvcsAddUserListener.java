@@ -51,6 +51,9 @@ public class DvcsAddUserListener
     private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
 
     private static final String UI_USER_INVITATIONS_PARAM_NAME = "com.atlassian.jira.dvcs.invite.groups";
+
+    /** BBC-957: Attribute key to recognise Service Desk Customers during user creation */
+    private static final String SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY = "synch.servicedesk.requestor";
     
     /** The event publisher. */
     private final EventPublisher eventPublisher;
@@ -209,16 +212,23 @@ public class DvcsAddUserListener
         String uiChoice = attributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
         log.debug("UI choice for user " + event.getUser().getName() + " : " + uiChoice);
 
-        if (uiChoice == null)
-        {
-            // created by NON UI mechanism, e.g. google user
-            new UserAddedExternallyEventProcessor(user, organizationService, communicatorProvider, userManager,
-                    groupManager).run();
 
-        } else /* something has been choosed from UI */if (StringUtils.isNotBlank(uiChoice))
+        // BBC-957: ignore Service Desk Customers when processing the event.
+        boolean isServiceDeskRequestor = Boolean.toString(true).equals(attributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY));
+
+        if(!isServiceDeskRequestor)
         {
-            new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
-                    communicatorProvider, userManager, groupManager).run();
+            if (uiChoice == null)
+            {
+                // created by NON UI mechanism, e.g. google user
+                new UserAddedExternallyEventProcessor(user, organizationService, communicatorProvider, userManager,
+                        groupManager).run();
+
+            } else /* something has been chosen from UI */if (StringUtils.isNotBlank(uiChoice))
+            {
+                new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
+                        communicatorProvider, userManager, groupManager).run();
+            }
         }
     }
     
