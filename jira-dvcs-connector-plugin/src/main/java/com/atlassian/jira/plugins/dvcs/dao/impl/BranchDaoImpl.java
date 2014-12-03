@@ -226,6 +226,7 @@ public class BranchDaoImpl implements BranchDao
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
                                 .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params)
+                                .order(BranchMapping.NAME)
                                 .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
@@ -264,7 +265,8 @@ public class BranchDaoImpl implements BranchDao
                                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
                                 .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause,
                                         params)
-                                .order(BranchMapping.NAME));
+                                .order(BranchMapping.NAME)
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
