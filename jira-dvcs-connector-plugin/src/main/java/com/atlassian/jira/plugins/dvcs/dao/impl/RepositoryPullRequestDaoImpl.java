@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -336,10 +337,14 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         String whereClause = ActiveObjectsUtils.renderListOperator(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, "IN", "OR", issueKeys).toString();
 
         final Query query = Query.select().from(RepositoryPullRequestIssueKeyMapping.class)
-                .where(whereClause, Iterables.toArray(issueKeys, Object.class));
+                .where(whereClause, Iterables.toArray(issueKeys, Object.class))
+                .order(RepositoryPullRequestIssueKeyMapping.PULL_REQUEST_ID)
+                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY + 1);
 
         RepositoryPullRequestIssueKeyMapping[] mappings = activeObjects.find(RepositoryPullRequestIssueKeyMapping.class, query);
-        return Arrays.asList(mappings);
+        final List<RepositoryPullRequestIssueKeyMapping> repositoryPullRequestIssueKeyMappings = Arrays.asList(mappings);
+
+        return repositoryPullRequestIssueKeyMappings;
     }
 
     /**

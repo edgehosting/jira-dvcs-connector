@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -393,7 +394,8 @@ public class ChangesetDaoImpl implements ChangesetDao
                                 .alias(IssueToChangesetMapping.class, "ISSUE")
                                 .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
                                 .where(baseWhereClause.getSql(), baseWhereClause.getParams())
-                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC")));
+                                .order(ChangesetMapping.DATE + (newestFirst ? " DESC" : " ASC"))
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
