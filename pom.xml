@@ -80,7 +80,7 @@
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
         <apache.httpcomponents.for.selenium.version>4.3.2</apache.httpcomponents.for.selenium.version>
 
-        <pocketknife.version>0.44</pocketknife.version>
+        <pocketknife.version>0.52</pocketknife.version>
         <querydsl.version>3.4.1</querydsl.version>
     </properties>
 

@@ -58,7 +58,7 @@ public class ChangesetQDSL
             final boolean newestFirst)
     {
         ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, Changeset> changesetsById = queryFactory.streamyFold(new HashMap<Integer, Changeset>(), closure);
+        Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
 
         final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
         Collections.sort(result, new ChangesetDateComparator(newestFirst));
@@ -66,7 +66,7 @@ public class ChangesetQDSL
     }
 
     @VisibleForTesting
-    static class ByIssueKeyClosure implements QueryFactory.StreamyFoldClosure<Map<Integer, Changeset>>
+    static class ByIssueKeyClosure implements QueryFactory.HalfStreamyFoldClosure<Map<Integer, Changeset>>
     {
         final String dvcsType;
         final Iterable<String> issueKeys;
@@ -89,7 +89,7 @@ public class ChangesetQDSL
         }
 
         @Override
-        public Function<SelectQuery, StreamyResult> query()
+        public Function<SelectQuery, StreamyResult> getQuery()
         {
             return new Function<SelectQuery, StreamyResult>()
             {
