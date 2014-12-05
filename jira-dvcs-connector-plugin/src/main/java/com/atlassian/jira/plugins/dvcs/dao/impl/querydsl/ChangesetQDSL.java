@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
 import com.atlassian.fugue.Iterables;
+import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
@@ -57,9 +58,10 @@ public class ChangesetQDSL
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
+        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
         Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
 
+        // Still need to sort the result as we have a map of changesets, even though the results are also sorted
         final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
         Collections.sort(result, new ChangesetDateComparator(newestFirst));
         return result;
@@ -75,12 +77,14 @@ public class ChangesetQDSL
         final QRepositoryToChangesetMapping rtcMapping;
         final QRepositoryMapping repositoryMapping;
         final QOrganizationMapping orgMapping;
+        final boolean newestFirst;
 
-        ByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
+        ByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider, final boolean newestFirst)
         {
             super();
             this.dvcsType = dvcsType;
             this.issueKeys = issueKeys;
+            this.newestFirst = newestFirst;
             this.changesetMapping = QChangesetMapping.withSchema(schemaProvider);
             this.issueToChangesetMapping = QIssueToChangesetMapping.withSchema(schemaProvider);
             this.rtcMapping = QRepositoryToChangesetMapping.withSchema(schemaProvider);
@@ -109,7 +113,8 @@ public class ChangesetQDSL
                             .join(orgMapping)
                             .on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
                             .where(repositoryMapping.DELETED.eq(false).and(repositoryMapping.LINKED.eq(true))
-                                    .and(issueKeyPredicate));
+                                    .and(issueKeyPredicate))
+                            .orderBy(newestFirst ? changesetMapping.DATE.desc() : changesetMapping.DATE.asc());
 
                     if (StringUtils.isNotBlank(dvcsType))
                     {
@@ -142,6 +147,11 @@ public class ChangesetQDSL
 
                     if (changeset == null)
                     {
+                        // If we have found enough changsets then we can just skip this entry
+                        if (changesetsById.size() >= DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY)
+                        {
+                            return changesetsById;
+                        }
                         List<ChangesetFileDetail> fileDetails = ChangesetFileDetails.fromJSON(tuple
                                 .get(changesetMapping.FILE_DETAILS_JSON));
 
