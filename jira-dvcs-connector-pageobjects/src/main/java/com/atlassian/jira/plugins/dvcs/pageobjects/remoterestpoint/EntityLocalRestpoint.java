@@ -48,7 +48,6 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
     {
         for (int i = 0; i < 100; i++)
         {
-            System.out.println("retrying fetch number " + i + " is starting for issue " + issueKey + " trying to get a " + clazz);
             T entity = getEntity(issueKey);
             if (predicate.apply(entity))
             {

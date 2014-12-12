@@ -299,13 +299,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
         List<String> originalCommitMessages = changesetLocalRestpoint.retryingGetCommitMessages(issueKey, numberOfCommits);
         assertThat(originalCommitMessages).contains(commitMessage);
-//        checkIssueKeyHasCommitWithMessage(issueKey, numberOfCommits, commitMessage);
 
-        jira.gotoHomePage();
         // move issue from QA project to BBC project
         moveIssueToProject(issueKey, "Bitbucket Connector");
 
-//        checkIssueKeyHasCommitWithMessage(issueKey, numberOfCommits, commitMessage);
         List<String> movedCommitMessages = changesetLocalRestpoint.retryingGetCommitMessages(issueKey, numberOfCommits);
         assertThat(movedCommitMessages).contains(commitMessage);
     }
