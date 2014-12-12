@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
@@ -217,18 +218,10 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         AccountsPageAccount account = AccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
                 ACCOUNT_NAME, repositoryName, true);
 
-        // Event processing can take some time to complete, poll the endpoint to find our PR
-        RestDevResponse<RestPrRepository> response = null;
-        for (int i = 0; i < 200; i++)
-        {
-            response = getPullRequestResponse(issueKey);
-            if (response.getRepositories().size() > 0)
-            {
-                break;
-            }
-            sleep(50);
-        }
+        PullRequestLocalRestpoint prRest = new PullRequestLocalRestpoint();
 
+        // Event processing can take some time to complete, poll the endpoint to find our PR
+        RestDevResponse<RestPrRepository> response = prRest.retryingGetAtLeastOnePullRequest(issueKey);
         Assert.assertEquals(response.getRepositories().size(), 1);
         return response.getRepositories().get(0);
     }
