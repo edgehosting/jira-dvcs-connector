@@ -20,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
@@ -286,22 +287,25 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void moveIssue_ShouldKeepAlsoCommits()
     {
-        // add organization
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         enableRepositoryAsAdmin("public-hg-repo").synchronize();
 
         final String issueKey = "QA-1";
 
-        // check commits setup to start with
-        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
+        final String commitMessage = "QA-1 test modification";
+        final int numberOfCommits = 5;
+
+        ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
+        List<String> originalCommitMessages = changesetLocalRestpoint.getCommitMessages(issueKey, numberOfCommits);
+        assertThat(originalCommitMessages).contains(commitMessage);
 
         // move issue from QA project to BBC project
         moveIssueToProject(issueKey, "Bitbucket Connector");
 
-        // check commits kept
-        // in fact, Jira will make the redirect to moved/created issue BBC-1
-        assertThat(getCommitsForIssue(issueKey, 5)).hasItemWithCommitMessage("QA-1 test modification");
+        // check commits kept in fact, Jira will make the redirect to moved/created issue BBC-1
+        List<String> movedCommitMessages = changesetLocalRestpoint.getCommitMessages(issueKey, numberOfCommits);
+        assertThat(movedCommitMessages).contains(commitMessage);
     }
 
     @Override
@@ -373,7 +377,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         return jira.visit(JiraViewIssuePage.class, issueKey)
                 .openBitBucketPanel()
-                .waitForNumberOfMessages(exectedNumberOfCommits, 1000L, 5);
+                .waitForNumberOfMessages(exectedNumberOfCommits, 1000L, 10);
     }
 
     private void setupAnonymousAccessAllowed()

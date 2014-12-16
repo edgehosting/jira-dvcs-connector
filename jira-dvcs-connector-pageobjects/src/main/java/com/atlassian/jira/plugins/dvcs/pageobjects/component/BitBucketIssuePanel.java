@@ -84,7 +84,7 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
         {
             if (++currentRetryCount > maxRetryCount)
             {
-                throw new AssertionError();
+                throw new AssertionError("Failed to retrieve message before timeout");
             }
 
             try
