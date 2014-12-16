@@ -1,27 +1,28 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -32,7 +33,6 @@ import org.testng.annotations.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -104,8 +104,11 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         assertThat(repositoryDiv).isNotNull();
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
-        assertThat(getCommitsForIssue("QA-2", 6)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        assertThat(getCommitsForIssue("QA-3", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
+        List<String> commitsForQA2 = changesetLocalRestpoint.getCommitMessages("QA-2", 6);
+        assertThat(commitsForQA2).contains("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
+        List<String> commitsForQA3 = changesetLocalRestpoint.getCommitMessages("QA-3", 1);
+        assertThat(commitsForQA3).contains("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
     @Override
