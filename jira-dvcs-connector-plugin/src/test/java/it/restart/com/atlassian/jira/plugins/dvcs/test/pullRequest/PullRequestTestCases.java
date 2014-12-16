@@ -221,7 +221,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         PullRequestLocalRestpoint prRest = new PullRequestLocalRestpoint();
 
         // Event processing can take some time to complete, poll the endpoint to find our PR
-        RestDevResponse<RestPrRepository> response = prRest.retryingGetAtLeastOnePullRequest(issueKey);
+        RestDevResponse<RestPrRepository> response = prRest.getAtLeastOnePullRequest(issueKey);
         Assert.assertEquals(response.getRepositories().size(), 1);
         return response.getRepositories().get(0);
     }

@@ -105,9 +105,9 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
         ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
-        List<String> commitsForQA2 = changesetLocalRestpoint.retryingGetCommitMessages("QA-2", 6);
+        List<String> commitsForQA2 = changesetLocalRestpoint.getCommitMessages("QA-2", 6);
         assertThat(commitsForQA2).contains("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
-        List<String> commitsForQA3 = changesetLocalRestpoint.retryingGetCommitMessages("QA-3", 1);
+        List<String> commitsForQA3 = changesetLocalRestpoint.getCommitMessages("QA-3", 1);
         assertThat(commitsForQA3).contains("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 

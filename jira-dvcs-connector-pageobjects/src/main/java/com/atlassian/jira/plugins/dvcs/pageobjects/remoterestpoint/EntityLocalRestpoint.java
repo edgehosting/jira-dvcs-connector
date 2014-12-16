@@ -7,7 +7,9 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -19,27 +21,38 @@ import javax.ws.rs.core.MediaType;
  */
 public class EntityLocalRestpoint<T extends RestDevResponse>
 {
-    private final Class<T> clazz;
+    private static final int NUMBER_OF_RETRIES = 100;
+    private static final int DELAY_BETWEEN_RETRIES = 100;
+
+    private final Class<T> entityClass;
     private final String urlSuffix;
 
     /**
      * Create a local restpoint
      *
-     * @param clazz The type of entity that will be returned from {@link #getEntity(String)}
+     * @param entityClass The type of entity that will be returned from {@link #getEntity(String)}
      * @param urlSuffix The suffix between 'jira-dev/' and the issue key part of the request
      */
-    public EntityLocalRestpoint(final Class<T> clazz, final String urlSuffix)
+    public EntityLocalRestpoint(@Nonnull final Class<T> entityClass, @Nonnull final String urlSuffix)
     {
-        this.clazz = clazz;
+        if(StringUtils.isBlank(urlSuffix))
+        {
+            throw new IllegalArgumentException("URL suffix for entity must not be blank");
+        }
+        this.entityClass = entityClass;
         this.urlSuffix = urlSuffix;
     }
 
     /**
      * Fetch the T that matches the issueKey located at the jira-dev url suffix
+     *
+     * @param issueKey The issue key to use as a query param
+     * @return The entity retrieved for this issue key
      */
-    public T getEntity(String issueKey)
+    private T getEntity(String issueKey)
     {
-        RestUrlBuilder url = new RestUrlBuilder("/rest/bitbucket/1.0/jira-dev/" + urlSuffix + "?issue=" + issueKey);
+        String urlText = String.format("/rest/bitbucket/1.0/jira-dev/%s?issue=%s", urlSuffix, issueKey);
+        RestUrlBuilder url = new RestUrlBuilder(urlText);
         return fetchFromUrl(url);
     }
 
@@ -47,9 +60,9 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
      * Try and fetch the entity for issue key, will retry every 100 millis for 100 times, a bit busy but this is code
      * running on the test server.
      */
-    public T retryingGetEntity(String issueKey, Function<T, Boolean> predicate)
+    public T getEntity(String issueKey, Function<T, Boolean> predicate)
     {
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < NUMBER_OF_RETRIES; i++)
         {
             T entity = getEntity(issueKey);
             if (predicate.apply(entity))
@@ -60,7 +73,7 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
             {
                 try
                 {
-                    Thread.sleep(100);
+                    Thread.sleep(DELAY_BETWEEN_RETRIES);
                 }
                 catch (InterruptedException e)
                 {
@@ -76,6 +89,6 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
         ClientConfig clientConfig = new DefaultClientConfig();
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         Client client = Client.create(clientConfig);
-        return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(clazz);
+        return client.resource(url.toString()).accept(MediaType.APPLICATION_JSON_TYPE).get(entityClass);
     }
 }

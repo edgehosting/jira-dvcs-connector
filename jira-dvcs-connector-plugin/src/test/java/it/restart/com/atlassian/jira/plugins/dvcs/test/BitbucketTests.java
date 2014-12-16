@@ -297,13 +297,14 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         final int numberOfCommits = 5;
 
         ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
-        List<String> originalCommitMessages = changesetLocalRestpoint.retryingGetCommitMessages(issueKey, numberOfCommits);
+        List<String> originalCommitMessages = changesetLocalRestpoint.getCommitMessages(issueKey, numberOfCommits);
         assertThat(originalCommitMessages).contains(commitMessage);
 
         // move issue from QA project to BBC project
         moveIssueToProject(issueKey, "Bitbucket Connector");
 
-        List<String> movedCommitMessages = changesetLocalRestpoint.retryingGetCommitMessages(issueKey, numberOfCommits);
+        // check commits kept in fact, Jira will make the redirect to moved/created issue BBC-1
+        List<String> movedCommitMessages = changesetLocalRestpoint.getCommitMessages(issueKey, numberOfCommits);
         assertThat(movedCommitMessages).contains(commitMessage);
     }
 

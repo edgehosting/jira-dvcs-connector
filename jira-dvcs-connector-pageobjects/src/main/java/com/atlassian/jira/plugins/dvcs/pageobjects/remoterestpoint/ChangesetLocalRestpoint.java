@@ -16,19 +16,28 @@ import javax.annotation.Nullable;
  */
 public class ChangesetLocalRestpoint
 {
-    public static final String DETAIL_URL_SUFFIX = "detail";
+    private static final String DETAIL_URL_SUFFIX = "detail";
     private final EntityLocalRestpoint<RestDevResponseForRestChangesetRepository> entityLocalRestpoint = new EntityLocalRestpoint(RestDevResponseForRestChangesetRepository.class, DETAIL_URL_SUFFIX);
 
     /**
      * Hack for generic de-serialization, taken from {@link com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint}
      */
-    public static class RestDevResponseForRestChangesetRepository extends RestDevResponse<RestChangesetRepository>
+    private static class RestDevResponseForRestChangesetRepository extends RestDevResponse<RestChangesetRepository>
     {
     }
 
-    public List<String> retryingGetCommitMessages(String issueKey, int expectedNumberOfChangesets)
+    /**
+     * Calls {@link com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.EntityLocalRestpoint#getEntity(String,
+     * com.google.common.base.Function)} with {@link com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint.ChangesetPredicate}
+     * and flattens the result into a List of commit messages, this does involve retrying the fetch if it is not found at first
+     *
+     * @param issueKey The issue key to search for
+     * @param expectedNumberOfChangesets The number of changesets we expect to find, the fetch will retry until we get this many
+     * @return The commit messages across all changesets we find
+     */
+    public List<String> getCommitMessages(String issueKey, int expectedNumberOfChangesets)
     {
-        return convertToCommitMessages(entityLocalRestpoint.retryingGetEntity(issueKey, new ChangesetPredicate(expectedNumberOfChangesets)));
+        return convertToCommitMessages(entityLocalRestpoint.getEntity(issueKey, new ChangesetPredicate(expectedNumberOfChangesets)));
     }
 
     private static List<String> convertToCommitMessages(RestDevResponse<RestChangesetRepository> response)

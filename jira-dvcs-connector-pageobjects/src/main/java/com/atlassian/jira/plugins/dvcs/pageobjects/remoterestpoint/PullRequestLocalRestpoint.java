@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
  */
 public class PullRequestLocalRestpoint
 {
-    public static final String DETAIL_URL_SUFFIX = "pr-detail";
+    private static final String DETAIL_URL_SUFFIX = "pr-detail";
     private final EntityLocalRestpoint<RestDevResponseForPrRepository> entityLocalRestpoint = new EntityLocalRestpoint(RestDevResponseForPrRepository.class, DETAIL_URL_SUFFIX);
 
     /**
@@ -19,23 +19,22 @@ public class PullRequestLocalRestpoint
      *
      * @author Stanislav Dvorscak
      */
-    public static class RestDevResponseForPrRepository extends RestDevResponse<RestPrRepository>
+    private static class RestDevResponseForPrRepository extends RestDevResponse<RestPrRepository>
     {
     }
 
     /**
-     * REST point for "/rest/bitbucket/1.0/jira-dev/pr-detail?issue=" + issueKey
+     * Calls {@link com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.EntityLocalRestpoint#getEntity(String,
+     * com.google.common.base.Function)} with {@link com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint.SingleRestPrRepositoryPredicate}
+     * which returns the {@link com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository} that are found for the issue
+     * key, this does involve retrying the fetch if it is not found at first
      *
-     * @return RestDevResponse<RestPrRepository>
+     * @param issueKey The issue key to search for
+     * @return The pull request(s) that were found
      */
-    public RestDevResponse<RestPrRepository> getPullRequest(String issueKey)
+    public RestDevResponse<RestPrRepository> getAtLeastOnePullRequest(String issueKey)
     {
-        return entityLocalRestpoint.getEntity(issueKey);
-    }
-
-    public RestDevResponse<RestPrRepository> retryingGetAtLeastOnePullRequest(String issueKey)
-    {
-        return entityLocalRestpoint.retryingGetEntity(issueKey, new SingleRestPrRepositoryPredicate());
+        return entityLocalRestpoint.getEntity(issueKey, new SingleRestPrRepositoryPredicate());
     }
 
     private static class SingleRestPrRepositoryPredicate implements Function<RestDevResponseForPrRepository, Boolean>
@@ -43,7 +42,7 @@ public class PullRequestLocalRestpoint
         @Override
         public Boolean apply(@Nullable final RestDevResponseForPrRepository input)
         {
-            return input.getRepositories().size() > 0;
+            return !input.getRepositories().isEmpty();
         }
     }
 }
