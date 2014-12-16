@@ -11,7 +11,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import javax.ws.rs.core.MediaType;
 
 /**
- * Endpoint for fetching entities by issuekey from the jira-dev endpoint
+ * Endpoint for fetching entities by issuekey from the jira-dev endpoint based on the provided suffix
  *
  * @param <T> The type of the response, typically an inner class to assist with the JSON transform
  * @see com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint
@@ -34,6 +34,9 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
         this.urlSuffix = urlSuffix;
     }
 
+    /**
+     * Fetch the T that matches the issueKey located at the jira-dev url suffix
+     */
     public T getEntity(String issueKey)
     {
         RestUrlBuilder url = new RestUrlBuilder("/rest/bitbucket/1.0/jira-dev/" + urlSuffix + "?issue=" + issueKey);
