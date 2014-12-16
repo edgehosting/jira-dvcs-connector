@@ -16,6 +16,8 @@ import static com.mysema.query.types.PathMetadataFactory.forVariable;
  *    Map and FK mappings to integers
  *    Map Booleans to BooleanPaths
  *    Map Dates as DateTimePath<Date>
+ *
+ * Future approach is documented at https://extranet.atlassian.com/x/AAuQj
  */
 public class QRepositoryToChangesetMapping extends RelationalPathBase<QRepositoryToChangesetMapping>
 {
