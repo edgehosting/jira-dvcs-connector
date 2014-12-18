@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.java.ao.test.converters.NameConverters;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLAUSE_MAX;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -261,7 +263,62 @@ public class ChangesetQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
             changeset.save();
         }
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(issueKeys, BITBUCKET, false);
-        assertThat(changeSets.size(), equalTo(number));
+
+        int targetNumber = number > MAXIMUM_ENTITIES_PER_ISSUE_KEY ? MAXIMUM_ENTITIES_PER_ISSUE_KEY : number;
+
+        assertThat(changeSets.size(), equalTo(targetNumber));
+    }
+
+    @Test
+    @NonTransactional
+    public void testSortingTooManyChangesetsForSingleNewestFirst() throws Exception
+    {
+        final String issueKey = "NNN-1";
+        final int number = MAXIMUM_ENTITIES_PER_ISSUE_KEY * 2;
+        Calendar calendar = Calendar.getInstance();
+        List<ChangesetMapping> createdChangesets = new ArrayList<ChangesetMapping>();
+        for (int i = 0; i < number; i++)
+        {
+            ChangesetMapping changeset = changesetAOPopulator.createCSM("f" + i, issueKey, enabledRepository);
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+            changeset.setDate(calendar.getTime());
+            changeset.save();
+            createdChangesets.add(changeset);
+        }
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, true);
+
+        assertThat(changeSets.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+
+        for (int i = 0; i < MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
+        {
+            assertThat(changeSets.get(i).getId(), equalTo(createdChangesets.get(i).getID()));
+        }
+    }
+
+    @Test
+    @NonTransactional
+    public void testSortingTooManyChangesetsForSingleNewestLast() throws Exception
+    {
+        final String issueKey = "NNN-1";
+        final int number = MAXIMUM_ENTITIES_PER_ISSUE_KEY * 2;
+        Calendar calendar = Calendar.getInstance();
+        List<ChangesetMapping> createdChangesets = new ArrayList<ChangesetMapping>();
+        for (int i = 0; i < number; i++)
+        {
+            ChangesetMapping changeset = changesetAOPopulator.createCSM("f" + i, issueKey, enabledRepository);
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            changeset.setDate(calendar.getTime());
+            changeset.save();
+            createdChangesets.add(changeset);
+        }
+        List<Changeset> changeSets = changesetQDSL.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, false);
+
+        assertThat(changeSets.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+
+        for (int i = 0; i < MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
+        {
+            assertThat(changeSets.get(i).getId(), equalTo(createdChangesets.get(i).getID()));
+        }
     }
 
     @Test

@@ -56,7 +56,7 @@ public class ChangesetQDSLByIssueKeyClosureTest
         changesetsById = new HashMap<Integer, Changeset>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
-        issueKeyProcesor = new ChangesetQDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
+        issueKeyProcesor = new ChangesetQDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider, true);
 
         when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
         when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);

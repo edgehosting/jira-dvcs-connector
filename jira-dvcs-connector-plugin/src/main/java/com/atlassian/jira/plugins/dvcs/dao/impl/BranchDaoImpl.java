@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
@@ -212,7 +213,7 @@ public class BranchDaoImpl implements BranchDao
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
         final Object[] params = ObjectArrays.concat(new Object[] { Boolean.FALSE, Boolean.TRUE }, Iterables.toArray(issueKeys, Object.class), Object.class);
 
-        final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
+        List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()
         {
             @Override
             public List<BranchMapping> doInTransaction()
@@ -224,7 +225,9 @@ public class BranchDaoImpl implements BranchDao
                                 .alias(RepositoryMapping.class, "repo")
                                 .join(IssueToBranchMapping.class, "mapping." + IssueToBranchMapping.BRANCH_ID + " = branch.ID")
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
-                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params));
+                                .where("repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause, params)
+                                .order(BranchMapping.NAME)
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
@@ -261,7 +264,9 @@ public class BranchDaoImpl implements BranchDao
                                 .join(RepositoryMapping.class, "branch." + BranchMapping.REPOSITORY_ID + " = repo.ID")
                                 .join(OrganizationMapping.class, "repo." + RepositoryMapping.ORGANIZATION_ID + " = org.ID")
                                 .where("org." + OrganizationMapping.DVCS_TYPE + " = ? AND repo." + RepositoryMapping.DELETED + " = ? AND repo." + RepositoryMapping.LINKED + " = ? AND " + baseWhereClause,
-                                        params));
+                                        params)
+                                .order(BranchMapping.NAME)
+                                .limit(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
                 return Arrays.asList(mappings);
             }
