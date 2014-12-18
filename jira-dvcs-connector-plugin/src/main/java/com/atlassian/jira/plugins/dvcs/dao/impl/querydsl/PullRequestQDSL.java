@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
+import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -49,16 +50,24 @@ public class PullRequestQDSL
         this.schemaProvider = schemaProvider;
     }
 
-    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
+    /**
+     * Retrieve up to {@link com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants#MAXIMUM_ENTITIES_PER_ISSUE_KEY} Pull
+     * Requests based on the supplied issue keys
+     *
+     * @param issueKeys The issue keys that are associated with the pull request
+     * @param dvcsType The (optional) dvcs type that we are restricting to
+     * @return Pull requests associated with the issue key
+     */
+    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, PullRequest> mapResult = queryFactory.streamyFold(new HashMap<Integer, PullRequest>(), closure);
+        Map<Integer, PullRequest> mapResult = queryFactory.halfStreamyFold(new HashMap<Integer, PullRequest>(), closure);
 
         return ImmutableList.copyOf(mapResult.values());
     }
 
     @VisibleForTesting
-    static class PullRequestByIssueKeyClosure implements QueryFactory.StreamyFoldClosure<Map<Integer, PullRequest>>
+    static class PullRequestByIssueKeyClosure implements QueryFactory.HalfStreamyFoldClosure<Map<Integer, PullRequest>>
     {
         final String dvcsType;
         final Iterable<String> issueKeys;
@@ -69,7 +78,7 @@ public class PullRequestQDSL
         final QRepositoryMapping repositoryMapping;
         final QOrganizationMapping orgMapping;
 
-        PullRequestByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
+        PullRequestByIssueKeyClosure(@Nullable final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
         {
             super();
             this.dvcsType = dvcsType;
@@ -82,7 +91,7 @@ public class PullRequestQDSL
         }
 
         @Override
-        public Function<SelectQuery, StreamyResult> query()
+        public Function<SelectQuery, StreamyResult> getQuery()
         {
             return new Function<SelectQuery, StreamyResult>()
             {
@@ -98,7 +107,8 @@ public class PullRequestQDSL
                             .leftJoin(participantMapping).on(prMapping.ID.eq(participantMapping.PULL_REQUEST_ID))
                             .where(repositoryMapping.DELETED.eq(false)
                                     .and(repositoryMapping.LINKED.eq(true))
-                                    .and(predicate));
+                                    .and(predicate))
+                            .orderBy(prMapping.CREATED_ON.desc());
 
                     if (StringUtils.isNotBlank(dvcsType))
                     {
@@ -141,8 +151,15 @@ public class PullRequestQDSL
                 {
                     Integer pullRequestId = tuple.get(prMapping.ID);
                     PullRequest pullRequest = pullRequestsById.get(pullRequestId);
+
                     if (pullRequest == null)
                     {
+                        // If we have reached the limit then we stop processing the PRs and return them, this is not applied in the query
+                        // as the results are denormalised so we may see several rows for one PR
+                        if (pullRequestsById.size() >= DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY)
+                        {
+                            return pullRequestsById;
+                        }
                         pullRequest = new PullRequest(pullRequestId);
 
                         final Long remoteId = tuple.get(prMapping.REMOTE_ID);
@@ -210,12 +227,6 @@ public class PullRequestQDSL
                     {
                         pullRequest.getIssueKeys().add(issueKey);
                     }
-
-                    // Not doing commits at this point as it is unecessary
-//                        if (withCommits)
-//                        {
-//                            pullRequest.setCommits(transform(pullRequestMapping.getCommits()));
-//                        }
                     return pullRequestsById;
                 }
             };

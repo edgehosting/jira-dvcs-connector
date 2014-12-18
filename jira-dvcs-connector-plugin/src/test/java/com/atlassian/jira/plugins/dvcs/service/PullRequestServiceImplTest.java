@@ -197,7 +197,7 @@ public class PullRequestServiceImplTest
     @Test
     public void testWithQDSLEnabled()
     {
-        when(qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled()).thenReturn(true);
+        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(true);
         when(pullRequestQDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(new ArrayList<PullRequest>());
 
         service.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
@@ -208,7 +208,7 @@ public class PullRequestServiceImplTest
     @Test
     public void testWithQDSLDisabled()
     {
-        when(qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled()).thenReturn(false);
+        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(false);
         final List<RepositoryPullRequestMapping> stubList = new ArrayList<RepositoryPullRequestMapping>();
         when(dao.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(stubList);
 

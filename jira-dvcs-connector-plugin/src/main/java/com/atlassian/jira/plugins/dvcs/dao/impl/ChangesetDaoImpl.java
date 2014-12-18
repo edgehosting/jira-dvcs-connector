@@ -379,7 +379,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        if (qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled())
+        if (qdslFeatureHelper.isRetrievalUsingQDSLEnabled())
         {
             return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
         }

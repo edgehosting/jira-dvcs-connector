@@ -1,30 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
-import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
-import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLAUSE_MAX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,7 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
  * and connection.
  */
-public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
+public class PullRequestQDSLGetByIssueKeyTest extends QueryDSLDBTest
 {
     @Test
     @NonTransactional

@@ -71,7 +71,7 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        if (qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled())
+        if (qdslFeatureHelper.isRetrievalUsingQDSLEnabled())
         {
             return pullRequestQDSL.getByIssueKeys(issueKeys, dvcsType);
         }

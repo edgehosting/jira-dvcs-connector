@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public abstract class ChangesetQDSLDBTest extends ActiveObjectsIntegrationTest
+public abstract class QueryDSLDBTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";
     protected static final ArrayList<String> ISSUE_KEYS = Lists.newArrayList(ISSUE_KEY);

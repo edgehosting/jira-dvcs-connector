@@ -14,6 +14,13 @@ import java.util.List;
  */
 public class IssueKeyPredicateFactory
 {
+    /**
+     * Create a Predicate based on the supplied issue keys that respects the maximum size of an 'IN' statement as per
+     * the constant defined in {!{@link com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils#SQL_IN_CLAUSE_MAX}}
+     * @param issueKeys The issue keys to bind into the predicate
+     * @param issueKeyedMapping The QueryDSL mapping class that supports issue key based queries
+     * @return A predicate that is an 'IN' statement across the issue keys
+     */
     public static Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final IssueKeyedMapping issueKeyedMapping)
     {
         final List<String> issueKeysList = Lists.newArrayList(issueKeys);

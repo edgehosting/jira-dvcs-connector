@@ -113,7 +113,7 @@ public class ChangesetDaoImplTest
     @Test
     public void testCallsAOWhenDarkFeatureIsUnavailable()
     {
-        when(qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled()).thenReturn(false);
+        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(false);
         when(activeObjects.find(eq(ChangesetMapping.class), any(Query.class))).thenReturn(new ChangesetMapping[0]);
 
         changesetDao.getByIssueKey(issues, BITBUCKET, true);
@@ -124,7 +124,7 @@ public class ChangesetDaoImplTest
     @Test
     public void testCallsQDSLWithDarkFeatureOn()
     {
-        when(qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled()).thenReturn(true);
+        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(true);
         when(changesetQDSL.getByIssueKey(eq(issues), eq(BITBUCKET), eq(true))).thenReturn(new ArrayList<Changeset>());
 
         changesetDao.getByIssueKey(issues, BITBUCKET, true);

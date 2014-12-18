@@ -22,7 +22,7 @@ public class QDSLFeatureHelper
         this.featureManager = featureManager;
     }
 
-    public boolean isChangesetRetrievalUsingQDSLEnabled()
+    public boolean isRetrievalUsingQDSLEnabled()
     {
         return featureManager.isEnabled(RETRIEVE_USING_QDSL);
     }
