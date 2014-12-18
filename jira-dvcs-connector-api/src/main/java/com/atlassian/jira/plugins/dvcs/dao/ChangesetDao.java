@@ -8,6 +8,7 @@ import net.java.ao.Entity;
 
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  *
@@ -65,7 +66,7 @@ public interface ChangesetDao
     /**
      * Returns all changesets related to given issue keys
      */
-    List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, boolean newestFirst);
 
     List<Changeset> getByRepository(int repositoryId);
 
