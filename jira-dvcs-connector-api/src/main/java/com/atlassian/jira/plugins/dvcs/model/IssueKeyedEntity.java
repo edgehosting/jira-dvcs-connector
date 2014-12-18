@@ -7,5 +7,9 @@ import java.util.List;
  */
 public interface IssueKeyedEntity
 {
+    /**
+     * Get the issue keys that are associated with this entity
+     * @return The issue keys that are associated with this entity
+     */
     List<String> getIssueKeys();
 }
