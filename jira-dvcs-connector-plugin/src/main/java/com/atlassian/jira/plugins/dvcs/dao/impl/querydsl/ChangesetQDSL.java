@@ -182,7 +182,7 @@ public class ChangesetQDSL
     }
 
 
-    private class ChangesetDateComparator implements Comparator<Changeset>
+    private static class ChangesetDateComparator implements Comparator<Changeset>
     {
         private final boolean newestFirst;
 
