@@ -18,7 +18,7 @@ public class ActiveObjectsUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ActiveObjectsUtils.class);
     private static final int DELETE_WINDOW_SIZE = Integer.getInteger("dvcs.connector.delete.window", 500);
-    private static final int SQL_IN_CLAUSE_MAX = Integer.getInteger("dvcs.connector.sql.in.max", 1000);
+    public static final int SQL_IN_CLAUSE_MAX = Integer.getInteger("dvcs.connector.sql.in.max", 1000);
     // Because of an issue in ActiveObjects (AO-453, AO-455) we can't use deleteWithSQL in PostgresSQL
     private static final boolean DELETE_WITH_SQL = false; //SystemUtils.getMethodExists(ActiveObjects.class, "deleteWithSQL", Class.class, String.class, Object[].class);
 

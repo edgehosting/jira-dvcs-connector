@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="default">
+    <test name="default">
+        <packages>
+            <package name="com.atlassian.jira.plugins.dvcs.*">
+            </package>
+        </packages>
+    </test>
+    <test name="junit" junit="true">
+        <classes>
+            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQDSLGetByIssueKeyTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.service.remote.OrganisationKeyTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.service.remote.UserKeyTest" />
+        </classes>
+    </test>
+</suite>

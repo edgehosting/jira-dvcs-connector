@@ -27,6 +27,7 @@ public interface ChangesetMapping extends Entity
     public static final String AUTHOR_EMAIL = "AUTHOR_EMAIL";
     public static final String SMARTCOMMIT_AVAILABLE = "SMARTCOMMIT_AVAILABLE";
     public static final String FILE_COUNT = "FILE_COUNT";
+    public static final String FILE_DETAILS_JSON = "FILE_DETAILS_JSON";
 
     /**
      * Constant used to indicate that parents data could not be saved because they are too many

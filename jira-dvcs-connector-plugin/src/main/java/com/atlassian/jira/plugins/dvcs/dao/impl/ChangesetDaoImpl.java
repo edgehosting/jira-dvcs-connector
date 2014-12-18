@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
@@ -54,13 +56,18 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
+    private final ChangesetQDSL changesetQDSL;
+    private final QDSLFeatureHelper qdslFeatureHelper;
 
     @Autowired
-    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper)
+    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
+            ChangesetQDSL changesetQDSL, final QDSLFeatureHelper qdslFeatureHelper)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = queryHelper;
         this.transformer = new ChangesetTransformer(activeObjects, this);
+        this.changesetQDSL = changesetQDSL;
+        this.qdslFeatureHelper = qdslFeatureHelper;
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -209,6 +216,29 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
+    @Override
+    public Changeset migrateFilesData(final Changeset changeset, final String dvcsType)
+    {
+        activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
+        {
+            @Override
+            public ChangesetMapping doInTransaction()
+            {
+                ChangesetMapping chm = getChangesetMapping(changeset);
+                if (chm != null)
+                {
+                    transformer.migrateChangesetFileData(chm, dvcsType, changeset);
+                }
+                else
+                {
+                    log.warn("Changest with node {} is not exists.", changeset.getNode());
+                }
+                return chm;
+            }
+        });
+        return changeset;
+    }
+
     private ChangesetMapping getChangesetMapping(Changeset changeset)
     {
         // A Query is little bit more complicated, but:
@@ -343,17 +373,21 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
-
-        return transform(changesetMappings);
+        return getByIssueKey(issueKeys, null, newestFirst);
     }
 
     @Override
-    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, final boolean newestFirst)
+    public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
-
-        return transform(changesetMappings, dvcsType);
+        if (qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled())
+        {
+            return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
+        }
+        else
+        {
+            List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+            return transform(changesetMappings, dvcsType);
+        }
     }
 
     @Override

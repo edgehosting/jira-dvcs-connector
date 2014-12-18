@@ -8,6 +8,7 @@ import net.java.ao.Entity;
 
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  *
@@ -42,6 +43,15 @@ public interface ChangesetDao
     Changeset update(Changeset changeset);
 
     /**
+     * Attempt to migrate the Changeset#FileDetails and return the updated changeset object, FileDetails will be null
+     * if migration failed.
+     * @param changeset
+     * @param dvcsType
+     * @return
+     */
+    Changeset migrateFilesData(Changeset changeset, String dvcsType);
+
+    /**
      * @param repositoryId
      * @param changesetNode
      * @return
@@ -56,7 +66,7 @@ public interface ChangesetDao
     /**
      * Returns all changesets related to given issue keys
      */
-    List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, boolean newestFirst);
+    List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, boolean newestFirst);
 
     List<Changeset> getByRepository(int repositoryId);
 

@@ -78,11 +78,16 @@ public class FileData
     @Deprecated
     public static FileData from(final ChangesetMapping changesetMapping)
     {
+        return from(changesetMapping.getFilesData(), changesetMapping.getFileDetailsJson());
+    }
+
+    @Deprecated
+    public static FileData from(final String filesData, final String fileDetailsJson)
+    {
         List<ChangesetFile> files = new ArrayList<ChangesetFile>();
         int fileCount = 0;
         boolean hasFileDetails = true;
 
-        String filesData = changesetMapping.getFilesData();
         if (StringUtils.isNotBlank(filesData))
         {
             try
@@ -91,7 +96,6 @@ public class FileData
                 fileCount = filesDataJson.getInt("count");
 
                 // prefer to use the files detail data if it is available
-                String fileDetailsJson = changesetMapping.getFileDetailsJson();
                 if (fileDetailsJson != null)
                 {
                     //noinspection ConstantConditions

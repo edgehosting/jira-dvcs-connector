@@ -127,6 +127,14 @@ public class ChangesetTransformer
 
         changeset.setFileDetails(fileDetails);
 
+        migrateChangesetFileData(changesetMapping, dvcsType, changeset);
+
+        return changeset;
+    }
+
+    public void migrateChangesetFileData(final ChangesetMapping changesetMapping, final String dvcsType,
+            final Changeset changeset)
+    {
         if (changesetMapping.getFilesData() != null)
         {
             // file data still there, we need to migrate
@@ -156,11 +164,9 @@ public class ChangesetTransformer
 
             changesetDao.update(changeset);
         }
-
-        return changeset;
     }
 
-    private List<ChangesetFileDetail> transfromFileData(final FileData fileData)
+    public static List<ChangesetFileDetail> transfromFileData(final FileData fileData)
     {
         List<ChangesetFileDetail> changesetFileDetails = new LinkedList<ChangesetFileDetail>();
         for (ChangesetFile file : fileData.getFiles())
@@ -177,7 +183,7 @@ public class ChangesetTransformer
         return changesetFileDetails;
     }
 
-    private List<String> parseParentsData(String parentsData)
+    public static List<String> parseParentsData(String parentsData)
     {
         if (ChangesetMapping.TOO_MANY_PARENTS.equals(parentsData))
         {
