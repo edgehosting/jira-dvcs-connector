@@ -50,7 +50,6 @@ public class ChangesetQueryDSLByIssueKeyClosureTest
         existingChangeset.setId(CHANGESET_MAPPING_ID);
         existingChangeset.getIssueKeys().add(ISSUE_KEY);
 
-        changesetQueryDSL = new ChangesetQueryDSL(queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
