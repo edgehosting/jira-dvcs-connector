@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public abstract class QueryDSLDBTest extends ActiveObjectsIntegrationTest
+public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";
     protected static final ArrayList<String> ISSUE_KEYS = Lists.newArrayList(ISSUE_KEY);
@@ -51,8 +51,8 @@ public abstract class QueryDSLDBTest extends ActiveObjectsIntegrationTest
     protected QueryFactory queryFactory;
     protected SchemaProvider schemaProvider;
 
-    protected ChangesetQDSL changesetQDSL;
-    protected PullRequestQDSL pullRequestQDSL;
+    protected ChangesetQueryDSL changesetQueryDSL;
+    protected PullRequestQueryDSL pullRequestQueryDSL;
 
     protected RepositoryMapping enabledRepository;
     protected OrganizationMapping bitbucketOrganization;
@@ -81,8 +81,8 @@ public abstract class QueryDSLDBTest extends ActiveObjectsIntegrationTest
                 RepositoryPullRequestMapping.class, PullRequestParticipantMapping.class,
                 RepositoryPullRequestIssueKeyMapping.class);
 
-        changesetQDSL = new ChangesetQDSL(queryFactory, schemaProvider);
-        pullRequestQDSL = new PullRequestQDSL(queryFactory, schemaProvider);
+        changesetQueryDSL = new ChangesetQueryDSL(queryFactory, schemaProvider);
+        pullRequestQueryDSL = new PullRequestQueryDSL(queryFactory, schemaProvider);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 
@@ -95,7 +95,7 @@ public abstract class QueryDSLDBTest extends ActiveObjectsIntegrationTest
         pullRequestMappingWithIssue = entityManager.get(RepositoryPullRequestMapping.class, pullRequestMappingWithIssue.getID());
     }
 
-    protected Collection<Integer> extractIds(Collection<Changeset> changeSets)
+    final protected Collection<Integer> extractIds(Collection<Changeset> changeSets)
     {
         return Collections2.transform(changeSets, new Function<Changeset, Integer>()
         {

@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQueryDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
@@ -46,7 +46,7 @@ public class ChangesetDaoImplTest
     Changeset changeset;
 
     @Mock
-    ChangesetQDSL changesetQDSL;
+    ChangesetQueryDSL changesetQueryDSL;
 
     @Mock
     QDSLFeatureHelper qdslFeatureHelper;
@@ -113,7 +113,7 @@ public class ChangesetDaoImplTest
     @Test
     public void testCallsAOWhenDarkFeatureIsUnavailable()
     {
-        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(false);
+        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
         when(activeObjects.find(eq(ChangesetMapping.class), any(Query.class))).thenReturn(new ChangesetMapping[0]);
 
         changesetDao.getByIssueKey(issues, BITBUCKET, true);
@@ -124,11 +124,11 @@ public class ChangesetDaoImplTest
     @Test
     public void testCallsQDSLWithDarkFeatureOn()
     {
-        when(qdslFeatureHelper.isRetrievalUsingQDSLEnabled()).thenReturn(true);
-        when(changesetQDSL.getByIssueKey(eq(issues), eq(BITBUCKET), eq(true))).thenReturn(new ArrayList<Changeset>());
+        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(changesetQueryDSL.getByIssueKey(eq(issues), eq(BITBUCKET), eq(true))).thenReturn(new ArrayList<Changeset>());
 
         changesetDao.getByIssueKey(issues, BITBUCKET, true);
 
-        verify(changesetQDSL).getByIssueKey(eq(issues), eq(BITBUCKET), eq(true));
+        verify(changesetQueryDSL).getByIssueKey(eq(issues), eq(BITBUCKET), eq(true));
     }
 }

@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
-public class PullRequestQDSLByIssueKeyClosureTest
+public class PullRequestQueryDSLByIssueKeyClosureTest
 {
     private static final Integer PR_MAPPING_ID = 5;
     private static final String ISSUE_KEY = "HHH-123";
@@ -41,7 +41,7 @@ public class PullRequestQDSLByIssueKeyClosureTest
     @Mock
     private Tuple tuple;
 
-    private PullRequestQDSL.PullRequestByIssueKeyClosure issueKeyClosure;
+    private PullRequestQueryDSL.PullRequestByIssueKeyClosure issueKeyClosure;
     private Map<Integer, PullRequest> pullRequestsById;
     private PullRequest existingPullRequest;
 
@@ -57,7 +57,7 @@ public class PullRequestQDSLByIssueKeyClosureTest
         pullRequestsById = new HashMap<Integer, PullRequest>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
-        issueKeyClosure = new PullRequestQDSL.PullRequestByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
+        issueKeyClosure = new PullRequestQueryDSL.PullRequestByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
 
         when(tuple.get(issueKeyClosure.prMapping.ID)).thenReturn(PR_MAPPING_ID);
         when(tuple.get(issueKeyClosure.participantMapping.USERNAME)).thenReturn(PARTICIPANT_NAME);

@@ -8,12 +8,18 @@ import com.mysema.query.types.Predicate;
 import com.mysema.query.types.expr.BooleanExpression;
 
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Factory to build Predicate objects given a collection of keys and a class that can supply the IssueKey expression
+ * Factory to build Predicate objects given a collection of keys
  */
 public class IssueKeyPredicateFactory
 {
+    private IssueKeyPredicateFactory()
+    {
+    }
+
     /**
      * Create a Predicate based on the supplied issue keys that respects the maximum size of an 'IN' statement as per
      * the constant defined in {!{@link com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils#SQL_IN_CLAUSE_MAX}}
@@ -21,7 +27,9 @@ public class IssueKeyPredicateFactory
      * @param issueKeyedMapping The QueryDSL mapping class that supports issue key based queries
      * @return A predicate that is an 'IN' statement across the issue keys
      */
-    public static Predicate buildIssueKeyPredicate(final Iterable<String> issueKeys, final IssueKeyedMapping issueKeyedMapping)
+    @Nullable
+    public static Predicate buildIssueKeyPredicate(@Nonnull final Iterable<String> issueKeys,
+            @Nonnull final IssueKeyedMapping issueKeyedMapping)
     {
         final List<String> issueKeysList = Lists.newArrayList(issueKeys);
 

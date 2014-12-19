@@ -11,6 +11,7 @@ import net.java.ao.EntityManager;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 public class PullRequestAOPopulator extends AOPopulator
 {
@@ -19,9 +20,11 @@ public class PullRequestAOPopulator extends AOPopulator
         super(entityManager);
     }
 
-    public RepositoryPullRequestMapping createPR(String name, String issueKey, RepositoryMapping repositoryMapping)
+    @Nonnull
+    public RepositoryPullRequestMapping createPR(@Nonnull final String name, @Nonnull final String issueKey,
+            @Nonnull final RepositoryMapping repositoryMapping)
     {
-        RepositoryPullRequestMapping prMapping = create(RepositoryPullRequestMapping.class,
+        final RepositoryPullRequestMapping prMapping = create(RepositoryPullRequestMapping.class,
                 getDefaultPRParams(name, repositoryMapping.getID()));
         prMapping.setToRepositoryId(repositoryMapping.getID());
         prMapping.save();
@@ -31,7 +34,8 @@ public class PullRequestAOPopulator extends AOPopulator
         return prMapping;
     }
 
-    public Map<String, Object> getDefaultPRParams(String name, int repositoryId)
+    @Nonnull
+    public Map<String, Object> getDefaultPRParams(@Nonnull String name, @Nonnull int repositoryId)
     {
         ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 
@@ -52,8 +56,9 @@ public class PullRequestAOPopulator extends AOPopulator
         return builder.build();
     }
 
-    public PullRequestParticipantMapping createParticipant(String username, Boolean approved, String role,
-            RepositoryPullRequestMapping prMapping)
+    @Nonnull
+    public PullRequestParticipantMapping createParticipant(@Nonnull String username, @Nonnull boolean approved, @Nonnull String role,
+            @Nonnull RepositoryPullRequestMapping prMapping)
     {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(PullRequestParticipantMapping.USERNAME, username);
@@ -65,8 +70,9 @@ public class PullRequestAOPopulator extends AOPopulator
         return create(PullRequestParticipantMapping.class, params);
     }
 
-
-    public RepositoryPullRequestIssueKeyMapping associateToIssue(RepositoryPullRequestMapping prMapping, String issueKey)
+    @Nonnull
+    public RepositoryPullRequestIssueKeyMapping associateToIssue(@Nonnull RepositoryPullRequestMapping prMapping,
+            @Nonnull String issueKey)
     {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(RepositoryPullRequestIssueKeyMapping.ISSUE_KEY, issueKey);
