@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQueryDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
@@ -56,17 +56,17 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
-    private final ChangesetQDSL changesetQDSL;
+    private final ChangesetQueryDSL changesetQueryDSL;
     private final QDSLFeatureHelper qdslFeatureHelper;
 
     @Autowired
     public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
-            ChangesetQDSL changesetQDSL, final QDSLFeatureHelper qdslFeatureHelper)
+            ChangesetQueryDSL changesetQueryDSL, final QDSLFeatureHelper qdslFeatureHelper)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = queryHelper;
         this.transformer = new ChangesetTransformer(activeObjects, this);
-        this.changesetQDSL = changesetQDSL;
+        this.changesetQueryDSL = changesetQueryDSL;
         this.qdslFeatureHelper = qdslFeatureHelper;
     }
 
@@ -379,9 +379,9 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        if (qdslFeatureHelper.isChangesetRetrievalUsingQDSLEnabled())
+        if (qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
         {
-            return changesetQDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
+            return changesetQueryDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
         }
         else
         {

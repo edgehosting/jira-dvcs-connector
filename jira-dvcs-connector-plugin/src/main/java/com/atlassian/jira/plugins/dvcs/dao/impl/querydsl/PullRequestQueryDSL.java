@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
+import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -31,49 +32,61 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings ("SpringJavaAutowiringInspection")
 @Component
-public class PullRequestQDSL
+public class PullRequestQueryDSL
 {
-    private final Logger log = LoggerFactory.getLogger(PullRequestQDSL.class);
+    private static final Logger log = LoggerFactory.getLogger(PullRequestQueryDSL.class);
 
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public PullRequestQDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public PullRequestQueryDSL(final QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
-        this.queryFactory = queryFactory;
-        this.schemaProvider = schemaProvider;
+        this.queryFactory = checkNotNull(queryFactory);
+        this.schemaProvider = checkNotNull(schemaProvider);
     }
 
-    public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
+    /**
+     * Retrieve up to {@link com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants#MAXIMUM_ENTITIES_PER_ISSUE_KEY} Pull
+     * Requests based on the supplied issue keys
+     *
+     * @param issueKeys The issue keys that are associated with the pull request
+     * @param dvcsType The (optional) dvcs type that we are restricting to
+     * @return Pull requests associated with the issue key
+     */
+    @Nonnull
+    public List<PullRequest> getByIssueKeys(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, PullRequest> mapResult = queryFactory.streamyFold(new HashMap<Integer, PullRequest>(), closure);
+        Map<Integer, PullRequest> mapResult = queryFactory.halfStreamyFold(new HashMap<Integer, PullRequest>(), closure);
 
         return ImmutableList.copyOf(mapResult.values());
     }
 
     @VisibleForTesting
-    static class PullRequestByIssueKeyClosure implements QueryFactory.StreamyFoldClosure<Map<Integer, PullRequest>>
+    static class PullRequestByIssueKeyClosure implements QueryFactory.HalfStreamyFoldClosure<Map<Integer, PullRequest>>
     {
-        final String dvcsType;
-        final Iterable<String> issueKeys;
-
+        private final String dvcsType;
+        private final Iterable<String> issueKeys;
         final QRepositoryPullRequestMapping prMapping;
         final QRepositoryPullRequestIssueKeyMapping issueMapping;
         final QPullRequestParticipantMapping participantMapping;
         final QRepositoryMapping repositoryMapping;
         final QOrganizationMapping orgMapping;
 
-        PullRequestByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
+        @Nonnull
+        PullRequestByIssueKeyClosure(@Nullable final String dvcsType, @Nonnull final Iterable<String> issueKeys,
+                @Nonnull final SchemaProvider schemaProvider)
         {
-            super();
             this.dvcsType = dvcsType;
-            this.issueKeys = issueKeys;
+            this.issueKeys = checkNotNull(issueKeys);
             this.prMapping = QRepositoryPullRequestMapping.withSchema(schemaProvider);
             this.issueMapping = QRepositoryPullRequestIssueKeyMapping.withSchema(schemaProvider);
             this.participantMapping = QPullRequestParticipantMapping.withSchema(schemaProvider);
@@ -82,7 +95,8 @@ public class PullRequestQDSL
         }
 
         @Override
-        public Function<SelectQuery, StreamyResult> query()
+        @Nonnull
+        public Function<SelectQuery, StreamyResult> getQuery()
         {
             return new Function<SelectQuery, StreamyResult>()
             {
@@ -98,7 +112,8 @@ public class PullRequestQDSL
                             .leftJoin(participantMapping).on(prMapping.ID.eq(participantMapping.PULL_REQUEST_ID))
                             .where(repositoryMapping.DELETED.eq(false)
                                     .and(repositoryMapping.LINKED.eq(true))
-                                    .and(predicate));
+                                    .and(predicate))
+                            .orderBy(prMapping.CREATED_ON.desc());
 
                     if (StringUtils.isNotBlank(dvcsType))
                     {
@@ -139,46 +154,19 @@ public class PullRequestQDSL
                 @Override
                 public Map<Integer, PullRequest> apply(final Map<Integer, PullRequest> pullRequestsById, final Tuple tuple)
                 {
-                    Integer pullRequestId = tuple.get(prMapping.ID);
+                    final Integer pullRequestId = tuple.get(prMapping.ID);
                     PullRequest pullRequest = pullRequestsById.get(pullRequestId);
+
                     if (pullRequest == null)
                     {
-                        pullRequest = new PullRequest(pullRequestId);
-
-                        final Long remoteId = tuple.get(prMapping.REMOTE_ID);
-                        pullRequest.setRemoteId(remoteId == null ? -1 : remoteId);
-                        final Integer repositoryId = tuple.get(prMapping.TO_REPOSITORY_ID);
-                        pullRequest.setRepositoryId(repositoryId == null ? -1 : repositoryId);
-                        pullRequest.setName(tuple.get(prMapping.NAME));
-                        pullRequest.setUrl(tuple.get(prMapping.URL));
-                        final String lastStatus = tuple.get(prMapping.LAST_STATUS);
-                        if (lastStatus != null)
+                        // If we have reached the limit then we stop processing the PRs and return them, this is not applied in the query
+                        // as the results are denormalised so we may see several rows for one PR
+                        if (pullRequestsById.size() >= DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY)
                         {
-                            pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(lastStatus));
+                            return pullRequestsById;
                         }
-                        pullRequest.setCreatedOn(tuple.get(prMapping.CREATED_ON));
-                        pullRequest.setUpdatedOn(tuple.get(prMapping.UPDATED_ON));
-                        pullRequest.setAuthor(tuple.get(prMapping.AUTHOR));
-                        final Integer commentCount = tuple.get(prMapping.COMMENT_COUNT);
-                        pullRequest.setCommentCount(commentCount == null ? 0 : commentCount);
-                        pullRequest.setExecutedBy(tuple.get(prMapping.EXECUTED_BY));
 
-                        String sourceBranch = tuple.get(prMapping.SOURCE_BRANCH);
-                        String sourceRepo = tuple.get(prMapping.SOURCE_REPO);
-                        String orgHostUrl = tuple.get(orgMapping.HOST_URL);
-
-                        pullRequest.setSource(new PullRequestRef(sourceBranch, sourceRepo,
-                                PullRequestTransformer.createRepositoryUrl(orgHostUrl, sourceRepo)));
-
-                        String destinationBranch = tuple.get(prMapping.DESTINATION_BRANCH);
-                        String orgName = tuple.get(orgMapping.NAME);
-                        String slug = tuple.get(repositoryMapping.SLUG);
-
-                        String repositoryLabel = PullRequestTransformer.createRepositoryLabel(orgName, slug);
-                        String repositoryUrl = RepositoryTransformer.createRepositoryUrl(orgHostUrl, orgName, slug);
-
-                        pullRequest.setDestination(new PullRequestRef(destinationBranch, repositoryLabel, repositoryUrl));
-
+                        pullRequest = buildPullRequest(pullRequestId, tuple);
                         pullRequestsById.put(pullRequestId, pullRequest);
                     }
 
@@ -210,15 +198,51 @@ public class PullRequestQDSL
                     {
                         pullRequest.getIssueKeys().add(issueKey);
                     }
-
-                    // Not doing commits at this point as it is unecessary
-//                        if (withCommits)
-//                        {
-//                            pullRequest.setCommits(transform(pullRequestMapping.getCommits()));
-//                        }
                     return pullRequestsById;
                 }
             };
+        }
+
+        @Nonnull
+        private PullRequest buildPullRequest(@Nonnull final Integer pullRequestId, @Nonnull final Tuple tuple)
+        {
+            PullRequest pullRequest = new PullRequest(pullRequestId);
+
+            final Long remoteId = tuple.get(prMapping.REMOTE_ID);
+            pullRequest.setRemoteId(remoteId == null ? -1 : remoteId);
+            final Integer repositoryId = tuple.get(prMapping.TO_REPOSITORY_ID);
+            pullRequest.setRepositoryId(repositoryId == null ? -1 : repositoryId);
+            pullRequest.setName(tuple.get(prMapping.NAME));
+            pullRequest.setUrl(tuple.get(prMapping.URL));
+            final String lastStatus = tuple.get(prMapping.LAST_STATUS);
+            if (lastStatus != null)
+            {
+                pullRequest.setStatus(PullRequestStatus.fromRepositoryPullRequestMapping(lastStatus));
+            }
+            pullRequest.setCreatedOn(tuple.get(prMapping.CREATED_ON));
+            pullRequest.setUpdatedOn(tuple.get(prMapping.UPDATED_ON));
+            pullRequest.setAuthor(tuple.get(prMapping.AUTHOR));
+            final Integer commentCount = tuple.get(prMapping.COMMENT_COUNT);
+            pullRequest.setCommentCount(commentCount == null ? 0 : commentCount);
+            pullRequest.setExecutedBy(tuple.get(prMapping.EXECUTED_BY));
+
+            String sourceBranch = tuple.get(prMapping.SOURCE_BRANCH);
+            String sourceRepo = tuple.get(prMapping.SOURCE_REPO);
+            String orgHostUrl = tuple.get(orgMapping.HOST_URL);
+
+            pullRequest.setSource(new PullRequestRef(sourceBranch, sourceRepo,
+                    PullRequestTransformer.createRepositoryUrl(orgHostUrl, sourceRepo)));
+
+            String destinationBranch = tuple.get(prMapping.DESTINATION_BRANCH);
+            String orgName = tuple.get(orgMapping.NAME);
+            String slug = tuple.get(repositoryMapping.SLUG);
+
+            String repositoryLabel = PullRequestTransformer.createRepositoryLabel(orgName, slug);
+            String repositoryUrl = RepositoryTransformer.createRepositoryUrl(orgHostUrl, orgName, slug);
+
+            pullRequest.setDestination(new PullRequestRef(destinationBranch, repositoryLabel, repositoryUrl));
+
+            return pullRequest;
         }
     }
 }

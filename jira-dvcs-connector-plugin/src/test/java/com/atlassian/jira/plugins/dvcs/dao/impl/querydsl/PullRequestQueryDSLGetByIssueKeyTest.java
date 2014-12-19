@@ -1,30 +1,23 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
-import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
-import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLAUSE_MAX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,28 +26,19 @@ import static org.hamcrest.Matchers.equalTo;
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
  * and connection.
  */
-public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
+public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
     @Test
     @NonTransactional
     public void testSimpleSearchMapsProperly() throws Exception
     {
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
         PullRequest pullRequest = pullRequests.get(0);
 
-        assertThat(pullRequest.getRemoteId(), equalTo(pullRequestMappingWithIssue.getRemoteId()));
-        assertThat(pullRequest.getRepositoryId(), equalTo(pullRequestMappingWithIssue.getToRepositoryId()));
-        assertThat(pullRequest.getName(), equalTo(pullRequestMappingWithIssue.getName()));
-        assertThat(pullRequest.getUrl(), equalTo(pullRequestMappingWithIssue.getUrl()));
-        assertThat(pullRequest.getStatus().name(), equalTo(pullRequestMappingWithIssue.getLastStatus()));
-        assertThat(pullRequest.getCreatedOn(), equalTo(pullRequestMappingWithIssue.getCreatedOn()));
-        assertThat(pullRequest.getUpdatedOn(), equalTo(pullRequestMappingWithIssue.getUpdatedOn()));
-        assertThat(pullRequest.getAuthor(), equalTo(pullRequestMappingWithIssue.getAuthor()));
-        assertThat(pullRequest.getCommentCount(), equalTo(pullRequestMappingWithIssue.getCommentCount()));
-        assertThat(pullRequest.getExecutedBy(), equalTo(pullRequestMappingWithIssue.getExecutedBy()));
+        assertPullRequestMatchesAO(pullRequest);
 
         assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
 
@@ -73,7 +57,7 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         final String secondKey = "SCN-2";
         pullRequestAOPopulator.associateToIssue(pullRequestMappingWithIssue, secondKey);
 
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
@@ -89,7 +73,7 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         RepositoryMapping repo2 = repositoryAOPopulator.createRepository(org2, false, true, "fh/fork");
         pullRequestAOPopulator.createPR("something else", "other key", repo2);
 
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
     }
@@ -101,22 +85,13 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         final String user2 = "bill";
         pullRequestAOPopulator.createParticipant(user2, true, "someguy", pullRequestMappingWithIssue);
 
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
         PullRequest pullRequest = pullRequests.get(0);
 
-        assertThat(pullRequest.getRemoteId(), equalTo(pullRequestMappingWithIssue.getRemoteId()));
-        assertThat(pullRequest.getRepositoryId(), equalTo(pullRequestMappingWithIssue.getToRepositoryId()));
-        assertThat(pullRequest.getName(), equalTo(pullRequestMappingWithIssue.getName()));
-        assertThat(pullRequest.getUrl(), equalTo(pullRequestMappingWithIssue.getUrl()));
-        assertThat(pullRequest.getStatus().name(), equalTo(pullRequestMappingWithIssue.getLastStatus()));
-        assertThat(pullRequest.getCreatedOn(), equalTo(pullRequestMappingWithIssue.getCreatedOn()));
-        assertThat(pullRequest.getUpdatedOn(), equalTo(pullRequestMappingWithIssue.getUpdatedOn()));
-        assertThat(pullRequest.getAuthor(), equalTo(pullRequestMappingWithIssue.getAuthor()));
-        assertThat(pullRequest.getCommentCount(), equalTo(pullRequestMappingWithIssue.getCommentCount()));
-        assertThat(pullRequest.getExecutedBy(), equalTo(pullRequestMappingWithIssue.getExecutedBy()));
+        assertPullRequestMatchesAO(pullRequest);
 
         final List<Participant> participants = pullRequest.getParticipants();
         assertThat(participants.size(), equalTo(2));
@@ -130,7 +105,7 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         final String secondIssueKey = "IK-2";
         RepositoryPullRequestMapping secondPR = pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
 
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(Arrays.asList(secondIssueKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Arrays.asList(secondIssueKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
         assertThat(pullRequests.get(0).getId(), equalTo(secondPR.getID()));
@@ -141,10 +116,33 @@ public class PullRequestQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
     public void testWithTwoPRsTwoKeys() throws Exception
     {
         final String secondIssueKey = "IK-2";
-        pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
+        RepositoryPullRequestMapping secondPullRequest = pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
 
-        List<PullRequest> pullRequests = pullRequestQDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(2));
+        Collection<Integer> pullRequestIds = Collections2.transform(pullRequests, new Function<PullRequest, Integer>()
+        {
+            @Override
+            public Integer apply(@Nullable final PullRequest input)
+            {
+                return input.getId();
+            }
+        });
+        assertThat(pullRequestIds, containsInAnyOrder(pullRequestMappingWithIssue.getID(), secondPullRequest.getID()));
+    }
+
+    private void assertPullRequestMatchesAO(@Nonnull final PullRequest pullRequest)
+    {
+        assertThat(pullRequest.getRemoteId(), equalTo(pullRequestMappingWithIssue.getRemoteId()));
+        assertThat(pullRequest.getRepositoryId(), equalTo(pullRequestMappingWithIssue.getToRepositoryId()));
+        assertThat(pullRequest.getName(), equalTo(pullRequestMappingWithIssue.getName()));
+        assertThat(pullRequest.getUrl(), equalTo(pullRequestMappingWithIssue.getUrl()));
+        assertThat(pullRequest.getStatus().name(), equalTo(pullRequestMappingWithIssue.getLastStatus()));
+        assertThat(pullRequest.getCreatedOn(), equalTo(pullRequestMappingWithIssue.getCreatedOn()));
+        assertThat(pullRequest.getUpdatedOn(), equalTo(pullRequestMappingWithIssue.getUpdatedOn()));
+        assertThat(pullRequest.getAuthor(), equalTo(pullRequestMappingWithIssue.getAuthor()));
+        assertThat(pullRequest.getCommentCount(), equalTo(pullRequestMappingWithIssue.getCommentCount()));
+        assertThat(pullRequest.getExecutedBy(), equalTo(pullRequestMappingWithIssue.getExecutedBy()));
     }
 }

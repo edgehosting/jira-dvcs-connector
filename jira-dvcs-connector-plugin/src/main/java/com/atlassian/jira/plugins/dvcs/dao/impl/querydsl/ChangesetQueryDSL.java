@@ -37,15 +37,15 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 @Component
-public class ChangesetQDSL
+public class ChangesetQueryDSL
 {
-    private final Logger log = LoggerFactory.getLogger(ChangesetQDSL.class);
+    private final Logger log = LoggerFactory.getLogger(ChangesetQueryDSL.class);
 
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public ChangesetQDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public ChangesetQueryDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
         this.queryFactory = queryFactory;
         this.schemaProvider = schemaProvider;
@@ -182,7 +182,7 @@ public class ChangesetQDSL
     }
 
 
-    private class ChangesetDateComparator implements Comparator<Changeset>
+    private static class ChangesetDateComparator implements Comparator<Changeset>
     {
         private final boolean newestFirst;
 

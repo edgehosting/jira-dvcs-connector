@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
 
@@ -14,6 +13,11 @@ public class OrganizationAOPopulator extends AOPopulator
         super(entityManager);
     }
 
+    /**
+     * Create an organization mapping with some default values set for host (bitbucket) and account (fusionaccount)
+     * @param dvcsType
+     * @return
+     */
     public OrganizationMapping create(String dvcsType)
     {
         return create(dvcsType, "https://bitbucket.org", "fusionaccount");
