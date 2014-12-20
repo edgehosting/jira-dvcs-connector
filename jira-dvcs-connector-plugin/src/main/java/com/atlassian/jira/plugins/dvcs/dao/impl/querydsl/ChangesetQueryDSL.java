@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Component
@@ -51,7 +52,7 @@ public class ChangesetQueryDSL
         this.schemaProvider = schemaProvider;
     }
 
-    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, @Nullable final String dvcsType,
+    public List<Changeset> getByIssueKey(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
         ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);

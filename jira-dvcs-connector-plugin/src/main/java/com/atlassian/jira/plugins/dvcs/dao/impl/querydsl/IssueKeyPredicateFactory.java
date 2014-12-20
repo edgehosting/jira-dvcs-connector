@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 /**
  * Factory to build Predicate objects given a collection of keys
  */
-public class IssueKeyPredicateFactory
+public final class IssueKeyPredicateFactory
 {
     private IssueKeyPredicateFactory()
     {
