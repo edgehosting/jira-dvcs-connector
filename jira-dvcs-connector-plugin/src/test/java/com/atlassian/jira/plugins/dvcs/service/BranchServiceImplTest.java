@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDSLFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.BranchQueryDSL;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
@@ -8,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.hamcrest.Matchers;
 import org.mockito.ArgumentCaptor;
@@ -27,6 +30,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -48,6 +52,12 @@ public class BranchServiceImplTest
 
     @Mock
     private ThreadEvents threadEvents;
+
+    @Mock
+    private QueryDSLFeatureHelper queryDSLFeatureHelper;
+
+    @Mock
+    private BranchQueryDSL branchQueryDSL;
 
     @InjectMocks
     private BranchServiceImpl branchService = new BranchServiceImpl();
@@ -327,6 +337,28 @@ public class BranchServiceImplTest
         assertNull(removeBranchHeadArgumentCaptor.getValue().getHead());
         assertEquals(branchHeadArgumentCaptor.getValue().getName(), "branch");
         assertEquals(branchHeadArgumentCaptor.getValue().getHead(), "node1");
+    }
+
+    @Test
+    public void testWithDarkFeatureEnabled()
+    {
+        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
+        when(branchQueryDSL.getByIssueKeys(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
+
+        List<Branch> result = branchService.getByIssueKey(Lists.<String>newArrayList(), "");
+        assertEquals(result, expectedResult);
+    }
+
+    @Test
+    public void testWithDarkFeatureDisabled()
+    {
+        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
+        when(branchDao.getBranchesForIssue(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
+
+        List<Branch> result = branchService.getByIssueKey(Lists.<String>newArrayList(), "");
+        assertEquals(result, expectedResult);
     }
 
     private Branch createBranchWithHead(String name, String... nodes)

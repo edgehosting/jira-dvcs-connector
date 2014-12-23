@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QDSLFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDSLFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
@@ -54,7 +54,7 @@ public class PullRequestServiceImpl implements PullRequestService
     private ThreadEvents threadEvents;
 
     @Resource
-    private QDSLFeatureHelper qdslFeatureHelper;
+    private QueryDSLFeatureHelper queryDSLFeatureHelper;
 
     @PostConstruct
     public void init()
@@ -71,7 +71,7 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        if (qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled())
         {
             return pullRequestQueryDSL.getByIssueKeys(issueKeys, dvcsType);
         }

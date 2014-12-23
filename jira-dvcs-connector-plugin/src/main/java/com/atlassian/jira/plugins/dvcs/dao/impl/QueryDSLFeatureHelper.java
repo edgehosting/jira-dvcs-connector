@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * This class contains the feature flags for controlling the various retrieval services and whether they are using QueryDSL
  */
 @Component
-public class QDSLFeatureHelper
+public class QueryDSLFeatureHelper
 {
     public static final String RETRIEVE_USING_QDSL =  "dvcs.connector.retrieved.using.qdsl";
 
@@ -17,7 +17,7 @@ public class QDSLFeatureHelper
     private final FeatureManager featureManager;
 
     @Autowired
-    public QDSLFeatureHelper(final FeatureManager featureManager)
+    public QueryDSLFeatureHelper(final FeatureManager featureManager)
     {
         this.featureManager = featureManager;
     }
