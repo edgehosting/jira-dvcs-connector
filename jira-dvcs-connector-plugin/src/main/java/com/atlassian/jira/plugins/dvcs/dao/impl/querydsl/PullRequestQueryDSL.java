@@ -64,6 +64,7 @@ public class PullRequestQueryDSL
     @Nonnull
     public List<PullRequest> getByIssueKeys(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
+        checkNotNull(issueKeys);
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
         Map<Integer, PullRequest> mapResult = queryFactory.halfStreamyFold(new HashMap<Integer, PullRequest>(), closure);
 

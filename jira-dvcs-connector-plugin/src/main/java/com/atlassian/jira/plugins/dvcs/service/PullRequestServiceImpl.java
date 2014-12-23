@@ -75,10 +75,7 @@ public class PullRequestServiceImpl implements PullRequestService
         {
             return pullRequestQueryDSL.getByIssueKeys(issueKeys, dvcsType);
         }
-        else
-        {
-            return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
-        }
+        return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
     }
 
     @Override
