@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings ("SpringJavaAutowiringInspection")
@@ -64,13 +65,12 @@ public class BranchQueryDSL
     @VisibleForTesting
     static class PullRequestByIssueKeyClosure implements QueryFactory.HalfStreamyFoldClosure<Map<Integer, Branch>>
     {
-        final String dvcsType;
-        final Iterable<String> issueKeys;
-
-        final QBranchMapping branchMapping;
-        final QIssueToBranchMapping issueMapping;
-        final QRepositoryMapping repositoryMapping;
-        final QOrganizationMapping orgMapping;
+        private final String dvcsType;
+        private final Iterable<String> issueKeys;
+        private final QBranchMapping branchMapping;
+        private final QIssueToBranchMapping issueMapping;
+        private final QRepositoryMapping repositoryMapping;
+        private final QOrganizationMapping orgMapping;
 
         PullRequestByIssueKeyClosure(@Nullable final String dvcsType, @Nonnull final Iterable<String> issueKeys,
                 @Nonnull final SchemaProvider schemaProvider)
@@ -128,6 +128,12 @@ public class BranchQueryDSL
                     Branch branch = integerBranchMap.get(id);
                     if (branch == null)
                     {
+                        // Due to the denormalised query to limit the result we skip any records we find after we reach the limit
+                        if (integerBranchMap.size() >= MAXIMUM_ENTITIES_PER_ISSUE_KEY)
+                        {
+                            return integerBranchMap;
+                        }
+
                         branch = new Branch(tuple.get(branchMapping.ID), tuple.get(branchMapping.NAME),
                                 tuple.get(branchMapping.REPOSITORY_ID));
                         integerBranchMap.put(id, branch);

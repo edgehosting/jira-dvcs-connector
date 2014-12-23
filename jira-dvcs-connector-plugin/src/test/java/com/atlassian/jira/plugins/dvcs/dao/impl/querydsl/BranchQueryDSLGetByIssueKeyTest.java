@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -34,12 +35,26 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
 
         assertThat(branches.size(), equalTo(1));
 
-        Branch branch = branches.get(0);
+        checkForDefaultBranchMapping(branches.get(0));
+    }
 
-        assertThat(branch.getRepositoryId(), equalTo(branchMappingWithIssue.getRepository().getID()));
-        assertThat(branch.getName(), equalTo(branchMappingWithIssue.getName()));
+    @Test
+    @NonTransactional
+    public void testSimpleSearchWithNoDVCSType() throws Exception
+    {
+        List<Branch> branches = branchQueryDSL.getByIssueKeys(ISSUE_KEYS, null);
 
-        assertThat(branch.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
+        assertThat(branches.size(), equalTo(1));
+
+        checkForDefaultBranchMapping(branches.get(0));
+    }
+
+    private void checkForDefaultBranchMapping(Branch retrievedBranch)
+    {
+        assertThat(retrievedBranch.getRepositoryId(), equalTo(branchMappingWithIssue.getRepository().getID()));
+        assertThat(retrievedBranch.getName(), equalTo(branchMappingWithIssue.getName()));
+
+        assertThat(retrievedBranch.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
     }
 
     @Test
@@ -92,5 +107,21 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         });
 
         assertThat(branchIds, containsInAnyOrder(branchMappingWithIssue.getID(), secondBranch.getID()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testWithMoreBranchesThanLimit() throws Exception
+    {
+        for (int i = 0; i < MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
+        {
+            branchAOPopulator.createBranch(ISSUE_KEY + "_branch_no_" + i, ISSUE_KEY, enabledRepository);
+        }
+
+        List<Branch> branches = branchQueryDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY), BITBUCKET);
+
+        assertThat(branches.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+        // sorted by name so first entry should be our default mapping
+        assertThat(branches.get(0).getName(), equalTo(branchMappingWithIssue.getName()));
     }
 }

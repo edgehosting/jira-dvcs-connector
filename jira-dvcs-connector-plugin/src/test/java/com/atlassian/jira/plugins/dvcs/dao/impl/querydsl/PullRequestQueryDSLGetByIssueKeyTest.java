@@ -36,8 +36,22 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
 
         assertThat(pullRequests.size(), equalTo(1));
 
-        PullRequest pullRequest = pullRequests.get(0);
+        assertAgainstDefaultPR(pullRequests.get(0));
+    }
 
+    @Test
+    @NonTransactional
+    public void testSimpleSearchWorksOnNullDVCS() throws Exception
+    {
+        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, null);
+
+        assertThat(pullRequests.size(), equalTo(1));
+
+        assertAgainstDefaultPR(pullRequests.get(0));
+    }
+
+    private void assertAgainstDefaultPR(PullRequest pullRequest)
+    {
         assertPullRequestMatchesAO(pullRequest);
 
         assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -112,17 +112,17 @@ public class PullRequestQueryDSLByIssueKeyClosureTest
     {
         pullRequestsById.clear();
 
-        for (int i = 0; i < DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
+        for (int i = 0; i < MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
         {
             int id = 1 + i + PR_MAPPING_ID;
             pullRequestsById.put(id, new PullRequest(id));
         }
 
-        assertThat(pullRequestsById.size(), equalTo(DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+        assertThat(pullRequestsById.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
         issueKeyClosure.getFoldFunction().apply(pullRequestsById, tuple);
 
-        assertThat(pullRequestsById.size(), equalTo(DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+        assertThat(pullRequestsById.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
         assertThat(pullRequestsById.keySet(), not(contains(PR_MAPPING_ID)));
     }
 }

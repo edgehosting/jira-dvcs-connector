@@ -40,7 +40,22 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
 
         assertThat(changeSets.size(), equalTo(1));
 
-        Changeset changeset = changeSets.get(0);
+        assertAgainstDefaultChangeset(changeSets.get(0));
+    }
+
+    @Test
+    @NonTransactional
+    public void testSimpleSearchWorksNullDVCS() throws Exception
+    {
+        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, null, false);
+
+        assertThat(changeSets.size(), equalTo(1));
+
+        assertAgainstDefaultChangeset(changeSets.get(0));
+    }
+
+    private void assertAgainstDefaultChangeset(Changeset changeset)
+    {
         assertThat(changeset.getNode(), equalTo(changesetMappingWithIssue.getNode()));
         assertThat(changeset.getFileDetails().size(), equalTo(0));
         assertThat(changeset.getRawAuthor(), equalTo(changesetMappingWithIssue.getRawAuthor()));
