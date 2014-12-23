@@ -24,34 +24,45 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings ("SpringJavaAutowiringInspection")
 @Component
-public class BranchQDSL
+public class BranchQueryDSL
 {
-    private final Logger log = LoggerFactory.getLogger(BranchQDSL.class);
+    private final Logger log = LoggerFactory.getLogger(BranchQueryDSL.class);
 
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public BranchQDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public BranchQueryDSL(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider)
     {
-        this.queryFactory = queryFactory;
-        this.schemaProvider = schemaProvider;
+        this.queryFactory = checkNotNull(queryFactory);
+        this.schemaProvider = checkNotNull(schemaProvider);
     }
 
-    public List<Branch> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
+    /**
+     * Retrieve branches associated with the supplied issue keys and dvcsType
+     *
+     * @param issueKeys The issue keys to query by
+     * @param dvcsType The optional dvcsType to restrict to
+     * @return Branches associated with the supplied issue keys and dvcsType
+     */
+    @Nonnull
+    public List<Branch> getByIssueKeys(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, Branch> result = queryFactory.streamyFold(new HashMap<Integer, Branch>(), closure);
+        Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
 
         return ImmutableList.copyOf(result.values());
     }
 
     @VisibleForTesting
-    static class PullRequestByIssueKeyClosure implements QueryFactory.StreamyFoldClosure<Map<Integer, Branch>>
+    static class PullRequestByIssueKeyClosure implements QueryFactory.HalfStreamyFoldClosure<Map<Integer, Branch>>
     {
         final String dvcsType;
         final Iterable<String> issueKeys;
@@ -61,7 +72,8 @@ public class BranchQDSL
         final QRepositoryMapping repositoryMapping;
         final QOrganizationMapping orgMapping;
 
-        PullRequestByIssueKeyClosure(final String dvcsType, final Iterable<String> issueKeys, final SchemaProvider schemaProvider)
+        PullRequestByIssueKeyClosure(@Nullable final String dvcsType, @Nonnull final Iterable<String> issueKeys,
+                @Nonnull final SchemaProvider schemaProvider)
         {
             super();
             this.dvcsType = dvcsType;
@@ -73,7 +85,7 @@ public class BranchQDSL
         }
 
         @Override
-        public Function<SelectQuery, StreamyResult> query()
+        public Function<SelectQuery, StreamyResult> getQuery()
         {
             return new Function<SelectQuery, StreamyResult>()
             {
@@ -110,7 +122,7 @@ public class BranchQDSL
             return new Function2<Map<Integer, Branch>, Tuple, Map<Integer, Branch>>()
             {
                 @Override
-                public Map<Integer, Branch> apply(final Map<Integer, Branch> integerBranchMap, final Tuple tuple)
+                public Map<Integer, Branch> apply(@Nonnull final Map<Integer, Branch> integerBranchMap, @Nonnull final Tuple tuple)
                 {
                     Integer id = tuple.get(branchMapping.ID);
                     Branch branch = integerBranchMap.get(id);
