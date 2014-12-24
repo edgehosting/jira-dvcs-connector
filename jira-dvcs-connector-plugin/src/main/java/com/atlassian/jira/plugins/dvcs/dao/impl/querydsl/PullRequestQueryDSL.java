@@ -76,10 +76,16 @@ public class PullRequestQueryDSL
     {
         private final String dvcsType;
         private final Iterable<String> issueKeys;
+
+        @VisibleForTesting
         final QRepositoryPullRequestMapping prMapping;
+        @VisibleForTesting
         final QRepositoryPullRequestIssueKeyMapping issueMapping;
+        @VisibleForTesting
         final QPullRequestParticipantMapping participantMapping;
+        @VisibleForTesting
         final QRepositoryMapping repositoryMapping;
+        @VisibleForTesting
         final QOrganizationMapping orgMapping;
 
         @Nonnull
@@ -171,34 +177,9 @@ public class PullRequestQueryDSL
                         pullRequestsById.put(pullRequestId, pullRequest);
                     }
 
-                    final String participantUsername = tuple.get(participantMapping.USERNAME);
-                    final Boolean participantApproved = tuple.get(participantMapping.APPROVED);
-                    final String participantRole = tuple.get(participantMapping.ROLE);
+                    addParticipant(pullRequest, tuple);
+                    addIssueKey(pullRequest, tuple);
 
-                    // We are left joining so only include the participant if it is available
-                    if (participantUsername != null || participantApproved != null || participantRole != null)
-                    {
-                        boolean participantApprovedPrim = participantApproved == null ? false : participantApproved;
-                        Participant participant = new Participant(participantUsername,
-                                participantApprovedPrim, participantRole);
-
-                        if (pullRequest.getParticipants() == null)
-                        {
-                            pullRequest.setParticipants(new ArrayList<Participant>());
-                        }
-
-                        if (!pullRequest.getParticipants().contains(participant))
-                        {
-                            pullRequest.getParticipants().add(participant);
-                        }
-                    }
-
-                    final String issueKey = tuple.get(issueMapping.ISSUE_KEY);
-
-                    if (!pullRequest.getIssueKeys().contains(issueKey))
-                    {
-                        pullRequest.getIssueKeys().add(issueKey);
-                    }
                     return pullRequestsById;
                 }
             };
@@ -244,6 +225,40 @@ public class PullRequestQueryDSL
             pullRequest.setDestination(new PullRequestRef(destinationBranch, repositoryLabel, repositoryUrl));
 
             return pullRequest;
+        }
+
+        private void addParticipant(@Nonnull PullRequest pullRequest, @Nonnull final Tuple tuple)
+        {
+            final String username = tuple.get(participantMapping.USERNAME);
+            final Boolean approved = tuple.get(participantMapping.APPROVED);
+            final String role = tuple.get(participantMapping.ROLE);
+
+            // We are left joining so only include the participant if it is available
+            if (username != null || approved != null || role != null)
+            {
+                Participant participant = new Participant(username,
+                        approved == null ? false : approved, role);
+
+                if (pullRequest.getParticipants() == null)
+                {
+                    pullRequest.setParticipants(new ArrayList<Participant>());
+                }
+
+                if (!pullRequest.getParticipants().contains(participant))
+                {
+                    pullRequest.getParticipants().add(participant);
+                }
+            }
+        }
+
+        private void addIssueKey(@Nonnull PullRequest pullRequest, @Nonnull final Tuple tuple)
+        {
+            final String issueKey = tuple.get(issueMapping.ISSUE_KEY);
+
+            if (!pullRequest.getIssueKeys().contains(issueKey))
+            {
+                pullRequest.getIssueKeys().add(issueKey);
+            }
         }
     }
 }
