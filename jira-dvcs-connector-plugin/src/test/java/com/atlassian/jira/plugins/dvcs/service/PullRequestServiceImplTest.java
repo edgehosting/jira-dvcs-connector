@@ -2,12 +2,16 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QDSLFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSL;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.google.common.collect.ImmutableList;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,9 +19,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -41,8 +47,14 @@ public class PullRequestServiceImplTest
     static final String SOURCE_REPO = "my_repo";
     static final int COMMENT_COUNT = 23;
 
+    private static final String ISSUE_KEY = "HIJ-222";
+    private static final ImmutableList<String> ISSUE_KEYS = ImmutableList.of(ISSUE_KEY);
+
     @Mock
     RepositoryPullRequestDao dao;
+
+    @Mock
+    PullRequestQueryDSL pullRequestQueryDSL;
 
     @Mock
     RepositoryPullRequestMapping origPr;
@@ -58,6 +70,9 @@ public class PullRequestServiceImplTest
 
     @Mock
     Repository repository;
+
+    @Mock
+    QDSLFeatureHelper qdslFeatureHelper;
 
     @InjectMocks
     PullRequestServiceImpl service;
@@ -177,5 +192,27 @@ public class PullRequestServiceImplTest
         when(pullRequest.getSourceRepo()).thenReturn(SOURCE_REPO);
         when(pullRequest.getCommentCount()).thenReturn(COMMENT_COUNT);
         when(pullRequest.getToRepositoryId()).thenReturn(REPO_ID);
+    }
+
+    @Test
+    public void testWithQDSLEnabled()
+    {
+        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(new ArrayList<PullRequest>());
+
+        service.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+
+        verify(pullRequestQueryDSL).getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+    }
+
+    @Test
+    public void testWithQDSLDisabled()
+    {
+        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        final List<RepositoryPullRequestMapping> stubList = new ArrayList<RepositoryPullRequestMapping>();
+        when(dao.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(stubList);
+
+        service.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        verify(dao).getByIssueKeys(ISSUE_KEYS, BITBUCKET);
     }
 }

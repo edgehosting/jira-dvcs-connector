@@ -22,13 +22,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
-public class ChangesetQDSLByIssueKeyClosureTest
+public class ChangesetQueryDSLByIssueKeyClosureTest
 {
     private static final Integer CHANGESET_MAPPING_ID = 5;
     private static final Integer REPOSITORY_MAPPING_ID = 10;
     private static final String ISSUE_KEY = "HHH-123";
-
-    private ChangesetQDSL changesetQDSL;
 
     @Mock
     private QueryFactory queryFactory;
@@ -39,7 +37,7 @@ public class ChangesetQDSLByIssueKeyClosureTest
     @Mock
     private Tuple tuple;
 
-    private ChangesetQDSL.ByIssueKeyClosure issueKeyProcesor;
+    private ChangesetQueryDSL.ByIssueKeyClosure issueKeyProcesor;
     private Map<Integer, Changeset> changesetsById;
     private Changeset existingChangeset;
 
@@ -52,11 +50,10 @@ public class ChangesetQDSLByIssueKeyClosureTest
         existingChangeset.setId(CHANGESET_MAPPING_ID);
         existingChangeset.getIssueKeys().add(ISSUE_KEY);
 
-        changesetQDSL = new ChangesetQDSL(queryFactory, schemaProvider);
         changesetsById = new HashMap<Integer, Changeset>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
-        issueKeyProcesor = new ChangesetQDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider, true);
+        issueKeyProcesor = new ChangesetQueryDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider, true);
 
         when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
         when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);

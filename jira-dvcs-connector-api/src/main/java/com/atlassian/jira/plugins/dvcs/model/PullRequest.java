@@ -2,10 +2,11 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PullRequest
+public class PullRequest implements IssueKeyedEntity
 {
     private int id;
     private long remoteId;
@@ -18,10 +19,12 @@ public class PullRequest
     private Date createdOn;
     private Date updatedOn;
     private String author;
-    private List<Participant> participants;
+    private List<Participant> participants = new ArrayList<Participant>();
     private int commentCount;
     private List<Changeset> commits;
     private String executedBy;
+
+    private List<String> issueKeys = new ArrayList<String>();
 
     @JsonCreator
     private PullRequest() {}
@@ -180,4 +183,15 @@ public class PullRequest
     {
         this.executedBy = executedBy;
     }
+
+    public List<String> getIssueKeys()
+    {
+        return issueKeys;
+    }
+
+    public void setIssueKeys(final List<String> issueKeys)
+    {
+        this.issueKeys = issueKeys;
+    }
+
 }

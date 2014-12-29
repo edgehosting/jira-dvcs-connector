@@ -21,10 +21,17 @@ public class RepositoryAOPopulator extends AOPopulator
 
     public RepositoryMapping createRepository(OrganizationMapping organizationMapping, final boolean deleted, final boolean linked)
     {
+        return createRepository(organizationMapping, deleted, linked, "user/someRepo");
+    }
+
+    public RepositoryMapping createRepository(OrganizationMapping organizationMapping, final boolean deleted,
+            final boolean linked, String slug)
+    {
         final Map<String, Object> params = ImmutableMap.<String, Object>of(
                 RepositoryMapping.DELETED, deleted,
                 RepositoryMapping.LINKED, linked,
-                RepositoryMapping.ORGANIZATION_ID, organizationMapping.getID());
+                RepositoryMapping.ORGANIZATION_ID, organizationMapping.getID(),
+                RepositoryMapping.SLUG, slug);
         RepositoryMapping repository = create(RepositoryMapping.class, params);
 
         return repository;

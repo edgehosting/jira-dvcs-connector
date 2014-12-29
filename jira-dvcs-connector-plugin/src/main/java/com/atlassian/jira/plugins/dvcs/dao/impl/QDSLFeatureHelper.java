@@ -22,7 +22,11 @@ public class QDSLFeatureHelper
         this.featureManager = featureManager;
     }
 
-    public boolean isChangesetRetrievalUsingQDSLEnabled()
+    /**
+     * Check the dark feature flag {@link #RETRIEVE_USING_QDSL}
+     * @return true if the dark feature is set
+     */
+    public boolean isRetrievalUsingQueryDSLEnabled()
     {
         return featureManager.isEnabled(RETRIEVE_USING_QDSL);
     }

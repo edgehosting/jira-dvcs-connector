@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.querydsl.v3;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
 import com.mysema.query.sql.ColumnMetadata;
 import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.types.expr.SimpleExpression;
 import com.mysema.query.types.path.NumberPath;
 import com.mysema.query.types.path.StringPath;
 
@@ -20,7 +21,7 @@ import static com.mysema.query.types.PathMetadataFactory.forVariable;
  *
  * Future approach is documented at https://extranet.atlassian.com/x/AAuQj
  */
-public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChangesetMapping>
+public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChangesetMapping> implements IssueKeyedMapping
 {
 
     private static final long serialVersionUID = 1225462570L;
@@ -63,5 +64,11 @@ public class QIssueToChangesetMapping extends RelationalPathBase<QIssueToChanges
         addMetadata(ISSUE_KEY, ColumnMetadata.named("ISSUE_KEY").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(PROJECT_KEY, ColumnMetadata.named("PROJECT_KEY").ofType(Types.VARCHAR)); // .withSize(0)); // until detect primitive types, int ..
         addMetadata(CHANGESET_ID, ColumnMetadata.named("CHANGESET_ID").ofType(Types.INTEGER));
+    }
+
+    @Override
+    public SimpleExpression getIssueKeyExpression()
+    {
+        return ISSUE_KEY;
     }
 }
