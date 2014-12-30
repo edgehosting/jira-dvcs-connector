@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint;
 
-import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.pageobjects.RestUrlBuilder;
 import com.google.common.base.Function;
@@ -31,12 +30,12 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
     /**
      * Create a local restpoint
      *
-     * @param entityClass The type of entity that will be returned from the getEntity methods
+     * @param entityClass The type of entity that will be returned from {@link #getEntity(String)}
      * @param urlSuffix The suffix between 'jira-dev/' and the issue key part of the request
      */
     public EntityLocalRestpoint(@Nonnull final Class<T> entityClass, @Nonnull final String urlSuffix)
     {
-        if (StringUtils.isBlank(urlSuffix))
+        if(StringUtils.isBlank(urlSuffix))
         {
             throw new IllegalArgumentException("URL suffix for entity must not be blank");
         }
@@ -45,35 +44,27 @@ public class EntityLocalRestpoint<T extends RestDevResponse>
     }
 
     /**
-     * Try and fetch the entity for issue key, will retry every 100 millis for 100 times, a bit busy but this is code
-     * running on the test server.
+     * Fetch the T that matches the issueKey located at the jira-dev url suffix
      *
-     * @param issueKey The issue key to search for
-     * @param predicate The predicate to decide if the right information of the issue key is returned
-     * @return The entity of type T
+     * @param issueKey The issue key to use as a query param
+     * @return The entity retrieved for this issue key
      */
-    public T getEntity(String issueKey, Function<T, Boolean> predicate)
+    private T getEntity(String issueKey)
     {
-        return getEntity(issueKey, predicate, null);
+        String urlText = String.format("/rest/bitbucket/1.0/jira-dev/%s?issue=%s", urlSuffix, issueKey);
+        RestUrlBuilder url = new RestUrlBuilder(urlText);
+        return fetchFromUrl(url);
     }
 
     /**
      * Try and fetch the entity for issue key, will retry every 100 millis for 100 times, a bit busy but this is code
      * running on the test server.
-     *
-     * @param issueKey The issue key to search for
-     * @param predicate The predicate to decide if the right information of the issue key is returned
-     * @param jira The @{link JiraTestedProduct} to use to build the URL
-     * @return The entity of type T
      */
-    public T getEntity(String issueKey, Function<T, Boolean> predicate, JiraTestedProduct jira)
+    public T getEntity(String issueKey, Function<T, Boolean> predicate)
     {
-        String urlText = String.format("/rest/bitbucket/1.0/jira-dev/%s?issue=%s", urlSuffix, issueKey);
-        RestUrlBuilder url = jira == null ? new RestUrlBuilder(urlText) : new RestUrlBuilder(jira, urlText);
-
         for (int i = 0; i < NUMBER_OF_RETRIES; i++)
         {
-            T entity = fetchFromUrl(url);
+            T entity = getEntity(issueKey);
             if (predicate.apply(entity))
             {
                 return entity;
