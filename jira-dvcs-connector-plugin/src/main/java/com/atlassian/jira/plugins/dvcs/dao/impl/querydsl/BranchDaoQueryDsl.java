@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
+import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QBranchMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToBranchMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -28,15 +31,19 @@ import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTI
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+/**
+ * An partial implementation of {@link com.atlassian.jira.plugins.dvcs.dao.BranchDao} that uses Query DSL for retrieval.
+ * Only @getBranchesForIssue is implemented, other operations will throw {@link java.lang.UnsupportedOperationException}
+ */
 @SuppressWarnings ("SpringJavaAutowiringInspection")
-@Component
-public class BranchQueryDSL
+@Component("branchDaoQueryDsl")
+public class BranchDaoQueryDsl implements BranchDao
 {
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public BranchQueryDSL(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider)
+    public BranchDaoQueryDsl(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider)
     {
         this.queryFactory = checkNotNull(queryFactory);
         this.schemaProvider = checkNotNull(schemaProvider);
@@ -50,7 +57,8 @@ public class BranchQueryDSL
      * @return Branches associated with the supplied issue keys and dvcsType
      */
     @Nonnull
-    public List<Branch> getByIssueKeys(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
+    @Override
+    public List<Branch> getBranchesForIssue(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
         PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
         Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
@@ -144,5 +152,65 @@ public class BranchQueryDSL
                 }
             };
         }
+    }
+
+    @Override
+    public void createBranchHead(final int repositoryId, final BranchHead branchHead)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public List<BranchHead> getBranchHeads(final int repositoryId)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void removeBranchHead(final int repositoryId, final BranchHead branchHead)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void removeAllBranchHeadsInRepository(final int repositoryId)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public List<Branch> getBranches(final int repositoryId)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void removeBranch(final int repositoryId, final Branch branch)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void removeAllBranchesInRepository(final int repositoryId)
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public List<Branch> getBranchesForRepository(final int repositoryId)
+    {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

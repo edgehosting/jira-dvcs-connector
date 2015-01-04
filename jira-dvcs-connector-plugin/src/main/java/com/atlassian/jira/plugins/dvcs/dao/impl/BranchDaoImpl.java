@@ -30,7 +30,7 @@ import java.util.Set;
 import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+@Component("branchDaoImpl")
 public class BranchDaoImpl implements BranchDao
 {
     private static final Logger log = LoggerFactory.getLogger(BranchDaoImpl.class);

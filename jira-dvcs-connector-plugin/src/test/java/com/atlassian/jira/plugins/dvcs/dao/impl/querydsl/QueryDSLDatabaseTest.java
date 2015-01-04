@@ -57,7 +57,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 
     protected ChangesetQueryDSL changesetQueryDSL;
     protected PullRequestQueryDSL pullRequestQueryDSL;
-    protected BranchQueryDSL branchQueryDSL;
+    protected BranchDaoQueryDsl branchDaoQueryDsl;
 
     protected RepositoryMapping enabledRepository;
     protected OrganizationMapping bitbucketOrganization;
@@ -90,7 +90,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 
         changesetQueryDSL = new ChangesetQueryDSL(queryFactory, schemaProvider);
         pullRequestQueryDSL = new PullRequestQueryDSL(queryFactory, schemaProvider);
-        branchQueryDSL = new BranchQueryDSL(queryFactory, schemaProvider);
+        branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 

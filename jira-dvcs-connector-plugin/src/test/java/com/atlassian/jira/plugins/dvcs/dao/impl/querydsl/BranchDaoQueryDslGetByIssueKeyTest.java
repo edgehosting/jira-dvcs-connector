@@ -25,13 +25,13 @@ import static org.hamcrest.Matchers.equalTo;
  * This is a database integration test that uses a working database
  * and connection.
  */
-public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
+public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
     @Test
     @NonTransactional
     public void testSimpleSearchMapsProperly() throws Exception
     {
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(ISSUE_KEYS, BITBUCKET);
 
         assertThat(branches.size(), equalTo(1));
 
@@ -42,7 +42,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     @NonTransactional
     public void testSimpleSearchWithNoDVCSType() throws Exception
     {
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(ISSUE_KEYS, null);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(ISSUE_KEYS, null);
 
         assertThat(branches.size(), equalTo(1));
 
@@ -64,7 +64,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondKey = "SCN-2";
         branchAOPopulator.associateWithIssue(branchMappingWithIssue, secondKey);
 
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
 
         assertThat(branches.size(), equalTo(1));
 
@@ -80,7 +80,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         RepositoryMapping repo2 = repositoryAOPopulator.createRepository(org2, false, true, "fh/fork");
         branchAOPopulator.createBranch(branchMappingWithIssue.getName(), "other key", repo2);
 
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(ISSUE_KEYS, BITBUCKET);
 
         assertThat(branches.size(), equalTo(1));
         assertThat(branches.get(0).getId(), equalTo(branchMappingWithIssue.getID()));
@@ -93,7 +93,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondIssueKey = "IK-2";
         BranchMapping secondBranch = branchAOPopulator.createBranch("something else", secondIssueKey, enabledRepository);
 
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
 
         assertThat(branches.size(), equalTo(2));
 
@@ -118,7 +118,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
             branchAOPopulator.createBranch(ISSUE_KEY + "_branch_no_" + i, ISSUE_KEY, enabledRepository);
         }
 
-        List<Branch> branches = branchQueryDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY), BITBUCKET);
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(Arrays.asList(ISSUE_KEY), BITBUCKET);
 
         assertThat(branches.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
         // sorted by name so first entry should be our default mapping

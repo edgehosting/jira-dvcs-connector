@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.BranchQueryDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.BranchDaoQueryDsl;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
@@ -57,7 +57,7 @@ public class BranchServiceImplTest
     private QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Mock
-    private BranchQueryDSL branchQueryDSL;
+    private BranchDaoQueryDsl branchDaoQueryDsl;
 
     @InjectMocks
     private BranchServiceImpl branchService = new BranchServiceImpl();
@@ -344,7 +344,7 @@ public class BranchServiceImplTest
     {
         when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
         final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
-        when(branchQueryDSL.getByIssueKeys(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
+        when(branchDaoQueryDsl.getBranchesForIssue(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
 
         List<Branch> result = branchService.getByIssueKey(Lists.<String>newArrayList(), "");
         assertEquals(result, expectedResult);
