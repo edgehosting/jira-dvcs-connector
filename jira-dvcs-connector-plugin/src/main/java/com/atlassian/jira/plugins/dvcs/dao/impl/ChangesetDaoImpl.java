@@ -57,17 +57,17 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
     private final ChangesetQueryDSL changesetQueryDSL;
-    private final QueryDSLFeatureHelper queryDSLFeatureHelper;
+    private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
     public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
-            ChangesetQueryDSL changesetQueryDSL, final QueryDSLFeatureHelper queryDSLFeatureHelper)
+            ChangesetQueryDSL changesetQueryDSL, final QueryDslFeatureHelper queryDslFeatureHelper)
     {
         this.activeObjects = checkNotNull(activeObjects);
-        this.queryHelper = queryHelper;
+        this.queryHelper = checkNotNull(queryHelper);
         this.transformer = new ChangesetTransformer(activeObjects, this);
-        this.changesetQueryDSL = changesetQueryDSL;
-        this.queryDSLFeatureHelper = queryDSLFeatureHelper;
+        this.changesetQueryDSL = checkNotNull(changesetQueryDSL);
+        this.queryDslFeatureHelper = checkNotNull(queryDslFeatureHelper);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -379,7 +379,7 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        if (queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
         {
             return changesetQueryDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
         }

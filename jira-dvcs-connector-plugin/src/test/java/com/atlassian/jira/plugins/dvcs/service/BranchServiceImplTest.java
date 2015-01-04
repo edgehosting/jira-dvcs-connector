@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDSLFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.BranchQueryDSL;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
@@ -54,7 +54,7 @@ public class BranchServiceImplTest
     private ThreadEvents threadEvents;
 
     @Mock
-    private QueryDSLFeatureHelper queryDSLFeatureHelper;
+    private QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Mock
     private BranchQueryDSL branchQueryDSL;
@@ -342,7 +342,7 @@ public class BranchServiceImplTest
     @Test
     public void testWithDarkFeatureEnabled()
     {
-        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
         final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
         when(branchQueryDSL.getByIssueKeys(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
 
@@ -353,7 +353,7 @@ public class BranchServiceImplTest
     @Test
     public void testWithDarkFeatureDisabled()
     {
-        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
         final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
         when(branchDao.getBranchesForIssue(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
 

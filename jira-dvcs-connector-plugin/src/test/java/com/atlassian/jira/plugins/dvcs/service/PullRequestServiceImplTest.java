@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDSLFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSL;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
@@ -72,7 +72,7 @@ public class PullRequestServiceImplTest
     Repository repository;
 
     @Mock
-    QueryDSLFeatureHelper queryDSLFeatureHelper;
+    QueryDslFeatureHelper queryDslFeatureHelper;
 
     @InjectMocks
     PullRequestServiceImpl service;
@@ -197,7 +197,7 @@ public class PullRequestServiceImplTest
     @Test
     public void testWithQDSLEnabled()
     {
-        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
         when(pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(new ArrayList<PullRequest>());
 
         service.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
@@ -208,7 +208,7 @@ public class PullRequestServiceImplTest
     @Test
     public void testWithQDSLDisabled()
     {
-        when(queryDSLFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
         final List<RepositoryPullRequestMapping> stubList = new ArrayList<RepositoryPullRequestMapping>();
         when(dao.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(stubList);
 

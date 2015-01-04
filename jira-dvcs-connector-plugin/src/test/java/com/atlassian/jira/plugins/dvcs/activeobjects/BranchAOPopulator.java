@@ -20,7 +20,7 @@ public class BranchAOPopulator extends AOPopulator
     {
         BranchMapping branchMapping = create(BranchMapping.class, getDefaultPRParams(name, repositoryMapping.getID()));
 
-        associateToIssue(branchMapping, issueKey);
+        associateWithIssue(branchMapping, issueKey);
 
         return branchMapping;
     }
@@ -35,7 +35,7 @@ public class BranchAOPopulator extends AOPopulator
         return builder.build();
     }
 
-    public IssueToBranchMapping associateToIssue(BranchMapping branchMapping, String issueKey)
+    public IssueToBranchMapping associateWithIssue(BranchMapping branchMapping, String issueKey)
     {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(IssueToBranchMapping.ISSUE_KEY, issueKey);

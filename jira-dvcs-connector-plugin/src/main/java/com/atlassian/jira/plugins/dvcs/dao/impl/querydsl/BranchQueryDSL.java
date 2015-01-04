@@ -15,9 +15,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +26,12 @@ import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @SuppressWarnings ("SpringJavaAutowiringInspection")
 @Component
 public class BranchQueryDSL
 {
-    private final Logger log = LoggerFactory.getLogger(BranchQueryDSL.class);
-
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
@@ -75,13 +71,12 @@ public class BranchQueryDSL
         PullRequestByIssueKeyClosure(@Nullable final String dvcsType, @Nonnull final Iterable<String> issueKeys,
                 @Nonnull final SchemaProvider schemaProvider)
         {
-            super();
             this.dvcsType = dvcsType;
             this.issueKeys = issueKeys;
-            this.branchMapping = QBranchMapping.withSchema(schemaProvider);
-            this.issueMapping = QIssueToBranchMapping.withSchema(schemaProvider);
-            this.repositoryMapping = QRepositoryMapping.withSchema(schemaProvider);
-            this.orgMapping = QOrganizationMapping.withSchema(schemaProvider);
+            this.branchMapping = QBranchMapping.withSchema(checkNotNull(schemaProvider));
+            this.issueMapping = QIssueToBranchMapping.withSchema(checkNotNull(schemaProvider));
+            this.repositoryMapping = QRepositoryMapping.withSchema(checkNotNull(schemaProvider));
+            this.orgMapping = QOrganizationMapping.withSchema(checkNotNull(schemaProvider));
         }
 
         @Override
@@ -102,7 +97,7 @@ public class BranchQueryDSL
                                     .and(repositoryMapping.LINKED.eq(true))
                                     .and(predicate));
 
-                    if (StringUtils.isNotBlank(dvcsType))
+                    if (isNotBlank(dvcsType))
                     {
                         sql = sql.where(orgMapping.DVCS_TYPE.eq(dvcsType));
                     }

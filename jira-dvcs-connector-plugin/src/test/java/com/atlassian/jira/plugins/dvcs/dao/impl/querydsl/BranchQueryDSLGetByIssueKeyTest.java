@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * This is a database integration test that uses the AO database test parent class to provide us with a working database
+ * This is a database integration test that uses a working database
  * and connection.
  */
 public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
@@ -62,7 +62,7 @@ public class BranchQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     public void testTwoIssueKeys()
     {
         final String secondKey = "SCN-2";
-        branchAOPopulator.associateToIssue(branchMappingWithIssue, secondKey);
+        branchAOPopulator.associateWithIssue(branchMappingWithIssue, secondKey);
 
         List<Branch> branches = branchQueryDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
 
