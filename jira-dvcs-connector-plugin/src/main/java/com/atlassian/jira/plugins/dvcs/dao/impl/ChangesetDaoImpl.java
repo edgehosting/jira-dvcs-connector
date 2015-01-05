@@ -47,8 +47,8 @@ import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTI
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component ("changesetDaoImpl")
-public class ChangesetDaoImpl implements ChangesetDao
+@Component
+public class ChangesetDaoImpl
 {
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
 
@@ -100,7 +100,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changesets;
     }
 
-    @Override
     public void removeAllInRepository(final int repositoryId)
     {
         long startTime = System.currentTimeMillis();
@@ -145,7 +144,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         log.debug("Changesets in repository {} were deleted in {} ms", repositoryId, System.currentTimeMillis() - startTime);
     }
 
-    @Override
     public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
     {
         createOrAssociate(changeset, extractedIssues);
@@ -153,7 +151,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
-    @Override
     public boolean createOrAssociate(final Changeset changeset, final Set<String> extractedIssues)
     {
         final MutableBoolean wasCreated = new MutableBoolean(false);
@@ -185,7 +182,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return wasCreated.booleanValue();
     }
 
-    @Override
     public Changeset update(final Changeset changeset)
     {
         activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
@@ -210,7 +206,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
-    @Override
     public Changeset migrateFilesData(final Changeset changeset, final String dvcsType)
     {
         activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
@@ -338,7 +333,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return issueKey.substring(0, issueKey.indexOf("-"));
     }
 
-    @Override
     public Changeset getByNode(final int repositoryId, final String changesetNode)
     {
         final ChangesetMapping changesetMapping = activeObjects.executeInTransaction(new TransactionCallback<ChangesetMapping>()
@@ -364,20 +358,17 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changeset;
     }
 
-    @Override
     public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
     {
         return getByIssueKey(issueKeys, null, newestFirst);
     }
 
-    @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
         List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
         return transform(changesetMappings, dvcsType);
     }
 
-    @Override
     public List<Changeset> getByRepository(final int repositoryId)
     {
         final List<ChangesetMapping> changesetMappings = activeObjects.executeInTransaction(new TransactionCallback<List<ChangesetMapping>>()
@@ -425,7 +416,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return changesetMappings;
     }
 
-    @Override
     public List<Changeset> getLatestChangesets(final int maxResults, final GlobalFilter gf)
     {
         if (maxResults <= 0)
@@ -451,8 +441,7 @@ public class ChangesetDaoImpl implements ChangesetDao
         return transform(changesetMappings);
     }
 
-    @Override
-    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final String[] columns, final ForEachChangesetClosure closure)
+    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final String[] columns, final ChangesetDao.ForEachChangesetClosure closure)
     {
         Query query = createLatestChangesetsAvailableForSmartcommitQuery(repositoryId, columns);
         activeObjects.stream(ChangesetMapping.class, query, new EntityStreamCallback<ChangesetMapping, Integer>()
@@ -465,7 +454,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    @Override
     public int getNumberOfIssueKeysToChangeset()
     {
         Query query = Query.select(IssueToChangesetMapping.ISSUE_KEY)
@@ -529,7 +517,6 @@ public class ChangesetDaoImpl implements ChangesetDao
                 .order(ChangesetMapping.DATE + " DESC");
     }
 
-    @Override
     public Set<String> findReferencedProjects(int repositoryId)
     {
         Query query = Query.select(IssueToChangesetMapping.PROJECT_KEY).distinct()
@@ -555,7 +542,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         return projectKeys;
     }
 
-    @Override
     public Set<String> findEmails(int repositoryId, String author)
     {
         Query query = Query.select(ChangesetMapping.AUTHOR_EMAIL).distinct()
@@ -599,7 +585,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         void setProjectKey();
     }
 
-    @Override
     public void markSmartcommitAvailability(int id, boolean available)
     {
         final ChangesetMapping changesetMapping = activeObjects.get(ChangesetMapping.class, id);
@@ -615,7 +600,6 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
     }
 
-    @Override
     public int getChangesetCount(final int repositoryId)
     {
         return activeObjects.executeInTransaction(new TransactionCallback<Integer>()
@@ -629,5 +613,4 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
         });
     }
-
 }

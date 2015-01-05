@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 import com.atlassian.fugue.Function2;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
@@ -29,7 +30,6 @@ import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -55,12 +55,12 @@ public class ChangesetDaoQueryDsl implements ChangesetDao
 {
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
-    private final ChangesetDao changesetDao;
+    private final ChangesetDaoImpl changesetDao;
     private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
     public ChangesetDaoQueryDsl(final QueryFactory queryFactory, final SchemaProvider schemaProvider,
-            @Qualifier ("changesetDaoImpl") final ChangesetDao changesetDao, final QueryDslFeatureHelper queryDslFeatureHelper)
+            final ChangesetDaoImpl changesetDao, final QueryDslFeatureHelper queryDslFeatureHelper)
     {
         this.queryFactory = checkNotNull(queryFactory);
         this.schemaProvider = checkNotNull(schemaProvider);

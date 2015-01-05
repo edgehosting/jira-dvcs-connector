@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -19,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -44,12 +44,12 @@ public class BranchDaoQueryDsl implements BranchDao
 {
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
-    private final BranchDao branchDao;
+    private final BranchDaoImpl branchDao;
     private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
     public BranchDaoQueryDsl(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider,
-            @Nonnull @Qualifier ("branchDaoImpl") final BranchDao branchDao, @Nonnull final QueryDslFeatureHelper queryDslFeatureHelper)
+            @Nonnull final BranchDaoImpl branchDao, @Nonnull final QueryDslFeatureHelper queryDslFeatureHelper)
     {
         this.queryFactory = checkNotNull(queryFactory);
         this.schemaProvider = checkNotNull(schemaProvider);

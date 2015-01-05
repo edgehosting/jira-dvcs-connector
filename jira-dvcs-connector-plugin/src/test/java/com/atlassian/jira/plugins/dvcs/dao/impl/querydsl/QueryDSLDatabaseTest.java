@@ -17,8 +17,8 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
@@ -71,9 +71,9 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
     protected RepositoryPullRequestMapping pullRequestMappingWithIssue;
     protected PullRequestParticipantMapping pullRequestParticipant;
     protected BranchMapping branchMappingWithIssue;
-    protected ChangesetDao changesetDao;
+    protected ChangesetDaoImpl changesetDao;
     protected QueryDslFeatureHelper queryDslFeatureHelper;
-    protected BranchDao branchDao;
+    protected BranchDaoImpl branchDao;
 
     @Before
     public void setup() throws SQLException
@@ -99,10 +99,10 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
         queryDslFeatureHelper = Mockito.mock(QueryDslFeatureHelper.class);
         when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
 
-        changesetDao = Mockito.mock(ChangesetDao.class);
+        changesetDao = Mockito.mock(ChangesetDaoImpl.class);
         changesetDaoQueryDsl = new ChangesetDaoQueryDsl(queryFactory, schemaProvider, changesetDao, queryDslFeatureHelper);
         pullRequestDaoQueryDsl = new PullRequestDaoQueryDsl(queryFactory, schemaProvider);
-        branchDao = Mockito.mock(BranchDao.class);
+        branchDao = Mockito.mock(BranchDaoImpl.class);
         branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider, branchDao, queryDslFeatureHelper);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);

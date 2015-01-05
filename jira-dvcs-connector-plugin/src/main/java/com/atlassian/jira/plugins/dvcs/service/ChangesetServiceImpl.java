@@ -28,7 +28,6 @@ import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -57,7 +56,7 @@ public class ChangesetServiceImpl implements ChangesetService
     private ThreadEvents threadEvents;
 
     @Autowired
-    public ChangesetServiceImpl(@Qualifier("changesetDaoQueryDsl") final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
+    public ChangesetServiceImpl(final ChangesetDao changesetDao, final ClusterLockServiceFactory clusterLockServiceFactory)
     {
         this.changesetDao = changesetDao;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();

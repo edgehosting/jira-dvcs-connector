@@ -28,7 +28,7 @@ import javax.annotation.Resource;
 @Component
 public class BranchServiceImpl implements BranchService
 {
-    @Resource (name = "branchDaoQueryDsl")
+    @Resource
     private BranchDao branchDao;
 
     @Resource
