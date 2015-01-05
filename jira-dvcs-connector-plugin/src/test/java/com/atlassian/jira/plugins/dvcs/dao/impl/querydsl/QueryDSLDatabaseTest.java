@@ -17,6 +17,9 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
@@ -31,6 +34,7 @@ import com.google.common.collect.Lists;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
 import net.java.ao.test.converters.NameConverters;
 import org.junit.Before;
+import org.mockito.Mockito;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static org.mockito.Mockito.when;
 
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
 public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
@@ -90,7 +95,10 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 
         changesetQueryDSL = new ChangesetQueryDSL(queryFactory, schemaProvider);
         pullRequestQueryDSL = new PullRequestQueryDSL(queryFactory, schemaProvider);
-        branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider);
+        final QueryDslFeatureHelper queryDslFeatureHelper = Mockito.mock(QueryDslFeatureHelper.class);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        final BranchDao branchDao = Mockito.mock(BranchDaoImpl.class);
+        branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider, branchDao, queryDslFeatureHelper);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 

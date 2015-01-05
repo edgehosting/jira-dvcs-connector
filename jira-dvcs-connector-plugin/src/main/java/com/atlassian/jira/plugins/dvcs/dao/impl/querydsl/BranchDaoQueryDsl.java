@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QBranchMapping;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -32,25 +34,92 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
- * An partial implementation of {@link com.atlassian.jira.plugins.dvcs.dao.BranchDao} that uses Query DSL for retrieval.
- * Only @getBranchesForIssue is implemented, other operations will throw {@link java.lang.UnsupportedOperationException}
+ * An implementation of {@link com.atlassian.jira.plugins.dvcs.dao.BranchDao} that has a delegate {@link
+ * com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl} and uses Query DSL for #getBranchesForIssue if the dark
+ * feature is set.
  */
 @SuppressWarnings ("SpringJavaAutowiringInspection")
-@Component("branchDaoQueryDsl")
+@Component ("branchDaoQueryDsl")
 public class BranchDaoQueryDsl implements BranchDao
 {
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
+    private final BranchDao branchDao;
+    private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
-    public BranchDaoQueryDsl(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider)
+    public BranchDaoQueryDsl(@Nonnull final QueryFactory queryFactory, @Nonnull final SchemaProvider schemaProvider,
+            @Nonnull @Qualifier ("branchDaoImpl") final BranchDao branchDao, @Nonnull final QueryDslFeatureHelper queryDslFeatureHelper)
     {
         this.queryFactory = checkNotNull(queryFactory);
         this.schemaProvider = checkNotNull(schemaProvider);
+        this.branchDao = checkNotNull(branchDao);
+        this.queryDslFeatureHelper = checkNotNull(queryDslFeatureHelper);
+    }
+
+    @Override
+    public void createBranchHead(final int repositoryId, final BranchHead branchHead)
+    {
+        branchDao.createBranchHead(repositoryId, branchHead);
+    }
+
+    @Override
+    public List<BranchHead> getBranchHeads(final int repositoryId)
+    {
+        return branchDao.getBranchHeads(repositoryId);
+    }
+
+    @Override
+    public void removeBranchHead(final int repositoryId, final BranchHead branchHead)
+    {
+        branchDao.removeBranchHead(repositoryId, branchHead);
+    }
+
+    @Override
+    public void removeAllBranchHeadsInRepository(final int repositoryId)
+    {
+        branchDao.removeAllBranchHeadsInRepository(repositoryId);
+    }
+
+    @Override
+    public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
+    {
+        return branchDao.getBranchesForIssue(issueKeys);
+    }
+
+    @Override
+    public List<Branch> getBranches(final int repositoryId)
+    {
+        return branchDao.getBranches(repositoryId);
+    }
+
+    @Override
+    public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
+    {
+        branchDao.createBranch(repositoryId, branch, issueKeys);
+    }
+
+    @Override
+    public void removeBranch(final int repositoryId, final Branch branch)
+    {
+        branchDao.removeBranch(repositoryId, branch);
+    }
+
+    @Override
+    public void removeAllBranchesInRepository(final int repositoryId)
+    {
+        branchDao.removeAllBranchesInRepository(repositoryId);
+    }
+
+    @Override
+    public List<Branch> getBranchesForRepository(final int repositoryId)
+    {
+        return branchDao.getBranchesForRepository(repositoryId);
     }
 
     /**
-     * Retrieve branches associated with the supplied issue keys and dvcsType
+     * Retrieve branches associated with the supplied issue keys and dvcsType, if the Query DSL dark feature is enabled
+     * it /* will use Query DSL otherwise it will use the delegate.
      *
      * @param issueKeys The issue keys to query by
      * @param dvcsType The optional dvcsType to restrict to
@@ -60,10 +129,14 @@ public class BranchDaoQueryDsl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
-        PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-        Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        {
+            PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
+            Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
 
-        return ImmutableList.copyOf(result.values());
+            return ImmutableList.copyOf(result.values());
+        }
+        return branchDao.getBranchesForIssue(issueKeys, dvcsType);
     }
 
     @VisibleForTesting
@@ -103,7 +176,8 @@ public class BranchDaoQueryDsl implements BranchDao
                             .join(orgMapping).on(orgMapping.ID.eq(repositoryMapping.ORGANIZATION_ID))
                             .where(repositoryMapping.DELETED.eq(false)
                                     .and(repositoryMapping.LINKED.eq(true))
-                                    .and(predicate));
+                                    .and(predicate))
+                            .orderBy(branchMapping.NAME.asc());
 
                     if (isNotBlank(dvcsType))
                     {
@@ -152,65 +226,5 @@ public class BranchDaoQueryDsl implements BranchDao
                 }
             };
         }
-    }
-
-    @Override
-    public void createBranchHead(final int repositoryId, final BranchHead branchHead)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public List<BranchHead> getBranchHeads(final int repositoryId)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void removeBranchHead(final int repositoryId, final BranchHead branchHead)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void removeAllBranchHeadsInRepository(final int repositoryId)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public List<Branch> getBranches(final int repositoryId)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void removeBranch(final int repositoryId, final Branch branch)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void removeAllBranchesInRepository(final int repositoryId)
-    {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public List<Branch> getBranchesForRepository(final int repositoryId)
-    {
-        throw new UnsupportedOperationException("Not implemented");
     }
 }

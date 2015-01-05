@@ -121,7 +121,5 @@ public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
         List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(Arrays.asList(ISSUE_KEY), BITBUCKET);
 
         assertThat(branches.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
-        // sorted by name so first entry should be our default mapping
-        assertThat(branches.get(0).getName(), equalTo(branchMappingWithIssue.getName()));
     }
 }

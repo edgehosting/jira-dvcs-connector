@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.event.BranchCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.DevSummaryChangedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
@@ -29,7 +28,7 @@ import javax.annotation.Resource;
 @Component
 public class BranchServiceImpl implements BranchService
 {
-    @Resource(name = "branchDaoImpl")
+    @Resource (name = "branchDaoQueryDsl")
     private BranchDao branchDao;
 
     @Resource
@@ -37,12 +36,6 @@ public class BranchServiceImpl implements BranchService
 
     @Resource
     private ThreadEvents threadEvents;
-
-    @Resource(name = "branchDaoQueryDsl")
-    private BranchDao branchQueryDSL;
-
-    @Resource
-    private QueryDslFeatureHelper queryDslFeatureHelper;
 
     private static final Logger log = LoggerFactory.getLogger(BranchServiceImpl.class);
 
@@ -199,10 +192,6 @@ public class BranchServiceImpl implements BranchService
     @Override
     public List<Branch> getByIssueKey(Iterable<String> issueKeys, String dvcsType)
     {
-        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
-        {
-            return branchQueryDSL.getBranchesForIssue(issueKeys, dvcsType);
-        }
         return branchDao.getBranchesForIssue(issueKeys, dvcsType);
     }
 
