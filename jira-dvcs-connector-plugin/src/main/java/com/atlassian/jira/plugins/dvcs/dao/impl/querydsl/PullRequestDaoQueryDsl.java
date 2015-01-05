@@ -23,8 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,17 +35,20 @@ import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Retrieves Pull Requests using Query DSL and then maps them directly to API entities, does not implement {@link
+ * com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao} because we need to return the entity used in
+ * {@link com.atlassian.jira.plugins.dvcs.service.PullRequestService#getByIssueKeys(Iterable, String)}.
+ */
 @SuppressWarnings ("SpringJavaAutowiringInspection")
 @Component
-public class PullRequestQueryDSL
+public class PullRequestDaoQueryDsl
 {
-    private static final Logger log = LoggerFactory.getLogger(PullRequestQueryDSL.class);
-
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
 
     @Autowired
-    public PullRequestQueryDSL(final QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public PullRequestDaoQueryDsl(final QueryFactory queryFactory, final SchemaProvider schemaProvider)
     {
         this.queryFactory = checkNotNull(queryFactory);
         this.schemaProvider = checkNotNull(schemaProvider);

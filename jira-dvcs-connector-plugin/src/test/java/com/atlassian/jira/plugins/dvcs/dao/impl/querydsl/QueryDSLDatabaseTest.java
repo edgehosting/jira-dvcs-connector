@@ -61,7 +61,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
     protected SchemaProvider schemaProvider;
 
     protected ChangesetDaoQueryDsl changesetDaoQueryDsl;
-    protected PullRequestQueryDSL pullRequestQueryDSL;
+    protected PullRequestDaoQueryDsl pullRequestDaoQueryDsl;
     protected BranchDaoQueryDsl branchDaoQueryDsl;
 
     protected RepositoryMapping enabledRepository;
@@ -101,7 +101,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 
         changesetDao = Mockito.mock(ChangesetDao.class);
         changesetDaoQueryDsl = new ChangesetDaoQueryDsl(queryFactory, schemaProvider, changesetDao, queryDslFeatureHelper);
-        pullRequestQueryDSL = new PullRequestQueryDSL(queryFactory, schemaProvider);
+        pullRequestDaoQueryDsl = new PullRequestDaoQueryDsl(queryFactory, schemaProvider);
         branchDao = Mockito.mock(BranchDao.class);
         branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider, branchDao, queryDslFeatureHelper);
 

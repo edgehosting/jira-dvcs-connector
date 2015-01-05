@@ -10,7 +10,7 @@
     <test name="junit" junit="true">
         <classes>
             <class name="com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetDaoQueryDslGetByIssueKeyTest" />
-            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSLGetByIssueKeyTest" />
+            <class name="com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestDaoQueryDslGetByIssueKeyTest" />
             <class name="com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.BranchDaoQueryDslGetByIssueKeyTest" />
             <class name="com.atlassian.jira.plugins.dvcs.service.remote.OrganisationKeyTest" />
             <class name="com.atlassian.jira.plugins.dvcs.service.remote.UserKeyTest" />
