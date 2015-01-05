@@ -1,12 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.fugue.Function2;
+import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
+import com.atlassian.jira.plugins.dvcs.model.GlobalFilter;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QIssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.querydsl.v3.QOrganizationMapping;
@@ -22,9 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,34 +39,146 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@Component
-public class ChangesetQueryDSL
-{
-    private final Logger log = LoggerFactory.getLogger(ChangesetQueryDSL.class);
+import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * An implementation of {@link com.atlassian.jira.plugins.dvcs.dao.ChangesetDao} that delegates to the original AO based
+ * implementation for most calls except #getByIssueKey which will use Query DSL if the dark feature is set.
+ */
+@SuppressWarnings ("SpringJavaAutowiringInspection")
+@Component ("changesetDaoQueryDsl")
+public class ChangesetDaoQueryDsl implements ChangesetDao
+{
     private final QueryFactory queryFactory;
     private final SchemaProvider schemaProvider;
+    private final ChangesetDao changesetDao;
+    private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
-    public ChangesetQueryDSL(QueryFactory queryFactory, final SchemaProvider schemaProvider)
+    public ChangesetDaoQueryDsl(final QueryFactory queryFactory, final SchemaProvider schemaProvider,
+            @Qualifier ("changesetDaoImpl") final ChangesetDao changesetDao, final QueryDslFeatureHelper queryDslFeatureHelper)
     {
-        this.queryFactory = queryFactory;
-        this.schemaProvider = schemaProvider;
+        this.queryFactory = checkNotNull(queryFactory);
+        this.schemaProvider = checkNotNull(schemaProvider);
+        this.changesetDao = checkNotNull(changesetDao);
+        this.queryDslFeatureHelper = checkNotNull(queryDslFeatureHelper);
     }
 
+    @Override
+    public void removeAllInRepository(final int repositoryId)
+    {
+        changesetDao.removeAllInRepository(repositoryId);
+    }
+
+    @Override
+    public Changeset create(final Changeset changeset, final Set<String> extractedIssues)
+    {
+        return changesetDao.create(changeset, extractedIssues);
+    }
+
+    @Override
+    public boolean createOrAssociate(final Changeset changeset, final Set<String> extractedIssues)
+    {
+        return changesetDao.createOrAssociate(changeset, extractedIssues);
+    }
+
+    @Override
+    public Changeset update(final Changeset changeset)
+    {
+        return changesetDao.update(changeset);
+    }
+
+    @Override
+    public Changeset migrateFilesData(final Changeset changeset, final String dvcsType)
+    {
+        return changesetDao.migrateFilesData(changeset, dvcsType);
+    }
+
+    @Override
+    public Changeset getByNode(final int repositoryId, final String changesetNode)
+    {
+        return changesetDao.getByNode(repositoryId, changesetNode);
+    }
+
+    @Override
+    public List<Changeset> getByIssueKey(final Iterable<String> issueKeys, final boolean newestFirst)
+    {
+        return changesetDao.getByIssueKey(issueKeys, newestFirst);
+    }
+
+    @Override
+    public List<Changeset> getByRepository(final int repositoryId)
+    {
+        return changesetDao.getByRepository(repositoryId);
+    }
+
+    @Override
+    public List<Changeset> getLatestChangesets(final int maxResults, final GlobalFilter gf)
+    {
+        return changesetDao.getLatestChangesets(maxResults, gf);
+    }
+
+    @Override
+    public void forEachLatestChangesetsAvailableForSmartcommitDo(final int repositoryId, final String[] columns, final ForEachChangesetClosure closure)
+    {
+        changesetDao.forEachLatestChangesetsAvailableForSmartcommitDo(repositoryId, columns, closure);
+    }
+
+    @Override
+    public int getNumberOfIssueKeysToChangeset()
+    {
+        return changesetDao.getNumberOfIssueKeysToChangeset();
+    }
+
+    @Override
+    public boolean forEachIssueKeyMapping(final Organization organization, final Repository repository, final int pageSize, final IssueToMappingFunction function)
+    {
+        return changesetDao.forEachIssueKeyMapping(organization, repository, pageSize, function);
+    }
+
+    @Override
+    public void markSmartcommitAvailability(final int id, final boolean available)
+    {
+        changesetDao.markSmartcommitAvailability(id, available);
+    }
+
+    @Override
+    public Set<String> findReferencedProjects(final int repositoryId)
+    {
+        return changesetDao.findReferencedProjects(repositoryId);
+    }
+
+    @Override
+    public int getChangesetCount(final int repositoryId)
+    {
+        return changesetDao.getChangesetCount(repositoryId);
+    }
+
+    @Override
+    public Set<String> findEmails(final int repositoryId, final String author)
+    {
+        return changesetDao.findEmails(repositoryId, author);
+    }
+
+    @Override
     public List<Changeset> getByIssueKey(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
-        Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        {
+            ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
+            Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
 
-        // Still need to sort the result as we have a map of changesets, even though the results are also sorted
-        final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
-        Collections.sort(result, new ChangesetDateComparator(newestFirst));
-        return result;
+            // Still need to sort the result as we have a map of changesets, even though the results are also sorted
+            final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
+            Collections.sort(result, new ChangesetDateComparator(newestFirst));
+            return result;
+        }
+        return changesetDao.getByIssueKey(issueKeys, dvcsType, newestFirst);
     }
 
     @VisibleForTesting

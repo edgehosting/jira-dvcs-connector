@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
-public class ChangesetQueryDSLByIssueKeyClosureTest
+public class ChangesetDaoQueryDslByIssueKeyClosureTest
 {
     private static final Integer CHANGESET_MAPPING_ID = 5;
     private static final Integer REPOSITORY_MAPPING_ID = 10;
@@ -37,7 +37,7 @@ public class ChangesetQueryDSLByIssueKeyClosureTest
     @Mock
     private Tuple tuple;
 
-    private ChangesetQueryDSL.ByIssueKeyClosure issueKeyProcesor;
+    private ChangesetDaoQueryDsl.ByIssueKeyClosure issueKeyProcesor;
     private Map<Integer, Changeset> changesetsById;
     private Changeset existingChangeset;
 
@@ -53,7 +53,7 @@ public class ChangesetQueryDSLByIssueKeyClosureTest
         changesetsById = new HashMap<Integer, Changeset>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
-        issueKeyProcesor = new ChangesetQueryDSL.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider, true);
+        issueKeyProcesor = new ChangesetDaoQueryDsl.ByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider, true);
 
         when(tuple.get(issueKeyProcesor.changesetMapping.ID)).thenReturn(CHANGESET_MAPPING_ID);
         when(tuple.get(issueKeyProcesor.changesetMapping.FILE_COUNT)).thenReturn(2);

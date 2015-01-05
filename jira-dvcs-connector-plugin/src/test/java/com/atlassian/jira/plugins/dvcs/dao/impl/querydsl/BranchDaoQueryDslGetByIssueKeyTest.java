@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
@@ -20,6 +21,9 @@ import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicato
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * This is a database integration test that uses a working database
@@ -27,6 +31,18 @@ import static org.hamcrest.Matchers.equalTo;
  */
 public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
+    @Test
+    public void testCallsAOWhenDarkFeatureIsUnavailable()
+    {
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        final List<Branch> returnList = ImmutableList.of();
+        when(branchDao.getBranchesForIssue(ISSUE_KEYS, BITBUCKET)).thenReturn(returnList);
+
+        branchDaoQueryDsl.getBranchesForIssue(ISSUE_KEYS, BITBUCKET);
+
+        verify(branchDao).getBranchesForIssue(eq(ISSUE_KEYS), eq(BITBUCKET));
+    }
+
     @Test
     @NonTransactional
     public void testSimpleSearchMapsProperly() throws Exception

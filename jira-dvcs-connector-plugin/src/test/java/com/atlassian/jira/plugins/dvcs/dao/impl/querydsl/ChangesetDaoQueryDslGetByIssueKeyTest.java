@@ -24,19 +24,34 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.SQL_IN_CLA
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
  * and connection.
  */
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
-public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
+public class ChangesetDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
+    @Test
+    public void testCallsAOWhenDarkFeatureIsUnavailable()
+    {
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        final List<Changeset> returnList = ImmutableList.of();
+        when(changesetDao.getByIssueKey(ISSUE_KEYS, BITBUCKET, false)).thenReturn(returnList);
+
+        changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+
+        verify(changesetDao).getByIssueKey(eq(ISSUE_KEYS), eq(BITBUCKET), eq(false));
+    }
+
     @Test
     @NonTransactional
     public void testSimpleSearchMapsPropertly() throws Exception
     {
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
 
@@ -47,7 +62,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     @NonTransactional
     public void testSimpleSearchWorksNullDVCS() throws Exception
     {
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, null, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, null, false);
 
         assertThat(changeSets.size(), equalTo(1));
 
@@ -77,7 +92,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         final String secondKey = "TST-1";
         changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
         assertThat(changeSets.get(0).getIssueKeys(), containsInAnyOrder(ISSUE_KEY, secondKey));
@@ -88,7 +103,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     public void testMultipleChangesets() throws Exception
     {
         ChangesetMapping olderChangeset = createOlderChangeset();
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, true);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, true);
 
         assertThat(changeSets.size(), equalTo(2));
         assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
@@ -100,7 +115,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     public void testMultipleChangesetsWithSortingOldestFirst() throws Exception
     {
         ChangesetMapping olderChangeset = createOlderChangeset();
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(2));
         assertThat(changeSets.get(0).getId(), equalTo(olderChangeset.getID()));
@@ -126,7 +141,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
         ChangesetMapping secondMapping = changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(2));
 
@@ -141,7 +156,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
         changesetAOPopulator.associateToRepository(changesetMappingWithIssue, secondRepository);
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
 
@@ -158,7 +173,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondKey = "TST-1";
         changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
 
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
         assertThat(changeSets.get(0).getRepositoryIds(), containsInAnyOrder(enabledRepository.getID(), secondRepository.getID()));
@@ -179,7 +194,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         changesetAOPopulator.associateToIssue(changesetMappingWithIssue, secondKey);
         changesetAOPopulator.associateToIssue(secondChangeset, secondKey);
 
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(2));
         assertThat(changeSets.get(0).getId(), equalTo(secondChangeset.getID()));
@@ -192,7 +207,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         RepositoryMapping secondRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
         changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
         assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
@@ -205,7 +220,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         OrganizationMapping secondOrganization = organizationAOPopulator.create("bogus");
         RepositoryMapping secondRepository = repositoryAOPopulator.createEnabledRepository(secondOrganization);
         changesetAOPopulator.createCSM("ecd732b3f41ad7ac501ef8408931fe1f80ab2921", ISSUE_KEY, secondRepository);
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(1));
         assertThat(changeSets.get(0).getId(), equalTo(changesetMappingWithIssue.getID()));
@@ -223,7 +238,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         // Second changeset in this org, separate repository
         RepositoryMapping secondEnabledRepository = repositoryAOPopulator.createEnabledRepository(bitbucketOrganization);
         ChangesetMapping secondMapping = changesetAOPopulator.createCSM("a3d91a6bdf0e59dbc5b793baa2b4a289c91fd931", ISSUE_KEY, secondEnabledRepository);
-        changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         // Disabled repository in this org
         RepositoryMapping thirdDisabledRepository = repositoryAOPopulator.createRepository(bitbucketOrganization, true, false);
@@ -235,7 +250,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         // Some other random CS that is unrelated
         changesetAOPopulator.createCSM("721101938287c5dfcdc56b35a210761f6bc5d4ba", "TTT-222", enabledRepository);
 
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(3));
 
@@ -277,7 +292,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
             changeset.setDate(new Date());
             changeset.save();
         }
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(issueKeys, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(issueKeys, BITBUCKET, false);
 
         int targetNumber = number > MAXIMUM_ENTITIES_PER_ISSUE_KEY ? MAXIMUM_ENTITIES_PER_ISSUE_KEY : number;
 
@@ -300,7 +315,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
             changeset.save();
             createdChangesets.add(changeset);
         }
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, true);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, true);
 
         assertThat(changeSets.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
@@ -326,7 +341,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
             changeset.save();
             createdChangesets.add(changeset);
         }
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ImmutableList.of(issueKey), BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
@@ -342,7 +357,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         enabledRepository.setLinked(false);
         enabledRepository.save();
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(0));
     }
@@ -353,7 +368,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         enabledRepository.setDeleted(true);
         enabledRepository.save();
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(0));
     }
@@ -364,7 +379,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     {
         bitbucketOrganization.setDvcsType("bogus");
         bitbucketOrganization.save();
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, BITBUCKET, false);
 
         assertThat(changeSets.size(), equalTo(0));
     }
@@ -373,7 +388,7 @@ public class ChangesetQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
     @NonTransactional
     public void testNoDvcsType() throws Exception
     {
-        List<Changeset> changeSets = changesetQueryDSL.getByIssueKey(ISSUE_KEYS, null, false);
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, null, false);
 
         assertThat(changeSets.size(), equalTo(1));
     }

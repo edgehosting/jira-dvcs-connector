@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQueryDSL;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
@@ -48,7 +47,7 @@ import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTI
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
+@Component ("changesetDaoImpl")
 public class ChangesetDaoImpl implements ChangesetDao
 {
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
@@ -56,18 +55,13 @@ public class ChangesetDaoImpl implements ChangesetDao
     private final ActiveObjects activeObjects;
     private final ChangesetTransformer transformer;
     private final QueryHelper queryHelper;
-    private final ChangesetQueryDSL changesetQueryDSL;
-    private final QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Autowired
-    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper,
-            ChangesetQueryDSL changesetQueryDSL, final QueryDslFeatureHelper queryDslFeatureHelper)
+    public ChangesetDaoImpl(@ComponentImport ActiveObjects activeObjects, QueryHelper queryHelper)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = checkNotNull(queryHelper);
         this.transformer = new ChangesetTransformer(activeObjects, this);
-        this.changesetQueryDSL = checkNotNull(changesetQueryDSL);
-        this.queryDslFeatureHelper = checkNotNull(queryDslFeatureHelper);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
@@ -379,15 +373,8 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, @Nullable String dvcsType, final boolean newestFirst)
     {
-        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
-        {
-            return changesetQueryDSL.getByIssueKey(issueKeys, dvcsType, newestFirst);
-        }
-        else
-        {
-            List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
-            return transform(changesetMappings, dvcsType);
-        }
+        List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        return transform(changesetMappings, dvcsType);
     }
 
     @Override
