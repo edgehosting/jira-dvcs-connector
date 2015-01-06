@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
@@ -27,7 +27,7 @@ public class ChangesetTransformerTest
     private ActiveObjects activeObjects;
 
     @Mock
-    private ChangesetDao changesetDao;
+    private ChangesetDaoImpl changesetDao;
 
     @Captor
     private ArgumentCaptor<Changeset> changesetArgumentCaptor;

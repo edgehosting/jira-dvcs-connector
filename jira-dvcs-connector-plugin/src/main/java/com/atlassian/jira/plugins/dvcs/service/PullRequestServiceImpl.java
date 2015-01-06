@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QDSLFeatureHelper;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestDaoQueryDsl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.PullRequestTransformer;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
@@ -40,7 +40,7 @@ public class PullRequestServiceImpl implements PullRequestService
     private RepositoryPullRequestDao pullRequestDao;
 
     @Resource
-    private PullRequestQueryDSL pullRequestQueryDSL;
+    private PullRequestDaoQueryDsl pullRequestDaoQueryDsl;
 
     private PullRequestTransformer transformer;
 
@@ -54,7 +54,7 @@ public class PullRequestServiceImpl implements PullRequestService
     private ThreadEvents threadEvents;
 
     @Resource
-    private QDSLFeatureHelper qdslFeatureHelper;
+    private QueryDslFeatureHelper queryDslFeatureHelper;
 
     @PostConstruct
     public void init()
@@ -71,9 +71,9 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        if (qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
         {
-            return pullRequestQueryDSL.getByIssueKeys(issueKeys, dvcsType);
+            return pullRequestDaoQueryDsl.getByIssueKeys(issueKeys, dvcsType);
         }
         return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
     }

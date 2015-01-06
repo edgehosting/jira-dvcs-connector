@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -9,12 +10,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement (name = "repository")
 @XmlAccessorType (XmlAccessType.FIELD)
-public class Branch
+public class Branch implements IssueKeyedEntity
 {
     private int id;
     private String name;
     private List<BranchHead> heads;
     private int repositoryId;
+
+    private List<String> issueKeys = new ArrayList<String>();
 
     @JsonCreator
     public Branch()
@@ -28,8 +31,8 @@ public class Branch
 
     public Branch(final int id, final String name, final int repositoryId)
     {
+        this(name);
         this.id = id;
-        this.name = name;
         this.repositoryId = repositoryId;
     }
 
@@ -71,6 +74,16 @@ public class Branch
     public void setRepositoryId(final int repositoryId)
     {
         this.repositoryId = repositoryId;
+    }
+
+    public List<String> getIssueKeys()
+    {
+        return issueKeys;
+    }
+
+    public void setIssueKeys(final List<String> issueKeys)
+    {
+        this.issueKeys = issueKeys;
     }
 
     @Override

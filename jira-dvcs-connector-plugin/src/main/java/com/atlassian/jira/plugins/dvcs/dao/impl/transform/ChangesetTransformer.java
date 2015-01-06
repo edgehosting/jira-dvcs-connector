@@ -4,7 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
@@ -33,10 +33,10 @@ public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
     private final ActiveObjects activeObjects;
-    private final ChangesetDao changesetDao;
+    private final ChangesetDaoImpl changesetDao;
 
     @Autowired
-    public ChangesetTransformer(@ComponentImport final ActiveObjects activeObjects, final ChangesetDao changesetDao)
+    public ChangesetTransformer(@ComponentImport final ActiveObjects activeObjects, final ChangesetDaoImpl changesetDao)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.changesetDao = changesetDao;

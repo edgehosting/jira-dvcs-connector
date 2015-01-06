@@ -26,18 +26,32 @@ import static org.hamcrest.Matchers.equalTo;
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
  * and connection.
  */
-public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
+public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
     @Test
     @NonTransactional
     public void testSimpleSearchMapsProperly() throws Exception
     {
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
-        PullRequest pullRequest = pullRequests.get(0);
+        assertAgainstDefaultPR(pullRequests.get(0));
+    }
 
+    @Test
+    @NonTransactional
+    public void testSimpleSearchWorksOnNullDVCS() throws Exception
+    {
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, null);
+
+        assertThat(pullRequests.size(), equalTo(1));
+
+        assertAgainstDefaultPR(pullRequests.get(0));
+    }
+
+    private void assertAgainstDefaultPR(PullRequest pullRequest)
+    {
         assertPullRequestMatchesAO(pullRequest);
 
         assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
@@ -57,7 +71,7 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondKey = "SCN-2";
         pullRequestAOPopulator.associateToIssue(pullRequestMappingWithIssue, secondKey);
 
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(Lists.newArrayList(ISSUE_KEY, secondKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
@@ -73,7 +87,7 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         RepositoryMapping repo2 = repositoryAOPopulator.createRepository(org2, false, true, "fh/fork");
         pullRequestAOPopulator.createPR("something else", "other key", repo2);
 
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
     }
@@ -85,7 +99,7 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String user2 = "bill";
         pullRequestAOPopulator.createParticipant(user2, true, "someguy", pullRequestMappingWithIssue);
 
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
 
@@ -105,7 +119,7 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondIssueKey = "IK-2";
         RepositoryPullRequestMapping secondPR = pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
 
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Arrays.asList(secondIssueKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(Arrays.asList(secondIssueKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(1));
         assertThat(pullRequests.get(0).getId(), equalTo(secondPR.getID()));
@@ -118,7 +132,7 @@ public class PullRequestQueryDSLGetByIssueKeyTest extends QueryDSLDatabaseTest
         final String secondIssueKey = "IK-2";
         RepositoryPullRequestMapping secondPullRequest = pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
 
-        List<PullRequest> pullRequests = pullRequestQueryDSL.getByIssueKeys(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(Arrays.asList(ISSUE_KEY, secondIssueKey), BITBUCKET);
 
         assertThat(pullRequests.size(), equalTo(2));
         Collection<Integer> pullRequestIds = Collections2.transform(pullRequests, new Function<PullRequest, Integer>()

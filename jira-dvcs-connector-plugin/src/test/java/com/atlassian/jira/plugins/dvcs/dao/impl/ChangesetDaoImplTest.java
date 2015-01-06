@@ -3,13 +3,12 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetQueryDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetDaoQueryDsl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.ChangesetTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.ImmutableSet;
-import net.java.ao.Query;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -18,17 +17,14 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Set;
 
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
@@ -46,10 +42,10 @@ public class ChangesetDaoImplTest
     Changeset changeset;
 
     @Mock
-    ChangesetQueryDSL changesetQueryDSL;
+    ChangesetDaoQueryDsl changesetDaoQueryDsl;
 
     @Mock
-    QDSLFeatureHelper qdslFeatureHelper;
+    QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Mock
     ChangesetTransformer changesetTransformer;
@@ -108,27 +104,5 @@ public class ChangesetDaoImplTest
         when(mapping.<ChangesetMapping>getEntityType()).thenReturn(ChangesetMapping.class);
 
         return mapping;
-    }
-
-    @Test
-    public void testCallsAOWhenDarkFeatureIsUnavailable()
-    {
-        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
-        when(activeObjects.find(eq(ChangesetMapping.class), any(Query.class))).thenReturn(new ChangesetMapping[0]);
-
-        changesetDao.getByIssueKey(issues, BITBUCKET, true);
-
-        verify(activeObjects).find(eq(ChangesetMapping.class), any(Query.class));
-    }
-
-    @Test
-    public void testCallsQDSLWithDarkFeatureOn()
-    {
-        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
-        when(changesetQueryDSL.getByIssueKey(eq(issues), eq(BITBUCKET), eq(true))).thenReturn(new ArrayList<Changeset>());
-
-        changesetDao.getByIssueKey(issues, BITBUCKET, true);
-
-        verify(changesetQueryDSL).getByIssueKey(eq(issues), eq(BITBUCKET), eq(true));
     }
 }

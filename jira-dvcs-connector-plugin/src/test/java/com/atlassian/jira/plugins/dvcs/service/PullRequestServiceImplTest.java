@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
-import com.atlassian.jira.plugins.dvcs.dao.impl.QDSLFeatureHelper;
-import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestQueryDSL;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.PullRequestDaoQueryDsl;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
@@ -54,7 +54,7 @@ public class PullRequestServiceImplTest
     RepositoryPullRequestDao dao;
 
     @Mock
-    PullRequestQueryDSL pullRequestQueryDSL;
+    PullRequestDaoQueryDsl pullRequestDaoQueryDsl;
 
     @Mock
     RepositoryPullRequestMapping origPr;
@@ -72,7 +72,7 @@ public class PullRequestServiceImplTest
     Repository repository;
 
     @Mock
-    QDSLFeatureHelper qdslFeatureHelper;
+    QueryDslFeatureHelper queryDslFeatureHelper;
 
     @InjectMocks
     PullRequestServiceImpl service;
@@ -197,18 +197,18 @@ public class PullRequestServiceImplTest
     @Test
     public void testWithQDSLEnabled()
     {
-        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
-        when(pullRequestQueryDSL.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(new ArrayList<PullRequest>());
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(new ArrayList<PullRequest>());
 
         service.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
 
-        verify(pullRequestQueryDSL).getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+        verify(pullRequestDaoQueryDsl).getByIssueKeys(ISSUE_KEYS, BITBUCKET);
     }
 
     @Test
     public void testWithQDSLDisabled()
     {
-        when(qdslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
         final List<RepositoryPullRequestMapping> stubList = new ArrayList<RepositoryPullRequestMapping>();
         when(dao.getByIssueKeys(ISSUE_KEYS, BITBUCKET)).thenReturn(stubList);
 

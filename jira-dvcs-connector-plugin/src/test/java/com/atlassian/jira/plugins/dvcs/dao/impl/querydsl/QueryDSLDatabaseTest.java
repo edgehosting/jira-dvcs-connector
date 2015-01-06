@@ -1,12 +1,15 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.BranchAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.ChangesetAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
 import com.atlassian.jira.plugins.dvcs.activeobjects.OrganizationAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.PullRequestAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.RepositoryAOPopulator;
 import com.atlassian.jira.plugins.dvcs.activeobjects.TestConnectionProvider;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
@@ -14,6 +17,9 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMap
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestIssueKeyMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
+import com.atlassian.jira.plugins.dvcs.dao.impl.BranchDaoImpl;
+import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
+import com.atlassian.jira.plugins.dvcs.dao.impl.QueryDslFeatureHelper;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.pocketknife.api.querydsl.ConnectionProvider;
 import com.atlassian.pocketknife.api.querydsl.DialectProvider;
@@ -28,6 +34,7 @@ import com.google.common.collect.Lists;
 import net.java.ao.test.ActiveObjectsIntegrationTest;
 import net.java.ao.test.converters.NameConverters;
 import org.junit.Before;
+import org.mockito.Mockito;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +42,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
+import static org.mockito.Mockito.when;
 
 @NameConverters (table = DvcsConnectorTableNameConverter.class)
 public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
@@ -46,13 +54,15 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
     protected RepositoryAOPopulator repositoryAOPopulator;
     protected OrganizationAOPopulator organizationAOPopulator;
     protected PullRequestAOPopulator pullRequestAOPopulator;
+    protected BranchAOPopulator branchAOPopulator;
 
     protected ConnectionProvider connectionProvider;
     protected QueryFactory queryFactory;
     protected SchemaProvider schemaProvider;
 
-    protected ChangesetQueryDSL changesetQueryDSL;
-    protected PullRequestQueryDSL pullRequestQueryDSL;
+    protected ChangesetDaoQueryDsl changesetDaoQueryDsl;
+    protected PullRequestDaoQueryDsl pullRequestDaoQueryDsl;
+    protected BranchDaoQueryDsl branchDaoQueryDsl;
 
     protected RepositoryMapping enabledRepository;
     protected OrganizationMapping bitbucketOrganization;
@@ -60,6 +70,10 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
     protected ChangesetMapping changesetMappingWithIssue;
     protected RepositoryPullRequestMapping pullRequestMappingWithIssue;
     protected PullRequestParticipantMapping pullRequestParticipant;
+    protected BranchMapping branchMappingWithIssue;
+    protected ChangesetDaoImpl changesetDao;
+    protected QueryDslFeatureHelper queryDslFeatureHelper;
+    protected BranchDaoImpl branchDao;
 
     @Before
     public void setup() throws SQLException
@@ -68,6 +82,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
         repositoryAOPopulator = new RepositoryAOPopulator(entityManager);
         organizationAOPopulator = new OrganizationAOPopulator(entityManager);
         pullRequestAOPopulator = new PullRequestAOPopulator(entityManager);
+        branchAOPopulator = new BranchAOPopulator(entityManager);
 
         connectionProvider = new TestConnectionProvider(entityManager);
 
@@ -79,10 +94,16 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
         entityManager.migrateDestructively(ChangesetMapping.class, RepositoryToChangesetMapping.class,
                 RepositoryMapping.class, OrganizationMapping.class, IssueToChangesetMapping.class,
                 RepositoryPullRequestMapping.class, PullRequestParticipantMapping.class,
-                RepositoryPullRequestIssueKeyMapping.class);
+                RepositoryPullRequestIssueKeyMapping.class, BranchMapping.class, IssueToBranchMapping.class);
 
-        changesetQueryDSL = new ChangesetQueryDSL(queryFactory, schemaProvider);
-        pullRequestQueryDSL = new PullRequestQueryDSL(queryFactory, schemaProvider);
+        queryDslFeatureHelper = Mockito.mock(QueryDslFeatureHelper.class);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+
+        changesetDao = Mockito.mock(ChangesetDaoImpl.class);
+        changesetDaoQueryDsl = new ChangesetDaoQueryDsl(queryFactory, schemaProvider, changesetDao, queryDslFeatureHelper);
+        pullRequestDaoQueryDsl = new PullRequestDaoQueryDsl(queryFactory, schemaProvider);
+        branchDao = Mockito.mock(BranchDaoImpl.class);
+        branchDaoQueryDsl = new BranchDaoQueryDsl(queryFactory, schemaProvider, branchDao, queryDslFeatureHelper);
 
         bitbucketOrganization = organizationAOPopulator.create(BITBUCKET);
 
@@ -93,6 +114,8 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
         pullRequestMappingWithIssue = pullRequestAOPopulator.createPR("PR FOR" + ISSUE_KEY, ISSUE_KEY, enabledRepository);
         pullRequestParticipant = pullRequestAOPopulator.createParticipant("hoo", false, "reviewer", pullRequestMappingWithIssue);
         pullRequestMappingWithIssue = entityManager.get(RepositoryPullRequestMapping.class, pullRequestMappingWithIssue.getID());
+
+        branchMappingWithIssue = branchAOPopulator.createBranch("something branch", ISSUE_KEY, enabledRepository);
     }
 
     final protected Collection<Integer> extractIds(Collection<Changeset> changeSets)

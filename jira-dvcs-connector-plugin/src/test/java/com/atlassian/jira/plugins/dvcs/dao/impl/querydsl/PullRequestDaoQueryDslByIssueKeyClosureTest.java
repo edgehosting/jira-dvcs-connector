@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
-import com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.atlassian.pocketknife.api.querydsl.QueryFactory;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
-public class PullRequestQueryDSLByIssueKeyClosureTest
+public class PullRequestDaoQueryDslByIssueKeyClosureTest
 {
     private static final Integer PR_MAPPING_ID = 5;
     private static final String ISSUE_KEY = "HHH-123";
@@ -41,7 +41,7 @@ public class PullRequestQueryDSLByIssueKeyClosureTest
     @Mock
     private Tuple tuple;
 
-    private PullRequestQueryDSL.PullRequestByIssueKeyClosure issueKeyClosure;
+    private PullRequestDaoQueryDsl.PullRequestByIssueKeyClosure issueKeyClosure;
     private Map<Integer, PullRequest> pullRequestsById;
     private PullRequest existingPullRequest;
 
@@ -57,7 +57,7 @@ public class PullRequestQueryDSLByIssueKeyClosureTest
         pullRequestsById = new HashMap<Integer, PullRequest>();
 
         when(schemaProvider.getSchema(argThat(any(String.class)))).thenReturn("something");
-        issueKeyClosure = new PullRequestQueryDSL.PullRequestByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
+        issueKeyClosure = new PullRequestDaoQueryDsl.PullRequestByIssueKeyClosure(BITBUCKET, ImmutableList.of(ISSUE_KEY), schemaProvider);
 
         when(tuple.get(issueKeyClosure.prMapping.ID)).thenReturn(PR_MAPPING_ID);
         when(tuple.get(issueKeyClosure.participantMapping.USERNAME)).thenReturn(PARTICIPANT_NAME);
@@ -112,17 +112,17 @@ public class PullRequestQueryDSLByIssueKeyClosureTest
     {
         pullRequestsById.clear();
 
-        for (int i = 0; i < DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
+        for (int i = 0; i < MAXIMUM_ENTITIES_PER_ISSUE_KEY; i++)
         {
             int id = 1 + i + PR_MAPPING_ID;
             pullRequestsById.put(id, new PullRequest(id));
         }
 
-        assertThat(pullRequestsById.size(), equalTo(DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+        assertThat(pullRequestsById.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
 
         issueKeyClosure.getFoldFunction().apply(pullRequestsById, tuple);
 
-        assertThat(pullRequestsById.size(), equalTo(DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+        assertThat(pullRequestsById.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
         assertThat(pullRequestsById.keySet(), not(contains(PR_MAPPING_ID)));
     }
 }

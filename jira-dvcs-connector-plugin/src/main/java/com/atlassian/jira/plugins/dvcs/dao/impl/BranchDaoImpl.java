@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
@@ -31,7 +30,7 @@ import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTI
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
-public class BranchDaoImpl implements BranchDao
+public class BranchDaoImpl
 {
     private static final Logger log = LoggerFactory.getLogger(BranchDaoImpl.class);
 
@@ -43,7 +42,6 @@ public class BranchDaoImpl implements BranchDao
         this.activeObjects = checkNotNull(activeObjects);
     }
 
-    @Override
     public List<BranchHead> getBranchHeads(int repositoryId)
     {
         BranchHeadMapping[] result = activeObjects.find(BranchHeadMapping.class, Query.select().where(BranchHeadMapping.REPOSITORY_ID + " = ?", repositoryId));
@@ -58,7 +56,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public List<Branch> getBranches(final int repositoryId)
     {
         BranchMapping[] result = activeObjects.find(BranchMapping.class, Query.select().where(BranchMapping.REPOSITORY_ID + " = ?", repositoryId));
@@ -73,7 +70,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public void createBranch(final int repositoryId, final Branch branch, final Set<String> issueKeys)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -93,7 +89,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public void createBranchHead(final int repositoryId, final BranchHead branchHead)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -113,7 +108,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public void removeBranchHead(final int repositoryId, final BranchHead branch)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -131,7 +125,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public void removeBranch(final int repositoryId, final Branch branch)
     {
         activeObjects.executeInTransaction(new TransactionCallback<Void>()
@@ -161,7 +154,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public void removeAllBranchesInRepository(final int repositoryId)
     {
         log.debug("deleting branches for repository with id = [ {} ]", repositoryId);
@@ -190,7 +182,6 @@ public class BranchDaoImpl implements BranchDao
 
     }
 
-    @Override
     public void removeAllBranchHeadsInRepository(final int repositoryId)
     {
         log.debug("deleting branch heads for repository with id = [ {} ]", repositoryId);
@@ -207,7 +198,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys)
     {
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
@@ -243,7 +233,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public List<Branch> getBranchesForIssue(final Iterable<String> issueKeys, final String dvcsType)
     {
         final String baseWhereClause = ActiveObjectsUtils.renderListOperator("mapping." + IssueToBranchMapping.ISSUE_KEY, "IN", "OR", issueKeys);
@@ -282,7 +271,6 @@ public class BranchDaoImpl implements BranchDao
         });
     }
 
-    @Override
     public List<Branch> getBranchesForRepository(final int repositoryId)
     {
         final List<BranchMapping> branches = activeObjects.executeInTransaction(new TransactionCallback<List<BranchMapping>>()

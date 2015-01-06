@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
+import com.atlassian.jira.plugins.dvcs.dao.impl.querydsl.ChangesetDaoQueryDsl;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -55,6 +56,12 @@ public class ChangesetDaoImplForEachIssueKeyTest
 
     @Mock
     private IssueToMappingFunction closure;
+
+    @Mock
+    private ChangesetDaoQueryDsl changesetDaoQueryDsl;
+
+    @Mock
+    private QueryDslFeatureHelper queryDslFeatureHelper;
 
     @Captor
     private ArgumentCaptor<Set<String>> captor;
