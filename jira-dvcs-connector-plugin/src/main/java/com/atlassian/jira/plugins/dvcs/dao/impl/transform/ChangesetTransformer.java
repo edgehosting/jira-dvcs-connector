@@ -44,7 +44,6 @@ public class ChangesetTransformer
 
     public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
     {
-
         if (changesetMapping == null)
         {
             return null;
@@ -52,7 +51,6 @@ public class ChangesetTransformer
 
         final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
 
-        List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
 
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
@@ -72,11 +70,8 @@ public class ChangesetTransformer
                 }
             }
 
-            if (repositories == null)
+            if (CollectionUtils.isEmpty(changeset.getRepositoryIds()))
             {
-                repositories = new ArrayList<Integer>();
-                changeset.setRepositoryIds(repositories);
-
                 // mark first repository
                 firstRepository = repositoryMapping.getID();
             }
@@ -87,7 +82,7 @@ public class ChangesetTransformer
                 changeset.setRepositoryId(repositoryMapping.getID());
             }
 
-            repositories.add(repositoryMapping.getID());
+            changeset.getRepositoryIds().add(repositoryMapping.getID());
         }
 
         // no main repository was assigned, let's use the first one
