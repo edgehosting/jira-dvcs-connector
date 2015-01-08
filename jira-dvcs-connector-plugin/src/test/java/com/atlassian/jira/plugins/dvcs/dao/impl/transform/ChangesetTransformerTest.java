@@ -108,7 +108,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(1, true);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), 1);
@@ -126,7 +126,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(1, true);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, GithubCommunicator.GITHUB);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, GithubCommunicator.GITHUB);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), 1);
@@ -144,7 +144,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(Changeset.MAX_VISIBLE_FILES + 1, true);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), Changeset.MAX_VISIBLE_FILES + 1);
@@ -163,7 +163,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(Changeset.MAX_VISIBLE_FILES + 1, true);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, GithubCommunicator.GITHUB);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, GithubCommunicator.GITHUB);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), Changeset.MAX_VISIBLE_FILES + 1);
@@ -183,7 +183,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(8, false);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao, never()).update(any(Changeset.class));
 
         Assert.assertEquals(changeset.getAllFileCount(), 8);
@@ -199,7 +199,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(0, false);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao, never()).update(any(Changeset.class));
 
         Assert.assertEquals(changeset.getAllFileCount(), 0);
@@ -215,7 +215,7 @@ public class ChangesetTransformerTest
     {
         ChangesetMapping changesetMapping = mockChangesetMapping(0, true);
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), 0);
@@ -235,7 +235,7 @@ public class ChangesetTransformerTest
         ChangesetMapping changesetMapping = mock(ChangesetMapping.class);
         when(changesetMapping.getFilesData()).thenReturn("{\"count\":1,\"files\":[{\"filename\":\"file\", \"status\":\"MODIFIED\", \"additions\":1, \"deletions\":2}]}");
 
-        Changeset changeset = changesetTransformer.transform(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
+        Changeset changeset = changesetTransformer.buildChangeSet(1, changesetMapping, BitbucketCommunicator.BITBUCKET);
         verify(changesetDao).update(changesetArgumentCaptor.capture());
 
         Assert.assertEquals(changesetArgumentCaptor.getValue().getAllFileCount(), 1);

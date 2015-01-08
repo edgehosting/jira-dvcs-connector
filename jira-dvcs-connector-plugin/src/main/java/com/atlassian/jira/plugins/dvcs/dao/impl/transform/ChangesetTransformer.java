@@ -14,6 +14,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class ChangesetTransformer
             return null;
         }
 
-        final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
+        final Changeset changeset = buildChangeSet(mainRepositoryId, changesetMapping, dvcsType);
 
         int firstRepository = 0;
 
@@ -93,7 +94,8 @@ public class ChangesetTransformer
         return isEmpty(changeset.getRepositoryIds()) ? null : changeset;
     }
 
-    public Changeset transform(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
+    @VisibleForTesting
+    Changeset buildChangeSet(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
     {
         if (changesetMapping == null)
         {
