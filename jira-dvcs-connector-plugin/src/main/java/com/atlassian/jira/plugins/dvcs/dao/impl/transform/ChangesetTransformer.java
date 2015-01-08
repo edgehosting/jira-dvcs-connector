@@ -14,8 +14,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @Component
 public class ChangesetTransformer
@@ -44,15 +45,13 @@ public class ChangesetTransformer
 
     public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
     {
-
         if (changesetMapping == null)
         {
             return null;
         }
 
-        final Changeset changeset = transform(mainRepositoryId, changesetMapping, dvcsType);
+        final Changeset changeset = buildChangeSet(mainRepositoryId, changesetMapping, dvcsType);
 
-        List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
 
         for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
@@ -72,11 +71,8 @@ public class ChangesetTransformer
                 }
             }
 
-            if (repositories == null)
+            if (isEmpty(changeset.getRepositoryIds()))
             {
-                repositories = new ArrayList<Integer>();
-                changeset.setRepositoryIds(repositories);
-
                 // mark first repository
                 firstRepository = repositoryMapping.getID();
             }
@@ -87,7 +83,7 @@ public class ChangesetTransformer
                 changeset.setRepositoryId(repositoryMapping.getID());
             }
 
-            repositories.add(repositoryMapping.getID());
+            changeset.getRepositoryIds().add(repositoryMapping.getID());
         }
 
         // no main repository was assigned, let's use the first one
@@ -95,10 +91,11 @@ public class ChangesetTransformer
         {
             changeset.setRepositoryId(firstRepository);
         }
-        return CollectionUtils.isEmpty(changeset.getRepositoryIds()) ? null : changeset;
+        return isEmpty(changeset.getRepositoryIds()) ? null : changeset;
     }
 
-    public Changeset transform(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
+    @VisibleForTesting
+    Changeset buildChangeSet(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
     {
         if (changesetMapping == null)
         {
