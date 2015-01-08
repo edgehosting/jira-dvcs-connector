@@ -15,7 +15,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @Component
 public class ChangesetTransformer
@@ -70,7 +70,7 @@ public class ChangesetTransformer
                 }
             }
 
-            if (CollectionUtils.isEmpty(changeset.getRepositoryIds()))
+            if (isEmpty(changeset.getRepositoryIds()))
             {
                 // mark first repository
                 firstRepository = repositoryMapping.getID();
@@ -90,7 +90,7 @@ public class ChangesetTransformer
         {
             changeset.setRepositoryId(firstRepository);
         }
-        return CollectionUtils.isEmpty(changeset.getRepositoryIds()) ? null : changeset;
+        return isEmpty(changeset.getRepositoryIds()) ? null : changeset;
     }
 
     public Changeset transform(int repositoryId, ChangesetMapping changesetMapping, String dvcsType)
