@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
+import com.atlassian.fugue.Iterables;
 import com.atlassian.jira.plugins.dvcs.activeobjects.DvcsConnectorTableNameConverter;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
@@ -391,5 +392,14 @@ public class ChangesetDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
         List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(ISSUE_KEYS, null, false);
 
         assertThat(changeSets.size(), equalTo(1));
+    }
+
+    @Test
+    @NonTransactional
+    public void testNoIssueKeysRequested() throws Exception
+    {
+        List<Changeset> changeSets = changesetDaoQueryDsl.getByIssueKey(Iterables.<String>emptyIterable(), null, false);
+
+        assertThat(changeSets.size(), equalTo(0));
     }
 }

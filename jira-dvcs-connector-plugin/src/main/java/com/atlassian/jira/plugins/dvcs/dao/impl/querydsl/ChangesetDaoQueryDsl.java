@@ -26,6 +26,7 @@ import com.atlassian.pocketknife.api.querydsl.StreamyResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.apache.commons.lang.StringUtils;
@@ -170,6 +171,11 @@ public class ChangesetDaoQueryDsl implements ChangesetDao
     {
         if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
         {
+            if (Iterables.isEmpty(issueKeys))
+            {
+                return Collections.emptyList();
+            }
+
             ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
             Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
 
