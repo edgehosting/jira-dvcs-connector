@@ -169,22 +169,22 @@ public class ChangesetDaoQueryDsl implements ChangesetDao
     public List<Changeset> getByIssueKey(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType,
             final boolean newestFirst)
     {
-        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled())
         {
-            if (Iterables.isEmpty(issueKeys))
-            {
-                return Collections.emptyList();
-            }
-
-            ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
-            Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
-
-            // Still need to sort the result as we have a map of changesets, even though the results are also sorted
-            final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
-            Collections.sort(result, new ChangesetDateComparator(newestFirst));
-            return result;
+            return changesetDao.getByIssueKey(issueKeys, dvcsType, newestFirst);
         }
-        return changesetDao.getByIssueKey(issueKeys, dvcsType, newestFirst);
+        if (Iterables.isEmpty(issueKeys))
+        {
+            return Collections.emptyList();
+        }
+
+        ByIssueKeyClosure closure = new ByIssueKeyClosure(dvcsType, issueKeys, schemaProvider, newestFirst);
+        Map<Integer, Changeset> changesetsById = queryFactory.halfStreamyFold(new HashMap<Integer, Changeset>(), closure);
+
+        // Still need to sort the result as we have a map of changesets, even though the results are also sorted
+        final ArrayList<Changeset> result = new ArrayList<Changeset>(changesetsById.values());
+        Collections.sort(result, new ChangesetDateComparator(newestFirst));
+        return result;
     }
 
     @VisibleForTesting

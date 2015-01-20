@@ -39,7 +39,7 @@ public class ChangesetDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
     @Test
     public void testCallsAOWhenDarkFeatureIsUnavailable()
     {
-        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled()).thenReturn(true);
         final List<Changeset> returnList = ImmutableList.of();
         when(changesetDao.getByIssueKey(ISSUE_KEYS, BITBUCKET, false)).thenReturn(returnList);
 

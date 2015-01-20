@@ -34,7 +34,7 @@ public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
     @Test
     public void testCallsAOWhenDarkFeatureIsUnavailable()
     {
-        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled()).thenReturn(true);
         final List<Branch> returnList = ImmutableList.of();
         when(branchDao.getBranchesForIssue(ISSUE_KEYS, BITBUCKET)).thenReturn(returnList);
 
