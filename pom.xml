@@ -74,7 +74,7 @@
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
         <atlassian.spring.scanner.version>1.2.5</atlassian.spring.scanner.version>
-        <amps.version>5.0.4</amps.version>
+        <amps.version>5.0.14</amps.version>
 
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
