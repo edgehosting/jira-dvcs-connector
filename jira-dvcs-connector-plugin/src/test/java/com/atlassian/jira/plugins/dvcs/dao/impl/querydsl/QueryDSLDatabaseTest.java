@@ -97,7 +97,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
                 RepositoryPullRequestIssueKeyMapping.class, BranchMapping.class, IssueToBranchMapping.class);
 
         queryDslFeatureHelper = Mockito.mock(QueryDslFeatureHelper.class);
-        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled()).thenReturn(false);
 
         changesetDao = Mockito.mock(ChangesetDaoImpl.class);
         changesetDaoQueryDsl = new ChangesetDaoQueryDsl(queryFactory, schemaProvider, changesetDao, queryDslFeatureHelper);

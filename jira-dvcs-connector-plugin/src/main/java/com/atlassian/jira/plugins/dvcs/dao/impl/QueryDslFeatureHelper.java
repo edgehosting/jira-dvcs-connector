@@ -16,12 +16,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class QueryDslFeatureHelper
 {
     /**
-     * If this dark feature is set then we will use Query DSL to retrieve entities for the Dvcs* services that are
-     * exported. For example {@link com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetService }, {@link
-     * com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService} and {@link
+     * If this dark feature is set then we will use AO and disable usage of Query DSL to retrieve entities for the Dvcs*
+     * services that are exported. For example {@link com.atlassian.jira.plugins.dvcs.service.api.DvcsChangesetService
+     * }, {@link com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService} and {@link
      * com.atlassian.jira.plugins.dvcs.service.api.DvcsBranchService}
      */
-    private static final String RETRIEVE_USING_QUERY_DSL = "dvcs.connector.retrieved.using.qdsl";
+    private static final String DISABLE_QUERY_DSL = "dvcs.connector.qdsl.disabled";
 
     private final FeatureManager featureManager;
 
@@ -32,12 +32,12 @@ public class QueryDslFeatureHelper
     }
 
     /**
-     * Check the dark feature flag {@link #RETRIEVE_USING_QUERY_DSL}
+     * Check the dark feature flag {@link #DISABLE_QUERY_DSL}
      *
      * @return true if the dark feature is set
      */
-    public boolean isRetrievalUsingQueryDSLEnabled()
+    public boolean isRetrievalUsingQueryDslDisabled()
     {
-        return featureManager.isEnabled(RETRIEVE_USING_QUERY_DSL);
+        return featureManager.isEnabled(DISABLE_QUERY_DSL);
     }
 }

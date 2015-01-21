@@ -129,14 +129,14 @@ public class BranchDaoQueryDsl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
-        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled())
         {
-            PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
-            Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
-
-            return ImmutableList.copyOf(result.values());
+            return branchDao.getBranchesForIssue(issueKeys, dvcsType);
         }
-        return branchDao.getBranchesForIssue(issueKeys, dvcsType);
+        PullRequestByIssueKeyClosure closure = new PullRequestByIssueKeyClosure(dvcsType, issueKeys, schemaProvider);
+        Map<Integer, Branch> result = queryFactory.halfStreamyFold(new HashMap<Integer, Branch>(), closure);
+
+        return ImmutableList.copyOf(result.values());
     }
 
     @VisibleForTesting
