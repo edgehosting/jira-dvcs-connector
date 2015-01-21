@@ -21,7 +21,7 @@ public class QueryDslFeatureHelper
      * }, {@link com.atlassian.jira.plugins.dvcs.service.api.DvcsPullRequestService} and {@link
      * com.atlassian.jira.plugins.dvcs.service.api.DvcsBranchService}
      */
-    private static final String DISABLE_RETRIEVAL_USING_QUERY_DSL = "dvcs.connector.retrieval.using.qdsl.disabled";
+    private static final String DISABLE_QUERY_DSL = "dvcs.connector.qdsl.disabled";
 
     private final FeatureManager featureManager;
 
@@ -32,12 +32,12 @@ public class QueryDslFeatureHelper
     }
 
     /**
-     * Check the dark feature flag {@link #DISABLE_RETRIEVAL_USING_QUERY_DSL}
+     * Check the dark feature flag {@link #DISABLE_QUERY_DSL}
      *
      * @return true if the dark feature is set
      */
     public boolean isRetrievalUsingQueryDslDisabled()
     {
-        return featureManager.isEnabled(DISABLE_RETRIEVAL_USING_QUERY_DSL);
+        return featureManager.isEnabled(DISABLE_QUERY_DSL);
     }
 }
