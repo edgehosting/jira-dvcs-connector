@@ -53,9 +53,9 @@ public class Changeset implements IssueKeyedEntity
 
 
     public Changeset(int repositoryId, String node,
-                     String rawAuthor, String author, Date date,
-                     String rawNode, String branch, String message,
-                     List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
+            String rawAuthor, String author, Date date,
+            String rawNode, String branch, String message,
+            List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
     {
         this.repositoryId = repositoryId;
         this.node = node;
