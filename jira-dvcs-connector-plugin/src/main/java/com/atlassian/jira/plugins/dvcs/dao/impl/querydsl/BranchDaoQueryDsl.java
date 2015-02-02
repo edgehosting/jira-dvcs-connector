@@ -17,11 +17,13 @@ import com.atlassian.pocketknife.api.querydsl.StreamyResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.mysema.query.Tuple;
 import com.mysema.query.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +131,11 @@ public class BranchDaoQueryDsl implements BranchDao
     @Override
     public List<Branch> getBranchesForIssue(@Nonnull final Iterable<String> issueKeys, @Nullable final String dvcsType)
     {
+        if (Iterables.isEmpty(issueKeys))
+        {
+            return Collections.emptyList();
+        }
+
         if (queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled())
         {
             return branchDao.getBranchesForIssue(issueKeys, dvcsType);
