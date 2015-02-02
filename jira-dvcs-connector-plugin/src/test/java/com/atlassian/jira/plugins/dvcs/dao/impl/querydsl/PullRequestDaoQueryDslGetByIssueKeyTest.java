@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
@@ -158,5 +159,13 @@ public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTes
         assertThat(pullRequest.getAuthor(), equalTo(pullRequestMappingWithIssue.getAuthor()));
         assertThat(pullRequest.getCommentCount(), equalTo(pullRequestMappingWithIssue.getCommentCount()));
         assertThat(pullRequest.getExecutedBy(), equalTo(pullRequestMappingWithIssue.getExecutedBy()));
+    }
+
+    @Test
+    @NonTransactional
+    public void testNoIssueKeysSupplied() throws Exception
+    {
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ImmutableList.<String>of(), BITBUCKET);
+        assertThat(pullRequests.size(), equalTo(0));
     }
 }

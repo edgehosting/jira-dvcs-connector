@@ -26,8 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * This is a database integration test that uses a working database
- * and connection.
+ * This is a database integration test that uses a working database and connection.
  */
 public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
 {
@@ -137,5 +136,13 @@ public class BranchDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTest
         List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(Arrays.asList(ISSUE_KEY), BITBUCKET);
 
         assertThat(branches.size(), equalTo(MAXIMUM_ENTITIES_PER_ISSUE_KEY));
+    }
+
+    @Test
+    @NonTransactional
+    public void testEmptyIssueKeys() throws Exception
+    {
+        List<Branch> branches = branchDaoQueryDsl.getBranchesForIssue(ImmutableList.<String>of(), BITBUCKET);
+        assertThat(branches.size(), equalTo(0));
     }
 }
