@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -49,18 +50,27 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping create(final Map<String, Object> gitHubEvent)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        GitHubEventMapping createdMapping = activeObjects.executeInTransaction(new TransactionCallback<GitHubEventMapping>()
         {
-
             @Override
-            public Void doInTransaction()
+            public GitHubEventMapping doInTransaction()
             {
-                activeObjects.create(GitHubEventMapping.class, gitHubEvent);
-                return null;
+                return activeObjects.create(GitHubEventMapping.class, gitHubEvent);
             }
-
         });
-        return null;
+
+        final int repositoryId = createdMapping.getRepository().getID();
+        final String gitHubId = createdMapping.getGitHubId();
+        GitHubEventMapping[] retrievedMappings = findAllById(repositoryId, gitHubId);
+
+        if (retrievedMappings.length > 1)
+        {
+            String stack = ExceptionUtils.getStackTrace(new Throwable());
+            final String warningMessage = "Just created a GitHubEventMapping for repository {} and gitHubId {} and there now more than one in the database. This is the calling stack:\n";
+            log.warn(warningMessage, new Object[] { repositoryId, gitHubId, stack });
+        }
+
+        return createdMapping;
     }
 
     /**
@@ -99,19 +109,17 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping getByGitHubId(Repository repository, String gitHubId)
     {
-        Query query = Query.select().
-                where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repository.getId(),
-                        gitHubId).order("ID");
-        GitHubEventMapping[] retrievedMappings = activeObjects.find(GitHubEventMapping.class, query);
+        GitHubEventMapping[] retrievedMappings = findAllById(repository.getId(), gitHubId);
         if (retrievedMappings.length > 1)
         {
             final Object[] warnParams = { gitHubId, repository.getId(), retrievedMappings.length };
-            log.warn("search for event {} in repository {} found this many {}, returning first", warnParams);
+            log.warn("search for event {} in repository {} found this many {}, "
+                    + "returning the one marked as a save point, if none are save points then the first", warnParams);
 
             GitHubEventMapping mappingToUse = retrievedMappings[0];
             for (GitHubEventMapping retrievedMapping : retrievedMappings)
             {
-                if(retrievedMapping.isSavePoint())
+                if (retrievedMapping.isSavePoint())
                 {
                     mappingToUse = retrievedMapping;
                 }
@@ -120,6 +128,14 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
             return mappingToUse;
         }
         return retrievedMappings.length == 1 ? retrievedMappings[0] : null;
+    }
+
+    private GitHubEventMapping[] findAllById(int repositoryId, String gitHubId)
+    {
+        Query query = Query.select().
+                where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repositoryId,
+                        gitHubId).order("ID");
+        return activeObjects.find(GitHubEventMapping.class, query);
     }
 
     /**
