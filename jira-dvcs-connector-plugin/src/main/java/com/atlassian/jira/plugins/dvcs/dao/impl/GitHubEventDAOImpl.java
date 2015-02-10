@@ -10,6 +10,8 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -25,12 +27,14 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 @Component
 public class GitHubEventDAOImpl implements GitHubEventDAO
 {
+    private static final Logger log = LoggerFactory.getLogger(GitHubEventDAOImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
     @ComponentImport
+    @SuppressWarnings ("SpringJavaAutowiringInspection")
     private ActiveObjects activeObjects;
 
     /**
@@ -95,13 +99,27 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping getByGitHubId(Repository repository, String gitHubId)
     {
-        Query query = Query.select().where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repository.getId(), gitHubId);
-        GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
-        if (founded.length > 1)
+        Query query = Query.select().
+                where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repository.getId(),
+                        gitHubId).order("ID");
+        GitHubEventMapping[] retrievedMappings = activeObjects.find(GitHubEventMapping.class, query);
+        if (retrievedMappings.length > 1)
         {
-            throw new RuntimeException("Multiple GitHubEvents exists with the same id: " + gitHubId);
+            final Object[] warnParams = { gitHubId, repository.getId(), retrievedMappings.length };
+            log.warn("search for event {} in repository {} found this many {}, returning first", warnParams);
+
+            GitHubEventMapping mappingToUse = retrievedMappings[0];
+            for (GitHubEventMapping retrievedMapping : retrievedMappings)
+            {
+                if(retrievedMapping.isSavePoint())
+                {
+                    mappingToUse = retrievedMapping;
+                }
+            }
+
+            return mappingToUse;
         }
-        return founded.length == 1 ? founded[0] : null;
+        return retrievedMappings.length == 1 ? retrievedMappings[0] : null;
     }
 
     /**
