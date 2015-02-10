@@ -34,8 +34,6 @@ Issue Tracking
 
 Development Branches
 --------------------
-Table formatting is broken. If you want to see this open the readme file in a text editor.
-
 Basically new work should go on master.
 
 +-----------------+-------------------------------------+-------------------------+
