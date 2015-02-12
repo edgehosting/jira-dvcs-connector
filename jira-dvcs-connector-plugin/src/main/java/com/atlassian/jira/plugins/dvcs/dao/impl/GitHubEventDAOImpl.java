@@ -125,6 +125,9 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
                 }
             }
 
+            final Object[] infoParams = { gitHubId, repository.getId(), mappingToUse.getID() };
+            log.info("when multiple mappings were found for event {} in repository {} we chose the one with this id {}", infoParams);
+
             return mappingToUse;
         }
         return retrievedMappings.length == 1 ? retrievedMappings[0] : null;
