@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
 {
     @Resource
-    private DvcsCommunicator[] dvcsCommunicators;
+    private CachingDvcsCommunicator[] dvcsCommunicators;
 
     /**
      * {@inheritDoc}
