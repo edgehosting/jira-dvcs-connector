@@ -109,28 +109,28 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping getByGitHubId(Repository repository, String gitHubId)
     {
-        GitHubEventMapping[] retrievedMappings = findAllById(repository.getId(), gitHubId);
-        if (retrievedMappings.length > 1)
+        GitHubEventMapping[] githubEvents = findAllById(repository.getId(), gitHubId);
+        if (githubEvents.length > 1)
         {
-            final Object[] warnParams = { gitHubId, repository.getId(), retrievedMappings.length };
-            log.warn("search for event {} in repository {} found this many {}, "
+            final Object[] warnParams = { gitHubId, repository.getId(), githubEvents.length };
+            log.warn("Search for event {} in repository {} found this many {}, "
                     + "returning the one marked as a save point, if none are save points then the first", warnParams);
 
-            GitHubEventMapping mappingToUse = retrievedMappings[0];
-            for (GitHubEventMapping retrievedMapping : retrievedMappings)
+            GitHubEventMapping eventToUse = githubEvents[0];
+            for (GitHubEventMapping retrievedMapping : githubEvents)
             {
                 if (retrievedMapping.isSavePoint())
                 {
-                    mappingToUse = retrievedMapping;
+                    eventToUse = retrievedMapping;
                 }
             }
 
-            final Object[] infoParams = { gitHubId, repository.getId(), mappingToUse.getID() };
-            log.info("when multiple mappings were found for event {} in repository {} we chose the one with this id {}", infoParams);
+            final Object[] infoParams = { gitHubId, repository.getId(), eventToUse.getID() };
+            log.info("When multiple mappings were found for event {} in repository {} we chose the one with this id {}", infoParams);
 
-            return mappingToUse;
+            return eventToUse;
         }
-        return retrievedMappings.length == 1 ? retrievedMappings[0] : null;
+        return githubEvents.length == 1 ? githubEvents[0] : null;
     }
 
     private GitHubEventMapping[] findAllById(int repositoryId, String gitHubId)
