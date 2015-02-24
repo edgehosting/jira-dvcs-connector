@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -31,6 +32,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final Logger log = LoggerFactory.getLogger(AddGithubOrganization.class);
 
     public static final String EVENT_TYPE_GITHUB = "github";
+    public static final String DISABLE_USERNAME_VALIDATION = "dvcs.connector.github.user.validation.disabled";
 
     private String url;
     private String organization;
@@ -44,16 +46,18 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
+    private final FeatureManager featureManager;
 
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport EventPublisher eventPublisher,
             OAuthStore oAuthStore,
-            OrganizationService organizationService)
+            OrganizationService organizationService, @ComponentImport FeatureManager featureManager)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
+        this.featureManager = featureManager;
     }
 
     @Override
@@ -85,16 +89,18 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-
         if (StringUtils.isBlank(url) || StringUtils.isBlank(organization))
         {
             addErrorMessage("Please provide both url and organization parameters.");
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
-        if (accountInfo == null)
+        if (!featureManager.isEnabled(DISABLE_USERNAME_VALIDATION))
         {
-            addErrorMessage("Invalid user/team account.");
+            AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
+            if (accountInfo == null)
+            {
+                addErrorMessage("Invalid user/team account.");
+            }
         }
 
         if (organizationService.getByHostAndName(url, organization) != null)

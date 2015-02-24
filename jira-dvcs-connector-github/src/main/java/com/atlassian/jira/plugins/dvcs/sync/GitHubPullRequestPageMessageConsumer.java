@@ -15,6 +15,8 @@ import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -36,6 +38,8 @@ import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestServic
 @Component
 public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<GitHubPullRequestPageMessage>
 {
+    private final Logger log = LoggerFactory.getLogger(GitHubPullRequestPageMessageConsumer.class);
+
     public static final String QUEUE = GitHubPullRequestPageMessageConsumer.class.getCanonicalName();
     public static final String ADDRESS = GitHubPullRequestPageMessageConsumer.class.getCanonicalName();
 
@@ -71,6 +75,9 @@ public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<Git
         int pagelen = payload.getPagelen();
         boolean softSync = payload.isSoftSync();
         Set<Long> processedPullRequests = payload.getProcessedPullRequests();
+
+        final Object[] debugArguments = { page, pagelen, softSync, repository == null ? "" : repository.getName(), processedPullRequests == null ? -1 : processedPullRequests.size() };
+        log.debug("processing GitHubPullRequestPageMessage at page {} with a page length of {} and softSync of {} in repository {} with this many already processed {}", debugArguments);
 
         RepositoryId repositoryId = RepositoryId.createFromUrl(repository.getRepositoryUrl());
 
