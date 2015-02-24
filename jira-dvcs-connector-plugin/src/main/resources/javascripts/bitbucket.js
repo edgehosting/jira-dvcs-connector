@@ -721,7 +721,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
                         'registering':checkedValue,
                         'callbackUrl':registration.callBackUrl
                     }));
-                    popup.addButton("Ok", function (dialog) {
+                    popup.addButton("OK", function (dialog) {
                         popup.remove();
                     }, "aui-button submit");
                     popup.show();
