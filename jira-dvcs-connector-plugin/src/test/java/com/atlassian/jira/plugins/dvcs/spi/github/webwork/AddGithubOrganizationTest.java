@@ -131,7 +131,7 @@ public class AddGithubOrganizationTest {
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
-        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, oAuthStore, organizationService, featureManager)
+        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService)
         {
             @Override
             GithubOAuthUtils getGithubOAuthUtils() {

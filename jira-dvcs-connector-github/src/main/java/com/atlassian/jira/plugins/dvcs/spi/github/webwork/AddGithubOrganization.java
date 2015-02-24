@@ -50,9 +50,9 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport EventPublisher eventPublisher,
+            @ComponentImport FeatureManager featureManager,
             OAuthStore oAuthStore,
-            OrganizationService organizationService,
-            @ComponentImport FeatureManager featureManager)
+            OrganizationService organizationService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
