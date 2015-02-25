@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.mockito.InjectMocks;
@@ -177,20 +178,22 @@ public class RepositoryPullRequestDaoImplTest
 
     private Query matchQueryForPRIssueKeyWithIssueKey(final String issueKey)
     {
-        return argThat(allOf(
+        Matcher<Query> matcher = allOf(
                 isSelect(),
                 withWhereOnColumns(DOMAIN, PULL_REQUEST_ID, ISSUE_KEY),
                 withWhereParamsThat(Matchers.<Object>contains(REPO_ID, PR_ID, issueKey))
-        ));
+        );
+        return argThat(matcher);
     }
 
     private Query matchQueryForPRIssueKey()
     {
-        return argThat(allOf(
+        Matcher<Query> matcher = allOf(
                 isSelect(),
                 withWhereOnColumns(DOMAIN, PULL_REQUEST_ID),
                 withWhereParamsThat(Matchers.<Object>contains(REPO_ID, PR_ID))
-        ));
+        );
+        return argThat(matcher);
     }
 
     private Map<String, Object> matchMapHasIssueKey(String issueKey)
