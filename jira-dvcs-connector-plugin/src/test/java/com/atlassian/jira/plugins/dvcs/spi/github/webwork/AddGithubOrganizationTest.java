@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.spi.github.webwork;
 
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.junit.rules.AvailableInContainer;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
@@ -91,6 +92,9 @@ public class AddGithubOrganizationTest {
     @Mock
     private GithubOAuthUtils githubOAuthUtils;
 
+    @Mock
+    private FeatureManager featureManager;
+
     private AddGithubOrganization addGithubOrganization;
 
     @BeforeMethod(alwaysRun=true)
@@ -127,7 +131,7 @@ public class AddGithubOrganizationTest {
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
-        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, oAuthStore, organizationService)
+        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService)
         {
             @Override
             GithubOAuthUtils getGithubOAuthUtils() {
@@ -235,6 +239,18 @@ public class AddGithubOrganizationTest {
         final AccountInfo accountInfo = mock(AccountInfo.class);
         when(organizationService.getAccountInfo(anyString(), anyString(), Mockito.eq(GithubCommunicator.GITHUB))).thenReturn(accountInfo);
         addGithubOrganization.doValidation();
+        verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void testDisablingUserValidationDarkFeature()
+    {
+        addGithubOrganization.setSource(SAMPLE_SOURCE);
+        addGithubOrganization.setOrganization("org");
+        when(featureManager.isEnabled(AddGithubOrganization.DISABLE_USERNAME_VALIDATION)).thenReturn(true);
+
+        addGithubOrganization.doValidation();
+
         verifyNoMoreInteractions(eventPublisher);
     }
 }
