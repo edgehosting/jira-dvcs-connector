@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.mockito.ArgumentMatcher;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -23,7 +24,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
  */
 public class OrganizationServiceTest
 {
-
 	@Mock
 	private RepositoryService repositoryService;
 
@@ -37,7 +37,8 @@ public class OrganizationServiceTest
 	private DvcsCommunicator bitbucketCommunicator;
 
 	// tested object
-	private OrganizationService organizationService;
+    @InjectMocks
+	private OrganizationServiceImpl organizationService;
 
 	/**
 	 * The Constructor.
@@ -51,7 +52,6 @@ public class OrganizationServiceTest
 	public void setup()
 	{
 		MockitoAnnotations.initMocks(this);
-		organizationService = new OrganizationServiceImpl(organizationDao, dvcsCommunicatorProvider, repositoryService);
 	}
 
 	@Test

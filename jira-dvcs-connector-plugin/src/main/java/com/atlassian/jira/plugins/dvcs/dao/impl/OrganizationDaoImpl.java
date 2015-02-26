@@ -8,10 +8,8 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
-import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -25,8 +23,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,10 +30,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Component
 public class OrganizationDaoImpl implements OrganizationDao
 {
     public static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
@@ -46,15 +42,16 @@ public class OrganizationDaoImpl implements OrganizationDao
 
     private final Encryptor encryptor;
 
-    private final PluginSettingsFactory pluginSettingsFactory;
+    private final InvalidOrganizationManager invalidOrganizationsManager;
 
-    @Autowired
+
+    @Inject
     public OrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects, Encryptor encryptor,
-            @ComponentImport PluginSettingsFactory pluginSettingsFactory)
+            InvalidOrganizationManager invalidOrganizationsManager)
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.encryptor = encryptor;
-        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
+        this.invalidOrganizationsManager = checkNotNull(invalidOrganizationsManager);
     }
 
     /**
@@ -324,7 +321,6 @@ public class OrganizationDaoImpl implements OrganizationDao
         }
 
         // removing organization from invalid organizations list
-        InvalidOrganizationManager invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
         invalidOrganizationsManager.setOrganizationValid(organizationId, true);
     }
 

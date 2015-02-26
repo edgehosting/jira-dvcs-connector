@@ -51,7 +51,7 @@ public class ChangesetTransformerTest
     public void init()
     {
         MockitoAnnotations.initMocks(this);
-        changesetTransformer = new ChangesetTransformer(activeObjects, changesetDao);
+        changesetTransformer = new ChangesetTransformer(changesetDao);
 
         changesetMapping = mockChangesetMapping(0, false);
 
