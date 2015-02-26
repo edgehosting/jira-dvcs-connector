@@ -18,17 +18,17 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Resource;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
-@Component
+@Named
 public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
@@ -37,7 +37,7 @@ public class ChangesetTransformer
     @Resource (name="cachingOrganizationDao")
     private OrganizationDao organizationDao;
 
-    @Autowired
+    @Inject
     public ChangesetTransformer(final ChangesetDaoImpl changesetDao)
     {
         this.changesetDao = changesetDao;

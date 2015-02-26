@@ -2,17 +2,19 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileAction;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+
 public class ChangesetTransformerTest
 {
     private static final int REPOSITORY_ID = 1239807;
@@ -38,6 +41,9 @@ public class ChangesetTransformerTest
 
     @Mock
     private ChangesetDaoImpl changesetDao;
+
+    @Mock
+    private OrganizationDao organizationDao;
 
     @Captor
     private ArgumentCaptor<Changeset> changesetArgumentCaptor;
@@ -52,6 +58,7 @@ public class ChangesetTransformerTest
     {
         MockitoAnnotations.initMocks(this);
         changesetTransformer = new ChangesetTransformer(changesetDao);
+        ReflectionTestUtils.setField(changesetTransformer, "organizationDao", organizationDao);
 
         changesetMapping = mockChangesetMapping(0, false);
 
@@ -322,10 +329,10 @@ public class ChangesetTransformerTest
         final Integer organizationId1 = 3322;
         when(repositoryMapping.getOrganizationId()).thenReturn(organizationId1);
 
-        OrganizationMapping organization1 = mock(OrganizationMapping.class);
+        Organization organization1 = mock(Organization.class);
         when(organization1.getDvcsType()).thenReturn(BITBUCKET);
 
-        when(activeObjects.get(OrganizationMapping.class, organizationId1)).thenReturn(organization1);
+        when(organizationDao.get(organizationId1)).thenReturn(organization1);
 
         final int secondRepositoryId = 9980;
         RepositoryMapping secondMapping = setupActiveRepository(secondRepositoryId, false);
@@ -333,11 +340,10 @@ public class ChangesetTransformerTest
         final Integer organizationId2 = 4455;
         when(secondMapping.getOrganizationId()).thenReturn(organizationId2);
 
-        OrganizationMapping organization2 = mock(OrganizationMapping.class);
+        Organization organization2 = mock(Organization.class);
         when(organization2.getDvcsType()).thenReturn(GITHUB);
 
-        when(activeObjects.get(OrganizationMapping.class, organizationId2)).thenReturn(organization2);
-
+        when(organizationDao.get(organizationId2)).thenReturn(organization2);
         when(changesetMapping.getRepositories()).thenReturn(new RepositoryMapping[] { repositoryMapping, secondMapping });
 
         Changeset changeset = changesetTransformer.transform(changesetMapping, 0, BITBUCKET);
