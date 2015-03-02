@@ -7,9 +7,9 @@ import java.util.Map;
 
 /**
  * DAO layer of the {@link GitHubEventMapping}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
+ *
  */
 public interface GitHubEventDAO
 {
@@ -23,7 +23,7 @@ public interface GitHubEventDAO
 
     /**
      * Marks provided {@link GitHubEventMapping} as a save point - {@link GitHubEventMapping#isSavePoint()} == true.
-     * 
+     *
      * @param gitHubEvent
      *            for marking
      */
@@ -31,7 +31,7 @@ public interface GitHubEventDAO
 
     /**
      * Removes all events for provided repository.
-     * 
+     *
      * @param repository
      *            for which repository
      */
