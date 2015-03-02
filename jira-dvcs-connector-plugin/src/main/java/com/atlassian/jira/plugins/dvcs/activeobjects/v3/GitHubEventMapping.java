@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
 import net.java.ao.schema.Default;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.Table;
 
@@ -41,11 +42,13 @@ public interface GitHubEventMapping extends Entity
      * @return {@link GitHubEvent#getRepository()}
      */
     @NotNull
+    @Indexed
     RepositoryMapping getRepository();
 
     /**
      * @return remote id of GithubEvent
      */
+    @Indexed
     @NotNull
     @Default ("0") // this has no effect other than to work around FUSE-705/AO-490
     String getGitHubId();
