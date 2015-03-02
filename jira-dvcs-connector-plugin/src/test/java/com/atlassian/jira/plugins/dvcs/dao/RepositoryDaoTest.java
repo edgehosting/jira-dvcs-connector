@@ -5,9 +5,6 @@ import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryDaoImpl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -21,10 +18,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
 
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator.BITBUCKET;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
@@ -47,13 +42,7 @@ public class RepositoryDaoTest
     private OrganizationMapping organizationMapping;
 
     @Mock
-    private OrganizationDao organizationDao;
-
-    @Mock
     private RepositoryMapping repositoryMapping;
-
-    private Organization organization = new Organization(1, "hostUrl", "bitbucket account", BITBUCKET, false,
-            new Credential("oauthKey", "oauthSecret", "accessToken"), "organizationUrl", false, new HashSet<Group>());
 
     // tested object
     private RepositoryDao repositoryDao;
@@ -65,18 +54,14 @@ public class RepositoryDaoTest
     {
         MockitoAnnotations.initMocks(this);
         repositoryDao = new RepositoryDaoImpl(activeObjects);
-
-        ReflectionTestUtils.setField(repositoryDao, "organizationDao", organizationDao);
         ReflectionTestUtils.setField(repositoryDao, "synchronizer", synchronizer);
         ReflectionTestUtils.setField(repositoryDao, "repositoryTransformer", new RepositoryTransformer());
-
-        when(repositoryMapping.getOrganizationId()).thenReturn(1);
-        when(organizationDao.get(1)).thenReturn(organization);
     }
 
     @Test
     public void testSave()
     {
+
         Repository sampleRepository = createSampleRepository();
         when(activeObjects.get(eq(OrganizationMapping.class), eq(1))).thenReturn(
                 organizationMapping);

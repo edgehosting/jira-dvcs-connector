@@ -3,11 +3,9 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -43,9 +41,6 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Resource
     private Synchronizer synchronizer;
 
-    @Resource(name="cachingOrganizationDao")
-    private OrganizationDao organizationDao;
-
     @Autowired
     public RepositoryDaoImpl(@ComponentImport ActiveObjects activeObjects)
     {
@@ -59,9 +54,9 @@ public class RepositoryDaoImpl implements RepositoryDao
             return null;
         }
 
-        Organization organization = organizationDao.get(repositoryMapping.getOrganizationId());
-        final DefaultProgress progress = (DefaultProgress) synchronizer.getProgress(organization.getId());
-        return repositoryTransformer.transform(repositoryMapping, organization, progress);
+        OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
+        final DefaultProgress progress = (DefaultProgress) synchronizer.getProgress(repositoryMapping.getID());
+        return repositoryTransformer.transform(repositoryMapping, organizationMapping, progress);
     }
 
     @SuppressWarnings ("unchecked")

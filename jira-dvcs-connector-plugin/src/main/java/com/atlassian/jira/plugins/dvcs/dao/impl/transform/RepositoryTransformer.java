@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ public class RepositoryTransformer
 {
     private static final Logger log = LoggerFactory.getLogger(RepositoryTransformer.class);
 
-    public Repository transform(RepositoryMapping repositoryMapping, Organization organization, DefaultProgress defaultProgress)
+    public Repository transform(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping, DefaultProgress defaultProgress)
     {
         if (repositoryMapping == null)
         {
@@ -48,20 +49,22 @@ public class RepositoryTransformer
             forkOfRepository.setSlug(repositoryMapping.getForkOfSlug());
             forkOfRepository.setName(repositoryMapping.getForkOfName());
             forkOfRepository.setOwner(repositoryMapping.getForkOfOwner());
-            if (organization != null)
+            if (organizationMapping != null)
             {
-                forkOfRepository.setRepositoryUrl(createForkOfRepositoryUrl(repositoryMapping, organization));
+                forkOfRepository.setRepositoryUrl(createForkOfRepositoryUrl(repositoryMapping, organizationMapping));
             }
             repository.setForkOf(forkOfRepository);
         }
 
-        if (organization != null)
+        if (organizationMapping != null)
         {
-            repository.setCredential(organization.getCredential());
-            repository.setDvcsType(organization.getDvcsType());
-            repository.setOrgHostUrl(organization.getHostUrl());
-            repository.setOrgName(organization.getName());
-            repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organization));
+            Credential credential = new Credential(organizationMapping.getOauthKey(), organizationMapping.getOauthSecret(),
+                    organizationMapping.getAccessToken(), organizationMapping.getAdminUsername(), organizationMapping.getAdminPassword());
+            repository.setCredential(credential);
+            repository.setDvcsType(organizationMapping.getDvcsType());
+            repository.setOrgHostUrl(organizationMapping.getHostUrl());
+            repository.setOrgName(organizationMapping.getName());
+            repository.setRepositoryUrl(createRepositoryUrl(repositoryMapping, organizationMapping));
         }
         else
         {
@@ -73,14 +76,15 @@ public class RepositoryTransformer
         return repository;
     }
 
-    private String createRepositoryUrl(RepositoryMapping repositoryMapping, Organization organization)
+
+    private String createRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
     {
-        return createRepositoryUrl(organization.getHostUrl(), organization.getName(), repositoryMapping.getSlug());
+        return createRepositoryUrl(organizationMapping.getHostUrl(), organizationMapping.getName(), repositoryMapping.getSlug());
     }
 
-    private String createForkOfRepositoryUrl(RepositoryMapping repositoryMapping, Organization organization)
+    private String createForkOfRepositoryUrl(RepositoryMapping repositoryMapping, OrganizationMapping organizationMapping)
     {
-        return createRepositoryUrl(organization.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
+        return createRepositoryUrl(organizationMapping.getHostUrl(), repositoryMapping.getForkOfOwner(), repositoryMapping.getForkOfSlug());
     }
 
     public static String createRepositoryUrl(String hostUrl, String owner, String slug)
