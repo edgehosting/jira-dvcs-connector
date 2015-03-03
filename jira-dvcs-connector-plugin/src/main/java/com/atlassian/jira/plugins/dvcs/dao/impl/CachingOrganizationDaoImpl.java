@@ -1,49 +1,48 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
-import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isBlank;
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isNotBlank;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-@Named ("cachingOrganizationDao")
-public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
+@Component("cachingOrganizationDao")
+public class CachingOrganizationDaoImpl implements OrganizationDao
 {
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().expireAfterWrite(30, MINUTES).build();
-    private Cache<String, List<Organization>> organizationsCache;
+    private final Cache<String, List<Organization>> organizationsCache;
+
+    @Autowired
+    @Qualifier("organizationDao")
+    private OrganizationDao organizationDao;
 
     @VisibleForTesting
     static final String REPO_CACHE_KEY = "all";
 
-    @Inject
-    public CachingOrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects,
-            @ComponentImport final CacheManager cacheManager,
-            Encryptor encryptor,
-            InvalidOrganizationManager invalidOrganizationsManager)
+    @Autowired
+    public CachingOrganizationDaoImpl(@ComponentImport final CacheManager cacheManager)
     {
-        super(activeObjects, encryptor, invalidOrganizationsManager);
         organizationsCache = cacheManager.getCache(getClass().getName() + ".organizationsCache", new OrganizationLoader(), CACHE_SETTINGS);
     }
 
@@ -51,6 +50,12 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
     public List<Organization> getAll()
     {
         return organizationsCache.get(REPO_CACHE_KEY);
+    }
+
+    @Override
+    public int getAllCount()
+    {
+        return getAll().size();
     }
 
     @Override
@@ -117,6 +122,12 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
     }
 
     @Override
+    public List<Organization> getAutoInvitionOrganizations()
+    {
+        return organizationDao.getAutoInvitionOrganizations();
+    }
+
+    @Override
     public boolean existsOrganizationWithType(final String... types)
     {
         if (ArrayUtils.isEmpty(types))
@@ -157,7 +168,7 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
     {
         try
         {
-            super.remove(organizationId);
+            organizationDao.remove(organizationId);
         }
         finally
         {
@@ -170,7 +181,7 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
     {
         try
         {
-            return super.save(organization);
+            return organizationDao.save(organization);
         }
         finally
         {
@@ -183,7 +194,7 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
     {
         try
         {
-            super.setDefaultGroupsSlugs(orgId, groupsSlugs);
+            organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
         }
         finally
         {
@@ -196,17 +207,12 @@ public class CachingOrganizationDaoImpl extends OrganizationDaoImpl
         organizationsCache.removeAll();
     }
 
-    private List<Organization> getAllFromSuper()
-    {
-        return super.getAll();
-    }
-
     private class OrganizationLoader implements CacheLoader<String, List<Organization>>
     {
         @Override
         public List<Organization> load(@Nonnull final String key)
         {
-            return getAllFromSuper();
+            return organizationDao.getAll();
         }
     }
 }

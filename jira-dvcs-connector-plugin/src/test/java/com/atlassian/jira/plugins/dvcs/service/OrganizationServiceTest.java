@@ -24,8 +24,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
  */
 public class OrganizationServiceTest
 {
-	@Mock
-	private RepositoryService repositoryService;
+    @Mock
+    private RepositoryService repositoryService;
 
     @Mock
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
@@ -36,9 +36,9 @@ public class OrganizationServiceTest
     @Mock
     private DvcsCommunicator bitbucketCommunicator;
 
-	// tested object
+    // tested object
     @InjectMocks
-	private OrganizationServiceImpl organizationService;
+    private OrganizationServiceImpl organizationService;
 
     /**
      * The Constructor.
@@ -48,11 +48,11 @@ public class OrganizationServiceTest
         super();
     }
 
-	@BeforeMethod
-	public void setup()
-	{
-		MockitoAnnotations.initMocks(this);
-	}
+    @BeforeMethod
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void testCreateOrganization()
@@ -84,7 +84,6 @@ public class OrganizationServiceTest
         assertThat(all.get(0)).isSameAs(sampleOrganization);
 
         Mockito.verify(organizationDao).getAllByType("bitbucket");
-
     }
 
     @Test
@@ -99,10 +98,8 @@ public class OrganizationServiceTest
 
         organizationService.getAll(true, "bitbucket");
 
-        //
         Mockito.verify(organizationDao).getAllByType("bitbucket");
         Mockito.verify(repositoryService).getAllByOrganization(0);
-
     }
 
     @Test
@@ -113,7 +110,6 @@ public class OrganizationServiceTest
 
         organizationService.enableAutolinkNewRepos(0, true);
 
-        //
         Mockito.verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
         {
             @Override
@@ -134,7 +130,6 @@ public class OrganizationServiceTest
 
         organizationService.enableAutolinkNewRepos(0, false);
 
-        //
         Mockito.verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
         {
             @Override

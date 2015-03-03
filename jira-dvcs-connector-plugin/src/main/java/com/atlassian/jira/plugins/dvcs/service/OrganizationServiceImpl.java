@@ -12,25 +12,27 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Resource;
 
 @Component
 public class OrganizationServiceImpl implements OrganizationService
 {
     private static final Logger log = LoggerFactory.getLogger(OrganizationServiceImpl.class);
 
-    @Resource (name = "cachingOrganizationDao")
+    @Autowired
+    @Qualifier ("cachingOrganizationDao")
     private OrganizationDao organizationDao;
 
-    @Resource
+    @Autowired
     private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    @Resource
+    @Autowired
     private RepositoryService repositoryService;
 
     @Override

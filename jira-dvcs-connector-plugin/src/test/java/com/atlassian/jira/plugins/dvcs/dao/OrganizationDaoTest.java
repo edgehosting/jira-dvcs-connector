@@ -45,20 +45,20 @@ public class OrganizationDaoTest
 
     private OrganizationDao organizationDao;
 
-	@BeforeMethod
-	public void initializeMocksAndOrganizationDAO()
-	{
+    @BeforeMethod
+    public void initializeMocksAndOrganizationDAO()
+    {
         MockitoAnnotations.initMocks(this);
-		organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class), mock(InvalidOrganizationManager.class));
-	}
+        organizationDao = new OrganizationDaoImpl(activeObjectsMock, mock(Encryptor.class), mock(InvalidOrganizationManager.class));
+    }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     @Test
     public void savingNewOrganizationModelObject_ShouldDoProperTransformation_ToOrganizationMappingEntity()
     {
         Organization organization = createSampleOrganization();
 
-		when(activeObjectsMock.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        when(activeObjectsMock.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable
@@ -86,7 +86,7 @@ public class OrganizationDaoTest
                 entry(OrganizationMapping.ADMIN_PASSWORD, null));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     @Test
     public void updatingOrganizationModelObject_ShouldCallSettersAndSaveMethods_OnOrganizationMappingEntity()
     {
@@ -95,7 +95,7 @@ public class OrganizationDaoTest
         Organization organization = createSampleOrganization();
         organization.setId(ORGANIZATION_ID);
 
-		when(activeObjectsMock.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        when(activeObjectsMock.executeInTransaction(isA(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable
@@ -110,11 +110,11 @@ public class OrganizationDaoTest
 
         verify(organizationMappingMock).setAccessToken(eq("accessToken"));
         verify(organizationMappingMock).setAdminUsername(eq("adminUserName"));
-        verify(organizationMappingMock).setDvcsType     (eq("bitbucket"));
-        verify(organizationMappingMock).setHostUrl      (eq("organizationHostUrl"));
-        verify(organizationMappingMock).setName         (eq("organizationName"));
+        verify(organizationMappingMock).setDvcsType(eq("bitbucket"));
+        verify(organizationMappingMock).setHostUrl(eq("organizationHostUrl"));
+        verify(organizationMappingMock).setName(eq("organizationName"));
 
-        verify(organizationMappingMock).setAutolinkNewRepos  (eq(true));
+        verify(organizationMappingMock).setAutolinkNewRepos(eq(true));
 
         verify(organizationMappingMock).setAdminPassword(eq((String) null));
 
@@ -127,18 +127,18 @@ public class OrganizationDaoTest
 
         organization.setId(0); // to be sure that the entity object will be saved for the first time
 
-        organization.setHostUrl ("organizationHostUrl");
-        organization.setName    ("organizationName");
+        organization.setHostUrl("organizationHostUrl");
+        organization.setName("organizationName");
         organization.setDvcsType("bitbucket");
 
-        organization.setAutolinkNewRepos  (true);
+        organization.setAutolinkNewRepos(true);
 
         Credential organizationCredential = new Credential(null, null, "accessToken", "adminUserName", null);
         organization.setCredential(organizationCredential);
 
         return organization;
     }
-    
+
     @Test
     public void testGetByHostAndName()
     {

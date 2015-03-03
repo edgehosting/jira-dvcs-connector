@@ -1,23 +1,20 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
-import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
-import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +27,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,25 +39,19 @@ public class CachingOrganizationDaoImplTest
     private static final String GH_ACCOUNT_NAME = "github-account";
 
     @Mock
-    private ActiveObjects activeObjects;
-    @Mock
     private CacheManager cacheManager;
     @Mock
-    private Encryptor encryptor;
-    @Mock
-    private InvalidOrganizationManager invalidOrganizationsManager;
+    private OrganizationDao organizationDao;
     @Mock
     private Cache cache;
-    @Mock
-    private OrganizationMapping organizationMapping;
 
-    private Organization orgBitbucket = new Organization(1, BB_URL, BB_ACCOUNT_NAME, BITBUCKET, false,
+    private final Organization orgBitbucket = new Organization(1, BB_URL, BB_ACCOUNT_NAME, BITBUCKET, false,
             new Credential("oauthKey", "oauthSecret", "accessToken"), "organizationUrl", false, new HashSet<Group>());
 
-    private Organization orgGithub = new Organization(2, GH_URL, GH_ACCOUNT_NAME, GITHUB, false,
+    private final Organization orgGithub = new Organization(2, GH_URL, GH_ACCOUNT_NAME, GITHUB, false,
             new Credential("oauthKey", "oauthSecret", null), "organizationUrl", false, new HashSet<Group>());
 
-    private List<Organization> orgs = ImmutableList.of(orgBitbucket, orgGithub);
+    private final List<Organization> orgs = ImmutableList.of(orgBitbucket, orgGithub);
 
     private CachingOrganizationDaoImpl cachingOrganizationDao;
 
@@ -69,7 +59,8 @@ public class CachingOrganizationDaoImplTest
     public void setUp() throws Exception
     {
         when(cacheManager.getCache(anyString(), any(CacheLoader.class), any(CacheSettings.class))).thenReturn(cache);
-        cachingOrganizationDao = spy(new CachingOrganizationDaoImpl(activeObjects, cacheManager, encryptor, invalidOrganizationsManager));
+        cachingOrganizationDao = new CachingOrganizationDaoImpl(cacheManager);
+        ReflectionTestUtils.setField(cachingOrganizationDao, "organizationDao", organizationDao);
 
         when(cache.get(CachingOrganizationDaoImpl.REPO_CACHE_KEY)).thenReturn(orgs);
     }
@@ -92,6 +83,12 @@ public class CachingOrganizationDaoImplTest
         assertThat(orgs.get(0), is(orgBitbucket));
 
         assertThat(cachingOrganizationDao.getAllByType(GITHUB_ENTERPRISE).size(), is(0));
+    }
+
+    @Test
+    public void testGetAllCount()
+    {
+        assertThat(cachingOrganizationDao.getAllCount(), is(2));
     }
 
     @Test
@@ -140,11 +137,10 @@ public class CachingOrganizationDaoImplTest
     @Test
     public void testRemove() throws Exception
     {
-        when(activeObjects.get(OrganizationMapping.class, 1)).thenReturn(organizationMapping);
+        final int ORG_ID = 1;
+        cachingOrganizationDao.remove(ORG_ID);
 
-        cachingOrganizationDao.remove(1);
-
-        verify(activeObjects).delete(organizationMapping);
+        verify(organizationDao).remove(ORG_ID);
         verify(cache).removeAll();
     }
 
@@ -153,18 +149,16 @@ public class CachingOrganizationDaoImplTest
     {
         cachingOrganizationDao.save(orgBitbucket);
 
-        verify(activeObjects).executeInTransaction(any(TransactionCallback.class));
+        verify(organizationDao).save(orgBitbucket);
         verify(cache).removeAll();
     }
 
     @Test
     public void testSetDefaultGroupsSlugs() throws Exception
     {
-        when(activeObjects.get(OrganizationMapping.class, 2)).thenReturn(organizationMapping);
-
         cachingOrganizationDao.setDefaultGroupsSlugs(2, ImmutableList.of("slug1"));
 
-        verify(activeObjects).executeInTransaction(any(TransactionCallback.class));
+        verify(organizationDao).setDefaultGroupsSlugs(2, ImmutableList.of("slug1"));
         verify(cache).removeAll();
     }
 }

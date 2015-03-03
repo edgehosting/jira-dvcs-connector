@@ -23,6 +23,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,22 +32,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Component ("organizationDao")
 public class OrganizationDaoImpl implements OrganizationDao
 {
     public static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
 
     private final ActiveObjects activeObjects;
-
     private final Encryptor encryptor;
-
     private final InvalidOrganizationManager invalidOrganizationsManager;
 
-
-    @Inject
+    @Autowired
     public OrganizationDaoImpl(@ComponentImport ActiveObjects activeObjects, Encryptor encryptor,
             InvalidOrganizationManager invalidOrganizationsManager)
     {
