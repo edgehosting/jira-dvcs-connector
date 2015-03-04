@@ -74,7 +74,7 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
         
         User user = userManager.getUser(username);
 
-        List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
+        List<Organization> defaultOrganizations = organizationService.getAll(false);
 
         // continue ? ------------------------------------------
         if (CollectionUtils.isEmpty(defaultOrganizations))

@@ -57,13 +57,6 @@ public interface OrganizationDao
 	List<Organization> getAllByIds(Collection<Integer> ids);
 
 	/**
-	 * Gets the auto invition organizations.
-	 *
-	 * @return the auto invition organizations
-	 */
-	List<Organization> getAutoInvitionOrganizations();
-
-	/**
 	 * Gets the all by type.
 	 *
 	 * @param type the type

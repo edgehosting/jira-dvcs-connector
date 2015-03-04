@@ -1,14 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import com.atlassian.cache.Cache;
-import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
+import com.atlassian.cache.CachedReference;
+import com.atlassian.cache.Supplier;
+import com.atlassian.jira.cluster.ClusterSafe;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -20,36 +20,43 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nonnull;
+import java.util.NoSuchElementException;
 import javax.annotation.Nullable;
 
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isBlank;
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isNotBlank;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-@Component("cachingOrganizationDao")
+@Component ("cachingOrganizationDao")
 public class CachingOrganizationDaoImpl implements OrganizationDao
 {
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().expireAfterWrite(30, MINUTES).build();
-    private final Cache<String, List<Organization>> organizationsCache;
+
+    @ClusterSafe
+    private final CachedReference<List<Organization>> organizationsCache;
 
     @Autowired
-    @Qualifier("organizationDao")
+    @Qualifier ("organizationDao")
     private OrganizationDao organizationDao;
-
-    @VisibleForTesting
-    static final String REPO_CACHE_KEY = "all";
 
     @Autowired
     public CachingOrganizationDaoImpl(@ComponentImport final CacheManager cacheManager)
     {
-        organizationsCache = cacheManager.getCache(getClass().getName() + ".organizationsCache", new OrganizationLoader(), CACHE_SETTINGS);
+        organizationsCache = cacheManager.getCachedReference(getClass().getName() + ".organizationsCache", new Supplier<List<Organization>>()
+        {
+            @Override
+            public List<Organization> get()
+            {
+                return organizationDao.getAll();
+            }
+        }, CACHE_SETTINGS);
     }
 
     @Override
     public List<Organization> getAll()
     {
-        return organizationsCache.get(REPO_CACHE_KEY);
+        return organizationsCache.get();
     }
 
     @Override
@@ -68,7 +75,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
             @Override
             public boolean apply(@Nullable final Organization org)
             {
-                return dvcsType.equals(org.getDvcsType().trim());
+                return dvcsType.equals(org.getDvcsType());
             }
         });
 
@@ -78,35 +85,37 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization get(final int organizationId)
     {
-        final List<Organization> orgs = getAll();
-
-        for (Organization org : orgs)
+        return findOrganization(new Predicate<Organization>()
         {
-            if (org.getId() == organizationId)
+            @Override
+            public boolean apply(@Nullable final Organization org)
             {
-                return org;
+                return org.getId() == organizationId;
             }
-        }
-        return null;
+        });
     }
 
     @Override
     public Organization getByHostAndName(final String hostUrl, final String name)
     {
-        final List<Organization> orgs = this.getAll();
-        for (Organization org : orgs)
+        checkNotNull(hostUrl);
+        checkNotNull(name);
+
+        return findOrganization(new Predicate<Organization>()
         {
-            if (hostUrl.equals(org.getHostUrl()) && name.equals(org.getName()))
+            @Override
+            public boolean apply(@Nullable final Organization org)
             {
-                return org;
+                return hostUrl.equals(org.getHostUrl()) && name.equalsIgnoreCase(org.getName());
             }
-        }
-        return null;
+        });
     }
 
     @Override
     public List<Organization> getAllByIds(final Collection<Integer> ids)
     {
+        checkNotNull(ids);
+
         final List<Organization> orgs = getAll();
 
         final Iterable<Organization> orgsByIds = Iterables.filter(orgs, new Predicate<Organization>()
@@ -122,97 +131,84 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     }
 
     @Override
-    public List<Organization> getAutoInvitionOrganizations()
-    {
-        return organizationDao.getAutoInvitionOrganizations();
-    }
-
-    @Override
     public boolean existsOrganizationWithType(final String... types)
     {
-        if (ArrayUtils.isEmpty(types))
+        if (types == null || ArrayUtils.isEmpty(types))
         {
             return false;
         }
 
         final List<String> typeList = Arrays.asList(types);
-
-        final List<Organization> orgs = this.getAll();
-        for (Organization org : orgs)
+        Organization org = findOrganization(new Predicate<Organization>()
         {
-            if (typeList.contains(org.getDvcsType()))
+            @Override
+            public boolean apply(@Nullable final Organization org)
             {
-                return true;
+                return typeList.contains(org.getDvcsType());
             }
-        }
-        return false;
+        });
+
+        return org != null;
     }
 
     @Override
     public Organization findIntegratedAccount()
     {
-        final List<Organization> orgs = this.getAll();
-        for (Organization org : orgs)
+        return findOrganization(new Predicate<Organization>()
         {
-            if (isNotBlank(org.getCredential().getOauthKey()) && isNotBlank(org.getCredential().getOauthSecret()) &&
-                    isBlank(org.getCredential().getAccessToken()))
+            @Override
+            public boolean apply(@Nullable final Organization org)
             {
-                return org;
+                return isNotBlank(org.getCredential().getOauthKey()) && isNotBlank(org.getCredential().getOauthSecret()) &&
+                        isBlank(org.getCredential().getAccessToken());
             }
-        }
-        return null;
+        });
     }
 
     @Override
     public void remove(int organizationId)
     {
-        try
-        {
-            organizationDao.remove(organizationId);
-        }
-        finally
-        {
-            clearCache();
-        }
+        organizationDao.remove(organizationId);
+        // if operation fails then do not clear the cache
+        clearCache();
     }
 
     @Override
     public Organization save(final Organization organization)
     {
-        try
-        {
-            return organizationDao.save(organization);
-        }
-        finally
+        Organization org = organizationDao.save(organization);
+        // if operation fails then do not clear the cache
+        if (org != null)
         {
             clearCache();
         }
+
+        return org;
     }
 
     @Override
     public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
     {
+        organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
+        // if operation fails then do not clear the cache
+        clearCache();
+    }
+
+    private Organization findOrganization(Predicate<Organization> predicate)
+    {
         try
         {
-            organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
+            final List<Organization> orgs = getAll();
+            return Iterables.find(orgs, predicate);
         }
-        finally
+        catch (NoSuchElementException e)
         {
-            clearCache();
+            return null;
         }
     }
 
     private void clearCache()
     {
-        organizationsCache.removeAll();
-    }
-
-    private class OrganizationLoader implements CacheLoader<String, List<Organization>>
-    {
-        @Override
-        public List<Organization> load(@Nonnull final String key)
-        {
-            return organizationDao.getAll();
-        }
+        organizationsCache.reset();
     }
 }

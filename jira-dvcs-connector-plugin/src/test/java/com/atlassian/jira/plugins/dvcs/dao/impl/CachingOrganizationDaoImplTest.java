@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
-import com.atlassian.cache.Cache;
-import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
+import com.atlassian.cache.CachedReference;
+import com.atlassian.cache.Supplier;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -43,7 +43,7 @@ public class CachingOrganizationDaoImplTest
     @Mock
     private OrganizationDao organizationDao;
     @Mock
-    private Cache cache;
+    private CachedReference cache;
 
     private final Organization orgBitbucket = new Organization(1, BB_URL, BB_ACCOUNT_NAME, BITBUCKET, false,
             new Credential("oauthKey", "oauthSecret", "accessToken"), "organizationUrl", false, new HashSet<Group>());
@@ -58,11 +58,12 @@ public class CachingOrganizationDaoImplTest
     @Before
     public void setUp() throws Exception
     {
-        when(cacheManager.getCache(anyString(), any(CacheLoader.class), any(CacheSettings.class))).thenReturn(cache);
+        when(cacheManager.getCachedReference(anyString(), any(Supplier.class), any(CacheSettings.class))).thenReturn(cache);
         cachingOrganizationDao = new CachingOrganizationDaoImpl(cacheManager);
         ReflectionTestUtils.setField(cachingOrganizationDao, "organizationDao", organizationDao);
 
-        when(cache.get(CachingOrganizationDaoImpl.REPO_CACHE_KEY)).thenReturn(orgs);
+        when(cache.get()).thenReturn(orgs);
+        when(organizationDao.save(orgBitbucket)).thenReturn(orgBitbucket);
     }
 
     @Test
@@ -130,18 +131,18 @@ public class CachingOrganizationDaoImplTest
         assertThat(cachingOrganizationDao.findIntegratedAccount(), is(orgGithub));
 
         // when there is no integrated account
-        when(cache.get(CachingOrganizationDaoImpl.REPO_CACHE_KEY)).thenReturn(ImmutableList.of(orgBitbucket));
+        when(cache.get()).thenReturn(ImmutableList.of(orgBitbucket));
         assertThat(cachingOrganizationDao.findIntegratedAccount(), nullValue());
     }
 
     @Test
     public void testRemove() throws Exception
     {
-        final int ORG_ID = 1;
-        cachingOrganizationDao.remove(ORG_ID);
+        final int orgId = 1;
+        cachingOrganizationDao.remove(orgId);
 
-        verify(organizationDao).remove(ORG_ID);
-        verify(cache).removeAll();
+        verify(organizationDao).remove(orgId);
+        verify(cache).reset();
     }
 
     @Test
@@ -150,15 +151,18 @@ public class CachingOrganizationDaoImplTest
         cachingOrganizationDao.save(orgBitbucket);
 
         verify(organizationDao).save(orgBitbucket);
-        verify(cache).removeAll();
+        verify(cache).reset();
     }
 
     @Test
     public void testSetDefaultGroupsSlugs() throws Exception
     {
-        cachingOrganizationDao.setDefaultGroupsSlugs(2, ImmutableList.of("slug1"));
+        final List<String> slugs = ImmutableList.of("slug1");
+        final int orgId = 2;
 
-        verify(organizationDao).setDefaultGroupsSlugs(2, ImmutableList.of("slug1"));
-        verify(cache).removeAll();
+        cachingOrganizationDao.setDefaultGroupsSlugs(orgId, slugs);
+
+        verify(organizationDao).setDefaultGroupsSlugs(orgId, slugs);
+        verify(cache).reset();
     }
 }

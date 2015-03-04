@@ -360,16 +360,6 @@ public class OrganizationDaoImpl implements OrganizationDao
         return transformCollection(Arrays.asList(orgMappings));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Organization> getAutoInvitionOrganizations()
-    {
-        OrganizationMapping[] orgMappings = activeObjects.find(OrganizationMapping.class);
-        return transformCollection(Arrays.asList(orgMappings));
-    }
-
     @Override
     public Organization findIntegratedAccount()
     {

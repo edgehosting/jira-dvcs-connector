@@ -182,12 +182,6 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAutoInvitionOrganizations()
-    {
-        return organizationDao.getAutoInvitionOrganizations();
-    }
-
-    @Override
     public List<Organization> getAllByIds(Collection<Integer> ids)
     {
         if (CollectionUtils.isNotEmpty(ids))

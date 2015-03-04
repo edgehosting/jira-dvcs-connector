@@ -94,13 +94,6 @@ public interface OrganizationService
 	void enableAutolinkNewRepos(int orgId, boolean autolink);
 
 	/**
-	 * Gets the auto invitation organizations.
-	 *
-	 * @return the auto invitation organizations
-	 */
-	List<Organization> getAutoInvitionOrganizations();
-
-	/**
 	 * Gets the all by ids.
 	 *
 	 * @param ids the ids
