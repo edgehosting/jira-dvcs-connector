@@ -54,4 +54,4 @@ Basically new work should go on master.
 
 Building the code
 ========
-The integration tests call a specific user account in Bitbucket whose credentials are not available, also they take around an hour to run. If you want to compile the code you can use mvn clean install -DskipITs=true which will run the unit test suite.
+The integration tests use a specific user account in Bitbucket whose credentials are not available, also they take around an hour to run. If you want to compile the code you can use mvn clean install -DskipITs=true which will run the unit test suite.
