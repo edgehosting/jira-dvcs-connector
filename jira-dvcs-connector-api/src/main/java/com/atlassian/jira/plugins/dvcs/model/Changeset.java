@@ -53,9 +53,9 @@ public class Changeset implements IssueKeyedEntity
 
 
     public Changeset(int repositoryId, String node,
-                     String rawAuthor, String author, Date date,
-                     String rawNode, String branch, String message,
-                     List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
+            String rawAuthor, String author, Date date,
+            String rawNode, String branch, String message,
+            List<String> parents, List<ChangesetFile> files, int allFileCount, String authorEmail)
     {
         this.repositoryId = repositoryId;
         this.node = node;
@@ -316,13 +316,22 @@ public class Changeset implements IssueKeyedEntity
     }
 
     /**
-     * Sets the file details.
+     * Sets the file details, ATTENTION! this also calls #setFiles as these need to be kept in sync.
      *
      * @param fileDetails a list of ChangesetFileDetail
+     * <p/>
+     * Why #fileDetails is kept in sync with #files is unclear but there are comments in the code base that allude to
+     * this being necessary if you look hard enough, for example try ChangesetServiceImpl or EventsJsonMarshallingTest.
+     * I have modified this method to set both so that hopefully we don't get any more errors where we change code paths
+     * and things stop working.
+     * <p/>
+     * If these are not kept in sync the you will find that dev integration detail may fail to load as it looks at
+     * #files not #fileDetails for its information.
      */
     public void setFileDetails(List<? extends ChangesetFileDetail> fileDetails)
     {
         this.fileDetails = fileDetails != null ? ImmutableList.copyOf(fileDetails) : null;
+        setFiles(fileDetails);
     }
 
     @Override

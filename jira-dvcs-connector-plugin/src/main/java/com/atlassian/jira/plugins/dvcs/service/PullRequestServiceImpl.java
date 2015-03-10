@@ -71,11 +71,11 @@ public class PullRequestServiceImpl implements PullRequestService
     @Override
     public List<PullRequest> getByIssueKeys(final Iterable<String> issueKeys, final String dvcsType)
     {
-        if (queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled())
+        if (queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled())
         {
-            return pullRequestDaoQueryDsl.getByIssueKeys(issueKeys, dvcsType);
+            return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
         }
-        return transform(pullRequestDao.getByIssueKeys(issueKeys, dvcsType), false);
+        return pullRequestDaoQueryDsl.getByIssueKeys(issueKeys, dvcsType);
     }
 
     @Override

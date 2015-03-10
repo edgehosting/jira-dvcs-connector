@@ -342,7 +342,7 @@ public class BranchServiceImplTest
     @Test
     public void testWithDarkFeatureEnabled()
     {
-        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(true);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled()).thenReturn(false);
         final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
         when(branchDaoQueryDsl.getBranchesForIssue(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
 
@@ -353,7 +353,7 @@ public class BranchServiceImplTest
     @Test
     public void testWithDarkFeatureDisabled()
     {
-        when(queryDslFeatureHelper.isRetrievalUsingQueryDSLEnabled()).thenReturn(false);
+        when(queryDslFeatureHelper.isRetrievalUsingQueryDslDisabled()).thenReturn(true);
         final List<Branch> expectedResult = ImmutableList.<Branch>builder().build();
         when(branchDao.getBranchesForIssue(any(Iterable.class), any(String.class))).thenReturn(expectedResult);
 

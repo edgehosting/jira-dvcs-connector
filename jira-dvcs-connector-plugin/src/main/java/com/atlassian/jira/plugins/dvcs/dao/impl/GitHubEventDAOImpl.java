@@ -10,6 +10,9 @@ import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.Query;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -25,12 +28,14 @@ import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 @Component
 public class GitHubEventDAOImpl implements GitHubEventDAO
 {
+    private static final Logger log = LoggerFactory.getLogger(GitHubEventDAOImpl.class);
 
     /**
      * Injected {@link ActiveObjects} dependency.
      */
     @Resource
     @ComponentImport
+    @SuppressWarnings ("SpringJavaAutowiringInspection")
     private ActiveObjects activeObjects;
 
     /**
@@ -45,18 +50,27 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping create(final Map<String, Object> gitHubEvent)
     {
-        activeObjects.executeInTransaction(new TransactionCallback<Void>()
+        GitHubEventMapping createdMapping = activeObjects.executeInTransaction(new TransactionCallback<GitHubEventMapping>()
         {
-
             @Override
-            public Void doInTransaction()
+            public GitHubEventMapping doInTransaction()
             {
-                activeObjects.create(GitHubEventMapping.class, gitHubEvent);
-                return null;
+                return activeObjects.create(GitHubEventMapping.class, gitHubEvent);
             }
-
         });
-        return null;
+
+        final int repositoryId = createdMapping.getRepository().getID();
+        final String gitHubId = createdMapping.getGitHubId();
+        GitHubEventMapping[] retrievedMappings = findAllById(repositoryId, gitHubId);
+
+        if (retrievedMappings.length > 1)
+        {
+            String stack = ExceptionUtils.getStackTrace(new Throwable());
+            final String warningMessage = "Just created a GitHubEventMapping for repository {} and gitHubId {} and there now more than one in the database. This is the calling stack:\n";
+            log.warn(warningMessage, new Object[] { repositoryId, gitHubId, stack });
+        }
+
+        return createdMapping;
     }
 
     /**
@@ -95,13 +109,36 @@ public class GitHubEventDAOImpl implements GitHubEventDAO
     @Override
     public GitHubEventMapping getByGitHubId(Repository repository, String gitHubId)
     {
-        Query query = Query.select().where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repository.getId(), gitHubId);
-        GitHubEventMapping[] founded = activeObjects.find(GitHubEventMapping.class, query);
-        if (founded.length > 1)
+        GitHubEventMapping[] githubEvents = findAllById(repository.getId(), gitHubId);
+        if (githubEvents.length > 1)
         {
-            throw new RuntimeException("Multiple GitHubEvents exists with the same id: " + gitHubId);
+            final Object[] warnParams = { gitHubId, repository.getId(), githubEvents.length };
+            log.warn("Search for event {} in repository {} found this many {}, "
+                    + "returning the one marked as a save point, if none are save points then the first", warnParams);
+
+            GitHubEventMapping eventToUse = githubEvents[0];
+            for (GitHubEventMapping retrievedMapping : githubEvents)
+            {
+                if (retrievedMapping.isSavePoint())
+                {
+                    eventToUse = retrievedMapping;
+                }
+            }
+
+            final Object[] infoParams = { gitHubId, repository.getId(), eventToUse.getID() };
+            log.info("When multiple git hub events were found for event {} in repository {} we chose the one with this id {}", infoParams);
+
+            return eventToUse;
         }
-        return founded.length == 1 ? founded[0] : null;
+        return githubEvents.length == 1 ? githubEvents[0] : null;
+    }
+
+    private GitHubEventMapping[] findAllById(int repositoryId, String gitHubId)
+    {
+        Query query = Query.select().
+                where(GitHubEventMapping.REPOSITORY + " = ? AND " + GitHubEventMapping.GIT_HUB_ID + " = ? ", repositoryId,
+                        gitHubId).order("ID");
+        return activeObjects.find(GitHubEventMapping.class, query);
     }
 
     /**
