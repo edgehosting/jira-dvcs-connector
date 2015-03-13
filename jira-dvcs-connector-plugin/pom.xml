@@ -428,6 +428,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.jira.plugin.webfragment.conditions,
+                            com.atlassian.activeobjects.external;,
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
@@ -436,16 +437,9 @@
                             com.atlassian.refapp.api;resolution:="optional",
                             com.atlassian.refapp.api.*;resolution:="optional",
                             oracle.sql;resolution:="optional",
-                            oracle.spatial.geometry;resolution:="optional",
-                            com.mysema.query.spatial.path;resolution:="optional",
-                            com.mysema.query.spatial;resolution:="optional",
                             com.vividsolutions.jts.io;resolution:="optional",
                             com.vividsolutions.jts;resolution:="optional",
                             net.sf.cglib.proxy;resolution:="optional",
-                            org.geolatte.geom;resolution:="optional",
-                            org.geolatte.geom.codec;resolution:="optional",
-                            org.geolatte.geom.crs;resolution:="optional",
-                            org.postgis;resolution:="optional",
                             org.jvnet.hudson.annotation_indexer;resolution:="optional",
                             org.apache.log4j;resolution:="optional",
                             !com.google.gson.stream,
@@ -458,6 +452,14 @@
                             !org.apache.avalon.framework*,
                             !org.apache.log,
                             !sun.security.util,
+                            !com.mysema.query.*,
+                            !com.mysema.query.spatial.path,
+                            !com.mysema.query.spatial,
+                            !org.postgis,
+                            !oracle.spatial.geometry,
+                            !org.geolatte.geom,
+                            !org.geolatte.geom.codec,
+                            !org.geolatte.geom.crs,
                             *
                         </Import-Package>
                     </instructions>
