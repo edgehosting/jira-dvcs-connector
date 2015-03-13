@@ -52,7 +52,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.4-20150218.020637</jira.compile.version>
+        <jira.compile.version>6.4-SNAPSHOT</jira.compile.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
@@ -311,11 +311,11 @@
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
-                    <!--<exclusion>-->
-                        <!--&lt;!&ndash;This tool is only required at compile time - http://bridge-method-injector.infradna.com/&ndash;&gt;-->
-                        <!--<groupId>com.infradna.tool</groupId>-->
-                        <!--<artifactId>bridge-method-annotation</artifactId>-->
-                    <!--</exclusion>-->
+                    <exclusion>
+                        <!--This tool is only required at compile time - http://bridge-method-injector.infradna.com/-->
+                        <groupId>com.infradna.tool</groupId>
+                        <artifactId>bridge-method-annotation</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
