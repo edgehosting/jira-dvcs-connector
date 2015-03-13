@@ -24,6 +24,11 @@
         <property name="delegate" ref="githubEnterpriseCommunicator" />
     </bean>
 
+    <bean id="cachingGitlabCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
+        <constructor-arg ref="cacheManager"/>
+        <property name="delegate" ref="gitlabCommunicator"/>
+    </bean>
+
     <bean class="com.atlassian.beehive.compat.ClusterLockServiceFactory"/>
 
     <bean class="com.atlassian.scheduler.compat.AutoDetectingCompatibilityPluginScheduler">

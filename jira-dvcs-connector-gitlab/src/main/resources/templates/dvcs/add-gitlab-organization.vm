@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <title>Add New GitLab Account</title>
+
+	$webResourceManager.requireResourcesForContext("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin")
+
+    <meta name="admin.active.section" content="admin_plugins_menu/source_control"/>
+    <meta name="admin.active.tab" content="bitbucket_bulk_repo"/>
+  </head>
+
+  <body>
+  
+  <script id="repoEntry-template" type="text/template">
+
+   <div class="" id="add-org-form-container">
+   
+	   <form id="repoEntry" method="post" action="${baseurl}/secure/admin/AddGitlabOrganization.jspa" class="aui long-label">
+           #if ($source)
+               <input type="hidden" name="source" value="$textutils.htmlEncode($source)">
+           #end
+	      <input type="hidden" name="atl_token" value="$atl_token">
+	      <input type="hidden" name="autoLinking" id="autoLinking" value="$action.autoLinking">
+	       <input type="hidden" name="autoSmartCommits" id="autoSmartCommits" value="$action.autoSmartCommits">
+	       
+	        <fieldset>
+	         
+	          <div class="field-group">
+	              <label for="urlGl">Host:</label>
+	              <input class="field-value text" type="text" id="urlGl" name="urlGl" value="$textutils.htmlEncode($action.getUrlGl())"/>
+	          </div>
+	          
+	          <div class="field-group" >
+	          	<label for="organization">Team or User Account:</label>
+	            <input class="field-value text" type="text" id="organization" name="organization" value="$textutils.htmlEncode($action.getOrganization())"/>
+			  </div>
+	          
+	          	<div class="field-group" >
+	          		<label for="apiKeyGl">API Key:</label>
+	            	<input class="field-value text" type="text" id="apiKeyGl" name="apiKeyGl" value="$textutils.htmlEncode($action.getApiKeyGl())"/>
+			    </div>			  
+            </fieldset>
+			
+			<fieldset class="group">
+             <div class="checkbox" style="margin-top: 10px; clear: both" >
+	          #if($action.getAutoLinking() == "true")
+		         <input disabled="disabled" checked="checked" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+		      #else
+		      	 <input disabled="disabled" type="checkbox" id="autoLinking" name="autoLinking" class="checkbox" value="true"/>
+		      #end
+			  <label for="autoLinking">Auto Link New Repositories</label>
+		     </div>
+		     
+		      <div class="checkbox" style="margin-top: 10px; clear: both" >
+		          #if($action.getAutoSmartCommits() == "true")
+			         <input disabled="disabled" checked="checked" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #else
+			      	 <input disabled="disabled" type="checkbox" id="autoSmartCommits" name="autoSmartCommits" class="checkbox" value="true"/>
+			      #end
+				  <label for="autoSmartCommits">Enable Smart Commits</label>
+		     </div>
+	         
+	        </fieldset>
+	
+	      <div id="aui-message-bar">
+	        #foreach ($errorMessage in $action.getErrorMessages())
+	        <div class="aui-message aui-message-error">
+	            <p class="title">
+	                <strong>Error!</strong>
+	            </p>
+	            <p>$errorMessage</p>
+	        </div>                       
+	        #end
+	      </div>
+	
+	      <div class="buttons-container">
+	        <div class="buttons">
+	        </div>
+	      </div>
+	    
+	  </form>
+  
+  </div>
+        
+  </script>
+  
+   
+	<script type="text/javascript">
+
+	 AJS.$(document).ready(function () {
+		
+		 	var ddialog = new AJS.Dialog({
+		 	    width:800, 
+		 	    height:500, 
+		 	    id:"repoEntry-dialog", 
+		 	    closeOnOutsideClick: false
+		 	});
+		 	ddialog.addHeader("New GitLab Account");
+		 	ddialog.addPanel("", AJS.$('#repoEntry-template').html(), "panel-body");
+		 	ddialog.addButtonPanel();
+		 	ddialog.page[0].buttonpanel.append("<span id='add-organization-wait' class='aui-icon' style='padding-right:10px'>&nbsp;</span>")
+		 	ddialog.addSubmit("Try Again", function (dialog, event) {
+		 		 	AJS.$("#add-organization-wait").addClass("aui-icon-wait");
+		            AJS.$("#repoEntry").submit();
+		    });
+		 	ddialog.addLink("Cancel",  function (dialog) {
+		 	   return true;
+		 	}, "", "${baseurl}/secure/admin/ConfigureDvcsOrganizations.jspa?atl_token=${atl_token}#if($source)&source=$textutils.htmlEncode(${source})#end");
+		 	ddialog.show();
+		 	ddialog.updateHeight();
+		 	
+		 	
+		});
+ 	
+ 	
+	</script>
+   
+  </body>
+</html>

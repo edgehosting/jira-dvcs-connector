@@ -230,6 +230,7 @@
 		        <option value="bitbucket" {if $disabledHosts['bitbucket']}disabled{/if}>Bitbucket</option>
 		        <option value="github" {if $disabledHosts['github']}disabled{/if}>GitHub</option>
 		        <option value="githube"{if $disabledHosts['githube']}disabled{/if}>GitHub Enterprise</option>
+		        <option value="gitlab"{if $disabledHosts['gitlab']}disabled{/if}>GitLab</option>
 		      </select>
 		      <div class="fieldValue" id="urlReadOnly"></div>
 		      <div id="url-error" class="dvcs-error error">Choose URL.</div>
@@ -310,6 +311,23 @@
 	               <div id="oauth-ghe-secret-error" class="dvcs-error error">This field is required.</div>
 	            </div>
 	        </div>
+
+		    // GitLab form section
+	        <div id="gitlab-form-section">
+	            <div class="field-group">
+	               <label for="urlGl">Host URL<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="urlGl" name="urlGl" value="{$oAuthStore.gitlab.url}"/>
+	               <div id="ghe-url-error" class="dvcs-error error">This field is required.</div>
+	               <div id="ghe-invalid-url-error" class="dvcs-error error">Valid url is required.</div>
+	            </div>
+	            <div class="field-group">
+	               <label for="apiKeyGl">API Key<span class="aui-icon icon-required">&nbsp;</span></label>
+	               <input class="text" type="text" id="apiKeyGl" name="apiKeyGl" value="{$oAuthStore.gitlab.key}"/>
+	               <div id="oauth-ghe-client-error" class="dvcs-error error">This field is required.</div>
+	               <div class="description"></div>
+	            </div>
+	        </div>
+
         </fieldset>
         
         <fieldset class="group">

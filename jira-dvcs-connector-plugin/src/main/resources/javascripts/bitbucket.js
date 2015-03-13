@@ -15,6 +15,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 
         AJS.$('#github-form-section').hide();
         AJS.$('#githube-form-section').hide();
+        AJS.$('#gitlab-form-section').hide();
         AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddBitbucketOrganization.jspa");
         AJS.$("#bitbucket-form-section").fadeIn();
 
@@ -22,6 +23,7 @@ function switchDvcsDetailsInternal(dvcsType) {
 
         AJS.$('#bitbucket-form-section').hide();
         AJS.$('#githube-form-section').hide();
+        AJS.$('#gitlab-form-section').hide();
         AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
         AJS.$("#github-form-section").fadeIn();
 
@@ -29,8 +31,17 @@ function switchDvcsDetailsInternal(dvcsType) {
 
         AJS.$('#bitbucket-form-section').hide();
         AJS.$('#github-form-section').hide();
+        AJS.$('#gitlab-form-section').hide();
         AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubEnterpriseOrganization.jspa");
         AJS.$("#githube-form-section").fadeIn();
+        
+    } else if (dvcsType == 3) {
+
+        AJS.$('#bitbucket-form-section').hide();
+        AJS.$('#github-form-section').hide();
+        AJS.$('#githube-form-section').hide();
+        AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGitlabOrganization.jspa");
+        AJS.$("#gitlab-form-section").fadeIn();
     }
 }
 
@@ -325,7 +336,7 @@ function dvcsSubmitFormHandler(event, skipLoggingAlert) {
                 return false;
             }
         }
-
+        
         // disable add form
         dialog.enabled(false);
 

@@ -36,6 +36,7 @@
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
+	<module>jira-dvcs-connector-gitlab</module>
         <module>jira-dvcs-connector-plugin</module>
     </modules>
 
@@ -61,7 +62,7 @@
         <greenhopper.version>6.5.20-D20140805T054926</greenhopper.version>
         <testkit.version>6.0.41</testkit.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
-        <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
+        <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
         <!-- once we've got the egit upgrade done properly, we could use the same version as above -->

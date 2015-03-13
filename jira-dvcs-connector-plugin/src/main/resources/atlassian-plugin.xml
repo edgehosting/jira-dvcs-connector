@@ -235,6 +235,14 @@
         <description>githubCommunicator</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
     </component>
+
+	<!-- Gitlab -->
+
+    <component key="gitlabCommunicator" name="gitlabCommunicator"
+               class="com.atlassian.jira.plugins.dvcs.spi.gitlab.GitlabCommunicator">
+        <description>gitlabCommunicator</description>
+        <interface>com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator</interface>
+    </component>
     
     <!-- Bitbucket -->
     
@@ -381,6 +389,12 @@
     <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
+    <component key="synchronizeGitlabChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GitlabSynchronizeChangesetMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeGitlabChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.gitlab.message.SynchronizeChangesetMessageSerializer">
+    	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
     <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
@@ -403,6 +417,12 @@
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
     <component key="gitHubPullRequestSynchronizeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestSynchronizeMessageSerializer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
+    <component key="gitlabPullRequestSynchronizeMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GitlabPullRequestSynchronizeMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="gitlabPullRequestSynchronizeMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.gitlab.message.GitlabPullRequestSynchronizeMessageSerializer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
     <component key="gitHubPullRequestPageMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GitHubPullRequestPageMessageConsumer">
@@ -460,7 +480,7 @@
                 <view name="input">/templates/dvcs/add-github-organization.vm</view>
             </action>
             
-               <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.AddGithubEnterpriseOrganization"
+            <action name="com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.AddGithubEnterpriseOrganization"
                     alias="AddGithubEnterpriseOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-githube-organization.vm</view>
             </action>
@@ -468,6 +488,11 @@
             <action name="com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization"
                     alias="AddBitbucketOrganization" roles-required="admin">
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
+            </action>
+
+            <action name="com.atlassian.jira.plugins.dvcs.spi.gitlab.webwork.AddGitlabOrganization"
+                    alias="AddGitlabOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-gitlab-organization.vm</view>
             </action>
 
             <action name="com.atlassian.jira.plugins.dvcs.webwork.AddOrganizationProgressAction"
