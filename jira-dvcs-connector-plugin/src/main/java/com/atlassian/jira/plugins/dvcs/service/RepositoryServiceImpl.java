@@ -60,7 +60,7 @@ public class RepositoryServiceImpl implements RepositoryService
     @Resource
     private DvcsCommunicatorProvider communicatorProvider;
 
-    // This one is wired in via a setter injection because otherwise we get a null bean for some reason
+    @Resource
     private RepositoryDao repositoryDao;
 
     @Resource
@@ -790,11 +790,5 @@ public class RepositoryServiceImpl implements RepositoryService
     private UnknownUser getUnknownUser(Repository repository, String username, String rawUser)
     {
         return new UnknownUser(username, rawUser != null ? rawUser : username, repository.getOrgHostUrl());
-    }
-
-    @Resource
-    private void setRepositoryDao(RepositoryDao repositoryDao)
-    {
-        this.repositoryDao = repositoryDao;
     }
 }

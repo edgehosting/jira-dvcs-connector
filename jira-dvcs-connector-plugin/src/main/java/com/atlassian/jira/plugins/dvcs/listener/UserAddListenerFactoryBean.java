@@ -9,14 +9,14 @@ import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 @Component
-public class UserAddListenerFactoryBean
+public class UserAddListenerFactoryBean implements InitializingBean, DisposableBean
 {
     private static final Logger log = LoggerFactory.getLogger(UserAddListenerFactoryBean.class);
 
@@ -90,7 +90,7 @@ public class UserAddListenerFactoryBean
         this.crowdService = crowdService;
     }
 
-    @PreDestroy
+    @Override
     public void destroy() throws Exception
     {
         if (dvcsAddUserListener != null)
@@ -99,7 +99,7 @@ public class UserAddListenerFactoryBean
         }
     }
 
-    @PostConstruct
+    @Override
     public void afterPropertiesSet() throws Exception
     {
         try
