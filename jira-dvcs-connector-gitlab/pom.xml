@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.jira.plugins</groupId>
+        <artifactId>jira-dvcs-connector-parent</artifactId>
+        <version>2.1.29-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jira-dvcs-connector-gitlab</artifactId>
+    <packaging>jar</packaging>
+    <name>Jira DVCS Connector Gitlab module</name>
+    <description>Jira DVCS Connector Gitlab module</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- 
+        <dependency>
+            <groupId>org.gitlab</groupId>
+            <artifactId>java-gitlab-api</artifactId>
+            <version>1.1.8-SNAPSHOT</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>2.5.6.SEC01</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${com.sun.jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>${com.sun.jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+            <version>${com.sun.jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+            <version>${org.codehaus.jackson.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-xc</artifactId>
+            <version>${org.codehaus.jackson.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${com.sun.xml.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

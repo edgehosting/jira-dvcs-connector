@@ -31,6 +31,7 @@
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
+	<module>jira-dvcs-connector-gitlab</module>
         <module>jira-dvcs-connector-plugin</module>
     </modules>
 
@@ -58,6 +59,7 @@
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
+        <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-8</greenhopper.version>
         <guava.version>18.0</guava.version>

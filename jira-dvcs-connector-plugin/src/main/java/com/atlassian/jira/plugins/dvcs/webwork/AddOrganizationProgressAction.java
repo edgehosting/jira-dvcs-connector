@@ -21,6 +21,7 @@ public class AddOrganizationProgressAction extends JiraWebActionSupport
         typeToRedirectUrls.put("1", "AddBitbucketOrganization");
         typeToRedirectUrls.put("2", "AddGithubOrganization");
         typeToRedirectUrls.put("3", "AddGithubEnterpriseOrganization");
+        typeToRedirectUrls.put("4", "AddGitlabOrganization");
     }
 
     @Override

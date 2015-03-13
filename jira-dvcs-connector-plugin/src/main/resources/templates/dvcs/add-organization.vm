@@ -46,6 +46,10 @@
                 key: '$!oAuthStore.getClientId("githube")',
                 secret: '$!oAuthStore.getSecret("githube")',
                 url: '$!oAuthStore.getUrl("githube")'
+            },
+            gitlab : {
+                key: '$!oAuthStore.getClientId("gitlab")',
+                url: '$!oAuthStore.getUrl("gitlab")'
             }
          }       
      </script>

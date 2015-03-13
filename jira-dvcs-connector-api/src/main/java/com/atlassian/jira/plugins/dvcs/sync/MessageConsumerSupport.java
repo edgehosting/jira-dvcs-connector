@@ -65,6 +65,8 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                 throw new SourceControlException(String.format("Error retrieving branch '%s'. Communicator for '%s' returned '%s' instead of '%s'", branch, repo.getDvcsType(), changeset.getNode(), node));
             }
 
+            LOGGER.info("message={}", changeset.getMessage());
+            
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
 

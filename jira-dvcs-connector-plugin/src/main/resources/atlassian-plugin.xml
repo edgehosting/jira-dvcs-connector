@@ -117,6 +117,11 @@
                 <view name="input">/templates/dvcs/add-bitbucket-organization.vm</view>
             </action>
 
+            <action name="com.atlassian.jira.plugins.dvcs.spi.gitlab.webwork.AddGitlabOrganization"
+                    alias="AddGitlabOrganization" roles-required="admin">
+                <view name="input">/templates/dvcs/add-gitlab-organization.vm</view>
+            </action>
+
             <action name="com.atlassian.jira.plugins.dvcs.webwork.AddOrganizationProgressAction"
                     alias="AddOrganizationProgressAction" roles-required="admin">
                 <view name="input">/templates/dvcs/add-in-progress.vm</view>
