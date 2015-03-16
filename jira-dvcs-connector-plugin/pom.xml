@@ -428,7 +428,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.jira.plugin.webfragment.conditions,
-                            com.atlassian.activeobjects.external;,
+                            com.atlassian.activeobjects.external,
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
