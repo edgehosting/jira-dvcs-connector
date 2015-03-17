@@ -1,10 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -193,11 +195,34 @@ public class Organization implements Serializable
                 .hashCode();
     }
 
-
     public boolean isIntegratedAccount()
     {
         return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
                 && StringUtils.isNotBlank(credential.getOauthSecret()) && StringUtils.isBlank(credential.getAccessToken());
+    }
+
+    @Override
+    public Organization clone() {
+        try
+        {
+            return (Organization) BeanUtils.cloneBean(this);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (InstantiationException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (InvocationTargetException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
 }
