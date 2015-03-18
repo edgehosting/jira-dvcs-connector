@@ -12,7 +12,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>2.3.3-SNAPSHOT</version>
+    <version>2.3.4-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -52,7 +52,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.4-OD-09-008</jira.compile.version>
+        <jira.compile.version>6.4-OD-16-003</jira.compile.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
@@ -73,7 +73,7 @@
         <!-- DOG and PRD are still running jdk6
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
-        <atlassian.spring.scanner.version>1.2.5</atlassian.spring.scanner.version>
+        <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <amps.version>5.0.14</amps.version>
 
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
@@ -197,6 +197,10 @@
                         <groupId>net.sf.ehcache</groupId>
                         <artifactId>ehcache</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.mysema.querydsl</groupId>
+                        <artifactId>querydsl-sql</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -306,6 +310,11 @@
                     <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <!--This tool is only required at compile time - http://bridge-method-injector.infradna.com/-->
+                        <groupId>com.infradna.tool</groupId>
+                        <artifactId>bridge-method-annotation</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
