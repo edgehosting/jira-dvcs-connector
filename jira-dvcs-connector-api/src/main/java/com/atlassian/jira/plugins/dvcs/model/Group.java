@@ -7,16 +7,16 @@ import java.io.Serializable;
 
 /**
  * Used for handle DVCS groups.
- *
  */
 public class Group implements Serializable
 {
     private final String slug;
-    private String niceName;
+    private final String niceName;
 
     public Group(String slug)
     {
         this.slug = slug;
+        this.niceName = null;
     }
 
     public Group(String slug, String niceName)
@@ -30,16 +30,16 @@ public class Group implements Serializable
         return slug;
     }
 
-	@Override
-	public boolean equals(Object obj) 
-	{
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (this.getClass() != obj.getClass()) return false;
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null) { return false; }
+        if (this == obj) { return true; }
+        if (this.getClass() != obj.getClass()) { return false; }
         Group that = (Group) obj;
         return new EqualsBuilder().append(slug, that.slug).isEquals();
-	}
-	
+    }
+
     @Override
     public int hashCode()
     {
@@ -55,10 +55,5 @@ public class Group implements Serializable
     public String getNiceName()
     {
         return niceName;
-    }
-
-    public void setNiceName(String niceName)
-    {
-        this.niceName = niceName;
     }
 }

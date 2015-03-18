@@ -22,8 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isBlank;
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isNotBlank;
@@ -31,8 +30,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
- * Cache Organization and return defensive copies rather than the cached object.
- * Cache expires according to CACHE_SETTINGS configuration.
+ * Cache Organization and return defensive copies rather than the cached object. Cache expires according to
+ * CACHE_SETTINGS configuration.
  */
 @Component ("organizationDao")
 public class CachingOrganizationDaoImpl implements OrganizationDao
@@ -62,24 +61,24 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public List<Organization> getAll()
     {
-        return cloneOrgs(organizationsCache.get());
+        return cloneOrgs(getAllCachedOrgs());
     }
 
     @Override
     public int getAllCount()
     {
-        return getAll().size();
+        return getAllCachedOrgs().size();
     }
 
     @Override
     public List<Organization> getAllByType(final String dvcsType)
     {
-        final List<Organization> orgs = getAll();
+        final List<Organization> orgs = getAllCachedOrgs();
         final Iterable<Organization> orgsByType = Iterables.filter(orgs, new Predicate<Organization>()
         {
 
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return dvcsType.equals(org.getDvcsType());
             }
@@ -93,7 +92,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         return findOrganization(new Predicate<Organization>()
         {
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return org.getId() == organizationId;
             }
@@ -109,7 +108,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         return findOrganization(new Predicate<Organization>()
         {
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return hostUrl.equals(org.getHostUrl()) && name.equalsIgnoreCase(org.getName());
             }
@@ -121,12 +120,12 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     {
         checkNotNull(ids);
 
-        final List<Organization> orgs = getAll();
+        final List<Organization> orgs = getAllCachedOrgs();
 
         final Iterable<Organization> orgsByIds = Iterables.filter(orgs, new Predicate<Organization>()
         {
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return ids.contains(org.getId());
             }
@@ -147,7 +146,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         Organization org = findOrganization(new Predicate<Organization>()
         {
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return typeList.contains(org.getDvcsType());
             }
@@ -162,7 +161,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         return findOrganization(new Predicate<Organization>()
         {
             @Override
-            public boolean apply(@Nullable final Organization org)
+            public boolean apply(@Nonnull final Organization org)
             {
                 return isNotBlank(org.getCredential().getOauthKey()) && isNotBlank(org.getCredential().getOauthSecret()) &&
                         isBlank(org.getCredential().getAccessToken());
@@ -174,7 +173,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     public void remove(int organizationId)
     {
         organizationAOFacade.remove(organizationId);
-        // if operation fails then do not clear the cache
+        // if operation succeeds then clear the cache otherwise do not clear the cache to keep some stale data for the users
         clearCache();
     }
 
@@ -182,12 +181,12 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     public Organization save(final Organization organization)
     {
         Organization org = organizationAOFacade.save(organization);
-        // if operation fails then do not clear the cache
+
+        // if operation succeeds then clear the cache otherwise do not clear the cache to keep some stale data for the users
         if (org != null)
         {
             clearCache();
         }
-
         return org;
     }
 
@@ -195,29 +194,28 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
     {
         organizationAOFacade.updateDefaultGroupsSlugs(orgId, groupsSlugs);
-        // if operation fails then do not clear the cache
+
+        // if operation succeeds then clear the cache otherwise do not clear the cache to keep some stale data for the users
         clearCache();
+    }
+
+    private List<Organization> getAllCachedOrgs()
+    {
+        return organizationsCache.get();
     }
 
     private Organization findOrganization(Predicate<Organization> predicate)
     {
-        try
-        {
-            final List<Organization> orgs = getAll();
-            return new Organization(Iterables.find(orgs, predicate)); // return a clone of the Organization
-        }
-        catch (NoSuchElementException e)
-        {
-            return null;
-        }
+        final List<Organization> orgs = getAllCachedOrgs();
+        return new Organization(Iterables.find(orgs, predicate, null)); // return a clone of the Organization
     }
 
-    private List<Organization> cloneOrgs(Iterable<Organization> orgs)
+    private List<Organization> cloneOrgs(@Nonnull Iterable<Organization> orgs)
     {
         return ImmutableList.copyOf(Iterables.transform(orgs, new Function<Organization, Organization>()
         {
             @Override
-            public Organization apply(Organization org)
+            public Organization apply(@Nonnull Organization org)
             {
                 return new Organization(org);
             }

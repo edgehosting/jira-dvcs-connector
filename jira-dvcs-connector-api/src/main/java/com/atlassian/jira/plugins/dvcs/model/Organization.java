@@ -55,6 +55,11 @@ public class Organization implements Serializable
         this.defaultGroups = defaultGroups;
     }
 
+    /**
+     * Clone the provided organization. Note repositories won't be copied across.
+     *
+     * @param other original organization to be cloned
+     */
     public Organization(Organization other)
     {
         this(other.id, other.hostUrl, other.name, other.dvcsType, other.autolinkNewRepos,
@@ -62,9 +67,9 @@ public class Organization implements Serializable
                         other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()),
                 other.organizationUrl, other.smartcommitsOnNewRepos, null);
 
-        this.groups = other.groups != null ? ImmutableList.copyOf(other.groups) : null;
+        // Note: it is fine to use shallow copy for defaultGroups/groups because Group cannot be changed.
         this.defaultGroups = other.defaultGroups != null ? ImmutableSet.copyOf(other.defaultGroups) : null;
-        this.repositories = other.repositories != null ? ImmutableList.copyOf(other.repositories) : null;
+        this.groups = other.groups != null ? ImmutableList.copyOf(other.groups) : null;
     }
 
     // =============== getters ==========================

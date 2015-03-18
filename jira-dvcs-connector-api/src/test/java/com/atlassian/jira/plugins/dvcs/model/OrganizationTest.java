@@ -13,7 +13,6 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.SerializationUtils.deserialize;
 import static org.apache.commons.lang3.SerializationUtils.serialize;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class OrganizationTest
 {
@@ -52,7 +51,6 @@ public class OrganizationTest
         original.setGroups(groups);
         original.setOrganizationUrl("url");
         original.setSmartcommitsOnNewRepos(true);
-        original.setRepositories(ImmutableList.of(mock(Repository.class)));
 
         Organization clonedOrg = new Organization(original);
 
@@ -61,7 +59,7 @@ public class OrganizationTest
 
         // assert transient fields missed by EqualsBuilder.reflectionEquals
         assertThat(clonedOrg.getCredential().equals(original.getCredential())).isTrue();
-        assertThat(clonedOrg.getGroups().get(0)).isSameAs(original.getGroups().get(0));
         assertThat(clonedOrg.getDefaultGroups().iterator().next()).isSameAs(original.getDefaultGroups().iterator().next());
+        assertThat(clonedOrg.getGroups().iterator().next()).isSameAs(original.getGroups().iterator().next());
         }
 }

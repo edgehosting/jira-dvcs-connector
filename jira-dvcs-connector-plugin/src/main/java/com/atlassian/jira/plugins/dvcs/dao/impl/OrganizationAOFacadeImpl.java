@@ -154,7 +154,6 @@ public class OrganizationAOFacadeImpl implements OrganizationAOFacade
     @Override
     public Organization save(final Organization organization)
     {
-
         final OrganizationMapping organizationMapping = activeObjects
                 .executeInTransaction(new TransactionCallback<OrganizationMapping>()
                 {
