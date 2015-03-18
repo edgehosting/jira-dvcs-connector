@@ -54,10 +54,14 @@ public class OrganizationTest
         original.setSmartcommitsOnNewRepos(true);
         original.setRepositories(ImmutableList.of(mock(Repository.class)));
 
-        Organization clonedOrg = original.clone();
+        Organization clonedOrg = new Organization(original);
 
         assertThat(clonedOrg).isNotSameAs(original);
+        assertThat(EqualsBuilder.reflectionEquals(clonedOrg, original)).isTrue();
 
-        EqualsBuilder.reflectionEquals(clonedOrg, original);
-    }
+        // assert transient fields missed by EqualsBuilder.reflectionEquals
+        assertThat(clonedOrg.getCredential().equals(original.getCredential())).isTrue();
+        assertThat(clonedOrg.getGroups().get(0)).isSameAs(original.getGroups().get(0));
+        assertThat(clonedOrg.getDefaultGroups().iterator().next()).isSameAs(original.getDefaultGroups().iterator().next());
+        }
 }

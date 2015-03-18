@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import org.apache.commons.beanutils.BeanUtils;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,10 +14,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType (XmlAccessType.FIELD)
 public class Organization implements Serializable
 {
-	public static final String GROUP_SLUGS_SEPARATOR = ";";
+    public static final String GROUP_SLUGS_SEPARATOR = ";";
 
     private int id;
     private String hostUrl;
@@ -36,9 +36,9 @@ public class Organization implements Serializable
     private transient Set<Group> defaultGroups;
 
     public Organization()
-	{
-    	super();
-	}
+    {
+        super();
+    }
 
     public Organization(int id, String hostUrl, String name, String dvcsType,
             boolean autolinkNewRepos, Credential credential, String organizationUrl,
@@ -53,6 +53,18 @@ public class Organization implements Serializable
         this.organizationUrl = organizationUrl;
         this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
         this.defaultGroups = defaultGroups;
+    }
+
+    public Organization(Organization other)
+    {
+        this(other.id, other.hostUrl, other.name, other.dvcsType, other.autolinkNewRepos,
+                new Credential(other.credential.getOauthKey(), other.credential.getOauthSecret(),
+                        other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()),
+                other.organizationUrl, other.smartcommitsOnNewRepos, null);
+
+        this.groups = other.groups != null ? Lists.newArrayList(other.groups) : null;
+        this.defaultGroups = other.defaultGroups != null ? Sets.newHashSet(other.defaultGroups) : null;
+        this.repositories = other.repositories != null ? Lists.newArrayList(other.repositories) : null;
     }
 
     // =============== getters ==========================
@@ -105,6 +117,7 @@ public class Organization implements Serializable
     {
         return smartcommitsOnNewRepos;
     }
+
     // =============== setters ==========================
     public void setId(int id)
     {
@@ -169,8 +182,8 @@ public class Organization implements Serializable
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
 
         Organization that = (Organization) o;
 
@@ -200,29 +213,4 @@ public class Organization implements Serializable
         return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
                 && StringUtils.isNotBlank(credential.getOauthSecret()) && StringUtils.isBlank(credential.getAccessToken());
     }
-
-    @Override
-    public Organization clone() {
-        try
-        {
-            return (Organization) BeanUtils.cloneBean(this);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (InstantiationException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (InvocationTargetException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (NoSuchMethodException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

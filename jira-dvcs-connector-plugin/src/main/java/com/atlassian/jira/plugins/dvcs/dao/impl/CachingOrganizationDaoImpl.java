@@ -9,6 +9,7 @@ import com.atlassian.jira.cluster.ClusterSafe;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -28,6 +29,10 @@ import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isNot
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+/**
+ * Cache Organization and return defensive copies rather than the cached object.
+ * Cache expires according to CACHE_SETTINGS configuration.
+ */
 @Component ("cachingOrganizationDao")
 public class CachingOrganizationDaoImpl implements OrganizationDao
 {
@@ -56,7 +61,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public List<Organization> getAll()
     {
-        return organizationsCache.get();
+        return cloneOrgs(organizationsCache.get());
     }
 
     @Override
@@ -79,7 +84,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
             }
         });
 
-        return ImmutableList.copyOf(orgsByType);
+        return cloneOrgs(orgsByType);
     }
 
     @Override
@@ -127,7 +132,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
             }
         });
 
-        return ImmutableList.copyOf(orgsByIds);
+        return cloneOrgs(orgsByIds);
     }
 
     @Override
@@ -199,12 +204,24 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         try
         {
             final List<Organization> orgs = getAll();
-            return Iterables.find(orgs, predicate);
+            return new Organization(Iterables.find(orgs, predicate)); // return a clone of the Organization
         }
         catch (NoSuchElementException e)
         {
             return null;
         }
+    }
+
+    private List<Organization> cloneOrgs(Iterable<Organization> orgs)
+    {
+        return ImmutableList.copyOf(Iterables.transform(orgs, new Function<Organization, Organization>()
+        {
+            @Override
+            public Organization apply(Organization org)
+            {
+                return new Organization(org);
+            }
+        }));
     }
 
     private void clearCache()

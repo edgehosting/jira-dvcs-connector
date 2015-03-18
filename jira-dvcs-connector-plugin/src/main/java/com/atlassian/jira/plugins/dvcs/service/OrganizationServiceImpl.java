@@ -9,7 +9,6 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +51,31 @@ public class OrganizationServiceImpl implements OrganizationService
     public List<Organization> getAll(boolean loadRepositories)
     {
         List<Organization> organizations = organizationDao.getAll();
-        return loadRepositories ? loadRepositories(organizations) : organizations;
+
+        if (loadRepositories)
+        {
+            for (Organization organization : organizations)
+            {
+                retrieveRepositories(organization);
+            }
+        }
+        return organizations;
     }
 
     @Override
     public List<Organization> getAll(boolean loadRepositories, String type)
     {
         List<Organization> organizations = organizationDao.getAllByType(type);
-        return loadRepositories ? loadRepositories(organizations) : organizations;
+
+        if (loadRepositories)
+        {
+            for (Organization organization : organizations)
+            {
+                retrieveRepositories(organization);
+            }
+        }
+
+        return organizations;
     }
 
     /**
@@ -78,7 +94,7 @@ public class OrganizationServiceImpl implements OrganizationService
 
         if (loadRepositories && organization != null)
         {
-            return cloneOrgAndLoadRepos(organization);
+            retrieveRepositories(organization);
         }
 
         return organization;
@@ -216,24 +232,9 @@ public class OrganizationServiceImpl implements OrganizationService
         return organizationDao.existsOrganizationWithType(types);
     }
 
-    private List<Organization> loadRepositories(List<Organization> organizations)
+    private void retrieveRepositories(Organization org)
     {
-        List<Organization> orgsWithRepos = Lists.newArrayList();
-
-        for (Organization organization : organizations)
-        {
-            orgsWithRepos.add(cloneOrgAndLoadRepos(organization));
-        }
-        return orgsWithRepos;
-    }
-
-    private Organization cloneOrgAndLoadRepos(Organization organization)
-    {
-        List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-
-        // FUSE-1889: create a defensive copy of cached Organization to not keep repos in the cache
-        Organization orgClone = organization.clone();
-        orgClone.setRepositories(repositories);
-        return orgClone;
+        List<Repository> repositories = repositoryService.getAllByOrganization(org.getId());
+        org.setRepositories(repositories);
     }
 }
