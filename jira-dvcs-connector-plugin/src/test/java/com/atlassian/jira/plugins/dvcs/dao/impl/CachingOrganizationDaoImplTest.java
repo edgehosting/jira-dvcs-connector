@@ -162,7 +162,7 @@ public class CachingOrganizationDaoImplTest
 
         cachingOrganizationDao.setDefaultGroupsSlugs(orgId, slugs);
 
-        verify(organizationAOFacade).setDefaultGroupsSlugs(orgId, slugs);
+        verify(organizationAOFacade).updateDefaultGroupsSlugs(orgId, slugs);
         verify(cache).reset();
     }
 }

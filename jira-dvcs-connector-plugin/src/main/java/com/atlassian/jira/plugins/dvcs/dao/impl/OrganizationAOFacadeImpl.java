@@ -113,7 +113,7 @@ public class OrganizationAOFacadeImpl implements OrganizationAOFacade
     }
 
     @Override
-    public List<Organization> getAll()
+    public List<Organization> fetch()
     {
         final List<OrganizationMapping> organizationMappings = activeObjects
                 .executeInTransaction(new TransactionCallback<List<OrganizationMapping>>()
@@ -235,7 +235,7 @@ public class OrganizationAOFacadeImpl implements OrganizationAOFacade
     }
 
     @Override
-    public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
+    public void updateDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
     {
         String serializedGroups = null;
         if (CollectionUtils.isNotEmpty(groupsSlugs))

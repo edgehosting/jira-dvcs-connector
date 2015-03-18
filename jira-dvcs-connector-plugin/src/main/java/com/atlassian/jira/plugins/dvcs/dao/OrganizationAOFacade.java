@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface OrganizationAOFacade
 {
-    List<Organization> getAll();
+    List<Organization> fetch();
 
     Organization save(Organization organization);
 
     void remove(int organizationId);
 
-    void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
+    void updateDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs);
 }

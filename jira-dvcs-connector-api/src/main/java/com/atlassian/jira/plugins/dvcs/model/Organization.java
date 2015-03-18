@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -62,9 +62,9 @@ public class Organization implements Serializable
                         other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()),
                 other.organizationUrl, other.smartcommitsOnNewRepos, null);
 
-        this.groups = other.groups != null ? Lists.newArrayList(other.groups) : null;
-        this.defaultGroups = other.defaultGroups != null ? Sets.newHashSet(other.defaultGroups) : null;
-        this.repositories = other.repositories != null ? Lists.newArrayList(other.repositories) : null;
+        this.groups = other.groups != null ? ImmutableList.copyOf(other.groups) : null;
+        this.defaultGroups = other.defaultGroups != null ? ImmutableSet.copyOf(other.defaultGroups) : null;
+        this.repositories = other.repositories != null ? ImmutableList.copyOf(other.repositories) : null;
     }
 
     // =============== getters ==========================

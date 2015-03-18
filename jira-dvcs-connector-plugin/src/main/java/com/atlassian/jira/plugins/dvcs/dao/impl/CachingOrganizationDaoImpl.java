@@ -34,7 +34,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
  * Cache Organization and return defensive copies rather than the cached object.
  * Cache expires according to CACHE_SETTINGS configuration.
  */
-@Component ("cachingOrganizationDao")
+@Component ("organizationDao")
 public class CachingOrganizationDaoImpl implements OrganizationDao
 {
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().expireAfterWrite(30, MINUTES).build();
@@ -54,7 +54,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
             @Override
             public List<Organization> get()
             {
-                return organizationAOFacade.getAll();
+                return organizationAOFacade.fetch();
             }
         }, CACHE_SETTINGS);
     }
@@ -194,7 +194,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
     {
-        organizationAOFacade.setDefaultGroupsSlugs(orgId, groupsSlugs);
+        organizationAOFacade.updateDefaultGroupsSlugs(orgId, groupsSlugs);
         // if operation fails then do not clear the cache
         clearCache();
     }
