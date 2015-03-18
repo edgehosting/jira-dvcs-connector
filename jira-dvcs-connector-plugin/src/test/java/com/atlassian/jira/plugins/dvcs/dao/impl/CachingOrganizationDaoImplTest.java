@@ -4,7 +4,7 @@ import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationAOFacade;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -41,7 +41,7 @@ public class CachingOrganizationDaoImplTest
     @Mock
     private CacheManager cacheManager;
     @Mock
-    private OrganizationDao organizationDao;
+    private OrganizationAOFacade organizationAOFacade;
     @Mock
     private CachedReference cache;
 
@@ -60,10 +60,10 @@ public class CachingOrganizationDaoImplTest
     {
         when(cacheManager.getCachedReference(anyString(), any(Supplier.class), any(CacheSettings.class))).thenReturn(cache);
         cachingOrganizationDao = new CachingOrganizationDaoImpl(cacheManager);
-        ReflectionTestUtils.setField(cachingOrganizationDao, "organizationDao", organizationDao);
+        ReflectionTestUtils.setField(cachingOrganizationDao, "organizationAOFacade", organizationAOFacade);
 
         when(cache.get()).thenReturn(orgs);
-        when(organizationDao.save(orgBitbucket)).thenReturn(orgBitbucket);
+        when(organizationAOFacade.save(orgBitbucket)).thenReturn(orgBitbucket);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class CachingOrganizationDaoImplTest
         final int orgId = 1;
         cachingOrganizationDao.remove(orgId);
 
-        verify(organizationDao).remove(orgId);
+        verify(organizationAOFacade).remove(orgId);
         verify(cache).reset();
     }
 
@@ -150,7 +150,7 @@ public class CachingOrganizationDaoImplTest
     {
         cachingOrganizationDao.save(orgBitbucket);
 
-        verify(organizationDao).save(orgBitbucket);
+        verify(organizationAOFacade).save(orgBitbucket);
         verify(cache).reset();
     }
 
@@ -162,7 +162,7 @@ public class CachingOrganizationDaoImplTest
 
         cachingOrganizationDao.setDefaultGroupsSlugs(orgId, slugs);
 
-        verify(organizationDao).setDefaultGroupsSlugs(orgId, slugs);
+        verify(organizationAOFacade).setDefaultGroupsSlugs(orgId, slugs);
         verify(cache).reset();
     }
 }

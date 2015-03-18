@@ -30,7 +30,7 @@ public class OrganizationDaoImplTest
     private InvalidOrganizationManager invalidOrganizationsManager;
 
     @InjectMocks
-    private OrganizationDaoImpl oDao;
+    private OrganizationAOFacadeImpl oDao;
 
     @Test
     public void testDeserializeDefaultGroups()

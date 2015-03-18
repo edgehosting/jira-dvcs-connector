@@ -6,6 +6,7 @@ import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
 import com.atlassian.jira.cluster.ClusterSafe;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationAOFacade;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -42,8 +43,8 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     private final CachedReference<List<Organization>> organizationsCache;
 
     @Autowired
-    @Qualifier ("organizationDao")
-    private OrganizationDao organizationDao;
+    @Qualifier ("organizationAOFacade")
+    private OrganizationAOFacade organizationAOFacade;
 
     @Autowired
     public CachingOrganizationDaoImpl(@ComponentImport final CacheManager cacheManager)
@@ -53,7 +54,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
             @Override
             public List<Organization> get()
             {
-                return organizationDao.getAll();
+                return organizationAOFacade.getAll();
             }
         }, CACHE_SETTINGS);
     }
@@ -83,7 +84,6 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
                 return dvcsType.equals(org.getDvcsType());
             }
         });
-
         return cloneOrgs(orgsByType);
     }
 
@@ -173,7 +173,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public void remove(int organizationId)
     {
-        organizationDao.remove(organizationId);
+        organizationAOFacade.remove(organizationId);
         // if operation fails then do not clear the cache
         clearCache();
     }
@@ -181,7 +181,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public Organization save(final Organization organization)
     {
-        Organization org = organizationDao.save(organization);
+        Organization org = organizationAOFacade.save(organization);
         // if operation fails then do not clear the cache
         if (org != null)
         {
@@ -194,7 +194,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Override
     public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
     {
-        organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
+        organizationAOFacade.setDefaultGroupsSlugs(orgId, groupsSlugs);
         // if operation fails then do not clear the cache
         clearCache();
     }
