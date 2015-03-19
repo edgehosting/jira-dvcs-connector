@@ -207,7 +207,8 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     private Organization findOrganization(Predicate<Organization> predicate)
     {
         final List<Organization> orgs = getAllCachedOrgs();
-        return new Organization(Iterables.find(orgs, predicate, null)); // return a clone of the Organization
+        Organization matchedOrg = Iterables.find(orgs, predicate, null);
+        return matchedOrg != null ? new Organization(matchedOrg) : null;
     }
 
     private List<Organization> cloneOrgs(@Nonnull Iterable<Organization> orgs)

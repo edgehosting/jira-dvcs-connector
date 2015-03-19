@@ -62,10 +62,11 @@ public class Organization implements Serializable
      */
     public Organization(Organization other)
     {
-        this(other.id, other.hostUrl, other.name, other.dvcsType, other.autolinkNewRepos,
-                new Credential(other.credential.getOauthKey(), other.credential.getOauthSecret(),
-                        other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()),
-                other.organizationUrl, other.smartcommitsOnNewRepos, null);
+        this(other.id, other.hostUrl, other.name, other.dvcsType, other.autolinkNewRepos, null, other.organizationUrl,
+                other.smartcommitsOnNewRepos, null);
+
+        this.credential = other.credential != null ? new Credential(other.credential.getOauthKey(), other.credential.getOauthSecret(),
+                other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()) : null;
 
         // Note: it is fine to use shallow copy for defaultGroups/groups because Group cannot be changed.
         this.defaultGroups = other.defaultGroups != null ? ImmutableSet.copyOf(other.defaultGroups) : null;
