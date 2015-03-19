@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -12,10 +14,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType (XmlAccessType.FIELD)
 public class Organization implements Serializable
 {
-	public static final String GROUP_SLUGS_SEPARATOR = ";";
+    public static final String GROUP_SLUGS_SEPARATOR = ";";
 
     private int id;
     private String hostUrl;
@@ -34,9 +36,9 @@ public class Organization implements Serializable
     private transient Set<Group> defaultGroups;
 
     public Organization()
-	{
-    	super();
-	}
+    {
+        super();
+    }
 
     public Organization(int id, String hostUrl, String name, String dvcsType,
             boolean autolinkNewRepos, Credential credential, String organizationUrl,
@@ -51,6 +53,25 @@ public class Organization implements Serializable
         this.organizationUrl = organizationUrl;
         this.smartcommitsOnNewRepos = smartcommitsOnNewRepos;
         this.defaultGroups = defaultGroups;
+    }
+
+    /**
+     * Clone the provided organization. Note repositories won't be copied across.
+     *
+     * @param other original organization to be cloned
+     */
+    public Organization(Organization other)
+    {
+        this(other.id, other.hostUrl, other.name, other.dvcsType, other.autolinkNewRepos, null, other.organizationUrl,
+                other.smartcommitsOnNewRepos, null);
+
+        this.credential = other.credential != null ? new Credential(other.credential.getOauthKey(), other.credential.getOauthSecret(),
+                other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()) : null;
+
+        // Note: it is fine to use shallow copy for defaultGroups/groups because Group cannot be changed.
+        // Ideally these collections should be immutable but there are existing codes modifying them (e.g. sorting)
+        this.defaultGroups = other.defaultGroups != null ? Sets.newHashSet(other.defaultGroups) : null;
+        this.groups = other.groups != null ? Lists.newArrayList(other.groups) : null;
     }
 
     // =============== getters ==========================
@@ -103,6 +124,7 @@ public class Organization implements Serializable
     {
         return smartcommitsOnNewRepos;
     }
+
     // =============== setters ==========================
     public void setId(int id)
     {
@@ -167,8 +189,8 @@ public class Organization implements Serializable
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
 
         Organization that = (Organization) o;
 
@@ -193,11 +215,9 @@ public class Organization implements Serializable
                 .hashCode();
     }
 
-
     public boolean isIntegratedAccount()
     {
         return credential != null && StringUtils.isNotBlank(credential.getOauthKey())
                 && StringUtils.isNotBlank(credential.getOauthSecret()) && StringUtils.isBlank(credential.getAccessToken());
     }
-
 }

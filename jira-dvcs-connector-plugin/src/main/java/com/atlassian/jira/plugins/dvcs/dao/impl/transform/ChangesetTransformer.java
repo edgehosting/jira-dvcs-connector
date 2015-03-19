@@ -1,19 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl.transform;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.ChangesetDaoImpl;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetails;
 import com.atlassian.jira.plugins.dvcs.model.FileData;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.StringUtils;
@@ -26,20 +25,20 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @Component
 public class ChangesetTransformer
 {
     public static final Logger log = LoggerFactory.getLogger(ChangesetTransformer.class);
-    private final ActiveObjects activeObjects;
     private final ChangesetDaoImpl changesetDao;
 
     @Autowired
-    public ChangesetTransformer(@ComponentImport final ActiveObjects activeObjects, final ChangesetDaoImpl changesetDao)
+    private OrganizationDao organizationDao;
+
+    @Autowired
+    public ChangesetTransformer(final ChangesetDaoImpl changesetDao)
     {
-        this.activeObjects = checkNotNull(activeObjects);
         this.changesetDao = changesetDao;
     }
 
@@ -63,9 +62,9 @@ public class ChangesetTransformer
 
             if (!StringUtils.isEmpty(dvcsType))
             {
-                OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
+                Organization organization = organizationDao.get(repositoryMapping.getOrganizationId());
 
-                if (!dvcsType.equals(organizationMapping.getDvcsType()))
+                if (!dvcsType.equals(organization.getDvcsType()))
                 {
                     continue;
                 }

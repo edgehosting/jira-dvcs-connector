@@ -81,7 +81,7 @@ public class UserAddedExternallyEventProcessorTest
     public void testRunShouldInvite()
     {
 
-		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(sampleOrganizations());
+		when(organizationServiceMock.getAll(false)).thenReturn(sampleOrganizations());
 
 		processor.run();
 
@@ -99,7 +99,7 @@ public class UserAddedExternallyEventProcessorTest
     public void testRunNoDefaultGroupsShouldntInvite()
     {
 
-		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(Collections.EMPTY_LIST);
+		when(organizationServiceMock.getAll(false)).thenReturn(Collections.EMPTY_LIST);
 
 		processor.run();
 

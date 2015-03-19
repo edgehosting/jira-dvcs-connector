@@ -3,8 +3,8 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
 import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -27,10 +27,10 @@ public class OrganizationDaoImplTest
     private Encryptor encryptor;
 
     @Mock
-    private PluginSettingsFactory pluginSettingsFactory;
+    private InvalidOrganizationManager invalidOrganizationsManager;
 
     @InjectMocks
-    private OrganizationDaoImpl oDao;
+    private OrganizationAOFacadeImpl oDao;
 
     @Test
     public void testDeserializeDefaultGroups()
