@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -69,8 +69,9 @@ public class Organization implements Serializable
                 other.credential.getAccessToken(), other.credential.getAdminUsername(), other.credential.getAdminPassword()) : null;
 
         // Note: it is fine to use shallow copy for defaultGroups/groups because Group cannot be changed.
-        this.defaultGroups = other.defaultGroups != null ? ImmutableSet.copyOf(other.defaultGroups) : null;
-        this.groups = other.groups != null ? ImmutableList.copyOf(other.groups) : null;
+        // Ideally these collections should be immutable but there are existing codes modifying them (e.g. sorting)
+        this.defaultGroups = other.defaultGroups != null ? Sets.newHashSet(other.defaultGroups) : null;
+        this.groups = other.groups != null ? Lists.newArrayList(other.groups) : null;
     }
 
     // =============== getters ==========================

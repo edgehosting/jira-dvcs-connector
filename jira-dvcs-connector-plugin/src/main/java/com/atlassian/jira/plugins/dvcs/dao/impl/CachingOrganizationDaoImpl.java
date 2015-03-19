@@ -12,8 +12,8 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -213,7 +213,7 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
 
     private List<Organization> cloneOrgs(@Nonnull Iterable<Organization> orgs)
     {
-        return ImmutableList.copyOf(Iterables.transform(orgs, new Function<Organization, Organization>()
+        return Lists.newArrayList(Iterables.transform(orgs, new Function<Organization, Organization>()
         {
             @Override
             public Organization apply(@Nonnull Organization org)
