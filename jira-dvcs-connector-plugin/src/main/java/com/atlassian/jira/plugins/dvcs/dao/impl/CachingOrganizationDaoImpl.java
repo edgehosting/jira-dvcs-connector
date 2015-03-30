@@ -199,6 +199,12 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         clearCache();
     }
 
+    @Override
+    public void clearCache()
+    {
+        organizationsCache.reset();
+    }
+
     private List<Organization> getAllCachedOrgs()
     {
         return organizationsCache.get();
@@ -221,10 +227,5 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
                 return new Organization(org);
             }
         }));
-    }
-
-    private void clearCache()
-    {
-        organizationsCache.reset();
     }
 }

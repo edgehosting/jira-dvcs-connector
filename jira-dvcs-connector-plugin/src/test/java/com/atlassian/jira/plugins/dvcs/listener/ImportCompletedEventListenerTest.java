@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.fugue.Option;
 import com.atlassian.jira.bc.dataimport.ImportCompletedEvent;
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,8 @@ import static org.mockito.Mockito.verify;
 public class ImportCompletedEventListenerTest
 {
     @Mock
-    private CacheManager cacheManager;
+    private OrganizationDao organizationDao;
+
     @Mock
     private EventPublisher eventPublisher;
 
@@ -47,6 +48,6 @@ public class ImportCompletedEventListenerTest
     public void testOnImportCompleted() throws Exception
     {
         listener.onImportCompleted(new ImportCompletedEvent(true, Option.none(Long.class)));
-        verify(cacheManager).flushCaches();
+        verify(organizationDao).clearCache();
     }
 }
