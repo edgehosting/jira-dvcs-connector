@@ -69,9 +69,4 @@ public interface OrganizationDao
 	Organization findIntegratedAccount();
 
     boolean existsOrganizationWithType(String... types);
-
-    /**
-     * Clear the organization cache.
-     */
-    void clearCache();
 }

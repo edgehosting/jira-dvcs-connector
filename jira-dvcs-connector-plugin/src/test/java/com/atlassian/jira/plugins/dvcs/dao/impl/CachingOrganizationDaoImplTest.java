@@ -4,6 +4,9 @@ import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.fugue.Option;
+import com.atlassian.jira.bc.dataimport.ImportCompletedEvent;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationAOFacade;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Group;
@@ -44,6 +47,8 @@ public class CachingOrganizationDaoImplTest
     private OrganizationAOFacade organizationAOFacade;
     @Mock
     private CachedReference cache;
+    @Mock
+    private EventPublisher eventPublisher;
 
     private final Organization orgBitbucket = new Organization(1, BB_URL, BB_ACCOUNT_NAME, BITBUCKET, false,
             new Credential("oauthKey", "oauthSecret", "accessToken"), "organizationUrl", false, new HashSet<Group>());
@@ -61,6 +66,7 @@ public class CachingOrganizationDaoImplTest
         when(cacheManager.getCachedReference(anyString(), any(Supplier.class), any(CacheSettings.class))).thenReturn(cache);
         cachingOrganizationDao = new CachingOrganizationDaoImpl(cacheManager);
         ReflectionTestUtils.setField(cachingOrganizationDao, "organizationAOFacade", organizationAOFacade);
+        ReflectionTestUtils.setField(cachingOrganizationDao, "eventPublisher", eventPublisher);
 
         when(cache.get()).thenReturn(orgs);
         when(organizationAOFacade.save(orgBitbucket)).thenReturn(orgBitbucket);
@@ -164,5 +170,26 @@ public class CachingOrganizationDaoImplTest
 
         verify(organizationAOFacade).updateDefaultGroupsSlugs(orgId, slugs);
         verify(cache).reset();
+    }
+
+    @Test
+    public void testOnImportCompleted()
+    {
+        cachingOrganizationDao.onImportCompleted(new ImportCompletedEvent(true, Option.none(Long.class)));
+        verify(cache).reset();
+    }
+
+    @Test
+    public void testRegisterListener()
+    {
+        cachingOrganizationDao.registerListener();
+        verify(eventPublisher).register(cachingOrganizationDao);
+    }
+
+    @Test
+    public void testUnregisterListener()
+    {
+        cachingOrganizationDao.unregisterListener();
+        verify(eventPublisher).unregister(cachingOrganizationDao);
     }
 }

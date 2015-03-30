@@ -5,6 +5,9 @@ import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
 import com.atlassian.cache.CachedReference;
 import com.atlassian.cache.Supplier;
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.bc.dataimport.ImportCompletedEvent;
 import com.atlassian.jira.cluster.ClusterSafe;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationAOFacade;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
@@ -15,6 +18,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -23,6 +28,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isBlank;
 import static com.atlassian.gzipfilter.org.apache.commons.lang.StringUtils.isNotBlank;
@@ -36,6 +43,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @Component ("organizationDao")
 public class CachingOrganizationDaoImpl implements OrganizationDao
 {
+    private static final Logger log = LoggerFactory.getLogger(CachingOrganizationDaoImpl.class);
+
     private static final CacheSettings CACHE_SETTINGS = new CacheSettingsBuilder().expireAfterWrite(30, MINUTES).build();
 
     @ClusterSafe
@@ -44,6 +53,9 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
     @Autowired
     @Qualifier ("organizationAOFacade")
     private OrganizationAOFacade organizationAOFacade;
+
+    @Autowired
+    private EventPublisher eventPublisher;
 
     @Autowired
     public CachingOrganizationDaoImpl(@ComponentImport final CacheManager cacheManager)
@@ -199,8 +211,30 @@ public class CachingOrganizationDaoImpl implements OrganizationDao
         clearCache();
     }
 
-    @Override
-    public void clearCache()
+    @PostConstruct
+    public void registerListener()
+    {
+        eventPublisher.register(this);
+    }
+
+    @PreDestroy
+    public void unregisterListener()
+    {
+        eventPublisher.unregister(this);
+    }
+
+    /**
+     * Listen to ImportCompletedEvent which is raised after a XML is imported in the Integration tests or by the system
+     * so that the cache can be cleared.
+     */
+    @EventListener
+    public void onImportCompleted(final ImportCompletedEvent event)
+    {
+        log.warn("onImportCompleted - clearing cache !!");
+        clearCache();
+    }
+
+    private void clearCache()
     {
         organizationsCache.reset();
     }
