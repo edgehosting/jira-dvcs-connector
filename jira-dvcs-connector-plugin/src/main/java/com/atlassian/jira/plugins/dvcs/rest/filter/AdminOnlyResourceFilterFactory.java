@@ -1,7 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
+import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Preconditions;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ResourceFilter;
@@ -20,16 +21,17 @@ public class AdminOnlyResourceFilterFactory implements ResourceFilterFactory
 {
     private final JiraAuthenticationContext authenticationContext;
     
-    private final PermissionManager permissionManager;
+    private final GlobalPermissionManager globalPermissionManager;
 
-    public AdminOnlyResourceFilterFactory(final JiraAuthenticationContext authenticationContext, final PermissionManager permissionManager)
+    public AdminOnlyResourceFilterFactory(@ComponentImport final JiraAuthenticationContext authenticationContext,
+            @ComponentImport final GlobalPermissionManager globalPermissionManager)
     {
         this.authenticationContext = Preconditions.checkNotNull(authenticationContext);
-        this.permissionManager = Preconditions.checkNotNull(permissionManager);
+        this.globalPermissionManager = Preconditions.checkNotNull(globalPermissionManager);
     }
 
     public List<ResourceFilter> create(AbstractMethod abstractMethod)
     {
-        return Collections.<ResourceFilter>singletonList(new AdminOnlyResourceFilter(abstractMethod, authenticationContext, permissionManager));
+        return Collections.<ResourceFilter>singletonList(new AdminOnlyResourceFilter(abstractMethod, authenticationContext, globalPermissionManager));
     }
 }

@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.base.Splitter;
 import org.apache.commons.collections.CollectionUtils;
@@ -49,16 +49,9 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 
     private final String serializedGroupsUiChoice;
 
-    private final User user;
+    private final ApplicationUser user;
 
-	/**
-	 * Instantiates a new user added via interface event processor.
-	 *
-	 * @param event the event
-	 * @param organizationService the organization service
-	 * @param communicatorProvider the communicator provider
-	 */
-	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, User user ,OrganizationService organizationService,
+	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, ApplicationUser user ,OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
 	{
 	    super(userManager, groupManager);
@@ -94,12 +87,6 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 
 	}
 
-	/**
-	 * To invitations.
-	 *
-	 * @param organizationIdsAndGroupSlugs the organization ids and group slugs
-	 * @return the collection
-	 */
 	private Collection<Invitations> convertInvitations()
 	{
 

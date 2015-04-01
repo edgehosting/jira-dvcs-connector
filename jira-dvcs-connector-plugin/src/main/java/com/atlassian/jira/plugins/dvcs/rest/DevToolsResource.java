@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping;
+import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
@@ -25,7 +25,6 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import com.atlassian.jira.project.Project;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -286,7 +285,7 @@ public class DevToolsResource
                 return Status.notFound().message("Issue not found").response();
             }
 
-            if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+            if (!issueAndProjectKeyManager.hasIssuePermission(ProjectPermissions.BROWSE_PROJECTS, issue))
             {
                 throw new AuthorizationException();
             }
@@ -298,7 +297,7 @@ public class DevToolsResource
                 return Status.notFound().message("Project was not found").response();
             }
 
-            if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+            if (!issueAndProjectKeyManager.hasProjectPermission(ProjectPermissions.VIEW_DEV_TOOLS, project))
             {
                 throw new AuthorizationException();
             }
@@ -359,7 +358,7 @@ public class DevToolsResource
             return Status.notFound().message("Issue not found").response();
         }
 
-        if (!issueAndProjectKeyManager.hasIssuePermission(Permissions.Permission.BROWSE, issue))
+        if (!issueAndProjectKeyManager.hasIssuePermission(ProjectPermissions.BROWSE_PROJECTS, issue))
         {
             throw new AuthorizationException();
         }
@@ -371,7 +370,7 @@ public class DevToolsResource
             return Status.notFound().message("Project was not found").response();
         }
 
-        if (!issueAndProjectKeyManager.hasProjectPermission(Permissions.Permission.VIEW_VERSION_CONTROL, project))
+        if (!issueAndProjectKeyManager.hasProjectPermission(ProjectPermissions.VIEW_DEV_TOOLS, project))
         {
             throw new AuthorizationException();
         }

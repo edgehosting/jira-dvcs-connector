@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
@@ -10,7 +9,8 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.security.plugin.ProjectPermissionKey;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +35,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     private final JiraAuthenticationContext authenticationContext;
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     public IssueAndProjectKeyManagerImpl(@ComponentImport final IssueManager issueManager,
             @ComponentImport final ChangeHistoryManager changeHistoryManager,
             @ComponentImport final ProjectManager projectManager,
@@ -90,24 +91,24 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
     }
 
     @Override
-    public boolean hasIssuePermission(Permissions.Permission permission, Issue issue)
+    public boolean hasIssuePermission(ProjectPermissionKey permissionKey, Issue issue)
     {
         if (issue == null)
         {
             throw new IllegalArgumentException("The issue cannot be null");
         }
-        User loggedInUser = authenticationContext.getLoggedInUser();
-        return permissionManager.hasPermission(permission.getId(), issue, loggedInUser);
+        ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
+        return permissionManager.hasPermission(permissionKey, issue, loggedInUser);
     }
 
     @Override
-    public boolean hasProjectPermission(Permissions.Permission permission, Project project)
+    public boolean hasProjectPermission(ProjectPermissionKey permissionKey, Project project)
     {
         if (project == null)
         {
             throw new IllegalArgumentException("The project cannot be null");
         }
-        User loggedInUser = authenticationContext.getLoggedInUser();
-        return permissionManager.hasPermission(permission.getId(), project, loggedInUser);
+        ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
+        return permissionManager.hasPermission(permissionKey, project, loggedInUser);
     }
 }

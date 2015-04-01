@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -18,15 +18,12 @@ import java.util.Set;
 
 /**
  * The Class UserAddedExternallyEventProcessor.
- * 
- * {@link Runnable} processor that handles logic beside invitations for user
- * added to JIRA i.e. via crowd so not via user interface.
- * 
- * <br />
- * <br />
- * Created on 21.6.2012, 15:22:43 <br />
- * <br />
- * 
+ * <p/>
+ * {@link Runnable} processor that handles logic beside invitations for user added to JIRA i.e. via crowd so not via
+ * user interface.
+ * <p/>
+ * <br /> <br /> Created on 21.6.2012, 15:22:43 <br /> <br />
+ *
  * @author jhocman@atlassian.com
  */
 public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
@@ -34,28 +31,18 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
 
     private static final Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
 
-    /** The organization service. */
     private final OrganizationService organizationService;
 
-    /** The communicator provider. */
+    /**
+     * The communicator provider.
+     */
     private final DvcsCommunicatorProvider communicatorProvider;
 
     private final String username;
 
-    /**
-     * The Constructor.
-     * 
-     * @param event
-     *            the event
-     * @param organizationService
-     *            the organization service
-     * @param communicatorProvider
-     *            the communicator provider
-     */
     public UserAddedExternallyEventProcessor(String username, OrganizationService organizationService,
             DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
     {
-
         super(userManager, groupManager);
 
         this.username = username;
@@ -71,8 +58,8 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
     {
 
         log.debug("Running UserAddedExternallyEventProcessor ...");
-        
-        User user = userManager.getUser(username);
+
+        ApplicationUser user = userManager.getUserByName(username);
 
         List<Organization> defaultOrganizations = organizationService.getAll(false);
 
@@ -90,7 +77,6 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
 
             // log
             logInvite(user, slugsStrings);
-            //
 
             if (CollectionUtils.isNotEmpty(slugsStrings))
             {
@@ -103,9 +89,8 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
 
     /**
      * Extract slugs.
-     * 
-     * @param groupSlugs
-     *            the group slugs
+     *
+     * @param groupSlugs the group slugs
      * @return the collection< string>
      */
     private Set<String> extractSlugs(Set<Group> groupSlugs)

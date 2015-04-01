@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
-import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
+import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugins.rest.common.security.AuthenticationRequiredException;
 import com.google.common.base.Preconditions;
 import com.sun.jersey.api.model.AbstractMethod;
@@ -27,13 +27,13 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
 {
     private final AbstractMethod abstractMethod;
     private final JiraAuthenticationContext authenticationContext;
-    private final PermissionManager permissionManager;
+    private final GlobalPermissionManager globalPermissionManager;
 
-    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext, PermissionManager permissionManager)
+    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext, GlobalPermissionManager globalPermissionManager)
     {
         this.abstractMethod = Preconditions.checkNotNull(abstractMethod);
         this.authenticationContext = Preconditions.checkNotNull(authenticationContext);
-        this.permissionManager = Preconditions.checkNotNull(permissionManager);
+        this.globalPermissionManager = Preconditions.checkNotNull(globalPermissionManager);
     }
 
     public ContainerRequestFilter getRequestFilter()
@@ -50,7 +50,7 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
     {
         if ( isAdminNeeded() )
         {
-        	User loggedInUser = authenticationContext.getLoggedInUser();
+        	ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
         	if  (loggedInUser == null)
         	{
         		throw new AuthenticationRequiredException();
@@ -69,8 +69,8 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
                 || abstractMethod.getResource().getAnnotation(AdminOnly.class) != null;
     }
 
-    private boolean isAdmin(User user)
+    private boolean isAdmin(ApplicationUser user)
     {
-        return permissionManager.hasPermission(Permissions.ADMINISTER, user);
+        return globalPermissionManager.hasPermission(GlobalPermissionKey.ADMINISTER, user);
     }
 }

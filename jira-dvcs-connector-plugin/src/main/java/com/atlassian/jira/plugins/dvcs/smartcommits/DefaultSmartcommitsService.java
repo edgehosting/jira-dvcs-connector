@@ -21,6 +21,8 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.Lists;
@@ -98,7 +100,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		//
 		// Fetch user by email
 		//
-		List<User> users = getUserByEmailOrNull(authorEmail, authorName);
+		List<ApplicationUser> users = getUserByEmailOrNull(authorEmail, authorName);
 		if (users.isEmpty())
 		{
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
@@ -108,8 +110,8 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		    results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
 		    return results;
 		}
-		
-		User user = users.get(0);
+
+        ApplicationUser user = users.get(0);
 
 		//
 		// Authenticate user
@@ -134,7 +136,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		return results;
 	}
 
-	private void processCommands(CommitCommands commands, CommandsResults results, User user)
+	private void processCommands(CommitCommands commands, CommandsResults results, ApplicationUser user)
 	{
 		for (CommitCommands.CommitCommand command : commands.getCommands())
 		{
@@ -197,7 +199,12 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		}
 	}
 
-	private List<User> getUserByEmailOrNull(String email, String name)
+	private List<ApplicationUser> getUserByEmailOrNull(String email, String name)
+    {
+        return ApplicationUsers.from(getCrowdUserByEmailOrNull(email, name));
+    }
+
+	private List<User> getCrowdUserByEmailOrNull(String email, String name)
 	{
 		try
 		{
