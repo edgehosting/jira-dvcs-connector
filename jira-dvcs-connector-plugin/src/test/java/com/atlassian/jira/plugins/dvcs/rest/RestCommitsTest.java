@@ -109,7 +109,7 @@ public class RestCommitsTest
 
         issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager, projectManager, permissionManager, jiraAuthenticationContext);
 
-        when(jiraAuthenticationContext.getLoggedInUser()).thenReturn(new MockApplicationUser("USER", "FULLNAME", "EMAIL"));
+        when(jiraAuthenticationContext.getUser()).thenReturn(new MockApplicationUser("USER", "FULLNAME", "EMAIL"));
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")), argThat(new UserArgumentMatcher("USER")))).thenReturn(true);
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")), argThat(new UserArgumentMatcher("USER")))).thenReturn(false);
 

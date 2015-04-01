@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.permission.ProjectPermissions;
@@ -12,6 +13,7 @@ import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
@@ -77,7 +79,11 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         this.issueAndProjectKeyManager = checkNotNull(issueAndProjectKeyManager);
     }
 
-    @Override
+    public List<IssueAction> getActions(Issue issue, User user)
+    {
+        return getActions(issue, ApplicationUsers.from(user));
+    }
+
     public List<IssueAction> getActions(Issue issue, ApplicationUser user)
     {
         String issueKey = issue.getKey();
@@ -96,7 +102,11 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         return issueActions;
     }
 
-    @Override
+    public boolean showPanel(Issue issue, User user)
+    {
+        return showPanel(issue, ApplicationUsers.from(user));
+    }
+
     public boolean showPanel(Issue issue, ApplicationUser user)
     {
         return permissionManager.hasPermission(ProjectPermissions.VIEW_DEV_TOOLS, issue, user)

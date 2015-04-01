@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
@@ -9,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
 import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.webresource.WebResourceManager;
@@ -97,7 +99,11 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.eventPublisher = eventPublisher;
     }
 
-    @Override
+    public List<IssueAction> getActions(Issue issue, User user)
+    {
+        return getActions(issue, ApplicationUsers.from(user));
+    }
+
     public List<IssueAction> getActions(Issue issue, ApplicationUser user)
     {
         // make advertisement, if plug-in is not using
@@ -117,10 +123,13 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         return actions;
     }
 
-    @Override
+    public boolean showPanel(Issue issue, User user)
+    {
+        return showPanel(issue, ApplicationUsers.from(user));
+    }
+
     public boolean showPanel(Issue issue, ApplicationUser user)
     {
         return panelVisibilityManager.showPanel(issue, user);
     }
-
 }
