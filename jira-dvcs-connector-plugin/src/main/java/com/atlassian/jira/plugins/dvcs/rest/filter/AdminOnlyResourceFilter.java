@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
-import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
-import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugins.rest.common.security.AuthenticationRequiredException;
 import com.google.common.base.Preconditions;
@@ -27,13 +27,13 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
 {
     private final AbstractMethod abstractMethod;
     private final JiraAuthenticationContext authenticationContext;
-    private final GlobalPermissionManager globalPermissionManager;
+    private final PermissionManager permissionManager;
 
-    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext, GlobalPermissionManager globalPermissionManager)
+    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext, PermissionManager permissionManager)
     {
         this.abstractMethod = Preconditions.checkNotNull(abstractMethod);
         this.authenticationContext = Preconditions.checkNotNull(authenticationContext);
-        this.globalPermissionManager = Preconditions.checkNotNull(globalPermissionManager);
+        this.permissionManager = Preconditions.checkNotNull(permissionManager);
     }
 
     public ContainerRequestFilter getRequestFilter()
@@ -50,15 +50,15 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
     {
         if ( isAdminNeeded() )
         {
-        	ApplicationUser loggedInUser = authenticationContext.getUser();
-        	if  (loggedInUser == null)
-        	{
-        		throw new AuthenticationRequiredException();
-        	}
-        	if( !isAdmin(loggedInUser) )
-        	{
-        		throw new AuthorizationException();
-        	}
+            ApplicationUser loggedInUser = authenticationContext.getUser();
+            if  (loggedInUser == null)
+            {
+                throw new AuthenticationRequiredException();
+            }
+            if( !isAdmin(loggedInUser) )
+            {
+                throw new AuthorizationException();
+            }
         }
         return request;
     }
@@ -71,6 +71,6 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
 
     private boolean isAdmin(ApplicationUser user)
     {
-        return globalPermissionManager.hasPermission(GlobalPermissionKey.ADMINISTER, user);
+        return permissionManager.hasPermission(Permissions.ADMINISTER, user);
     }
 }
