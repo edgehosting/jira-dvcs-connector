@@ -34,6 +34,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Currently unused, see BBC-930
+ *
+ * This class implements both the JIRA 6.X and 7.X versions of the {@link com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel}
+ * so that it can be compiled and run against either.
  */
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {

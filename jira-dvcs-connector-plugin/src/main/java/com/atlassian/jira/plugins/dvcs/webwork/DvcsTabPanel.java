@@ -23,6 +23,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class implements both the JIRA 6.X and 7.X versions of the {@link com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel}
+ * so that it can be compiled and run against either.
+ */
 @Scanned
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
