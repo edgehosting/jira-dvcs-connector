@@ -441,5 +441,11 @@
                 <testkit.version>6.0.41</testkit.version>
             </properties>
         </profile>
+        <profile>
+            <id>jira7</id>
+            <properties>
+                <jira.compile.version>7.0-20150401.155513</jira.compile.version>
+            </properties>
+        </profile>
     </profiles>
 </project>
