@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
-import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
@@ -12,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -112,7 +112,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 
     public boolean showPanel(Issue issue, ApplicationUser user)
     {
-        return permissionManager.hasPermission(ProjectPermissions.VIEW_DEV_TOOLS, issue, user)
+        return permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)
                 && repositoryService.existsLinkedRepositories();
     }
 

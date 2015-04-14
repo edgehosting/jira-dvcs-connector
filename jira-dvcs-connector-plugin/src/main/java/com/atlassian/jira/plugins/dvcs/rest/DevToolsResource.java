@@ -25,6 +25,7 @@ import com.atlassian.jira.plugins.dvcs.service.PullRequestService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManager;
 import com.atlassian.jira.project.Project;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.plugins.rest.common.Status;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -297,7 +298,7 @@ public class DevToolsResource
                 return Status.notFound().message("Project was not found").response();
             }
 
-            if (!issueAndProjectKeyManager.hasProjectPermission(ProjectPermissions.VIEW_DEV_TOOLS, project))
+            if (!issueAndProjectKeyManager.hasProjectPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, project))
             {
                 throw new AuthorizationException();
             }
@@ -370,7 +371,7 @@ public class DevToolsResource
             return Status.notFound().message("Project was not found").response();
         }
 
-        if (!issueAndProjectKeyManager.hasProjectPermission(ProjectPermissions.VIEW_DEV_TOOLS, project))
+        if (!issueAndProjectKeyManager.hasProjectPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, project))
         {
             throw new AuthorizationException();
         }

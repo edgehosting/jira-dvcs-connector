@@ -2,8 +2,8 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -38,6 +38,6 @@ public class PanelVisibilityManager
         return (!pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) || !featureManager.isEnabled(LABS_OPT_IN) ||
                 // JIRA 6.1.x was installed with 0.x of the devsummary plugin, everything else after will want to hide this panel
                 pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID).getPluginInformation().getVersion().startsWith("0.")) &&
-                permissionManager.hasPermission(ProjectPermissions.VIEW_DEV_TOOLS, issue, user);
+                permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user);
     }
 }

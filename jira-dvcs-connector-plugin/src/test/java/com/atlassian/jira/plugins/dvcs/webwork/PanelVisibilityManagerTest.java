@@ -2,9 +2,9 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
@@ -75,7 +75,7 @@ public class PanelVisibilityManagerTest
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(ProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
+        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
