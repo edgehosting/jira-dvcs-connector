@@ -133,7 +133,7 @@ public class DvcsAddUserListener
             }
             
             crowd.setUserAttribute(
-                    user.getDirectoryUser(),
+                    ApplicationUsers.toDirectoryUser(user),
                     UI_USER_INVITATIONS_PARAM_NAME,
                     Collections.singleton(userInvitations)
                     );
