@@ -204,6 +204,12 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.atlassian.jira.compat</groupId>
+                <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                <version>0.8</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
                 <version>1.1.1</version>
