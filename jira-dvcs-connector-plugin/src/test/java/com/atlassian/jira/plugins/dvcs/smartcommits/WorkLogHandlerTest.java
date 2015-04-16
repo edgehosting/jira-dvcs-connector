@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.MockApplicationUser;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -77,8 +77,8 @@ public class WorkLogHandlerTest
         return mock(MutableIssue.class);
     }
 
-    private User sampleUser()
+    private ApplicationUser sampleUser()
     {
-        return new MockApplicationUser("user").getDirectoryUser();
+        return new MockApplicationUser("user");
     }
 }

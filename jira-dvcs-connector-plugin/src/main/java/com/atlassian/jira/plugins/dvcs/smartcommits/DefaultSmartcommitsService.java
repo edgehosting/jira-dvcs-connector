@@ -21,6 +21,8 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.Lists;
@@ -64,175 +66,182 @@ public class DefaultSmartcommitsService implements SmartcommitsService
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
             @ComponentImport CrowdService crowdService)
     {
-		this.crowdService = checkNotNull(crowdService);
+        this.crowdService = checkNotNull(crowdService);
 
-		NO_CACHE = new CacheControl();
-		NO_CACHE.setNoCache(true);
+        NO_CACHE = new CacheControl();
+        NO_CACHE.setNoCache(true);
 
-		this.issueManager = checkNotNull(issueManager);
-		this.transitionHandler = transitionHandler;
-		this.commentHandler = commentHandler;
-		this.workLogHandler = workLogHandler;
-		this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
-	}
+        this.issueManager = checkNotNull(issueManager);
+        this.transitionHandler = transitionHandler;
+        this.commentHandler = commentHandler;
+        this.workLogHandler = workLogHandler;
+        this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public CommandsResults doCommands(CommitCommands commands)
-	{
-		CommandsResults results = new CommandsResults();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CommandsResults doCommands(CommitCommands commands)
+    {
+        CommandsResults results = new CommandsResults();
 
-		//
-		// recognise user and auth user by email
-		//
-		String authorEmail = commands.getAuthorEmail();
-		String authorName = commands.getAuthorName();
-		if (StringUtils.isBlank(authorEmail))
-		{
+        //
+        // recognise user and auth user by email
+        //
+        String authorEmail = commands.getAuthorEmail();
+        String authorName = commands.getAuthorName();
+        if (StringUtils.isBlank(authorEmail))
+        {
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
-			return results;
-		}
+            return results;
+        }
 
-		//
-		// Fetch user by email
-		//
-		List<User> users = getUserByEmailOrNull(authorEmail, authorName);
-		if (users.isEmpty())
-		{
+        //
+        // Fetch user by email
+        //
+        List<ApplicationUser> users = getUserByEmailOrNull(authorEmail, authorName);
+        if (users.isEmpty())
+        {
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
-			return results;
-		} else if (users.size() > 1)
-		{
-		    results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
-		    return results;
-		}
-		
-		User user = users.get(0);
+            return results;
+        }
+        else if (users.size() > 1)
+        {
+            results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
+            return results;
+        }
 
-		//
-		// Authenticate user
-		//
-		jiraAuthenticationContext.setLoggedInUser(user);
+        ApplicationUser user = users.get(0);
 
-		if (CollectionUtils.isEmpty(commands.getCommands()))
-		{
-			results.addGlobalError("No commands to execute.");
-			return results;
-		}
+        //
+        // Authenticate user
+        //
+        jiraAuthenticationContext.setLoggedInUser(user);
 
-		//
-		// finally we can process commands
-		//
-		log.debug("Processing commands : " + commands);
+        if (CollectionUtils.isEmpty(commands.getCommands()))
+        {
+            results.addGlobalError("No commands to execute.");
+            return results;
+        }
 
-		processCommands(commands, results, user);
+        //
+        // finally we can process commands
+        //
+        log.debug("Processing commands : " + commands);
 
-		log.debug("Processing commands results : " + results);
+        processCommands(commands, results, user);
 
-		return results;
-	}
+        log.debug("Processing commands results : " + results);
 
-	private void processCommands(CommitCommands commands, CommandsResults results, User user)
-	{
-		for (CommitCommands.CommitCommand command : commands.getCommands())
-		{
-			CommandType commandType = CommandType.getCommandType(command.getCommandName());
-			//
-			// init command result
-			//
-			CommandResult commandResult = new CommandResult();
-			results.addResult(command, commandResult);
+        return results;
+    }
 
-			MutableIssue issue = issueManager.getIssueObject(command.getIssueKey());
-			if (issue == null)
-			{
-				commandResult.addError("Issue has not been found :" + command.getIssueKey());
-				continue;
-			}
+    private void processCommands(CommitCommands commands, CommandsResults results, ApplicationUser user)
+    {
+        for (CommitCommands.CommitCommand command : commands.getCommands())
+        {
+            CommandType commandType = CommandType.getCommandType(command.getCommandName());
+            //
+            // init command result
+            //
+            CommandResult commandResult = new CommandResult();
+            results.addResult(command, commandResult);
 
-			switch (commandType)
-			{
-			// -----------------------------------------------------------------------------------------------
-			// Log Work
-			// -----------------------------------------------------------------------------------------------
-			case LOG_WORK:
-				Either<CommitHookHandlerError, Worklog> logResult = workLogHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments(), commands.getCommitDate());
+            MutableIssue issue = issueManager.getIssueObject(command.getIssueKey());
+            if (issue == null)
+            {
+                commandResult.addError("Issue has not been found :" + command.getIssueKey());
+                continue;
+            }
 
-				if (logResult.hasError())
-				{
-					commandResult.addError(logResult.getError() + "");
-				}
-				break;
-			// -----------------------------------------------------------------------------------------------
-			// Comment
-			// -----------------------------------------------------------------------------------------------
-			case COMMENT:
-				Either<CommitHookHandlerError, Comment> commentResult = commentHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments(), commands.getCommitDate());
+            switch (commandType)
+            {
+                // -----------------------------------------------------------------------------------------------
+                // Log Work
+                // -----------------------------------------------------------------------------------------------
+                case LOG_WORK:
+                    Either<CommitHookHandlerError, Worklog> logResult = workLogHandler.handle(user, issue,
+                            command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
-				if (commentResult.hasError())
-				{
-					commandResult.addError(commentResult.getError() + "");
-				}
-				break;
-			// -----------------------------------------------------------------------------------------------
-			// Transition
-			// -----------------------------------------------------------------------------------------------
-			case TRANSITION:
-				Either<CommitHookHandlerError, Issue> transitionResult = transitionHandler.handle(user, issue,
-						command.getCommandName(), command.getArguments(), commands.getCommitDate());
+                    if (logResult.hasError())
+                    {
+                        commandResult.addError(logResult.getError() + "");
+                    }
+                    break;
+                // -----------------------------------------------------------------------------------------------
+                // Comment
+                // -----------------------------------------------------------------------------------------------
+                case COMMENT:
+                    Either<CommitHookHandlerError, Comment> commentResult = commentHandler.handle(user, issue,
+                            command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
-				if (transitionResult.hasError())
-				{
-					commandResult.addError(transitionResult.getError() + "");
-				}
-				break;
+                    if (commentResult.hasError())
+                    {
+                        commandResult.addError(commentResult.getError() + "");
+                    }
+                    break;
+                // -----------------------------------------------------------------------------------------------
+                // Transition
+                // -----------------------------------------------------------------------------------------------
+                case TRANSITION:
+                    Either<CommitHookHandlerError, Issue> transitionResult = transitionHandler.handle(user, issue,
+                            command.getCommandName(), command.getArguments(), commands.getCommitDate());
 
-			default:
-				commandResult.addError("Invalid command " + command.getCommandName());
-			}
-		}
-	}
+                    if (transitionResult.hasError())
+                    {
+                        commandResult.addError(transitionResult.getError() + "");
+                    }
+                    break;
 
-	private List<User> getUserByEmailOrNull(String email, String name)
-	{
-		try
-		{
-		    List<User> users  = Lists.newArrayList();
-			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
-					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
+                default:
+                    commandResult.addError("Invalid command " + command.getCommandName());
+            }
+        }
+    }
 
-			Iterable<User> user = crowdService.search(query);
-			Iterator<User> iterator = user.iterator();
-			User firstShouldBeOneUser = iterator.next();
-			users.add(firstShouldBeOneUser);
-			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
+    private List<ApplicationUser> getUserByEmailOrNull(String email, String name)
+    {
+        return ApplicationUsers.from(getCrowdUserByEmailOrNull(email, name));
+    }
 
-			if (iterator.hasNext())
-			{
-			    // try to find map user according the name
-				while (iterator.hasNext())
-				{
-				    User nextUser = iterator.next();
-				    if (nextUser.getName().equals(name))
-				    {
-				        return Collections.singletonList(nextUser);
-				    }
-				    users.add(nextUser);
-				}
-				log.warn("Found more than one user by email {} but no one is {}.", new Object [] { email, name });
-				return users;
-			}
+    private List<User> getCrowdUserByEmailOrNull(String email, String name)
+    {
+        try
+        {
+            List<User> users = Lists.newArrayList();
+            EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
+                    .with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
 
-			return Collections.singletonList(firstShouldBeOneUser);
+            Iterable<User> user = crowdService.search(query);
+            Iterator<User> iterator = user.iterator();
+            User firstShouldBeOneUser = iterator.next();
+            users.add(firstShouldBeOneUser);
+            log.debug("Found {} by email {}", new Object[] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress() });
 
-		} catch (Exception e)
-		{
-			log.warn("User not found by email {}.", email);
-			return Collections.EMPTY_LIST;
-		}
-	}
+            if (iterator.hasNext())
+            {
+                // try to find map user according the name
+                while (iterator.hasNext())
+                {
+                    User nextUser = iterator.next();
+                    if (nextUser.getName().equals(name))
+                    {
+                        return Collections.singletonList(nextUser);
+                    }
+                    users.add(nextUser);
+                }
+                log.warn("Found more than one user by email {} but no one is {}.", new Object[] { email, name });
+                return users;
+            }
+
+            return Collections.singletonList(firstShouldBeOneUser);
+
+        }
+        catch (Exception e)
+        {
+            log.warn("User not found by email {}.", email);
+            return Collections.EMPTY_LIST;
+        }
+    }
 }

@@ -1,13 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.embedded.api.UserWithAttributes;
 import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
 import com.atlassian.crowd.exception.OperationNotPermittedException;
 import com.atlassian.crowd.exception.runtime.OperationFailedException;
 import com.atlassian.crowd.exception.runtime.UserNotFoundException;
-import com.atlassian.crowd.model.event.UserEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
@@ -15,6 +13,8 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +35,7 @@ import java.util.Set;
  * at this place.
  * 
  * @see #onUserAddViaInterface(UserAddedEvent)
- * @see #onUserAddViaCrowd(UserEvent)
+ * @see #onUserAttributeStore(UserAttributeStoredEvent)
  * 
  * <br />
  * <br />
@@ -116,7 +116,7 @@ public class DvcsAddUserListener
             String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
                     UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
       
-            User user = userManager.getUser(username);
+            ApplicationUser user = userManager.getUserByName(username);
 
             String userInvitations;
             if (organizationIdsAndGroupSlugs != null)
@@ -133,7 +133,7 @@ public class DvcsAddUserListener
             }
             
             crowd.setUserAttribute(
-                    user,
+                    ApplicationUsers.toDirectoryUser(user),
                     UI_USER_INVITATIONS_PARAM_NAME,
                     Collections.singleton(userInvitations)
                     );
@@ -226,7 +226,7 @@ public class DvcsAddUserListener
 
             } else /* something has been chosen from UI */if (StringUtils.isNotBlank(uiChoice))
             {
-                new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
+                new UserAddedViaInterfaceEventProcessor(uiChoice, ApplicationUsers.from(event.getUser()), organizationService,
                         communicatorProvider, userManager, groupManager).run();
             }
         }

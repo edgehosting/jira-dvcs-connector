@@ -19,7 +19,7 @@ import javax.ws.rs.ext.Provider;
 public class AdminOnlyResourceFilterFactory implements ResourceFilterFactory
 {
     private final JiraAuthenticationContext authenticationContext;
-    
+
     private final PermissionManager permissionManager;
 
     public AdminOnlyResourceFilterFactory(final JiraAuthenticationContext authenticationContext, final PermissionManager permissionManager)

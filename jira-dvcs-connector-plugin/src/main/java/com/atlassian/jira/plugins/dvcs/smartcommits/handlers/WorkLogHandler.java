@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogResult;
@@ -10,6 +9,7 @@ import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.lang.Pair;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -36,6 +36,7 @@ public class WorkLogHandler implements CommandHandler<Worklog>
     private Pattern IN_WORKLOG_PATTERN = Pattern.compile("((\\d+(w|d|h|m)\\s*)+)");
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     public WorkLogHandler(@ComponentImport WorklogService worklogService)
     {
         this.worklogService = checkNotNull(worklogService);
@@ -48,10 +49,9 @@ public class WorkLogHandler implements CommandHandler<Worklog>
     }
 
     @Override
-    public Either<CommitHookHandlerError, Worklog> handle(User user, MutableIssue issue, String commandName,
+    public Either<CommitHookHandlerError, Worklog> handle(ApplicationUser user, MutableIssue issue, String commandName,
             List<String> args, Date commitDate)
     {
-
         JiraServiceContextImpl jiraServiceContext = new JiraServiceContextImpl(user);
 
         String worklog = args.get(0);

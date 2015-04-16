@@ -11,7 +11,9 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
@@ -32,6 +34,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Currently unused, see BBC-930
+ *
+ * This class implements both the JIRA 6.X and 7.X versions of the {@link com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel}
+ * so that it can be compiled and run against either.
  */
 public class DvcsActivityTabPanel extends AbstractIssueTabPanel
 {
@@ -77,8 +82,12 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         this.issueAndProjectKeyManager = checkNotNull(issueAndProjectKeyManager);
     }
 
-    @Override
     public List<IssueAction> getActions(Issue issue, User user)
+    {
+        return getActions(issue, ApplicationUsers.from(user));
+    }
+
+    public List<IssueAction> getActions(Issue issue, ApplicationUser user)
     {
         String issueKey = issue.getKey();
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
@@ -96,10 +105,14 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
         return issueActions;
     }
 
-    @Override
     public boolean showPanel(Issue issue, User user)
     {
-        return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
+        return showPanel(issue, ApplicationUsers.from(user));
+    }
+
+    public boolean showPanel(Issue issue, ApplicationUser user)
+    {
+        return permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)
                 && repositoryService.existsLinkedRepositories();
     }
 

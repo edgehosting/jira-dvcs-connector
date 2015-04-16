@@ -12,7 +12,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>2.3.4-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -233,6 +233,18 @@
                         <artifactId>querydsl-sql</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.plugins</groupId>
+                <artifactId>jira-software-api</artifactId>
+                <version>1.13</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.compat</groupId>
+                <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                <version>0.8</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
@@ -471,6 +483,60 @@
                 <jira.data.version>6.2.1</jira.data.version>
                 <testkit.version>6.0.41</testkit.version>
             </properties>
+        </profile>
+        <profile>
+            <id>jira7</id>
+            <properties>
+                <jira.compile.version>7.0-20150401.155513</jira.compile.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.jdbc.url>jdbc:mysql://fusion.dyn.syd.atlassian.com:3306/sonar</sonar.jdbc.url>
+                <sonar.jdbc.driver>com.mysql.jdbc.Driver</sonar.jdbc.driver>
+                <sonar.jdbc.username>sonar</sonar.jdbc.username>
+                <sonar.jdbc.password>sonar</sonar.jdbc.password>
+                <sonar.host.url>http://fusion.dyn.syd.atlassian.com:9000</sonar.host.url>
+            </properties>
+            <!-- Exclude test modules so they don't affect the overall metrics for DevStatus -->
+            <modules>
+                <module>bitbucket-client</module>
+                <module>jira-dvcs-connector-api</module>
+                <module>jira-dvcs-connector-github</module>
+                <module>jira-dvcs-connector-github-enterprise</module>
+                <module>jira-dvcs-connector-bitbucket</module>
+                <module>jira-dvcs-connector-plugin</module>
+            </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>2.5</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.7.4.201502262128</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
