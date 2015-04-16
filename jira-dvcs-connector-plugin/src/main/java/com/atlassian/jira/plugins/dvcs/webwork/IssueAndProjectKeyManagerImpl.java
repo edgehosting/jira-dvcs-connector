@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
@@ -97,8 +98,9 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
         {
             throw new IllegalArgumentException("The issue cannot be null");
         }
-        ApplicationUser loggedInUser = authenticationContext.getUser();
-        return permissionManager.hasPermission(permissionKey, issue, loggedInUser);
+
+        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        return permissionManager.hasPermission(permissionKey, issue, user);
     }
 
     @Override
@@ -108,7 +110,8 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
         {
             throw new IllegalArgumentException("The project cannot be null");
         }
-        ApplicationUser loggedInUser = authenticationContext.getUser();
-        return permissionManager.hasPermission(permissionKey, project, loggedInUser);
+
+        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        return permissionManager.hasPermission(permissionKey, project, user);
     }
 }

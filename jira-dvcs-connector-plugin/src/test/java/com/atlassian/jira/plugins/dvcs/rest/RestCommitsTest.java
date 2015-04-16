@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
@@ -28,7 +29,6 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.plugin.ProjectPermissionKey;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.MockApplicationUser;
 import com.atlassian.plugins.rest.common.Status;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -68,6 +68,7 @@ import static org.testng.Assert.assertTrue;
  */
 public class RestCommitsTest
 {
+    public static final String USER_NAME = "USER_NAME";
     private DevToolsResource devToolsResource;
 
     @Mock
@@ -102,16 +103,24 @@ public class RestCommitsTest
     private int issueIdSequence;
     private int projectIdSequence;
 
+    private interface UnifiedUser extends User, ApplicationUser
+    {
+    }
+
+    @Mock
+    private UnifiedUser mockUser;
+
     @BeforeMethod (alwaysRun=true)
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
+        when(mockUser.getName()).thenReturn(USER_NAME);
 
         issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager, projectManager, permissionManager, jiraAuthenticationContext);
 
-        when(jiraAuthenticationContext.getUser()).thenReturn(new MockApplicationUser("USER", "FULLNAME", "EMAIL"));
-        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")), argThat(new UserArgumentMatcher("USER")))).thenReturn(true);
-        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")), argThat(new UserArgumentMatcher("USER")))).thenReturn(false);
+        when(jiraAuthenticationContext.getLoggedInUser()).thenReturn(mockUser);
+        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(true);
+        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(false);
 
         RepositoryBuilder repositoryBuilder = new RepositoryBuilder();
 
