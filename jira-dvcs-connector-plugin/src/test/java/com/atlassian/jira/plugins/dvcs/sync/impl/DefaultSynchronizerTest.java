@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.event.EventService;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEvents;
+import com.atlassian.jira.plugins.dvcs.event.ThreadPoolUtil;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
@@ -65,6 +66,7 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.util.concurrent.Promises;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
@@ -72,7 +74,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.MoreExecutors;
 import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
@@ -85,7 +86,6 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.TypedResource;
 import org.eclipse.egit.github.core.service.CommitService;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -476,7 +476,7 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(oldSerializer, "synchronizer", defaultSynchronizer);
         ReflectionTestUtils.setField(githubSerializer, "synchronizer", defaultSynchronizer);
 
-        final MessageExecutor messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
+        final MessageExecutor messageExecutor = new MessageExecutor(ThreadPoolUtil.newSingleThreadExecutor(ThreadFactories.namedThreadFactory("DVCSConnector.MessageExecutor")));
 
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
@@ -1069,9 +1069,12 @@ public class DefaultSynchronizerTest
         // and the MessageExecutor below.
 
         // a this point both the DefaultSynchronizer and MessageExecutor should store events
-        InOrder inOrder = Mockito.inOrder(repoSyncForDefaultSync, repoSyncForMessageExecutor);
-        inOrder.verify(repoSyncForMessageExecutor).finish();
-        inOrder.verify(repoSyncForDefaultSync).finish();
+        //InOrder inOrder = Mockito.inOrder(repoSyncForDefaultSync, repoSyncForMessageExecutor);
+        //inOrder.verify(repoSyncForMessageExecutor).finish();
+        //inOrder.verify(repoSyncForDefaultSync).finish();
+
+        Mockito.verify(repoSyncForMessageExecutor).finish();
+        Mockito.verify(repoSyncForDefaultSync).finish();
     }
 
     @Test
