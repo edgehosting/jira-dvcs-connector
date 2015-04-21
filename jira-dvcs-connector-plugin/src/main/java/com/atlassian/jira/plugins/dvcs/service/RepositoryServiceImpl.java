@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
+import com.atlassian.jira.plugins.dvcs.event.ThreadPoolUtil;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -26,6 +27,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -38,8 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.PostConstruct;
@@ -97,7 +98,7 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private ClusterLockService clusterLockService;
 
-    private final ExecutorService repositoryDeletionExecutor = Executors.newSingleThreadExecutor(
+    private final ThreadPoolExecutor repositoryDeletionExecutor = ThreadPoolUtil.newSingleThreadExecutor(
             ThreadFactories.namedThreadFactory("DVCSConnector.RepositoryDeletion"));
 
     @PostConstruct
@@ -112,13 +113,15 @@ public class RepositoryServiceImpl implements RepositoryService
     @PreDestroy
     public void destroy() throws Exception
     {
-        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
+        // Stop processing messages and also ignore the other messages in the queue
         //  removal of orphan repositories could be triggered in two places:
         //    1) scheduled job to remove any repository whose organization is null
         //    2) after removing the organization
         //  2) is actually covered by 1). And 1) could always pick up from where it stopped last time.
         //  Thus it's safe to cancel the rest of the tasks in the queue.
-        repositoryDeletionExecutor.shutdownNow();
+        repositoryDeletionExecutor.shutdown();
+        repositoryDeletionExecutor.getQueue().drainTo(Lists.newArrayList());
+
         if (!repositoryDeletionExecutor.awaitTermination(1, TimeUnit.MINUTES))
         {
             log.error("Unable properly shutdown repository deletion executor.");

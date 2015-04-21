@@ -6,6 +6,7 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.event.ThreadEventsCaptor;
+import com.atlassian.jira.plugins.dvcs.event.ThreadPoolUtil;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -13,7 +14,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessag
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.atlassian.util.concurrent.ThreadFactories;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,6 +25,7 @@ import org.testng.annotations.Test;
 
 import java.util.EnumSet;
 
+import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -64,7 +66,10 @@ public class MessageExecutorTest
     public void setUp() throws Exception
     {
         // create and inject the MessageExecutor
-        messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
+        messageExecutor = new MessageExecutor(ThreadPoolUtil.newSingleThreadExecutor(ThreadFactories
+                .named("DVCSConnector.EventService")
+                .type(DAEMON)
+                .build()));
         initMocks(this);
         setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer });
 
@@ -108,7 +113,7 @@ public class MessageExecutorTest
         message.setAddress(MSG_ADDRESS);
         message.setPayload("{}");
         message.setPayloadType(MockPayload.class);
-        message.setTags(new String[] {});
+        message.setTags(new String[] { });
         message.setPriority(0);
 
         return message;

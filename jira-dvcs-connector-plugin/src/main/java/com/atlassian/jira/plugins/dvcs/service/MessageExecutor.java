@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ public class MessageExecutor
     /**
      * Executor that is used for consumer execution.
      */
-    private final ExecutorService executor;
+    private final ThreadPoolExecutor executor;
 
     private ClusterLockService clusterLockService;
 
@@ -106,7 +106,7 @@ public class MessageExecutor
      * @param executor an ExecutorService
      */
     @VisibleForTesting
-    public MessageExecutor(@Nonnull ExecutorService executor)
+    public MessageExecutor(@Nonnull ThreadPoolExecutor executor)
     {
         this.executor = checkNotNull(executor, "executor");
     }
@@ -137,8 +137,10 @@ public class MessageExecutor
     public void destroy() throws Exception
     {
         stop = true;
-        // call shutdownNow to interrupt current msg and also ignore the other messages in the queue
-        executor.shutdownNow();
+        // Stop processing messages and ignore the other messages in the queue
+        executor.shutdown();
+        executor.getQueue().drainTo(Lists.newArrayList());
+
         if (!executor.awaitTermination(1, TimeUnit.MINUTES))
         {
             LOGGER.error("Unable properly shutdown message queue.");

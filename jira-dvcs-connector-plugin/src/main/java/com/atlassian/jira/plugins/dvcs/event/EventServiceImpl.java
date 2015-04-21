@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.Immutable;
@@ -35,7 +35,7 @@ public class EventServiceImpl implements EventService
     private final EventPublisher eventPublisher;
     private final SyncEventDao syncEventDao;
     private final EventLimiterFactory eventLimiterFactory;
-    private final ExecutorService eventDispatcher;
+    private final ThreadPoolExecutor eventDispatcher;
 
     @Autowired
     public EventServiceImpl(@ComponentImport EventPublisher eventPublisher,
@@ -45,7 +45,7 @@ public class EventServiceImpl implements EventService
     }
 
     @VisibleForTesting
-    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
+    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ThreadPoolExecutor executorService)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.syncEventDao = syncEventDao;
@@ -209,7 +209,8 @@ public class EventServiceImpl implements EventService
 
     private void destroyEventDispatcher()
     {
-        eventDispatcher.shutdownNow();
+        eventDispatcher.shutdown();
+        eventDispatcher.getQueue().drainTo(Lists.newArrayList());
         try
         {
             boolean destroyed = eventDispatcher.awaitTermination(DESTROY_TIMEOUT_SECS, SECONDS);
@@ -225,9 +226,9 @@ public class EventServiceImpl implements EventService
         }
     }
 
-    private static ExecutorService createEventDispatcher()
+    private static ThreadPoolExecutor createEventDispatcher()
     {
-        return Executors.newSingleThreadExecutor(ThreadFactories
+        return ThreadPoolUtil.newSingleThreadExecutor(ThreadFactories
                         .named("DVCSConnector.EventService")
                         .type(DAEMON)
                         .build()
