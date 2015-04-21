@@ -5,8 +5,8 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
-import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
 import java.util.Date;
 import java.util.List;
 
-import static com.atlassian.util.concurrent.ThreadFactories.Type.DAEMON;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,7 +46,6 @@ public class EventServiceImplTest
     Repository repo2;
 
     SyncEventMapping repo1Mapping;
-
     SyncEventMapping repo2Mapping;
     SyncEventMapping repo2BadMapping;
 
@@ -69,11 +67,7 @@ public class EventServiceImplTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory,
-                ThreadPoolUtil.newSingleThreadExecutor(ThreadFactories
-                .named("DVCSConnector.EventService")
-                .type(DAEMON)
-                .build()));
+        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory, MoreExecutors.sameThreadExecutor());
 
         when(eventLimiterFactory.create()).thenReturn(eventLimiter);
         when(syncEventDao.create()).then(new Answer<Object>()
