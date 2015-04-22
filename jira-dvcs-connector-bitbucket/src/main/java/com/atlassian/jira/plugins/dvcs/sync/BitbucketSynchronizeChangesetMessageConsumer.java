@@ -10,6 +10,8 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -49,6 +51,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     @Resource
     private MessagingService messagingService;
 
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
+
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
     }
@@ -74,10 +79,10 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     {
         List<BitbucketNewChangeset> csets = page.getValues();
         boolean softSync = payload.isSoftSync();
-
+        Repository repo = payload.getRepository();
         for (BitbucketNewChangeset ncset : csets)
         {
-            Repository repo = payload.getRepository();
+
             Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
             if (fromDB != null)
             {
@@ -109,6 +114,12 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         {
             fireNextPage(page, payload, softSync, message.getTags());
         }
+        else{
+            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
+            communicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+
+        }
+
     }
 
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)

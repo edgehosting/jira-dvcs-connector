@@ -153,9 +153,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Resource
     private CarefulEventService eventService;
 
-    @Resource
-    private DvcsCommunicatorProvider communicatorProvider;
-
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
      */
@@ -832,7 +829,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             try
             {
                 final Optional<Promise<Void>> smartCommitsPromise = startSmartCommitsProcessor(repository, progress);
-                updateLinkers(repository);
                 if (progress != null && !progress.isFinished())
                 {
                     progress.finish();
@@ -870,11 +866,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         return false;
     }
 
-    private void updateLinkers(Repository repo){
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
-        communicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
 
-    }
 
     @Override
     public void onStart()

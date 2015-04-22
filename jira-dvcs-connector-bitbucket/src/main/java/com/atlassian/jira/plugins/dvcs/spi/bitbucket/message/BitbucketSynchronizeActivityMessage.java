@@ -9,6 +9,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+/*
+    Message for synchronizing pull requests
+ */
+
 public class BitbucketSynchronizeActivityMessage extends BaseProgressEnabledMessage implements Serializable
 {
 
