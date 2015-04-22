@@ -25,8 +25,11 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.plugin.PluginException;
@@ -136,6 +139,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private SmartcommitsChangesetsProcessor smartcCommitsProcessor;
 
     @Resource
+    private BitbucketLinker bitbucketLinker;
+
+    @Resource
     private SyncAuditLogDao syncAudit;
 
     @Resource
@@ -146,6 +152,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private CarefulEventService eventService;
+
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
     /**
      * Maps identity of message address to appropriate {@link MessageAddress}.
@@ -185,7 +194,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     /**
-     * Initializes been.
+     * Initializes bean.
      */
     @PostConstruct
     public void init()
@@ -823,6 +832,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
             try
             {
                 final Optional<Promise<Void>> smartCommitsPromise = startSmartCommitsProcessor(repository, progress);
+                updateLinkers(repository);
                 if (progress != null && !progress.isFinished())
                 {
                     progress.finish();
@@ -858,6 +868,12 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }
 
         return false;
+    }
+
+    private void updateLinkers(Repository repo){
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
+        communicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+
     }
 
     @Override

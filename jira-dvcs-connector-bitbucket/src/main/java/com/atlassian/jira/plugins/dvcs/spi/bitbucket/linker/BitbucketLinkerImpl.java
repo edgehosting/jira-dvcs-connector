@@ -45,6 +45,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final String baseUrl;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
+    private Set<String> existingProjectKeyLinks = new HashSet();
 
     private final static Pattern PATTERN_PROJECTS_IN_LINK_REX = Pattern.compile("[A-Z|a-z]{2,}(|)+");
 
@@ -129,6 +130,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             	log.debug("No projects to link");
             	return;
             }
+            existingProjectKeyLinks = forProjects;
 
             //
             // post the link to bitbucket
