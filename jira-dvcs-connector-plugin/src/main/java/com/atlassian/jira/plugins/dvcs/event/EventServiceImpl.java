@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,9 +214,8 @@ public class EventServiceImpl implements EventService
         // Unit test passes an ExecutorService with "same thread" executor, not a ThreadPoolExecutor
         if (eventDispatcher instanceof ThreadPoolExecutor)
         {
-            ((ThreadPoolExecutor) eventDispatcher).getQueue().drainTo(Lists.newArrayList());
+            ((ThreadPoolExecutor) eventDispatcher).getQueue().clear();
         }
-
         try
         {
             boolean destroyed = eventDispatcher.awaitTermination(DESTROY_TIMEOUT_SECS, SECONDS);

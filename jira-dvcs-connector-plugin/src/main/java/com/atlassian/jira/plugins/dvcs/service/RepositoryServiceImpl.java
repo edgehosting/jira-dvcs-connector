@@ -27,7 +27,6 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -49,6 +48,7 @@ import javax.annotation.Resource;
 
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_CHANGESETS;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SYNC_PULL_REQUESTS;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
 public class RepositoryServiceImpl implements RepositoryService
@@ -98,13 +98,18 @@ public class RepositoryServiceImpl implements RepositoryService
 
     private ClusterLockService clusterLockService;
 
-    private final ThreadPoolExecutor repositoryDeletionExecutor = ThreadPoolUtil.newSingleThreadExecutor(
+    private ThreadPoolExecutor repositoryDeletionExecutor = ThreadPoolUtil.newSingleThreadExecutor(
             ThreadFactories.namedThreadFactory("DVCSConnector.RepositoryDeletion"));
 
     @PostConstruct
     public void init()
     {
         clusterLockService = clusterLockServiceFactory.getClusterLockService();
+    }
+
+    @VisibleForTesting
+    public void init(ThreadPoolExecutor executor) {
+        this.repositoryDeletionExecutor = checkNotNull(executor);
     }
 
     /**
@@ -120,7 +125,7 @@ public class RepositoryServiceImpl implements RepositoryService
         //  2) is actually covered by 1). And 1) could always pick up from where it stopped last time.
         //  Thus it's safe to cancel the rest of the tasks in the queue.
         repositoryDeletionExecutor.shutdown();
-        repositoryDeletionExecutor.getQueue().drainTo(Lists.newArrayList());
+        repositoryDeletionExecutor.getQueue().clear();
 
         if (!repositoryDeletionExecutor.awaitTermination(1, TimeUnit.MINUTES))
         {

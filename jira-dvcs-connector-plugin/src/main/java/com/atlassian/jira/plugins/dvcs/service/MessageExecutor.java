@@ -17,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ public class MessageExecutor
     /**
      * Executor that is used for consumer execution.
      */
-    private final ThreadPoolExecutor executor;
+    private final ExecutorService executor;
 
     private ClusterLockService clusterLockService;
 
@@ -106,7 +106,7 @@ public class MessageExecutor
      * @param executor an ExecutorService
      */
     @VisibleForTesting
-    public MessageExecutor(@Nonnull ThreadPoolExecutor executor)
+    public MessageExecutor(@Nonnull ExecutorService executor)
     {
         this.executor = checkNotNull(executor, "executor");
     }
@@ -141,7 +141,10 @@ public class MessageExecutor
         executor.shutdown();
 
         // Unit test passes an ExecutorService with "same thread" executor, not a ThreadPoolExecutor
-        executor.getQueue().drainTo(Lists.newArrayList());
+        if (executor instanceof ThreadPoolExecutor)
+        {
+            ((ThreadPoolExecutor) executor).getQueue().clear();
+        }
 
         if (!executor.awaitTermination(1, TimeUnit.MINUTES))
         {

@@ -33,9 +33,15 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static com.atlassian.jira.plugins.dvcs.service.RepositoryServiceImpl.SYNC_REPOSITORY_LIST_LOCK;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -88,7 +94,7 @@ public class RepositoryServiceTest
 
     // tested object
     @InjectMocks
-    private RepositoryService repositoryService = new RepositoryServiceImpl();
+    private RepositoryServiceImpl repositoryService = new RepositoryServiceImpl();
 
     public RepositoryServiceTest()
     {
@@ -99,6 +105,22 @@ public class RepositoryServiceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testDestroy() throws Exception
+    {
+        BlockingQueue<Runnable> queue = mock(BlockingQueue.class);
+        ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
+        when(executor.getQueue()).thenReturn(queue);
+
+        repositoryService.init(executor);
+        repositoryService.destroy();
+
+        verify(executor).shutdown();
+        verify(executor, never()).shutdownNow();
+        verify(queue).clear();
+        verify(executor).awaitTermination(anyLong(), any(TimeUnit.class));
     }
 
     @Test
