@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.issue.IssueService;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueInputParameters;
@@ -11,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.workflow.WorkflowManager;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
@@ -53,6 +53,7 @@ public class TransitionHandler implements CommandHandler<Issue>
     private final JiraAuthenticationContext jiraAuthenticationContext;
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     public TransitionHandler(@ComponentImport IssueService issueService,
             @ComponentImport WorkflowManager workflowManager,
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext)
@@ -68,7 +69,7 @@ public class TransitionHandler implements CommandHandler<Issue>
     }
 
     @Override
-	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
+	public Either<CommitHookHandlerError, Issue> handle(ApplicationUser user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
         
     	String cmd = commandName;
         final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
@@ -173,7 +174,7 @@ public class TransitionHandler implements CommandHandler<Issue>
 
     private Collection<ValidatedAction> getValidActions(
             Collection<ActionDescriptor> actionsToValidate,
-            User user,
+            ApplicationUser user,
             MutableIssue issue,
             IssueInputParameters parameters,
             String comment) {

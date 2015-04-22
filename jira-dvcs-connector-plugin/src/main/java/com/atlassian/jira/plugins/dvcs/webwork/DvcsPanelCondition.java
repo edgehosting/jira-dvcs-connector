@@ -1,7 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.web.Condition;
 
@@ -24,7 +25,7 @@ public class DvcsPanelCondition implements Condition
     @Override
     public boolean shouldDisplay(Map<String, Object> context)
     {
-        User user = (User) context.get("user");
+        ApplicationUser user = ApplicationUserUtil.from(context.get("user"));
         Issue issue = (Issue) context.get("issue");
         return panelVisibilityManager.showPanel(issue, user);
     }

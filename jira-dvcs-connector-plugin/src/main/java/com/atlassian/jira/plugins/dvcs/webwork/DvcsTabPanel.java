@@ -9,6 +9,8 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsCommitsAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.jira.template.soy.SoyTemplateRendererProvider;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.webresource.WebResourceManager;
@@ -21,6 +23,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class implements both the JIRA 6.X and 7.X versions of the {@link com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel}
+ * so that it can be compiled and run against either.
+ */
 @Scanned
 public class DvcsTabPanel extends AbstractIssueTabPanel
 {
@@ -97,8 +103,12 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         this.eventPublisher = eventPublisher;
     }
 
-    @Override
     public List<IssueAction> getActions(Issue issue, User user)
+    {
+        return getActions(issue, ApplicationUsers.from(user));
+    }
+
+    public List<IssueAction> getActions(Issue issue, ApplicationUser user)
     {
         // make advertisement, if plug-in is not using
         if (!repositoryService.existsLinkedRepositories())
@@ -117,10 +127,13 @@ public class DvcsTabPanel extends AbstractIssueTabPanel
         return actions;
     }
 
-    @Override
     public boolean showPanel(Issue issue, User user)
+    {
+        return showPanel(issue, ApplicationUsers.from(user));
+    }
+
+    public boolean showPanel(Issue issue, ApplicationUser user)
     {
         return panelVisibilityManager.showPanel(issue, user);
     }
-
 }
