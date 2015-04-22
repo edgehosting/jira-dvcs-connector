@@ -1,5 +1,7 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
+import com.atlassian.fugue.Option;
+import com.atlassian.fugue.retry.RetrySupplier;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
@@ -19,6 +21,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLoca
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
@@ -146,6 +150,13 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Override
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
     {
+        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+        return actualHookUrls.contains(jiraCallbackUrl);
+    }
+
+    @Override
+    protected boolean option1ByHand(final String jiraCallbackUrl)
+    {
         // Github does this asynchronously so we will need to retry
         long currentMillis = System.currentTimeMillis();
         long endMillis = currentMillis + 10000l;
@@ -160,6 +171,57 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
             }
         }
         return false;
+    }
+
+    @Override
+    protected boolean option2WithExistingFugue(final String jiraCallbackUrl)
+    {
+        Supplier<List<String>> conditionalSupplier = new Supplier<List<String>>()
+        {
+            public List<String> get()
+            {
+                List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+
+                if (actualHookUrls.contains(jiraCallbackUrl))
+                {
+                    return actualHookUrls;
+                }
+                else
+                {
+                    // The RetrySupplier used later retries only if an exception is thrown
+                    throw new RuntimeException();
+                }
+            }
+        };
+
+        final RetrySupplier<List<String>> retrySupplier = new RetrySupplier<List<String>>(conditionalSupplier, 10);
+
+        final List<String> actualHookUrls = retrySupplier.get();
+        return actualHookUrls.contains(jiraCallbackUrl);
+    }
+
+    private boolean option3WithANewFugue(final String jiraCallbackUrl)
+    {
+        Supplier<List<String>> supplier = new Supplier<List<String>>()
+        {
+            public List<String> get()
+            {
+                return GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+            }
+        };
+
+        final Predicate<List<String>> predicate = new Predicate<List<String>>()
+        {
+            public boolean apply(final List<String> input)
+            {
+                return input.contains(jiraCallbackUrl);
+            }
+        };
+
+        RetryPredicateSupplier<List<String>> retryPredicateSupplier = new RetryPredicateSupplier<List<String>>(supplier, predicate);
+        final Option<List<String>> result = retryPredicateSupplier.get();
+
+        return result.isDefined();
     }
 
     @Test
