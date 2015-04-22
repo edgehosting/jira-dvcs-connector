@@ -146,8 +146,20 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Override
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
     {
-        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
-        return actualHookUrls.contains(jiraCallbackUrl);
+        // Github does this asynchronously so we will need to retry
+        long currentMillis = System.currentTimeMillis();
+        long endMillis = currentMillis + 10000l;
+
+        while (currentMillis < endMillis)
+        {
+            List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+
+            if (actualHookUrls.contains(jiraCallbackUrl))
+            {
+                return actualHookUrls.contains(jiraCallbackUrl);
+            }
+        }
+        return false;
     }
 
     @Test
