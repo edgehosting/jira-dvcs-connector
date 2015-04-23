@@ -5,10 +5,9 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.MoreExecutors;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -18,6 +17,9 @@ import org.testng.annotations.Test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,8 +28,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -62,13 +67,12 @@ public class EventServiceImplTest
     @Mock
     EventLimiter eventLimiter;
 
-    @InjectMocks
-    EventServiceImpl eventService;
+    private EventServiceImpl eventService;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
-        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory, MoreExecutors.sameThreadExecutor());
+        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory,  new SameThreadExecutor());
 
         when(eventLimiterFactory.create()).thenReturn(eventLimiter);
         when(syncEventDao.create()).then(new Answer<Object>()
@@ -180,6 +184,22 @@ public class EventServiceImplTest
         assertThat("limit exceeded event should be raised", published.get(1), instanceOf(LimitExceededEvent.class));
         assertThat("event should contain dropped event count", ((LimitExceededEvent) published.get(1)).getDroppedEventCount(), equalTo(1));
         verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void destroyShouldShutdownExecutor() throws Exception
+    {
+        BlockingQueue<Runnable> queue = mock(BlockingQueue.class);
+        ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
+        when(executor.getQueue()).thenReturn(queue);
+
+        EventServiceImpl eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory, executor);
+        eventService.destroy();
+
+        verify(executor).shutdown();
+        verify(executor, never()).shutdownNow();
+        verify(queue).clear();
+        verify(executor).awaitTermination(anyLong(), any(TimeUnit.class));
     }
 
     private SyncEventMapping createMapping()

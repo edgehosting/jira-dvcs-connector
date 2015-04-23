@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessag
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,30 +23,36 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.EnumSet;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-//@Listeners (MockitoTestNgListener.class)
 public class MessageExecutorTest
 {
-    static final MessageAddress<MockPayload> MSG_ADDRESS = new MockAddress();
+    private static final MessageAddress<MockPayload> MSG_ADDRESS = new MockAddress();
 
     @Mock
-    Repository repository;
+    private Repository repository;
 
-    ClusterLockService clusterLockService = new SimpleClusterLockService();
-
-    @Mock
-    MessageConsumer consumer;
+    private ClusterLockService clusterLockService = new SimpleClusterLockService();
 
     @Mock
-    ClusterLockServiceFactory clusterLockServiceFactory;
+    private MessageConsumer consumer;
 
     @Mock
-    MessagingService messagingService;
+    private ClusterLockServiceFactory clusterLockServiceFactory;
+
+    @Mock
+    private MessagingService messagingService;
 
     @Mock
     private RepositorySyncHelper repoSyncHelper;
@@ -55,16 +61,16 @@ public class MessageExecutorTest
     private RepositorySync repoSync;
 
     @Mock
-    ThreadEventsCaptor threadEventsCaptor;
+    private ThreadEventsCaptor threadEventsCaptor;
 
     @InjectMocks
-    MessageExecutor messageExecutor;
+    private MessageExecutor messageExecutor;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
         // create and inject the MessageExecutor
-        messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
+        messageExecutor = new MessageExecutor(new SameThreadExecutor());
         initMocks(this);
         setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer });
 
@@ -100,6 +106,22 @@ public class MessageExecutorTest
         InOrder inOrder = Mockito.inOrder(repoSync, messagingService);
         inOrder.verify(repoSync).finish();
         inOrder.verify(messagingService).tryEndProgress(repository, payload.getProgress(), consumer, 0);
+    }
+
+    @Test
+    public void destroyShouldShutdownExecutor() throws Exception
+    {
+        BlockingQueue<Runnable> queue = mock(BlockingQueue.class);
+        ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
+        when(executor.getQueue()).thenReturn(queue);
+
+        MessageExecutor messageExecutor = new MessageExecutor(executor);
+        messageExecutor.destroy();
+
+        verify(executor).shutdown();
+        verify(executor, never()).shutdownNow();
+        verify(queue).clear();
+        verify(executor).awaitTermination(anyLong(), any(TimeUnit.class));
     }
 
     private Message<MockPayload> createMessage()
