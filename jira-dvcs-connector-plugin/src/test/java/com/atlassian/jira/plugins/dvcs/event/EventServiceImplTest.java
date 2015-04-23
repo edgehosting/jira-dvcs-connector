@@ -5,8 +5,8 @@ import com.atlassian.jira.plugins.dvcs.dao.StreamCallback;
 import com.atlassian.jira.plugins.dvcs.dao.ao.EntityBeanGenerator;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.MoreExecutors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -41,37 +41,38 @@ import static org.mockito.Mockito.when;
 @Listeners (MockitoTestNgListener.class)
 public class EventServiceImplTest
 {
-    private static final int REPO_1_ID = 100;
-    private static final int REPO_2_ID = 200;
+    static final int REPO_1_ID = 100;
+    static final int REPO_2_ID = 200;
 
     @Mock
-    private Repository repo1;
+    Repository repo1;
 
     @Mock
-    private Repository repo2;
+    Repository repo2;
 
-    private SyncEventMapping repo1Mapping;
-    private SyncEventMapping repo2Mapping;
-    private SyncEventMapping repo2BadMapping;
+    SyncEventMapping repo1Mapping;
 
-    @Mock
-    private EventPublisher eventPublisher;
+    SyncEventMapping repo2Mapping;
+    SyncEventMapping repo2BadMapping;
 
     @Mock
-    private SyncEventDao syncEventDao;
+    EventPublisher eventPublisher;
 
     @Mock
-    private EventLimiterFactory eventLimiterFactory;
+    SyncEventDao syncEventDao;
 
     @Mock
-    private EventLimiter eventLimiter;
+    EventLimiterFactory eventLimiterFactory;
+
+    @Mock
+    EventLimiter eventLimiter;
 
     private EventServiceImpl eventService;
 
     @BeforeMethod
     public void setUp() throws Exception
     {
-        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory, MoreExecutors.sameThreadExecutor());
+        eventService = new EventServiceImpl(eventPublisher, syncEventDao, eventLimiterFactory,  new SameThreadExecutor());
 
         when(eventLimiterFactory.create()).thenReturn(eventLimiter);
         when(syncEventDao.create()).then(new Answer<Object>()

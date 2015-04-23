@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.BaseProgressEnabledMessag
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -70,7 +70,7 @@ public class MessageExecutorTest
     public void setUp() throws Exception
     {
         // create and inject the MessageExecutor
-        messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
+        messageExecutor = new MessageExecutor(new SameThreadExecutor());
         initMocks(this);
         setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer });
 

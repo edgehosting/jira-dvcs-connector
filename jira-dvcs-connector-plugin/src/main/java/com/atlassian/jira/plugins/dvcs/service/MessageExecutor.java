@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +55,7 @@ public class MessageExecutor
     /**
      * Executor that is used for consumer execution.
      */
-    private final ExecutorService executor;
+    private final ThreadPoolExecutor executor;
 
     private ClusterLockService clusterLockService;
 
@@ -106,7 +105,7 @@ public class MessageExecutor
      * @param executor an ExecutorService
      */
     @VisibleForTesting
-    public MessageExecutor(@Nonnull ExecutorService executor)
+    public MessageExecutor(@Nonnull ThreadPoolExecutor executor)
     {
         this.executor = checkNotNull(executor, "executor");
     }
@@ -139,12 +138,7 @@ public class MessageExecutor
         stop = true;
         // Stop processing messages and ignore the other messages in the queue
         executor.shutdown();
-
-        // Unit test passes an ExecutorService with "same thread" executor, not a ThreadPoolExecutor
-        if (executor instanceof ThreadPoolExecutor)
-        {
-            ((ThreadPoolExecutor) executor).getQueue().clear();
-        }
+        executor.getQueue().clear();
 
         if (!executor.awaitTermination(1, TimeUnit.MINUTES))
         {

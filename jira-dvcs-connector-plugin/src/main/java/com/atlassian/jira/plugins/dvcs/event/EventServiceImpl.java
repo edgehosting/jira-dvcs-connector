@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
@@ -35,7 +34,7 @@ public class EventServiceImpl implements EventService
     private final EventPublisher eventPublisher;
     private final SyncEventDao syncEventDao;
     private final EventLimiterFactory eventLimiterFactory;
-    private final ExecutorService eventDispatcher;
+    private final ThreadPoolExecutor eventDispatcher;
 
     @Autowired
     public EventServiceImpl(@ComponentImport EventPublisher eventPublisher,
@@ -45,7 +44,7 @@ public class EventServiceImpl implements EventService
     }
 
     @VisibleForTesting
-    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ExecutorService executorService)
+    EventServiceImpl(EventPublisher eventPublisher, SyncEventDao syncEventDao, EventLimiterFactory eventLimiterFactory, ThreadPoolExecutor executorService)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.syncEventDao = syncEventDao;
@@ -210,12 +209,7 @@ public class EventServiceImpl implements EventService
     private void destroyEventDispatcher()
     {
         eventDispatcher.shutdown();
-
-        // Unit test passes an ExecutorService with "same thread" executor, not a ThreadPoolExecutor
-        if (eventDispatcher instanceof ThreadPoolExecutor)
-        {
-            ((ThreadPoolExecutor) eventDispatcher).getQueue().clear();
-        }
+        eventDispatcher.getQueue().clear();
         try
         {
             boolean destroyed = eventDispatcher.awaitTermination(DESTROY_TIMEOUT_SECS, SECONDS);
