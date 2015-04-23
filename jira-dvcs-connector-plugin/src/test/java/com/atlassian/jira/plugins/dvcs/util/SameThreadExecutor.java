@@ -8,6 +8,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * ThreadPoolExecutor that runs the tasks in the current thread (synchronously) and handy for unit tests to ensure
+ * more predictable execution order.
+ */
 public class SameThreadExecutor extends ThreadPoolExecutor
 {
     public SameThreadExecutor()

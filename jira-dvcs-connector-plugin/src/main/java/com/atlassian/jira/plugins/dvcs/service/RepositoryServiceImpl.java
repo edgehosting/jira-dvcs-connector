@@ -108,7 +108,7 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @VisibleForTesting
-    public void init(ThreadPoolExecutor executor) {
+    public void setThreadPoolExecutor(ThreadPoolExecutor executor) {
         this.repositoryDeletionExecutor = checkNotNull(executor);
     }
 
