@@ -115,6 +115,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer
             fireNextPage(page, payload, softSync, message.getTags());
         }
         else{
+            //Set<String> existingReferencedProjects = repo.get
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
             communicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
 

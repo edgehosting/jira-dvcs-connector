@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.activeobjects.v3;
 
 import net.java.ao.Entity;
+import net.java.ao.OneToMany;
 import net.java.ao.Preload;
 import net.java.ao.schema.Indexed;
 import net.java.ao.schema.StringLength;
@@ -25,6 +26,10 @@ public interface RepositoryMapping extends Entity
     public static final String FORK_OF_SLUG = "FORK_OF_SLUG";
     public static final String FORK_OF_NAME = "FORK_OF_NAME";
     public static final String FORK_OF_OWNER = "FORK_OF_OWNER";
+
+
+    @OneToMany(reverse = "getRepository")
+    RepositoryToProjectMapping[]  getLinkedProjects();
 
     @Indexed
     int getOrganizationId();

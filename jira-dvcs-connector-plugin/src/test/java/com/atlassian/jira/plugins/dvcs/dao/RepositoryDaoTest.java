@@ -135,6 +135,17 @@ public class RepositoryDaoTest
         verify(repositoryMapping).save();
     }
 
+    @Test
+    public void testSetPreviouslyLinkedProjects(){
+        Repository sampleRepository = createSampleRepository();
+
+    }
+
+    @Test
+    public void testGetPreviouslyLinkedProjects(){
+
+    }
+
     private Repository createSampleRepository()
     {
         Repository repository = new Repository();

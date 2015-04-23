@@ -1,18 +1,25 @@
 package com.atlassian.jira.plugins.dvcs.dao.impl;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToProjectMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import net.java.ao.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.iterators.ArrayIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -134,6 +144,85 @@ public class RepositoryDaoImpl implements RepositoryDao
     }
 
     @Override
+    public List<String> getPreviouslyLinkedProjects(final int repositoryId)
+    {
+        Query select = Query.select()
+                .alias(RepositoryMapping.class, "repo")
+                .alias(RepositoryToProjectMapping.class, "proj")
+                .join(RepositoryMapping.class, "proj." + RepositoryToProjectMapping.REPOSITORY_ID + " = repo.ID")
+                .where("repo.ID = "+ repositoryId);
+        final RepositoryToProjectMapping[] projects = activeObjects.find(RepositoryToProjectMapping.class, select);
+
+
+        List<String> projectKeys = new ArrayList<String>();
+
+        Iterable<String> projectKeyIterator = Iterables.transform(Arrays.asList(projects), new Function<RepositoryToProjectMapping, String>()
+        {
+
+            @Override
+            public String apply(final RepositoryToProjectMapping projectMapping)
+            {
+                return projectMapping.getProject();
+            }
+        });
+
+        return projectKeys;
+    }
+
+    @Override
+    public void setPreviouslyLinkedProjects(final int forRepositoryId, final Set<String> projects)
+    {
+
+        RepositoryMapping rm = activeObjects.get(RepositoryMapping.class, forRepositoryId);
+
+        Query select = Query.select()
+                .alias(RepositoryMapping.class, "repo")
+                .alias(RepositoryToProjectMapping.class, "proj")
+                .join(RepositoryMapping.class, "proj." + RepositoryToProjectMapping.REPOSITORY_ID + " = repo.ID")
+                .where("repo.ID = " + forRepositoryId);
+        final RepositoryToProjectMapping[] projectMappings = activeObjects.find(RepositoryToProjectMapping.class, select);
+
+        Set<String> existingProjectKeys = new HashSet<String>();
+
+        for(RepositoryToProjectMapping projectMapping :projectMappings){
+            if(!projects.contains(projectMapping.getProject())){
+                activeObjects.delete(projectMapping);
+            }
+            else{
+                existingProjectKeys.add(projectMapping.getProject());
+            }
+        }
+        //Not sure whether to use this approach or just delete everything
+        // ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, select);
+
+        Set<String> newProjectKeys = new HashSet<String>();
+        newProjectKeys.addAll(projects);
+        newProjectKeys.removeAll(existingProjectKeys);
+
+        for(String key :newProjectKeys){
+            assosciateNewKey(key, forRepositoryId);
+        }
+
+    }
+
+    public void assosciateNewKey(final String key, final int repositoryId){
+        activeObjects.executeInTransaction(new TransactionCallback<RepositoryToProjectMapping>()
+            {
+                @Override
+                public RepositoryToProjectMapping doInTransaction()
+                {
+                    final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+                    map.put(RepositoryToProjectMapping.PROJECT_KEY, key);
+                    map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryId);
+                    RepositoryToProjectMapping mapping = activeObjects.create(RepositoryToProjectMapping.class, map);
+                    mapping.save();
+                    return mapping;
+                }
+            });
+    }
+
+
+    @Override
     public boolean existsLinkedRepositories(final boolean includeDeleted)
     {
         Query query = Query.select();
@@ -191,6 +280,22 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             return transform(repositoryMapping);
 
+        }
+    }
+
+    private void associateIssuesToChangeset(RepositoryMapping repositoryMapping, Set<String> projectKeys)
+    {
+        //remove existing projects for the repository
+        Query query = Query.select().where(RepositoryToProjectMapping.REPOSITORY_ID + " = ? ", repositoryMapping);
+        ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, query);
+
+        // insert new project keys
+        for (String projectKey : projectKeys)
+        {
+            final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+            map.put(RepositoryToProjectMapping.PROJECT_KEY, projectKey);
+            map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryMapping.getID());
+            activeObjects.create(RepositoryToProjectMapping.class, map);
         }
     }
 

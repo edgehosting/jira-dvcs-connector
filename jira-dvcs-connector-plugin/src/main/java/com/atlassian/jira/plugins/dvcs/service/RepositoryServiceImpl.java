@@ -147,7 +147,7 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public Repository get(int repositoryId)
+    public Repository   get(int repositoryId)
     {
         return repositoryDao.get(repositoryId);
     }
