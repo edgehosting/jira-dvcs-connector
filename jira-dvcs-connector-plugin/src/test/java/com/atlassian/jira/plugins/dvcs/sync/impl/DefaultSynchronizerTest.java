@@ -60,6 +60,7 @@ import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessage
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -72,7 +73,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.MoreExecutors;
 import it.com.atlassian.jira.plugins.dvcs.DumbClusterLockServiceFactory;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
@@ -245,7 +245,7 @@ public class DefaultSynchronizerTest
 
     @Mock
     private RepositoryDao repositoryDao;
-    
+
     @Mock
     private ChangesetDao changesetDao;
 
@@ -476,7 +476,7 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(oldSerializer, "synchronizer", defaultSynchronizer);
         ReflectionTestUtils.setField(githubSerializer, "synchronizer", defaultSynchronizer);
 
-        final MessageExecutor messageExecutor = new MessageExecutor(MoreExecutors.sameThreadExecutor());
+        final MessageExecutor messageExecutor = new MessageExecutor(new SameThreadExecutor());
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "clusterLockServiceFactory", new DumbClusterLockServiceFactory());
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
