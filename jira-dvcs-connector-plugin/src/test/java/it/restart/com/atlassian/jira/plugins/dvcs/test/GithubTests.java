@@ -21,6 +21,10 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLoca
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
@@ -36,6 +40,8 @@ import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -147,11 +153,46 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         testPostCommitHookAddedAndRemoved(AccountType.GITHUB, REPOSITORY_NAME, jira, getOAuthCredentials());
     }
 
+    /**
+     * The Github add / delete hooks appear to happen asynchronously so we will retry the fetch twice to check that it
+     * has been created / really has been deleted.
+     */
     @Override
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
     {
-        List<String> actualHookUrls = GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
-        return actualHookUrls.contains(jiraCallbackUrl);
+        Callable<List<String>> getHooks = new Callable<List<String>>()
+        {
+            public List<String> call() throws Exception
+            {
+                return GithubTestHelper.getHookUrls("https://api.github.com", REPOSITORY_NAME);
+            }
+        };
+        final Predicate<List<String>> predicate = new Predicate<List<String>>()
+        {
+            public boolean apply(final List<String> input)
+            {
+                return !input.contains(jiraCallbackUrl);
+            }
+        };
+        RetryerBuilder<List<String>> retryerBuilder = RetryerBuilder.<List<String>>newBuilder()
+                .retryIfResult(predicate)
+                .withStopStrategy(StopStrategies.stopAfterAttempt(2));
+
+        final Retryer<List<String>> retryer = retryerBuilder.build();
+
+        try
+        {
+            List<String> result = retryer.call(getHooks);
+            return result.contains(jiraCallbackUrl);
+        }
+        catch (ExecutionException e)
+        {
+            return false;
+        }
+        catch (RetryException e)
+        {
+            return false;
+        }
     }
 
     protected boolean option1ByHand(final String jiraCallbackUrl)
