@@ -154,7 +154,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         return actualHookUrls.contains(jiraCallbackUrl);
     }
 
-    @Override
     protected boolean option1ByHand(final String jiraCallbackUrl)
     {
         // Github does this asynchronously so we will need to retry
@@ -173,7 +172,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         return false;
     }
 
-    @Override
     protected boolean option2WithExistingFugue(final String jiraCallbackUrl)
     {
         Supplier<List<String>> conditionalSupplier = new Supplier<List<String>>()
