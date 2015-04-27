@@ -63,11 +63,11 @@ public abstract class DvcsWebDriverTestCase
     }
 
     /**
-     * Retries calls to #postCommitHookExists retrying for 5 seconds or until the returned value matches #expectedValue
+     * Retries calls to #postCommitHookExists retrying for 10 seconds or until the returned value matches #expectedValue
      *
      * @param jiraCallbackUrl Url to pass to the #postCommitHookExists call
      * @param expectedValue The expected value, retries until the result from #postCommitHookExists matches this value
-     * OR the timeout of 5 seconds is reached
+     * OR the timeout of 10 seconds is reached
      * @return The result of calling #postCommitHookExists or ! #expectedValue if the retry limit is exceeded
      */
     private boolean retryingCheckPostCommitHooksExists(final String jiraCallbackUrl, final boolean expectedValue)
@@ -90,7 +90,7 @@ public abstract class DvcsWebDriverTestCase
 
         RetryerBuilder<Boolean> retryerBuilder = RetryerBuilder.<Boolean>newBuilder()
                 .retryIfResult(retryPredicate)
-                .withStopStrategy(StopStrategies.stopAfterDelay(5000));
+                .withStopStrategy(StopStrategies.stopAfterDelay(10000));
 
         final Retryer<Boolean> retryer = retryerBuilder.build();
 
