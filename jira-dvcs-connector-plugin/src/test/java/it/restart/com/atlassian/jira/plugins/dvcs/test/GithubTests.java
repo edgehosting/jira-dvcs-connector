@@ -143,10 +143,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         testPostCommitHookAddedAndRemoved(AccountType.GITHUB, REPOSITORY_NAME, jira, getOAuthCredentials());
     }
 
-    /**
-     * The Github add / delete hooks appear to happen asynchronously so we will retry the fetch twice to check that it
-     * has been created / really has been deleted.
-     */
     @Override
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
     {
