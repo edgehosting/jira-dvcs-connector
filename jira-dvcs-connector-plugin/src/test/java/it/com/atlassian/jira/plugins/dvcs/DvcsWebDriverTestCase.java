@@ -1,18 +1,25 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.pageobjects.ProductInstance;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.pageobjects.ProductInstance;
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.google.common.base.Predicate;
 import org.testng.annotations.Listeners;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 /**
  * Base class of all webdriver tests.
@@ -46,13 +53,60 @@ public abstract class DvcsWebDriverTestCase
         // check postcommit hook is there
         String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), repositoryName);
 
-        assertTrue(postCommitHookExists(jiraCallbackUrl), "Could not find postcommit hook %s " + jiraCallbackUrl);
+        assertTrue(retryingCheckPostCommitHooksExists(jiraCallbackUrl, true), "Could not find postcommit hook %s " + jiraCallbackUrl);
 
         // delete repository
         rpc.getPage().deleteAllOrganizations();
 
         // check that postcommit hook is removed.
-        assertThat(postCommitHookExists(jiraCallbackUrl)).isFalse();
+        assertFalse(retryingCheckPostCommitHooksExists(jiraCallbackUrl, false));
+    }
+
+    /**
+     * Retries calls to #postCommitHookExists retrying for 5 seconds or until the returned value matches #expectedValue
+     *
+     * @param jiraCallbackUrl Url to pass to the #postCommitHookExists call
+     * @param expectedValue The expected value, retries until the result from #postCommitHookExists matches this value
+     * OR the timeout of 5 seconds is reached
+     * @return The result of calling #postCommitHookExists or ! #expectedValue if the retry limit is exceeded
+     */
+    private boolean retryingCheckPostCommitHooksExists(final String jiraCallbackUrl, final boolean expectedValue)
+    {
+        Callable<Boolean> doesPostCommitHookExist = new Callable<Boolean>()
+        {
+            public Boolean call() throws Exception
+            {
+                return postCommitHookExists(jiraCallbackUrl);
+            }
+        };
+
+        Predicate<Boolean> retryPredicate = new Predicate<Boolean>()
+        {
+            public boolean apply(final Boolean input)
+            {
+                return input != expectedValue;
+            }
+        };
+
+        RetryerBuilder<Boolean> retryerBuilder = RetryerBuilder.<Boolean>newBuilder()
+                .retryIfResult(retryPredicate)
+                .withStopStrategy(StopStrategies.stopAfterDelay(5000));
+
+        final Retryer<Boolean> retryer = retryerBuilder.build();
+
+        try
+        {
+            Boolean result = retryer.call(doesPostCommitHookExist);
+            return result;
+        }
+        catch (ExecutionException e)
+        {
+            return !expectedValue;
+        }
+        catch (RetryException e)
+        {
+            return !expectedValue;
+        }
     }
 
     protected boolean postCommitHookExists(final String jiraCallbackUrl)
