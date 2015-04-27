@@ -283,6 +283,11 @@
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.annotations</groupId>
             <artifactId>atlassian-annotations</artifactId>
             <version>0.6</version>
