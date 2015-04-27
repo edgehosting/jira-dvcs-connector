@@ -59,7 +59,7 @@ public abstract class DvcsWebDriverTestCase
         rpc.getPage().deleteAllOrganizations();
 
         // check that postcommit hook is removed.
-        assertFalse(retryingCheckPostCommitHooksExists(jiraCallbackUrl, false));
+        assertFalse(retryingCheckPostCommitHooksExists(jiraCallbackUrl, false), "Post commit hook not removed");
     }
 
     /**
@@ -96,16 +96,16 @@ public abstract class DvcsWebDriverTestCase
 
         try
         {
-            Boolean result = retryer.call(doesPostCommitHookExist);
-            return result;
+            return retryer.call(doesPostCommitHookExist);
         }
         catch (ExecutionException e)
         {
-            return !expectedValue;
+            throw new RuntimeException(e);
         }
         catch (RetryException e)
         {
-            return !expectedValue;
+            // We didn't find the value we wanted after retrying, one last call and we will use that result
+            return postCommitHookExists(jiraCallbackUrl);
         }
     }
 
