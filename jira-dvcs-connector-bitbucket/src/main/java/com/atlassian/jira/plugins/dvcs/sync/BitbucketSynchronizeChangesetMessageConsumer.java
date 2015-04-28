@@ -10,8 +10,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketChangesetPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
@@ -51,9 +49,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     @Resource
     private MessagingService messagingService;
 
-    @Resource
-    private DvcsCommunicatorProvider communicatorProvider;
-
     public BitbucketSynchronizeChangesetMessageConsumer()
     {
     }
@@ -72,24 +67,32 @@ public class BitbucketSynchronizeChangesetMessageConsumer
             }
         });
 
-        process(message, payload, page);
+        process(message.getTags(), payload, page);
     }
 
-    private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
+    /**
+     * Loads changesets not already in the database from the @page of changesets into the database
+     *
+     * @param messageTags message tags
+     * @param page the page of changesets to be processed
+     * @param payload an object that is passed around that contains information specific to the processing of all the bitbucket pages
+     */
+    void process(String[] messageTags, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
-        List<BitbucketNewChangeset> csets = page.getValues();
+        List<BitbucketNewChangeset> newChangesets = page.getValues();
         boolean softSync = payload.isSoftSync();
         Repository repo = payload.getRepository();
-        for (BitbucketNewChangeset ncset : csets)
+        for (BitbucketNewChangeset newChangeset : newChangesets)
         {
 
-            Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
+            Changeset fromDB = changesetService.getByNode(repo.getId(), newChangeset.getHash());
             if (fromDB != null)
             {
                 continue;
             }
-            assignBranch(ncset, payload);
-            Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
+
+            assignBranch(newChangeset, payload);
+            Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), newChangeset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
 
@@ -112,17 +115,20 @@ public class BitbucketSynchronizeChangesetMessageConsumer
 
         if (StringUtils.isNotBlank(page.getNext()))
         {
-            fireNextPage(page, payload, softSync, message.getTags());
+            fireNextPage(page, payload, softSync, messageTags);
         }
         else{
-            //Set<String> existingReferencedProjects = repo.get
-            DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
-            communicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
-
+            cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
         }
 
     }
 
+    /**
+     * A Magical Mystery, if you know how or why this works update this javadoc with a better explanation
+     * @param cset incomming Changeset
+     * @param originalMessage an object that holds state specific to the synchronisation of this repository
+     *
+     */
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
