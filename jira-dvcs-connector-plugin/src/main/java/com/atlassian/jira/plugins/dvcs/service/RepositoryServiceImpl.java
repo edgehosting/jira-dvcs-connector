@@ -769,6 +769,15 @@ public class RepositoryServiceImpl implements RepositoryService
         return user != null ? user : getUnknownUser(repository, author, rawAuthor);
     }
 
+    public void setPreviouslyLinkedProjects(Repository repository, Set<String> projects){
+        repositoryDao.setPreviouslyLinkedProjects(repository.getId(), projects);
+    }
+
+    public List<String> getPreviouslyLinkedProjects(Repository repository){
+        return repositoryDao.getPreviouslyLinkedProjects(repository.getId());
+    }
+
+
     @Override
     public Set<String> getEmails(Repository repository, DvcsUser user)
     {

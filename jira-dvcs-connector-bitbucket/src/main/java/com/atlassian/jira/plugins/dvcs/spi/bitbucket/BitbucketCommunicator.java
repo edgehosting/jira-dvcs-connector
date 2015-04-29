@@ -495,21 +495,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
-    {
-        try
-        {
-            bitbucketLinker.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
-        }
-        catch (Exception e)
-        {
-            log.warn("Failed to do incremental repository linking " + repository.getName(), e);
-        }
-    }
+
 
     /**
      * {@inheritDoc}

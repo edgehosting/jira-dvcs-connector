@@ -145,5 +145,9 @@ public interface RepositoryService
 
     List<Repository> getAllRepositories(String dvcsType, boolean includeDeleted);
 
+    void setPreviouslyLinkedProjects(Repository repository, Set<String> projects);
+
+    List<String> getPreviouslyLinkedProjects(Repository repository);
+
     Set<String> getEmails(Repository repository, DvcsUser user);
 }

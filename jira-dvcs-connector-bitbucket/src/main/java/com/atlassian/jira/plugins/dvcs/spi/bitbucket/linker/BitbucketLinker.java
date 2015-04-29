@@ -19,11 +19,6 @@ public interface BitbucketLinker
 	 */
 	public void linkRepository(Repository repository, Set<String> projectsInChangesets);
 
-	/**
-	 * @param repository
-	 * @param withProjectKeys
-	 */
-	public void linkRepositoryIncremental(Repository repository, Set<String> withProjectKeys);
 
 	/**
 	 * Removes all links that were previously configured by {@link #linkRepository(Repository)}

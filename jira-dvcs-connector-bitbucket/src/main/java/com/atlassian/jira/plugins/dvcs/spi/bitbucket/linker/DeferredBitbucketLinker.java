@@ -76,18 +76,6 @@ public class DeferredBitbucketLinker implements BitbucketLinker
         });
     }
 
-    @Override
-    public void linkRepositoryIncremental(final Repository repository, final Set<String> projectKeys)
-    {
-        configureLinks(repository, new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                bitbucketLinker.linkRepositoryIncremental(repository, projectKeys);
-            }
-        });
-    }
 
     private void configureLinks(final Repository repository, final Runnable task)
     {
