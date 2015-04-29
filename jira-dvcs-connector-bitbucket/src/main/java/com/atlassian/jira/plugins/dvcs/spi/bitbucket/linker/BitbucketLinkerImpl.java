@@ -12,6 +12,7 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.UrlMode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -49,16 +50,16 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
 
-    @Resource
     RepositoryService repositoryService;
 
     @Autowired
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager, RepositoryService repositoryService)
     {
         this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
         this.projectManager = checkNotNull(projectManager);
-        this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl());
+        this.repositoryService =checkNotNull(repositoryService);
+        this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
     }
 
     /**
@@ -223,10 +224,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Returns BitbucketRepositoryLink that point to this jira instance
-     *
-     * @param currentBitbucketLinks
-     * @return
+     * @param currentBitbucketLinks List of all bitbucket links in a given repository
+     * @return BitbucketRepositoryLinks that point to this jira instance
      */
     private List<BitbucketRepositoryLink> filterLinksToThisJira(List<BitbucketRepositoryLink> currentBitbucketLinks)
     {
