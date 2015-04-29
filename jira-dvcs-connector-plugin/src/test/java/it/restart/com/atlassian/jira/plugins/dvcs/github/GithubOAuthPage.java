@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -70,7 +71,7 @@ public class GithubOAuthPage implements Page
     public OAuth addConsumer(String jiraBaseUrl)
     {
         // register app
-        String consumerName = "Test_OAuth_" + System.currentTimeMillis();
+        String consumerName = OAuthUtils.generateTestOAuthName();
         oauthApplicationName.type(consumerName);
         oauthApplicationUrl.type(jiraBaseUrl);
         oauthApplicationCallbackUrl.type(jiraBaseUrl);

@@ -1,41 +1,26 @@
 package it.com.atlassian.jira.plugins.dvcs.cleanup;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.pageobjects.elements.PageElement;
 import com.beust.jcommander.internal.Lists;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import org.eclipse.egit.github.core.Authorization;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.OAuthService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+
+import static com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils.TEST_OAUTH_PREFIX;
 
 /**
  * Delete the orphan OAuth Applications created by Webdriver tests for Github.
  */
 public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
 {
-    private static final Logger log = LoggerFactory.getLogger(DeleteGitHubOrphanAppsTest.class);
-
     private static final String GITHUB_URL = "api.github.com";
     private static final String USER_AGENT = "DVCS Connector Test/X.x";
-
-    @Override
-    protected void deleteOrphanOAuthApplications(final String repoOwner, final String repoPassword) throws IOException
-    {
-            final GithubOAuthApplicationPage applicationPage = getGithubOAuthApplicationPage();
-
-            List<Authorization> expiredConsumers = findExpiredConsumers(repoOwner, repoPassword);
-
-            for (Authorization consumer : expiredConsumers)
-            {
-                applicationPage.removeConsumerForAppName(consumer.getApp().getName());
-                log.debug("Consumer deleted: " + consumer.getApp().getName());
-            }
-    }
 
     @Override
     protected void login(final String repoOwner, final String repoPassword)
@@ -49,12 +34,51 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
 
-    private OAuthService createOAuthServiceRest(final String repoOwner, final String repoPassword)
+    @Override
+    protected void deleteOrphanOAuthApplications(final String repoOwner, final String repoPassword) throws IOException
     {
-        GitHubClient gitHubClient = new GitHubClient(GITHUB_URL);
-        gitHubClient.setUserAgent(USER_AGENT);
-        gitHubClient.setCredentials(repoOwner, repoPassword);
-        return new OAuthService(gitHubClient);
+        try
+        {
+            List<Authorization> expiredConsumers = findExpiredConsumers(repoOwner, repoPassword);
+
+            for (Authorization consumer : expiredConsumers)
+            {
+                final GithubOAuthApplicationPage applicationPage = goToGithubOAuthApplicationPage();
+                applicationPage.removeConsumerForAppName(consumer.getApp().getName());
+            }
+        }
+        finally
+        {
+            // delete the non-authorized Applications filtering them in the UI
+            deleteGitHubNonAuthorizedApplications();
+        }
+    }
+
+    private void deleteGitHubNonAuthorizedApplications()
+    {
+        GithubOAuthApplicationPage page = goToGithubOAuthApplicationPage();
+        List<String> expiredApps = filterExpiredOAthApplicationsUI(page);
+
+        for (String application : expiredApps)
+        {
+            page.removeConsumerForAppName(application);
+            page = goToGithubOAuthApplicationPage(); // refresh page
+        }
+    }
+
+    private List<String> filterExpiredOAthApplicationsUI(GithubOAuthApplicationPage appPage)
+    {
+        List<String> expiredApps = Lists.newArrayList();
+        List<PageElement> applications = appPage.findOAthApplications(TEST_OAUTH_PREFIX);
+
+        for (PageElement link : applications)
+        {
+            if (super.isConsumerExpired(link.getText()))
+            {
+                expiredApps.add(link.getText().trim());
+            }
+        }
+        return expiredApps;
     }
 
     private List<Authorization> findExpiredConsumers(final String repoOwner, final String repoPassword)
@@ -79,7 +103,15 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
         return expiredConsumers;
     }
 
-    private GithubOAuthApplicationPage getGithubOAuthApplicationPage()
+    private OAuthService createOAuthServiceRest(final String repoOwner, final String repoPassword)
+    {
+        GitHubClient gitHubClient = new GitHubClient(GITHUB_URL);
+        gitHubClient.setUserAgent(USER_AGENT);
+        gitHubClient.setCredentials(repoOwner, repoPassword);
+        return new OAuthService(gitHubClient);
+    }
+
+    private GithubOAuthApplicationPage goToGithubOAuthApplicationPage()
     {
         return new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class);
     }

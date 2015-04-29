@@ -19,18 +19,6 @@ import java.util.List;
 public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
 {
     @Override
-    protected void deleteOrphanOAuthApplications(final String repoOwner, final String repoPassword)
-    {
-        goToOAuthPage(repoOwner);
-        List<BitbucketConsumer> expiredConsumers = findExpiredConsumers(repoOwner, repoPassword);
-
-        for (BitbucketConsumer consumer : expiredConsumers)
-        {
-            removeConsumer(repoOwner, consumer.getId().toString());
-        }
-    }
-
-    @Override
     protected void login(final String repoOwner, final String repoPassword)
     {
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(repoOwner, repoPassword);
@@ -42,20 +30,16 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }
 
-    private ConsumerRemoteRestpoint createConsumerRemoteRestpoint(final String repoOwner, final String repoPassword)
+    @Override
+    protected void deleteOrphanOAuthApplications(final String repoOwner, final String repoPassword)
     {
-        HttpClientProvider httpClientProvider = new HttpClientProvider();
-        httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
+        goToOAuthPage(repoOwner);
+        List<BitbucketConsumer> expiredConsumers = findExpiredConsumers(repoOwner, repoPassword);
 
-        AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                repoOwner, repoPassword, httpClientProvider);
-
-        return new ConsumerRemoteRestpoint(basicAuthProvider.provideRequestor());
-    }
-
-    private BitbucketOAuthPage goToOAuthPage(final String repoOwner)
-    {
-        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, repoOwner);
+        for (BitbucketConsumer consumer : expiredConsumers)
+        {
+            removeConsumer(repoOwner, consumer.getId().toString());
+        }
     }
 
     /**
@@ -75,6 +59,22 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
             }
         }
         return expiredConsumers;
+    }
+
+    private ConsumerRemoteRestpoint createConsumerRemoteRestpoint(final String repoOwner, final String repoPassword)
+    {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+        httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
+
+        AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
+                repoOwner, repoPassword, httpClientProvider);
+
+        return new ConsumerRemoteRestpoint(basicAuthProvider.provideRequestor());
+    }
+
+    private BitbucketOAuthPage goToOAuthPage(final String repoOwner)
+    {
+        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, repoOwner);
     }
 
     private void removeConsumer(final String repoOwner, final String applicationId)

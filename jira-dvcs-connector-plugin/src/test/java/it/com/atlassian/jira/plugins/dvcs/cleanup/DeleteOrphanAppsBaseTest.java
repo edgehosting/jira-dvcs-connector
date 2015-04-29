@@ -10,11 +10,13 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 
+import static com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils.TEST_OAUTH_PREFIX;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 /**
- * Base class to delete orphan OAUTH Applications (expired applications) for multiple repo owners in Bitbucket and Github.
- *
+ * Base class to delete orphan OAUTH Applications (expired applications) for multiple repo owners in Bitbucket and
+ * Github.
+ * <p/>
  * The orphan applications are created by webdriver tests and leaked when some unexpected failure happens and they have
  * a standard name Test_OAuth_[date/time in milliseconds].
  */
@@ -22,10 +24,9 @@ public abstract class DeleteOrphanAppsBaseTest
 {
     protected static final Logger log = LoggerFactory.getLogger(DeleteOrphanAppsBaseTest.class);
 
-    protected static final String[] REPO_OWNERS = { "jirabitbucketconnector", "dvcsconnectortest" };
+    protected static final String[] REPO_OWNERS = { "dvcsconnectortest", "jirabitbucketconnector" };
 
-    private static final String CONSUMER_PREFIX = "Test_OAuth_";
-    private static final int CONSUMER_EXPIRY_DAYS = 7;
+    private static final int CONSUMER_EXPIRY_DAYS = 3;
     private static final DateTime CUT_OFF_DATE = new DateTime().minusDays(CONSUMER_EXPIRY_DAYS);
 
     protected JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
@@ -62,9 +63,9 @@ public abstract class DeleteOrphanAppsBaseTest
             final String appName = trim(consumerName);
 
             // look for orphan consumers created by this test previously: Test_OAuth_<datetime in millis>
-            if (appName.startsWith(CONSUMER_PREFIX))
+            if (appName.startsWith(TEST_OAUTH_PREFIX))
             {
-                DateTime createdAt = parseDate(appName.substring(CONSUMER_PREFIX.length()));
+                DateTime createdAt = parseDate(appName.substring(TEST_OAUTH_PREFIX.length()));
                 return createdAt.isBefore(CUT_OFF_DATE);
             }
             return false;

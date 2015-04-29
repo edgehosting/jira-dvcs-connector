@@ -8,9 +8,8 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 
+import java.util.List;
 import javax.inject.Inject;
-
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 
 public class GithubOAuthApplicationPage implements Page
 {
@@ -51,11 +50,13 @@ public class GithubOAuthApplicationPage implements Page
 
     public void removeConsumerForAppName(final String appName)
     {
-        PageElement element = pageElementFinder.find(By.linkText(appName));
-        element.click();
+        PageElement link = pageElementFinder.find(By.linkText(appName));
+        link.click();
         pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+    }
 
-        // wait for the page refresh
-        waitUntilFalse("Deleted consumer " + appName + " should not be present", element.timed().isPresent());
+    public List<PageElement> findOAthApplications(final String partialLinkText)
+    {
+        return pageElementFinder.findAll(By.partialLinkText(partialLinkText));
     }
 }

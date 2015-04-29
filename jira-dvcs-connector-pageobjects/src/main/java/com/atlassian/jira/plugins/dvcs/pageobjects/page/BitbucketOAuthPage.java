@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -57,7 +58,7 @@ public class BitbucketOAuthPage implements Page
         WebDriverSupport.fromAutoInstall().getDriver().executeScript("scroll(0, 0);");
 
         Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
-        String consumerName = "Test_OAuth_" + System.currentTimeMillis();
+        String consumerName = OAuthUtils.generateTestOAuthName();
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
         consumerNameInput.click().type(consumerName);
         consumerDescriptionInput.type(consumerDescription);
@@ -91,8 +92,5 @@ public class BitbucketOAuthPage implements Page
         final PageElement inlineDialog = body.find(By.id("consumer-actions-" + applicationId));
         final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
         deleteButton.click();
-
-        // wait for the page refresh
-        waitUntilFalse("Deleted consumer " + applicationId + " should not be present", oauthConsumer.timed().isPresent());
     }
 }
