@@ -3,20 +3,18 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.pageobjects.PageBinder;
-import com.google.common.collect.Lists;
-import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.google.common.collect.Lists;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.List;
 
 import static java.lang.Thread.sleep;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -38,11 +34,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 /**
  * @author Martin Skurla
  */
-public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage> extends BaseOrganizationTest<T>
+public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage>
+        extends BaseOrganizationTest<T>
 {
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
+
     static final String DVCS_REPO_OWNER = "dvcsconnectortest";
     static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
+
     protected static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
     private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 
@@ -69,7 +68,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         oAuth = loginToDvcsAndGetJiraOAuthCredentials();
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void afterClass()
     {
         removeOAuth();
@@ -77,13 +76,17 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     }
 
     abstract void removeOldDvcsRepository();
+
     abstract void removeRemoteDvcsRepository();
+
     abstract void createRemoteDvcsRepository();
 
     abstract OAuth loginToDvcsAndGetJiraOAuthCredentials();
+
     abstract void pushToRemoteDvcsRepository(String pathToRepoZip) throws Exception;
 
     abstract String getFirstDvcsZipRepoPathToPush();
+
     abstract String getSecondDvcsZipRepoPathToPush();
 
     abstract void removeOAuth();
@@ -128,7 +131,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         do
         {
             sleep(1000);
-        } while (!isSyncFinished());
+        }
+        while (!isSyncFinished());
     }
 
     private boolean isSyncFinished()
@@ -152,12 +156,13 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         Process process;
         try
         {
-         // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
+            // executing "git" without any arguent on Win OS would wait forever (even if git is correctly placed on PATH)
             // => we need to execute "git" with some argument e.g. "--version"
             process = new ProcessBuilder("git", "--version").start();
             process.waitFor();
             return "git";           // we are on windows
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             return "/usr/local/git/bin/git";        // we are on mac/*nix
         }
@@ -171,7 +176,8 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
             process = new ProcessBuilder("hg", "--version").start();
             process.waitFor();
             return "hg";        // we are on windows
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             return "/usr/local/bin/hg"; // we are on mac/*nix
         }
@@ -204,7 +210,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         log.info(Lists.newArrayList(command).toString());
         Process process = new ProcessBuilder(command).directory(workingDirectory)
-                                                     .start();
+                .start();
         process.waitFor();
         printStream("ErrorStream", process.getErrorStream());
         printStream("InputStream", process.getInputStream());

@@ -9,6 +9,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.testing.rule.WebDriverSupport;
 import org.openqa.selenium.By;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -61,7 +62,7 @@ public class BitbucketOAuthPage implements Page
         consumerNameInput.click().type(consumerName);
         consumerDescriptionInput.type(consumerDescription);
         bbAddConsumerDialog.find(By.className("button-panel-button")).click();
-        Poller.waitUntilFalse(bbAddConsumerDialog.timed().isVisible());
+        waitUntilFalse(bbAddConsumerDialog.timed().isVisible());
 
         return parseOAuthCredentials();
     }
@@ -90,5 +91,8 @@ public class BitbucketOAuthPage implements Page
         final PageElement inlineDialog = body.find(By.id("consumer-actions-" + applicationId));
         final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
         deleteButton.click();
+
+        // wait for the page refresh
+        waitUntilFalse("Deleted consumer " + applicationId + " should not be present", oauthConsumer.timed().isPresent());
     }
 }
