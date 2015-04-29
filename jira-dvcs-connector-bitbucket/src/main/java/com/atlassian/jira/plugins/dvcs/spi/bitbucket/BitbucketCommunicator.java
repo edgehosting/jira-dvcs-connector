@@ -495,8 +495,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         }
     }
 
-
-
     /**
      * {@inheritDoc}
      */
@@ -555,7 +553,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
         return URLPathFormatter.format("{0}/{1}/{2}/pull-request/new?source={3}/{4}&dest={5}/{6}&event_source={7}",
                 repository.getOrgHostUrl(), repository.getOrgName(), repository.getSlug(), sourceSlug, sourceBranch, destinationSlug,
                 destinationBranch, eventSource);
-
     }
 
     /**

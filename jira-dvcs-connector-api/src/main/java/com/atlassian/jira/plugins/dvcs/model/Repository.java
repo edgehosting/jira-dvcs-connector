@@ -204,8 +204,6 @@ public class Repository implements Serializable
         this.logo = logo;
     }
 
-
-
     @Override
     public boolean equals(Object obj)
     {
