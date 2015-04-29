@@ -13,6 +13,9 @@ import com.beust.jcommander.internal.Lists;
 
 import java.util.List;
 
+/**
+ * Delete the orphan OAuth Applications created by Webdriver tests for Bitbucket.
+ */
 public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
 {
     @Override

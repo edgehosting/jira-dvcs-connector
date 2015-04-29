@@ -12,6 +12,12 @@ import java.io.IOException;
 
 import static org.apache.commons.lang3.StringUtils.trim;
 
+/**
+ * Base class to delete orphan OAUTH Applications (expired applications) for multiple repo owners in Bitbucket and Github.
+ *
+ * The orphan applications are created by webdriver tests and leaked when some unexpected failure happens and they have
+ * a standard name Test_OAuth_[date/time in milliseconds].
+ */
 public abstract class DeleteOrphanAppsBaseTest
 {
     protected static final Logger log = LoggerFactory.getLogger(DeleteOrphanAppsBaseTest.class);
@@ -47,7 +53,7 @@ public abstract class DeleteOrphanAppsBaseTest
     }
 
     /**
-     * @return true if appName matches Test_OAuth_<datetime in millis>
+     * @return true if appName matches Test_OAuth_<datetime in millis> and is expired
      */
     protected boolean isConsumerExpired(final String consumerName)
     {

@@ -12,9 +12,6 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 
-/**
- *
- */
 public class GithubOAuthApplicationPage implements Page
 {
     @Inject

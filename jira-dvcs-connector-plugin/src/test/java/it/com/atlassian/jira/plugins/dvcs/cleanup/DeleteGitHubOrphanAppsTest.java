@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Delete the orphan OAuth Applications created by Webdriver tests for Github.
+ */
 public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
 {
     private static final Logger log = LoggerFactory.getLogger(DeleteGitHubOrphanAppsTest.class);
@@ -59,6 +62,11 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
     {
         OAuthService oAuthServiceRest = createOAuthServiceRest(repoOwner, repoPassword);
         List<Authorization> expiredConsumers = Lists.newArrayList();
+
+        // Ideally we should retrieve the Github Applications but no available REST service for that purpose at the moment.
+        // There is a small risk of having Applications without Authorizations which are going to be missed in the current
+        // logic but acceptable to keep code simple. When Github makes the Applications available via REST then we can update
+        // our code.
         List<Authorization> authorizations = oAuthServiceRest.getAuthorizations();
 
         for (Authorization authorization : authorizations)

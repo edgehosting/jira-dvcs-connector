@@ -60,15 +60,6 @@ public abstract class AbstractBitbucketMissingCommitsTest
         }
     }
 
-    private void removeRepository(String name)
-    {
-        try
-        {
-            bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
-        }
-        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
-    }
-
     @Override
     OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
@@ -76,12 +67,6 @@ public abstract class AbstractBitbucketMissingCommitsTest
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from bitbucket
         return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).addConsumer();
-    }
-
-    @Override
-    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
-    {
-        return BitBucketConfigureOrganizationsPage.class;
     }
 
     @Override
@@ -103,9 +88,24 @@ public abstract class AbstractBitbucketMissingCommitsTest
     }
 
     @Override
+    protected Class<BitBucketConfigureOrganizationsPage> getConfigureOrganizationsPageClass()
+    {
+        return BitBucketConfigureOrganizationsPage.class;
+    }
+
+    @Override
     protected AccountsPageAccount.AccountType getAccountType()
     {
         return AccountsPageAccount.AccountType.BITBUCKET;
+    }
+
+    private void removeRepository(String name)
+    {
+        try
+        {
+            bitbucketRepositoriesREST.removeExistingRepository(name, DVCS_REPO_OWNER);
+        }
+        catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
     }
 
     private void removeConsumer(final String applicationId)

@@ -11,9 +11,7 @@ import com.google.gson.reflect.TypeToken;
 import java.util.List;
 
 /**
- * AccountRemoteRestpoint
- *
- * @author Martin Skurla mskurla@atlassian.com
+ * REST service to retrieve information about the OAUTH consumers in Bitbucket.
  */
 public class ConsumerRemoteRestpoint
 {
