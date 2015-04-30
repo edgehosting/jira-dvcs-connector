@@ -103,7 +103,7 @@ public class BitbucketLinkerImplTest
     {
         MockitoAnnotations.initMocks(this);
         repository = setUpRepository();
-        links = new ArrayList<>();
+        links = new ArrayList<BitbucketRepositoryLink>();
         links.add(link1);
         links.add(link2);
 

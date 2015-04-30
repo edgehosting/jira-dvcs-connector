@@ -101,7 +101,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
 
-        Set<String> previouslyLinkedProjects = new HashSet<>();
+        Set<String> previouslyLinkedProjects = new HashSet<String>();
         previouslyLinkedProjects.addAll(repositoryService.getPreviouslyLinkedProjects(repository));
 
         if (previouslyLinkedProjects.equals(projectKeysToLink))
