@@ -53,6 +53,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
+
 import java.util.Arrays;
 
 public class BitbucketLinkerImplTest
@@ -73,7 +74,7 @@ public class BitbucketLinkerImplTest
     @Mock
     ApplicationProperties applicationProperties;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock (answer = Answers.RETURNS_DEEP_STUBS)
     BitbucketClientBuilderFactory builderFactory;
 
     BitbucketLinkerImpl bitbucketLinker;
@@ -90,7 +91,7 @@ public class BitbucketLinkerImplTest
 
     BitbucketRepositoryLink link1 = createLink(("TEST"));
     BitbucketRepositoryLink link2 = createLink(("ASDF"));
-    List<BitbucketRepositoryLink> links ;
+    List<BitbucketRepositoryLink> links;
     List<String> projectKeys = ImmutableList.of("TEST", "ASDF");
 
 
@@ -111,11 +112,11 @@ public class BitbucketLinkerImplTest
                 (repository.getOrgName(), repository.getSlug())).thenReturn(new ArrayList<BitbucketRepositoryLink>());
 
         when(applicationProperties.getBaseUrl(UrlMode.CANONICAL)).thenReturn(thisJiraURL);
-        bitbucketLinker = new BitbucketLinkerImpl(builderFactory,applicationProperties, projectManager, repositoryService);
+        bitbucketLinker = new BitbucketLinkerImpl(builderFactory, applicationProperties, projectManager, repositoryService);
         when(builderFactory.forRepository(repository).
                 closeIdleConnections().build().getRepositoryLinksRest()).thenReturn(repositoryLinkRemoteRestpoint);
         when(builderFactory.forRepository(repository).
-               build().getRepositoryLinksRest()).thenReturn(repositoryLinkRemoteRestpoint);
+                build().getRepositoryLinksRest()).thenReturn(repositoryLinkRemoteRestpoint);
 
         when(projectManager.getProjectObjects()).thenReturn(projectList);
 
@@ -129,8 +130,6 @@ public class BitbucketLinkerImplTest
         bitbucketLinker.unlinkRepository(repository);
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
-
-
     }
 
     @Test
@@ -143,8 +142,7 @@ public class BitbucketLinkerImplTest
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
-        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(),link1.getId());
-
+        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
     }
 
     @Test
@@ -153,7 +151,7 @@ public class BitbucketLinkerImplTest
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeys);
 
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
-        verify(repositoryLinkRemoteRestpoint, never()).addCustomRepositoryLink(anyString(),anyString(),anyString(),anyString());
+        verify(repositoryLinkRemoteRestpoint, never()).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -162,17 +160,19 @@ public class BitbucketLinkerImplTest
         List<String> projectKeysSubset = Arrays.asList(projectKeys.get(0));
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
-        verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(anyString(),anyString(),anyString(),anyString());
+        verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
     }
 
-    private BitbucketRepositoryLink createLink(String projectKey){
+    private BitbucketRepositoryLink createLink(String projectKey)
+    {
         BitbucketRepositoryLink repositoryLink = new BitbucketRepositoryLink();
         repositoryLink.setHandler(createHandler(projectKey));
         repositoryLink.setId(projectKey.hashCode());
         return repositoryLink;
     }
 
-    private BitbucketRepositoryLinkHandler createHandler(String key){
+    private BitbucketRepositoryLinkHandler createHandler(String key)
+    {
         BitbucketRepositoryLinkHandler handler = new BitbucketRepositoryLinkHandler();
         handler.setUrl(thisJiraURL);
         handler.setDisplayTo(thisJiraURL);
@@ -182,14 +182,16 @@ public class BitbucketLinkerImplTest
 
     }
 
-    private Repository setUpRepository(){
+    private Repository setUpRepository()
+    {
         repository = new Repository();
         repository.setOrgName("some account name");
         repository.setSlug("myrepo");
         return repository;
     }
 
-    private List<Project> setUpProjectList(){
+    private List<Project> setUpProjectList()
+    {
         projectList = new ArrayList<Project>();
         when(project1.getKey()).thenReturn("ASDF");
         when(project2.getKey()).thenReturn("TEST");
@@ -197,7 +199,6 @@ public class BitbucketLinkerImplTest
         projectList.add(project1);
         projectList.add(project2);
         return projectList;
-
     }
 
 

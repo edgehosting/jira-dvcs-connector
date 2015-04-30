@@ -51,7 +51,7 @@ public class RepositoryDaoTest
     private RepositoryMapping repositoryMapping;
 
 
-    private String[] sampleProjectKeys = {"TEST","ASDF","PROJ"};
+    private String[] sampleProjectKeys = { "TEST", "ASDF", "PROJ" };
 
     // tested object
     private RepositoryDao repositoryDao;
@@ -145,22 +145,25 @@ public class RepositoryDaoTest
     }
 
     @Test
-    public void testSetPreviouslyLinkedProjects(){
+    public void testSetPreviouslyLinkedProjects()
+    {
         //I'm not sure if this method is worth testing
 
     }
 
     @Test
-    public void testAssociateNewKey(){
+    public void testAssociateNewKey()
+    {
 
     }
 
     @Test
-    public void testGetPreviouslyLinkedProjects(){
+    public void testGetPreviouslyLinkedProjects()
+    {
         RepositoryToProjectMapping[] sampleMappings = createSampleMappings();
-        when(activeObjects.find(eq(RepositoryToProjectMapping.class),any(Query.class))).thenReturn(
+        when(activeObjects.find(eq(RepositoryToProjectMapping.class), any(Query.class))).thenReturn(
                 sampleMappings);
-       Assert.assertEquals(repositoryDao.getPreviouslyLinkedProjects(1), Arrays.asList(sampleProjectKeys));
+        Assert.assertEquals(repositoryDao.getPreviouslyLinkedProjects(1), Arrays.asList(sampleProjectKeys));
 
     }
 
@@ -177,10 +180,12 @@ public class RepositoryDaoTest
         return repository;
     }
 
-    private RepositoryToProjectMapping[] createSampleMappings(){
+    private RepositoryToProjectMapping[] createSampleMappings()
+    {
         RepositoryToProjectMapping[] sampleMappings = new RepositoryToProjectMapping[3];
 
-        for(int i=0; i<3; i++){
+        for (int i = 0; i < 3; i++)
+        {
             sampleMappings[i] = mock(RepositoryToProjectMapping.class);
             when(sampleMappings[i].getProject()).thenReturn(sampleProjectKeys[i]);
             when(sampleMappings[i].getRepository()).thenReturn(repositoryMapping);
@@ -189,7 +194,6 @@ public class RepositoryDaoTest
 
 
     }
-
 
 
 }

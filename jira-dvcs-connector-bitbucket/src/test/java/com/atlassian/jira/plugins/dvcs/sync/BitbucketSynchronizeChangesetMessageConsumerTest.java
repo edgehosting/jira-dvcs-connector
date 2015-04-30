@@ -56,7 +56,6 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     public BitbucketSynchronizeChangesetMessageConsumer messageConsumer;
 
 
-
     private Date lastCommitDate = new Date();
     private Date oldCommitDate = new Date(0);
     private BitbucketNewChangeset newChangeset1;
@@ -64,13 +63,13 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     private Set<String> referencedProjects = new HashSet<String>();
 
 
-    private static final BitbucketChangesetPage secondToLastChangesetPage =new BitbucketChangesetPage();
+    private static final BitbucketChangesetPage secondToLastChangesetPage = new BitbucketChangesetPage();
 
     private static final BitbucketChangesetPage lastChangesetPage = new BitbucketChangesetPage();
 
     private BitbucketSynchronizeChangesetMessage secondToLastmessage;
     private BitbucketSynchronizeChangesetMessage lastmessage;
-    private Message<BitbucketSynchronizeChangesetMessage> message ;
+    private Message<BitbucketSynchronizeChangesetMessage> message;
 
 
     private Repository repository;
@@ -98,7 +97,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         when(communicator.getNextPage(any(Repository.class),
                 any(List.class), any(List.class), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
-        when(changesetService.getByNode(anyInt(),anyString())).thenReturn(null);
+        when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
         when(changesetService.findReferencedProjects(anyInt())).thenReturn(referencedProjects);
         messageConsumer.onReceive(message, secondToLastmessage);
         verify(cachingCommunicator).linkRepository(repository, referencedProjects);
@@ -149,7 +148,6 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     }
 
 
-
     @Test
     public void testOnReceiveWhenChangesetAlreadySeenEarlier() throws Exception
     {
@@ -162,7 +160,8 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     }
 
 
-    private void setUpChangesetPages(){
+    private void setUpChangesetPages()
+    {
         newChangeset1 = new BitbucketNewChangeset();
         newChangeset2 = new BitbucketNewChangeset();
         newChangeset1.setParents(new ArrayList<BitbucketNewChangeset>());
@@ -180,14 +179,15 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
 
     }
 
-    private BitbucketSynchronizeChangesetMessage setUpChangesetMessage(BitbucketChangesetPage changesetPage){
+    private BitbucketSynchronizeChangesetMessage setUpChangesetMessage(BitbucketChangesetPage changesetPage)
+    {
         return new BitbucketSynchronizeChangesetMessage(repository,
                 new Date(),
                 new DefaultProgress(),
                 new ArrayList<String>(),
                 new ArrayList<String>(),
                 changesetPage,
-                new HashMap<String,String>(),
+                new HashMap<String, String>(),
                 false,
                 0,
                 false);

@@ -11,6 +11,7 @@ public interface RepositoryDao
 {
     /**
      * returns all repositories for given organization
+     *
      * @param organizationId organizationId
      * @return repositories
      */
@@ -28,6 +29,7 @@ public interface RepositoryDao
 
     /**
      * returns repository by ID or <code>null</code> if not found
+     *
      * @param repositoryId repositoryId
      * @return repository
      */
@@ -35,6 +37,7 @@ public interface RepositoryDao
 
     /**
      * save Repository to storage. If it's new object (without ID) after this operation it will have it assigned.
+     *
      * @param repository Repository
      * @return Repository
      */

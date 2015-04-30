@@ -75,7 +75,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer
      *
      * @param messageTags message tags
      * @param page the page of changesets to be processed
-     * @param payload an object that is passed around that contains information specific to the processing of all the bitbucket pages
+     * @param payload an object that is passed around that contains information specific to the processing of all the
+     * bitbucket pages
      */
     void process(String[] messageTags, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
@@ -117,7 +118,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         {
             fireNextPage(page, payload, softSync, messageTags);
         }
-        else{
+        else
+        {
             cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
         }
 
@@ -125,9 +127,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer
 
     /**
      * A Magical Mystery, if you know how or why this works update this javadoc with a better explanation
+     *
      * @param cset incomming Changeset
      * @param originalMessage an object that holds state specific to the synchronisation of this repository
-     *
      */
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {

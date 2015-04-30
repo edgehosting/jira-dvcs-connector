@@ -156,7 +156,8 @@ public class RepositoryDaoImpl implements RepositoryDao
             }
         });
 
-        for(String projectKey :projectKeyIterable ){
+        for (String projectKey : projectKeyIterable)
+        {
             projectKeys.add(projectKey);
         }
 
@@ -168,13 +169,15 @@ public class RepositoryDaoImpl implements RepositoryDao
     {
 
         ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, getQueryForProjectMappings(forRepositoryId));
-        for(String key :projects){
+        for (String key : projects)
+        {
             associateNewKey(key, forRepositoryId);
         }
 
     }
 
-    private Query getQueryForProjectMappings(final int forRepositoryId){
+    private Query getQueryForProjectMappings(final int forRepositoryId)
+    {
         Query select = Query.select()
                 .alias(RepositoryMapping.class, "repo")
                 .alias(RepositoryToProjectMapping.class, "proj")
@@ -184,20 +187,21 @@ public class RepositoryDaoImpl implements RepositoryDao
     }
 
 
-    private void associateNewKey(final String key, final int repositoryId){
+    private void associateNewKey(final String key, final int repositoryId)
+    {
         activeObjects.executeInTransaction(new TransactionCallback<RepositoryToProjectMapping>()
+        {
+            @Override
+            public RepositoryToProjectMapping doInTransaction()
             {
-                @Override
-                public RepositoryToProjectMapping doInTransaction()
-                {
-                    final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
-                    map.put(RepositoryToProjectMapping.PROJECT_KEY, key);
-                    map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryId);
-                    RepositoryToProjectMapping mapping = activeObjects.create(RepositoryToProjectMapping.class, map);
-                    mapping.save();
-                    return mapping;
-                }
-            });
+                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
+                map.put(RepositoryToProjectMapping.PROJECT_KEY, key);
+                map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryId);
+                RepositoryToProjectMapping mapping = activeObjects.create(RepositoryToProjectMapping.class, map);
+                mapping.save();
+                return mapping;
+            }
+        });
     }
 
 
@@ -259,22 +263,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             return transform(repositoryMapping);
 
-        }
-    }
-
-    private void associateIssuesToChangeset(RepositoryMapping repositoryMapping, Set<String> projectKeys)
-    {
-        //remove existing projects for the repository
-        Query query = Query.select().where(RepositoryToProjectMapping.REPOSITORY_ID + " = ? ", repositoryMapping);
-        ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, query);
-
-        // insert new project keys
-        for (String projectKey : projectKeys)
-        {
-            final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
-            map.put(RepositoryToProjectMapping.PROJECT_KEY, projectKey);
-            map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryMapping.getID());
-            activeObjects.create(RepositoryToProjectMapping.class, map);
         }
     }
 

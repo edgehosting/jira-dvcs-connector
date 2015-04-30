@@ -92,7 +92,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     @Resource
     private MessagingService messagingService;
-    
+
     @Resource
     private ChangesetDao changesetDao;
 
@@ -265,14 +265,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     /**
-     * getNextPage. If currentPage is null, returns the first page for the given
-     * repository and include / exclude parameters.
-     * 
-     * @param repository
-     * @param includeNodes
-     * @param excludeNodes
-     * @param currentPage
-     * @return
+     * getNextPage. If currentPage is null, returns the first page for the given repository and include / exclude
+     * parameters.
      */
     public BitbucketChangesetPage getNextPage(final Repository repository, final List<String> includeNodes, final List<String> excludeNodes, final BitbucketChangesetPage currentPage)
     {
@@ -431,23 +425,23 @@ public class BitbucketCommunicator implements DvcsCommunicator
             throw new SourceControlException.PostCommitHookRegistrationException("Could not add pull request hook", e);
         }
     }
-    
+
     /**
      * Cleanup orphan hooks related to this instance.
-     * 
+     *
      * @return <code>true</code> if required hook already installed (so you don't need to install new one),
-     * <code>false</code> otherwise 
+     * <code>false</code> otherwise
      */
     private boolean cleanupAndGetExists(Repository repository, String postCommitUrl, BitbucketRemoteClient remoteClient, String type)
     {
         ServiceRemoteRestpoint servicesRest = remoteClient.getServicesRest();
         List<BitbucketServiceEnvelope> services = servicesRest.getAllServices(repository.getOrgName(), // owner
                 repository.getSlug());
-        
+
         String thisHostAndRest = applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
-        
+
         boolean found = false;
-        
+
         for (BitbucketServiceEnvelope bitbucketServiceEnvelope : services)
         {
             String serviceType = bitbucketServiceEnvelope.getService().getType();
@@ -456,8 +450,8 @@ public class BitbucketCommunicator implements DvcsCommunicator
                 for (BitbucketServiceField serviceField : bitbucketServiceEnvelope.getService().getFields())
                 {
                     boolean fieldNameIsUrl = serviceField.getName().equals("URL");
-                    
-                    if (!fieldNameIsUrl || !serviceField.getValue().startsWith(thisHostAndRest)) 
+
+                    if (!fieldNameIsUrl || !serviceField.getValue().startsWith(thisHostAndRest))
                     {
                         continue;
                     }
@@ -469,7 +463,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                         found = true;
                     }
                     // If the hook is on localhost then we don't clean up as otherwise the tests mess with each other
-                    else if(!serviceField.getValue().startsWith("http://localhost:"))
+                    else if (!serviceField.getValue().startsWith("http://localhost:"))
                     {
                         servicesRest.deleteService(repository.getOrgName(), repository.getSlug(), bitbucketServiceEnvelope.getId());
                     }
@@ -739,7 +733,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
                     MessageAddress<OldBitbucketSynchronizeCsetMsg> key = messagingService.get( //
                             OldBitbucketSynchronizeCsetMsg.class, //
                             OldBitbucketSynchronizeCsetMsgConsumer.KEY //
-                            );
+                    );
                     messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY
                             : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repository), messagingService
                             .getTagForAuditSynchronization(auditId));
@@ -781,7 +775,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
         MessageAddress<BitbucketSynchronizeActivityMessage> key = messagingService.get( //
                 BitbucketSynchronizeActivityMessage.class, //
                 BitbucketSynchronizeActivityMessageConsumer.KEY //
-                );
+        );
         messagingService.publish(key, new BitbucketSynchronizeActivityMessage(repo, softSync, repo.getActivityLastSync(), auditId, webHookSync),
                 softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY,
                 messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
