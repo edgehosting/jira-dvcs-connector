@@ -71,7 +71,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     }
 
     /**
-     * Loads changesets not already in the database from the @page of changesets into the database
+     * Loads changesets not already in the database from the page of changesets into the database
      *
      * @param messageTags message tags
      * @param page the page of changesets to be processed
@@ -83,15 +83,14 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         List<BitbucketNewChangeset> newChangesets = page.getValues();
         boolean softSync = payload.isSoftSync();
         Repository repo = payload.getRepository();
+
         for (BitbucketNewChangeset newChangeset : newChangesets)
         {
-
             Changeset fromDB = changesetService.getByNode(repo.getId(), newChangeset.getHash());
             if (fromDB != null)
             {
                 continue;
             }
-
             assignBranch(newChangeset, payload);
             Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), newChangeset);
             cset.setSynchronizedAt(new Date());

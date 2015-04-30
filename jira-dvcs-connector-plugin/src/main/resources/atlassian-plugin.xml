@@ -17,11 +17,13 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping</entity>
+        <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToProjectMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchHeadMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.BranchMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToBranchMapping</entity>
+
 
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryCommitMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping</entity>
@@ -35,6 +37,8 @@
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping</entity>
         <entity>com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping</entity>
+
+
 
         <!-- Sync events-->
         <entity>com.atlassian.jira.plugins.dvcs.event.SyncEventMapping</entity>

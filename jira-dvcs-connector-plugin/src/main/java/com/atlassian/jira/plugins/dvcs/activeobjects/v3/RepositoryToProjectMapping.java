@@ -8,7 +8,7 @@ import net.java.ao.schema.Table;
 
 
 @Preload
-@Table ("RepoToLinkedProject")
+@Table ("RepoToProject")
 public interface RepositoryToProjectMapping extends Entity
 {
     public static String PROJECT_KEY = "PROJECT_KEY";
@@ -16,10 +16,11 @@ public interface RepositoryToProjectMapping extends Entity
 
     void setRepository(RepositoryMapping repo);
 
-    void setProject(String ProjectKey);
+    void setProjectKey(String ProjectKey);
 
-    String getProject();
+    String getProjectKey();
 
+    @Indexed
     RepositoryMapping getRepository();
 
 }

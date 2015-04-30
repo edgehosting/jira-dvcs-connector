@@ -64,7 +64,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     /**
      * Remove forward slash at the end of url.
      *
-     * @param url url
+     * @param url a url to be processed
      * @return the url supplied with no "/" at the end of it
      */
     private String normaliseBaseUrl(String url)

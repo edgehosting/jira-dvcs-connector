@@ -51,6 +51,7 @@ import javax.annotation.Resource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
 
@@ -128,8 +129,10 @@ public class BitbucketLinkerImplTest
         when(repositoryLinkRemoteRestpoint.getRepositoryLinks
                 (repository.getOrgName(), repository.getSlug())).thenReturn(links);
         bitbucketLinker.unlinkRepository(repository);
+        verify(repositoryLinkRemoteRestpoint).getRepositoryLinks(repository.getOrgName(),repository.getSlug());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
-        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
+        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link2.getId());
+        verifyNoMoreInteractions(repositoryLinkRemoteRestpoint);
     }
 
     @Test
@@ -142,7 +145,7 @@ public class BitbucketLinkerImplTest
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
-        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
+        verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link2.getId());
     }
 
     @Test

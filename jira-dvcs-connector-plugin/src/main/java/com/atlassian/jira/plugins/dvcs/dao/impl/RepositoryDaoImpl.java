@@ -12,7 +12,6 @@ import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import net.java.ao.Query;
@@ -152,7 +151,7 @@ public class RepositoryDaoImpl implements RepositoryDao
             @Override
             public String apply(final RepositoryToProjectMapping projectMapping)
             {
-                return projectMapping.getProject();
+                return projectMapping.getProjectKey();
             }
         });
 
@@ -167,7 +166,6 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public void setPreviouslyLinkedProjects(final int forRepositoryId, final Set<String> projects)
     {
-
         ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, getQueryForProjectMappings(forRepositoryId));
         for (String key : projects)
         {

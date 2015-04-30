@@ -145,19 +145,6 @@ public class RepositoryDaoTest
     }
 
     @Test
-    public void testSetPreviouslyLinkedProjects()
-    {
-        //I'm not sure if this method is worth testing
-
-    }
-
-    @Test
-    public void testAssociateNewKey()
-    {
-
-    }
-
-    @Test
     public void testGetPreviouslyLinkedProjects()
     {
         RepositoryToProjectMapping[] sampleMappings = createSampleMappings();
@@ -187,7 +174,7 @@ public class RepositoryDaoTest
         for (int i = 0; i < 3; i++)
         {
             sampleMappings[i] = mock(RepositoryToProjectMapping.class);
-            when(sampleMappings[i].getProject()).thenReturn(sampleProjectKeys[i]);
+            when(sampleMappings[i].getProjectKey()).thenReturn(sampleProjectKeys[i]);
             when(sampleMappings[i].getRepository()).thenReturn(repositoryMapping);
         }
         return sampleMappings;
