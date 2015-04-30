@@ -125,16 +125,20 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     }
 
     /**
-     * A Magical Mystery, if you know how or why this works update this javadoc with a better explanation
+     * This method exploits the fact that the request made to bitbucket retrieves the changesets ordered from oldest to newest
+     * to assign the correct branch to each changeset. Since the newest changesets ,are in earlier messages, these are processed earlier than their parents.
+     * There seems to be a defect in this implementation such that the oldest commit's branch is the one that is assigned to common parents of two commits
      *
      * @param cset incomming Changeset
      * @param originalMessage an object that holds state specific to the synchronisation of this repository
      */
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
-        Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
+        Map<String, String> changesetBranch = originalMessage.getNodesToBranches();//starts out being a map from branch heads to branch names
 
         String branch = changesetBranch.get(cset.getHash());
+
+
         cset.setBranch(branch);
         changesetBranch.remove(cset.getHash());
         for (BitbucketNewChangeset parent : cset.getParents())

@@ -92,7 +92,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Removes existing links to this jira, adds a link for the keys in #projectKeysToLink that exist in this jira
+     * Removes existing links to this jira, adds a link for the keys in {@code projectKeysToLink} that exist in this jira
      *
      * @param repository repository to replace links to
      * @param projectKeysToLink a set of project keys to be linked
@@ -125,7 +125,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Creates a link in #repository for the project keys in #forProjects that exist in this JIRA
+     * Creates a link in {@code repository} for the project keys in {@code forProjects} that exist in this JIRA
      *
      * @param repository repository to install link into
      * @param forProjects project keys to be added
@@ -206,8 +206,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     /**
      * Returns BitbucketRepositoryLinks that point to this jira instance
      *
-     * @param repository repository
-     * @return list of BitBucketRepositoryLinks that link to this jira instance from the #repository
+     * @param repository repository to get links from
+     * @return list of BitBucketRepositoryLinks that link to this jira instance from the {@code repository}
      */
     private List<BitbucketRepositoryLink> getCurrentLinks(Repository repository)
     {
