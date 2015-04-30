@@ -33,12 +33,12 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
     @Override
     protected void deleteOrphanOAuthApplications(final String repoOwner, final String repoPassword)
     {
-        goToOAuthPage(repoOwner);
+        BitbucketOAuthPage page = goToOAuthPage(repoOwner);
         List<BitbucketConsumer> expiredConsumers = findExpiredConsumers(repoOwner, repoPassword);
 
         for (BitbucketConsumer consumer : expiredConsumers)
         {
-            removeConsumer(repoOwner, consumer.getId().toString());
+            page.removeConsumer(consumer.getId().toString());
         }
     }
 
@@ -53,7 +53,7 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
         List<BitbucketConsumer> consumers = consumerRemoteRestpoint.getConsumers(repoOwner);
         for (BitbucketConsumer consumer : consumers)
         {
-            if (isConsumerExpired(consumer.getName()))
+            if (super.isConsumerExpired(consumer.getName()))
             {
                 expiredConsumers.add(consumer);
             }
@@ -75,10 +75,5 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
     private BitbucketOAuthPage goToOAuthPage(final String repoOwner)
     {
         return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, repoOwner);
-    }
-
-    private void removeConsumer(final String repoOwner, final String applicationId)
-    {
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, repoOwner).removeConsumer(applicationId);
     }
 }

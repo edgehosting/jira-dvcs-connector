@@ -77,7 +77,7 @@ public class RepositoryDaoTest
                 });
         when(activeObjects.create(eq(RepositoryMapping.class), isA(Map.class))).thenReturn(
                 repositoryMapping);
-        when(activeObjects.find(eq(RepositoryMapping.class), anyString(), any())).thenReturn(
+        when(activeObjects.find(eq(RepositoryMapping.class), anyString(), any(Object.class))).thenReturn(
                 new RepositoryMapping[] { repositoryMapping });
 
         repositoryDao.save(sampleRepository);

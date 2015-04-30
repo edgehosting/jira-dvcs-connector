@@ -50,20 +50,37 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOldDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        // This method is executed in @AfterClass context by super class and we do not want to break further logic
+        // if the service is null (e.g. login failed in Github due to network issue)
+        if (githubRepositoriesREST != null)
+        {
+            githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        }
     }
 
     @Override
     void removeRemoteDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
-
-        // remove expired repositories
-        for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+        // This method is executed in @AfterClass context by super class and we do not want to break further logic
+        // if the service is null (e.g. login failed in Github due to network issue)
+        if (githubRepositoriesREST != null)
         {
-            if (timestampNameTestResource.isExpired(repository.getName()))
+            githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
+
+            // remove expired repositories
+            try
             {
-                githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+                {
+                    if (timestampNameTestResource.isExpired(repository.getName()))
+                    {
+                        githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                log.warn("removeRemoteDvcsRepository() failed", e);
             }
         }
     }
