@@ -28,11 +28,9 @@ public abstract class AbstractBitbucketMissingCommitsTest
     {
         HttpClientProvider httpClientProvider = new HttpClientProvider();
         httpClientProvider.setUserAgent(BitbucketRemoteClient.TEST_USER_AGENT);
-
         AuthProvider basicAuthProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
-                DVCS_REPO_OWNER,
-                DVCS_REPO_PASSWORD,
-                httpClientProvider);
+                DVCS_REPO_OWNER, DVCS_REPO_PASSWORD, httpClientProvider);
+
         bitbucketRepositoriesREST = new BitbucketRepositoriesRemoteRestpoint(basicAuthProvider.provideRequestor());
     }
 

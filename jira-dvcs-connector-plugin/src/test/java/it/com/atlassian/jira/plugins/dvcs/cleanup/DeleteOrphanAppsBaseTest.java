@@ -54,7 +54,8 @@ public abstract class DeleteOrphanAppsBaseTest
     }
 
     /**
-     * @return true if appName matches Test_OAuth_<datetime in millis> and is expired
+     * @param consumerName
+     * @return true if consumerName is an expired orphaned test consumer
      */
     protected boolean isConsumerExpired(final String consumerName)
     {

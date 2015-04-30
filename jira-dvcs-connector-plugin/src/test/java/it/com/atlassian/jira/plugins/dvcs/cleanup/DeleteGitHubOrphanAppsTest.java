@@ -57,7 +57,7 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
     private void deleteGitHubNonAuthorizedApplications()
     {
         GithubOAuthApplicationPage page = goToGithubOAuthApplicationPage();
-        List<String> expiredApps = filterExpiredOAthApplicationsUI(page);
+        List<String> expiredApps = filterExpiredOAuthApplicationsUI(page);
 
         for (String application : expiredApps)
         {
@@ -66,7 +66,7 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
         }
     }
 
-    private List<String> filterExpiredOAthApplicationsUI(GithubOAuthApplicationPage appPage)
+    private List<String> filterExpiredOAuthApplicationsUI(GithubOAuthApplicationPage appPage)
     {
         List<String> expiredApps = Lists.newArrayList();
         List<PageElement> applications = appPage.findOAthApplications(TEST_OAUTH_PREFIX);

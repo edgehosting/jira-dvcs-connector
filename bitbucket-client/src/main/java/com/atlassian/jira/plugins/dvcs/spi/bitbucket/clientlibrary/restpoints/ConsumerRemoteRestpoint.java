@@ -10,6 +10,10 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * REST service to retrieve information about the OAUTH consumers in Bitbucket.
  */
@@ -17,14 +21,15 @@ public class ConsumerRemoteRestpoint
 {
     private final RemoteRequestor requestor;
 
-    public ConsumerRemoteRestpoint(RemoteRequestor remoteRequestor)
+    public ConsumerRemoteRestpoint(@Nonnull final RemoteRequestor remoteRequestor)
     {
-        this.requestor = remoteRequestor;
+        this.requestor = Preconditions.checkNotNull(remoteRequestor);
     }
 
-    public List<BitbucketConsumer> getConsumers(String owner)
+    public List<BitbucketConsumer> getConsumers(@Nonnull final String owner)
     {
-        checkBlank(owner, "Mandatory owner parameter is undefined!");
+        Preconditions.checkState(isNotBlank(owner), "Mandatory owner parameter is undefined!");
+
         final String uri = URLPathFormatter.format("/users/%s/consumers", owner);
 
         return requestor.get(uri, null, new ResponseCallback<List<BitbucketConsumer>>()
@@ -38,10 +43,5 @@ public class ConsumerRemoteRestpoint
                 }.getType());
             }
         });
-    }
-
-    private void checkBlank(String string, String message)
-    {
-        Preconditions.checkState(string != null && !string.trim().isEmpty(), message);
     }
 }
