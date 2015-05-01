@@ -178,9 +178,5 @@ public class RepositoryDaoTest
             when(sampleMappings[i].getRepository()).thenReturn(repositoryMapping);
         }
         return sampleMappings;
-
-
     }
-
-
 }

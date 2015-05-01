@@ -73,7 +73,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     /**
      * Loads changesets not already in the database from the page of changesets into the database
      *
-     * @param messageTags message tags
+     * @param messageTags tags that are added to the messages when they are first created, used for tracing things (what sync this message was created for etc)
+     * @see {@link com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator#processBitbucketPrSync(Repository repo, boolean softSync, int auditId, boolean webHookSync)}
      * @param page the page of changesets to be processed
      * @param payload an object that is passed around that contains information specific to the processing of all the
      * bitbucket pages
