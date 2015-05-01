@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
@@ -15,7 +16,9 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 
-import org.mockito.MockitoAnnotations;
+import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -28,8 +31,11 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
-
+@Listeners (MockitoTestNgListener.class)
 public class BitbucketSynchronizeChangesetMessageConsumerTest
 {
     @Mock
@@ -60,12 +66,20 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     int softSync = MessagingService.DEFAULT_PRIORITY;
     @Mock
     MessageAddress<BitbucketSynchronizeChangesetMessage> messageAddress;
+    @Captor
+    private ArgumentCaptor<BitbucketSynchronizeChangesetMessage> changesetMessageCaptor;
 
     private Date lastCommitDate = new Date();
     private Date reallyOldCommitDate = new Date(0);
     private int repoId = 1234;
     private BitbucketNewChangeset newChangeset1;
     private BitbucketNewChangeset newChangeset2;
+    private Progress progress;
+    private Date refreshAfterSynchronizedAt;
+
+    private boolean isSoftSync = false;
+    private boolean isWebHookSync = false;
+    private int syncAuditId = 0;
 
     private static final List<String>excludeNodes = Arrays.asList("excludednode1", "excludednode2");
     private static final List<String>includeNodes = Arrays.asList("includednode1", "includednode2");
@@ -87,15 +101,14 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-        MockitoAnnotations.initMocks(this);
         repository = new Repository();
         repository.setId(repoId);
+        progress = new DefaultProgress();
+        refreshAfterSynchronizedAt = new Date();
         secondToLastmessage = setUpChangesetMessage(secondToLastChangesetPage);
         lastmessage = setUpChangesetMessage(lastChangesetPage);
         thirdToLastmessage = setUpChangesetMessage(thirdToLastChangesetPage);
         message = new Message<BitbucketSynchronizeChangesetMessage>();
-
-
         setUpChangesetPages();
         when(cachingCommunicator.getDelegate()).thenReturn(communicator);
         when(messagingService.get(eq(BitbucketSynchronizeChangesetMessage.class), anyString())).thenReturn(messageAddress);
@@ -111,6 +124,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null); //changeset is not already in the database
         when(changesetService.findReferencedProjects(repoId)).thenReturn(referencedProjects);
         messageConsumer.onReceive(message, secondToLastmessage);
+
         verify(cachingCommunicator).linkRepository(repository, referencedProjects);
         verifyNoMoreInteractions(messagingService);
     }
@@ -124,8 +138,12 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
         when(changesetService.findReferencedProjects(eq(repoId))).thenReturn(referencedProjects);
         messageConsumer.onReceive(message, thirdToLastmessage);
+
         verify(cachingCommunicator, never()).linkRepository(any(Repository.class), any(Set.class));
-        verify(messagingService).publish(eq(messageAddress), any(BitbucketSynchronizeChangesetMessage.class), eq(softSync));
+        verify(messagingService).publish(eq(messageAddress), changesetMessageCaptor.capture(), eq(softSync));
+        assertEquals(refreshAfterSynchronizedAt, changesetMessageCaptor.getValue().getRefreshAfterSynchronizedAt());
+        assertEquals(progress, changesetMessageCaptor.getValue().getProgress());
+
     }
 
     @Test
@@ -133,6 +151,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
         messageConsumer.onReceive(message, secondToLastmessage);
+
         verify(repositoryService).save(repository);
     }
 
@@ -142,6 +161,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         repository.setLastCommitDate(reallyOldCommitDate);
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
         messageConsumer.onReceive(message, secondToLastmessage);
+
         verify(repositoryService).save(repository);
     }
 
@@ -151,6 +171,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         repository.setLastCommitDate(new Date());
         when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
         messageConsumer.onReceive(message, lastmessage);
+
         verify(repositoryService, never()).save(repository);
     }
 
@@ -161,6 +182,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(changesetService.getByNode(anyInt(), anyString())).thenReturn(
                 new Changeset(1, "a changeset that's already in the db", "", new Date()));
         messageConsumer.onReceive(message, lastmessage);
+
         verify(changesetService, never()).create(any(Changeset.class), any(Set.class));
     }
 
@@ -191,15 +213,15 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     private BitbucketSynchronizeChangesetMessage setUpChangesetMessage(BitbucketChangesetPage changesetPage)
     {
         return new BitbucketSynchronizeChangesetMessage(repository,
-                new Date(),
-                new DefaultProgress(),
+                refreshAfterSynchronizedAt,
+                progress,
                 includeNodes,
                 excludeNodes,
                 changesetPage,
                 new HashMap<String, String>(),
-                false,
-                0,
-                false);
+                isSoftSync,
+                syncAuditId,
+                isWebHookSync);
     }
 
 }

@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -94,6 +95,7 @@ public class BitbucketLinkerImplTest
     BitbucketRepositoryLink link2 = createLink(("ASDF"));
     List<BitbucketRepositoryLink> links;
     List<String> projectKeys = ImmutableList.of("TEST", "ASDF");
+    private String regex = "(?<!\\w)((TEST|ASDF)-\\d+)(?!\\w)" ;
 
 
     Repository repository;
@@ -163,7 +165,8 @@ public class BitbucketLinkerImplTest
         List<String> projectKeysSubset = Arrays.asList(projectKeys.get(0));
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
-        verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
+        verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(eq(repository.getOrgName()), eq(repository.getSlug())
+                , eq(thisJiraURL + "/browse/\\1"), anyString());
     }
 
     private BitbucketRepositoryLink createLink(String projectKey)
