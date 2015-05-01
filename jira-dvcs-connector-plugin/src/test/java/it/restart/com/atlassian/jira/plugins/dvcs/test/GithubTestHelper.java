@@ -27,7 +27,9 @@ public class GithubTestHelper
         repository.setOrgHostUrl(gitUrl);
         repository.setOrgName(accountName);
         repository.setSlug(project);
-        repository.setCredential(new Credential());
+        final Credential credential = new Credential();
+        credential.setAccessToken("bogus");
+        repository.setCredential(credential);
 
         List<GitHubRepositoryHook> hooks = restClient.getHooks(repository, accountName, PasswordUtil.getPassword(accountName));
 
