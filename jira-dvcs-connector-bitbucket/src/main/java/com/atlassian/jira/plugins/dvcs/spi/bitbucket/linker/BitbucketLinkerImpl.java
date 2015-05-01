@@ -104,10 +104,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         Set<String> previouslyLinkedProjects = new HashSet<String>();
         previouslyLinkedProjects.addAll(repositoryService.getPreviouslyLinkedProjects(repository));
 
+        Set<String> projectKeysInJira = getProjectKeysInJira();
+
+        projectKeysToLink.retainAll(projectKeysInJira);
+
         if (previouslyLinkedProjects.equals(projectKeysToLink))
         {
             return;
         }
+
         List<BitbucketRepositoryLink> currentLinks = getCurrentLinks(repository);
         // remove any existing ones
         removeLinks(repository, currentLinks);
@@ -125,7 +130,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Creates a link in {@code repository} for the project keys in {@code forProjects} that exist in this JIRA
+     * Creates a link in {@code repository} for the project keys in {@code forProjects}
      *
      * @param repository repository to install link into
      * @param forProjects project keys to be added
@@ -134,11 +139,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
-            Set<String> projectKeysInJira = getProjectKeysInJira();
-            log.debug("Requested links for projects {}.", forProjects);
-            log.debug("Projects in JIRA {}.", projectKeysInJira);
 
-            forProjects.retainAll(projectKeysInJira);
             if (forProjects.isEmpty())
             {
                 log.debug("No projects to link");
