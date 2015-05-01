@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
@@ -19,8 +20,10 @@ import org.mockito.MockitoAnnotations;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.mockito.InjectMocks;
@@ -29,6 +32,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,17 +57,27 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     @InjectMocks
     public BitbucketSynchronizeChangesetMessageConsumer messageConsumer;
 
+    int softSync = MessagingService.DEFAULT_PRIORITY;
+    @Mock
+    MessageAddress<BitbucketSynchronizeChangesetMessage> messageAddress;
+
     private Date lastCommitDate = new Date();
     private Date reallyOldCommitDate = new Date(0);
+    private int repoId = 1234;
     private BitbucketNewChangeset newChangeset1;
     private BitbucketNewChangeset newChangeset2;
+
+    private static final List<String>excludeNodes = Arrays.asList("excludednode1", "excludednode2");
+    private static final List<String>includeNodes = Arrays.asList("includednode1", "includednode2");
 
     private Set<String> referencedProjects = new HashSet<String>();
 
     private static final BitbucketChangesetPage secondToLastChangesetPage = new BitbucketChangesetPage();
 
     private static final BitbucketChangesetPage lastChangesetPage = new BitbucketChangesetPage();
+    private static final BitbucketChangesetPage thirdToLastChangesetPage = new BitbucketChangesetPage();
 
+    private BitbucketSynchronizeChangesetMessage thirdToLastmessage;
     private BitbucketSynchronizeChangesetMessage secondToLastmessage;
     private BitbucketSynchronizeChangesetMessage lastmessage;
     private Message<BitbucketSynchronizeChangesetMessage> message;
@@ -75,43 +89,49 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         MockitoAnnotations.initMocks(this);
         repository = new Repository();
+        repository.setId(repoId);
         secondToLastmessage = setUpChangesetMessage(secondToLastChangesetPage);
         lastmessage = setUpChangesetMessage(lastChangesetPage);
+        thirdToLastmessage = setUpChangesetMessage(thirdToLastChangesetPage);
         message = new Message<BitbucketSynchronizeChangesetMessage>();
 
 
         setUpChangesetPages();
         when(cachingCommunicator.getDelegate()).thenReturn(communicator);
-        when(communicator.getNextPage(any(Repository.class),
-                any(List.class), any(List.class), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
+        when(messagingService.get(eq(BitbucketSynchronizeChangesetMessage.class), anyString())).thenReturn(messageAddress);
+        when(communicator.getNextPage(eq(repository),
+                eq(includeNodes), eq(excludeNodes), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
     }
 
     @Test
     public void testOnReceiveLastMessage() throws Exception
     {
         when(communicator.getNextPage(any(Repository.class),
-                any(List.class), any(List.class), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
-        when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
-        when(changesetService.findReferencedProjects(anyInt())).thenReturn(referencedProjects);
+                eq(includeNodes), eq(excludeNodes), eq(secondToLastChangesetPage))).thenReturn(lastChangesetPage);
+        when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null); //changeset is not already in the database
+        when(changesetService.findReferencedProjects(repoId)).thenReturn(referencedProjects);
         messageConsumer.onReceive(message, secondToLastmessage);
         verify(cachingCommunicator).linkRepository(repository, referencedProjects);
+        verifyNoMoreInteractions(messagingService);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testOnReceiveSecondToLastMessage() throws Exception
     {
         when(communicator.getNextPage(any(Repository.class),
-                any(List.class), any(List.class), any(BitbucketChangesetPage.class))).thenReturn(secondToLastChangesetPage);
-        when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
-        when(changesetService.findReferencedProjects(anyInt())).thenReturn(referencedProjects);
-        messageConsumer.onReceive(message, secondToLastmessage);
+                eq(includeNodes), eq(excludeNodes), eq(thirdToLastChangesetPage))).thenReturn(secondToLastChangesetPage);
+        when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
+        when(changesetService.findReferencedProjects(eq(repoId))).thenReturn(referencedProjects);
+        messageConsumer.onReceive(message, thirdToLastmessage);
         verify(cachingCommunicator, never()).linkRepository(any(Repository.class), any(Set.class));
+        verify(messagingService).publish(eq(messageAddress), any(BitbucketSynchronizeChangesetMessage.class), eq(softSync));
     }
 
     @Test
     public void testOnReceiveWhenRepoLastCommitDateNonexistent() throws Exception
     {
-        when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
+        when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
         messageConsumer.onReceive(message, secondToLastmessage);
         verify(repositoryService).save(repository);
     }
@@ -120,7 +140,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     public void testOnReceiveWhenRepoLastCommitDateOld() throws Exception
     {
         repository.setLastCommitDate(reallyOldCommitDate);
-        when(changesetService.getByNode(anyInt(), anyString())).thenReturn(null);
+        when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null);
         messageConsumer.onReceive(message, secondToLastmessage);
         verify(repositoryService).save(repository);
     }
@@ -135,6 +155,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testOnReceiveWhenChangesetAlreadySeenEarlier() throws Exception
     {
         when(changesetService.getByNode(anyInt(), anyString())).thenReturn(
@@ -172,8 +193,8 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         return new BitbucketSynchronizeChangesetMessage(repository,
                 new Date(),
                 new DefaultProgress(),
-                new ArrayList<String>(),
-                new ArrayList<String>(),
+                includeNodes,
+                excludeNodes,
                 changesetPage,
                 new HashMap<String, String>(),
                 false,
