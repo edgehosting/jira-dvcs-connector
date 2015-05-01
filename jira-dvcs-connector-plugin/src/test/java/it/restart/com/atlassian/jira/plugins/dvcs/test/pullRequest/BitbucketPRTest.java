@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepositoryTestHelper;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
+import it.util.TestAccounts;
 import org.mockito.MockitoAnnotations;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
@@ -16,7 +17,7 @@ import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUse
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
-    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String BB_ACCOUNT_NAME = TestAccounts.FIRST_ACCOUNT;
 
     private RepositoryTestHelper repositoryTestHelper;
     private RepositoryTestHelper forkRepositoryTestHelper;
@@ -35,7 +36,7 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
-        forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD,
+        forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD,
                 getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 

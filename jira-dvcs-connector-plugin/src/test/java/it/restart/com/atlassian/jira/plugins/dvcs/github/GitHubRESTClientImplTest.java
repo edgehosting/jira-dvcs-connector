@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
+import it.util.TestAccounts;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -16,19 +17,18 @@ import java.util.List;
 
 /**
  * Unit test over {@link GitHubRESTClientImpl}.
- * 
+ *
  * @author Stanislav Dvorscak
- * 
  */
 // TODO: BBC-688: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
-@Test(enabled = false)
+@Test (enabled = false)
 public class GitHubRESTClientImplTest extends DvcsWebDriverTestCase
 {
 
     /**
      * Manually generated access token - only for test purposes.
      */
-    private static final String ACCESS_TOKEN = System.getProperty("jirabitbucketconnector.accessToken");
+    private static final String ACCESS_TOKEN = System.getProperty(TestAccounts.FIRST_ACCOUNT + ".accessToken");
 
     /**
      * Tested object.
@@ -70,7 +70,7 @@ public class GitHubRESTClientImplTest extends DvcsWebDriverTestCase
         this.repository = Mockito.mock(Repository.class);
         Mockito.when(repository.getId()).thenReturn(1);
         Mockito.when(repository.getOrgHostUrl()).thenReturn("https://github.com");
-        Mockito.when(repository.getOrgName()).thenReturn("dvcsconnectortest");
+        Mockito.when(repository.getOrgName()).thenReturn(TestAccounts.SECOND_ACCOUNT);
         Mockito.when(repository.getSlug()).thenReturn("hooks");
 
         Credential credential = Mockito.mock(Credential.class);

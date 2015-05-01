@@ -9,6 +9,9 @@ import com.atlassian.pageobjects.elements.query.Poller;
 
 import javax.inject.Inject;
 
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_URL;
+import static it.util.TestAccounts.FIRST_ACCOUNT;
+
 public class GithubLoginPage implements Page
 {
     @ElementBy(id = "login_field")
@@ -37,7 +40,7 @@ public class GithubLoginPage implements Page
     
     public GithubLoginPage()
     {
-        this("https://github.com");
+        this(GITHUB_URL);
     }
     
     public GithubLoginPage(String hostUrl)
@@ -53,7 +56,7 @@ public class GithubLoginPage implements Page
 
     public void doLogin()
     {
-        doLogin("jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
+        doLogin(FIRST_ACCOUNT, PasswordUtil.getPassword(FIRST_ACCOUNT));
     }
     
     public void doLogin(String username, String password)
