@@ -166,7 +166,7 @@ public class BitbucketLinkerImplTest
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
         verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(eq(repository.getOrgName()), eq(repository.getSlug())
-                , eq(thisJiraURL + "/browse/\\1"), anyString());
+                , eq(thisJiraURL + "browse/\\1"), anyString());
     }
 
     private BitbucketRepositoryLink createLink(String projectKey)
