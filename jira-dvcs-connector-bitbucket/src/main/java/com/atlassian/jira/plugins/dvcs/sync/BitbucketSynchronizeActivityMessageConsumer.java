@@ -165,7 +165,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         {
             fireNextPage(message, payload, activityPage.getNext(), payload.getLastSyncDate());
         }
-
     }
 
     protected int processedSize(BitbucketSynchronizeActivityMessage payload)
