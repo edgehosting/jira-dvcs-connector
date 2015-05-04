@@ -1,17 +1,16 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.github;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
+import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 
+import java.util.List;
 import javax.inject.Inject;
 
-/**
- *
- */
 public class GithubOAuthApplicationPage implements Page
 {
     @Inject
@@ -38,13 +37,26 @@ public class GithubOAuthApplicationPage implements Page
         return hostUrl + "/settings/applications";
     }
 
-    public void removeConsumer(OAuth oAuth)
+    public void removeConsumer(final OAuth oAuth)
     {
-        String href = StringUtils.removeStart(oAuth.applicationId, hostUrl);
+        this.removeConsumer(StringUtils.removeStart(oAuth.applicationId, hostUrl));
+    }
 
-        pageElementFinder.find(By.xpath("//a[@href='" + href + "']")).click();
-
+    public void removeConsumer(final String appUri)
+    {
+        pageElementFinder.find(By.xpath("//a[@href='" + appUri + "']")).click();
         pageBinder.bind(GithubOAuthPage.class).removeConsumer();
     }
 
+    public void removeConsumerForAppName(final String appName)
+    {
+        PageElement link = pageElementFinder.find(By.linkText(appName));
+        link.click();
+        pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+    }
+
+    public List<PageElement> findOAthApplications(final String partialLinkText)
+    {
+        return pageElementFinder.findAll(By.partialLinkText(partialLinkText));
+    }
 }
