@@ -13,7 +13,7 @@ import java.util.List;
 public class GithubRepositoriesRemoteRestpoint
 {
     private final GitHubClient gitHubClient;
-    
+
     public GithubRepositoriesRemoteRestpoint(GitHubClient gitHubClient)
     {
         this.gitHubClient = gitHubClient;
@@ -23,11 +23,11 @@ public class GithubRepositoriesRemoteRestpoint
     {
         Repository repository = new Repository();
         repository.setName(repositoryName);
-        
         try
         {
             getRepositoryService().createRepository(repository);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             // repository could not be created
         }
@@ -37,7 +37,6 @@ public class GithubRepositoriesRemoteRestpoint
     {
         StringBuilder deleteRepoUri = new StringBuilder("/repos/");
         deleteRepoUri.append(owner).append("/").append(repositoryName);
-        
         try
         {
             gitHubClient.delete(deleteRepoUri.toString());
@@ -48,17 +47,10 @@ public class GithubRepositoriesRemoteRestpoint
         }
     }
 
-    public List<Repository> getRepositories(String owner)
+    public List<Repository> getRepositories(String owner) throws IOException
     {
         RepositoryService repositoryService = getRepositoryService();
-        try
-        {
-            return repositoryService.getRepositories(owner);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return repositoryService.getRepositories(owner);
     }
 
     private RepositoryService getRepositoryService()
