@@ -1,14 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker;
 
-import com.atlassian.jira.plugins.dvcs.model.Credential;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilder;
-import com.atlassian.jira.project.ProjectImpl;
 import com.atlassian.sal.api.UrlMode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+
 import org.mockito.Answers;
-import org.mockito.InjectMocks;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -16,37 +12,19 @@ import org.testng.annotations.Test;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketConstants;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandler;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Resource;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -60,7 +38,6 @@ import java.util.Arrays;
 
 public class BitbucketLinkerImplTest
 {
-
     @Mock
     Logger log;
 
@@ -84,18 +61,16 @@ public class BitbucketLinkerImplTest
     String thisJiraURL = "https://jira.example.com/";
 
     @Mock
-    Project project1;
-
-    @Mock
     Project project2;
 
+    @Mock
+    Project project1;
     List<Project> projectList;
 
     BitbucketRepositoryLink link1 = createLink(("TEST"));
     BitbucketRepositoryLink link2 = createLink(("ASDF"));
     List<BitbucketRepositoryLink> links;
     List<String> projectKeys = ImmutableList.of("TEST", "ASDF");
-    private String regex = "(?<!\\w)((TEST|ASDF)-\\d+)(?!\\w)" ;
     Repository repository;
 
     @BeforeMethod
@@ -119,7 +94,6 @@ public class BitbucketLinkerImplTest
                 build().getRepositoryLinksRest()).thenReturn(repositoryLinkRemoteRestpoint);
 
         when(projectManager.getProjectObjects()).thenReturn(projectList);
-
     }
 
     @Test
@@ -164,6 +138,7 @@ public class BitbucketLinkerImplTest
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
         verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(eq(repository.getOrgName()), eq(repository.getSlug())
                 , eq(thisJiraURL + "browse/\\1"), anyString());
+
     }
 
     private BitbucketRepositoryLink createLink(String projectKey)
