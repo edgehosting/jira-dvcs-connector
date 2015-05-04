@@ -96,10 +96,7 @@ public class BitbucketLinkerImplTest
     List<BitbucketRepositoryLink> links;
     List<String> projectKeys = ImmutableList.of("TEST", "ASDF");
     private String regex = "(?<!\\w)((TEST|ASDF)-\\d+)(?!\\w)" ;
-
-
     Repository repository;
-
 
     @BeforeMethod
     public void setUp() throws Exception
@@ -185,7 +182,6 @@ public class BitbucketLinkerImplTest
         handler.setName("custom");
         handler.setKey(key);
         return handler;
-
     }
 
     private Repository setUpRepository()
@@ -206,6 +202,4 @@ public class BitbucketLinkerImplTest
         projectList.add(project2);
         return projectList;
     }
-
-
 }

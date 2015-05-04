@@ -122,14 +122,14 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         {
             cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
         }
-
     }
 
     /**
-     * This method exploits the fact that the request made to bitbucket retrieves the changesets ordered from oldest to newest
-     * to assign the correct branch to each changeset. Since the newest changesets ,are in earlier messages, these are processed earlier than their parents.
-     * There seems to be a defect in this implementation such that the oldest commit's branch is the one that is assigned to common parents of two commits
-     *
+     * Assigns the branch for this changeset to the branch assosciated with it in the {code nodesToBranches} map in originalMessage
+     * Note: originalMessage is a bit of a misnomer as it's mutated in this message to assosciate all parents of this commit which are new to jira as of this sync with this branch
+     * Because only one branch is stored against a commit it is incomplete when tracking commits with two parents,
+     * The branch of the oldest commit not yet loaded into the db is the one that is assigned to a parent of two commits
+     * (unless if the parent has already been loaded into the database, in which case this method is never called on it and it is left alone).
      * @param cset incomming Changeset
      * @param originalMessage an object that holds state specific to the synchronisation of this repository
      */
@@ -138,8 +138,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();//starts out being a map from branch heads to branch names
 
         String branch = changesetBranch.get(cset.getHash());
-
-
         cset.setBranch(branch);
         changesetBranch.remove(cset.getHash());
         for (BitbucketNewChangeset parent : cset.getParents())

@@ -788,7 +788,6 @@ public class RepositoryServiceImpl implements RepositoryService
         return repositoryDao.getPreviouslyLinkedProjects(repository.getId());
     }
 
-
     @Override
     public Set<String> getEmails(Repository repository, DvcsUser user)
     {

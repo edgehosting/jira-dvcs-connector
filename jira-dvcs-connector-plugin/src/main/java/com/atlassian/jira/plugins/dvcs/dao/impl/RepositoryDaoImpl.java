@@ -58,7 +58,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             return null;
         }
-
         OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
         final DefaultProgress progress = (DefaultProgress) synchronizer.getProgress(repositoryMapping.getID());
         return repositoryTransformer.transform(repositoryMapping, organizationMapping, progress);
@@ -110,7 +109,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
-
     }
 
     @Override
@@ -135,7 +133,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
-
     }
 
     @Override
@@ -159,7 +156,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             projectKeys.add(projectKey);
         }
-
         return projectKeys;
     }
 
@@ -171,7 +167,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             associateNewKey(key, forRepositoryId);
         }
-
     }
 
     private Query getQueryForProjectMappings(final int forRepositoryId)
@@ -183,7 +178,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                 .where("repo.ID = " + forRepositoryId);
         return select;
     }
-
 
     private void associateNewKey(final String key, final int repositoryId)
     {
@@ -202,7 +196,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         });
     }
 
-
     @Override
     public boolean existsLinkedRepositories(final boolean includeDeleted)
     {
@@ -215,7 +208,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
         }
-
         return activeObjects.count(RepositoryMapping.class, query) > 0;
     }
 
@@ -260,7 +252,6 @@ public class RepositoryDaoImpl implements RepositoryDao
         else
         {
             return transform(repositoryMapping);
-
         }
     }
 
@@ -328,7 +319,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                 return rm;
             }
         });
-
         return transform(repositoryMapping);
     }
 

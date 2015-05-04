@@ -37,8 +37,9 @@ import javax.annotation.Resource;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
+ * <p>
  * Implementation of BitbucketLinker that configures repository links on bitbucket repositories
- * <p/>
+ * </p>
  * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
  */
 @Component ("bitbucketLinker")
@@ -100,7 +101,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
-
         Set<String> previouslyLinkedProjects = new HashSet<String>();
         previouslyLinkedProjects.addAll(repositoryService.getPreviouslyLinkedProjects(repository));
 
@@ -139,7 +139,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         try
         {
-
             if (forProjects.isEmpty())
             {
                 log.debug("No projects to link");
@@ -194,7 +193,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private Set<String> getProjectKeysInJira()
     {
-        // use gcache ?
         Set<String> projectKeys = Sets.newHashSet();
         List<Project> projectObjects = projectManager.getProjectObjects();
         for (Project project : projectObjects)

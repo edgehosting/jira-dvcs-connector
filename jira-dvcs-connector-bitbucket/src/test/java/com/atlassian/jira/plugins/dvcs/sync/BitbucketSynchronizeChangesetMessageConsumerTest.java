@@ -143,7 +143,6 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         verify(messagingService).publish(eq(messageAddress), changesetMessageCaptor.capture(), eq(softSync));
         assertEquals(refreshAfterSynchronizedAt, changesetMessageCaptor.getValue().getRefreshAfterSynchronizedAt());
         assertEquals(progress, changesetMessageCaptor.getValue().getProgress());
-
     }
 
     @Test
@@ -207,7 +206,6 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
 
         secondToLastChangesetPage.setValues(newChangesets1);
         lastChangesetPage.setValues(newChangesets2);
-
     }
 
     private BitbucketSynchronizeChangesetMessage setUpChangesetMessage(BitbucketChangesetPage changesetPage)
@@ -223,5 +221,4 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
                 syncAuditId,
                 isWebHookSync);
     }
-
 }

@@ -668,7 +668,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         return 0;
     }
 
-
     @Override
     public <P extends HasProgress> Repository getRepositoryFromMessage(Message<P> message)
     {

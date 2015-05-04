@@ -50,7 +50,6 @@ public class RepositoryDaoTest
     @Mock
     private RepositoryMapping repositoryMapping;
 
-
     private String[] sampleProjectKeys = { "TEST", "ASDF", "PROJ" };
 
     // tested object
@@ -70,7 +69,6 @@ public class RepositoryDaoTest
     @Test
     public void testSave()
     {
-
         Repository sampleRepository = createSampleRepository();
         when(activeObjects.get(eq(OrganizationMapping.class), eq(1))).thenReturn(
                 organizationMapping);
@@ -140,7 +138,6 @@ public class RepositoryDaoTest
         verify(repositoryMapping).setLastCommitDate(eq(SAMPLE_DATE));
         verify(repositoryMapping).setLinked(eq(true));
         verify(repositoryMapping).setDeleted(eq(true));
-
         verify(repositoryMapping).save();
     }
 
@@ -151,7 +148,6 @@ public class RepositoryDaoTest
         when(activeObjects.find(eq(RepositoryToProjectMapping.class), any(Query.class))).thenReturn(
                 sampleMappings);
         Assert.assertEquals(repositoryDao.getPreviouslyLinkedProjects(1), Arrays.asList(sampleProjectKeys));
-
     }
 
     private Repository createSampleRepository()

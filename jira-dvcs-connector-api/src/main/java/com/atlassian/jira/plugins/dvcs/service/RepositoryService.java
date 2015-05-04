@@ -39,7 +39,6 @@ public interface RepositoryService
     /**
      * Gets the all active (not deleted) repositories and their synchronization status.
      *
-     * @param organizationId the organization id
      * @return the all active repositories
      */
     List<Repository> getAllRepositories();
@@ -75,10 +74,11 @@ public interface RepositoryService
     Repository save(Repository repository);
 
     /**
+     * <p>
      * Synchronization of repository list in given organization Retrieves list of repositories for organization and
      * adds/removes local repositories accordingly. If autolinking is set to to true new repositories will be linked and
      * they will start synchronizing.
-     * <p/>
+     * </p>
      * softsync is used by default
      *
      * @param organization organization
