@@ -20,6 +20,8 @@ import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
@@ -49,12 +51,13 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final FeatureManager featureManager;
     private final GithubCommunicator githubCommunicator;
 
+    @Autowired
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport EventPublisher eventPublisher,
             @ComponentImport FeatureManager featureManager,
             OAuthStore oAuthStore,
             OrganizationService organizationService,
-            GithubCommunicator githubCommunicator)
+            @Qualifier ("githubCommunicator") GithubCommunicator githubCommunicator)
     {
         super(eventPublisher);
         this.organizationService = organizationService;

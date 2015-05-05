@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
 
-@Component
+@Component("githubCommunicator")
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
