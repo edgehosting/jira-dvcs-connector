@@ -686,4 +686,9 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
+    public boolean hasRemainingRequests(String hostUrl){
+        GitHubClient gitHubClient =  githubClientProvider.createClient(hostUrl);
+        return gitHubClient.getRemainingRequests() > 0;
+    }
+
 }

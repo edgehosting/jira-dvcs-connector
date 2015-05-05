@@ -47,18 +47,21 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
     private final FeatureManager featureManager;
+    private final GithubCommunicator githubCommunicator;
 
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport EventPublisher eventPublisher,
             @ComponentImport FeatureManager featureManager,
             OAuthStore oAuthStore,
-            OrganizationService organizationService)
+            OrganizationService organizationService,
+            GithubCommunicator githubCommunicator)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
         this.featureManager = featureManager;
+        this.githubCommunicator = githubCommunicator;
     }
 
     @Override
@@ -97,8 +100,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
         if (!featureManager.isEnabled(DISABLE_USERNAME_VALIDATION))
         {
-            AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
-            if (accountInfo == null)
+            AccountInfo accountInfo = githubCommunicator.getAccountInfo(url, organization);
+            if (accountInfo == null && githubCommunicator.hasRemainingRequests(url))
             {
                 addErrorMessage("Invalid user/team account.");
             }

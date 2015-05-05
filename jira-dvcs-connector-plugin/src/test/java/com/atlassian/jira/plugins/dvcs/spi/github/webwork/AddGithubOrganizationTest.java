@@ -95,6 +95,9 @@ public class AddGithubOrganizationTest {
     @Mock
     private FeatureManager featureManager;
 
+    @Mock
+    private GithubCommunicator githubCommunicator;
+
     private AddGithubOrganization addGithubOrganization;
 
     @BeforeMethod(alwaysRun=true)
@@ -131,7 +134,7 @@ public class AddGithubOrganizationTest {
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
-        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService)
+        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService, githubCommunicator)
         {
             @Override
             GithubOAuthUtils getGithubOAuthUtils() {
@@ -248,6 +251,19 @@ public class AddGithubOrganizationTest {
         addGithubOrganization.setSource(SAMPLE_SOURCE);
         addGithubOrganization.setOrganization("org");
         when(featureManager.isEnabled(AddGithubOrganization.DISABLE_USERNAME_VALIDATION)).thenReturn(true);
+
+        addGithubOrganization.doValidation();
+
+        verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void checkRateLimitWorkaroundWithNoRemainingRequests(){
+        final String organization = "org";
+        addGithubOrganization.setSource(SAMPLE_SOURCE);
+        addGithubOrganization.setOrganization(organization);
+        when(githubCommunicator.getAccountInfo("", organization)).thenReturn(null);
+        when(githubCommunicator.hasRemainingRequests(SAMPLE_SOURCE)).thenReturn(false);
 
         addGithubOrganization.doValidation();
 
