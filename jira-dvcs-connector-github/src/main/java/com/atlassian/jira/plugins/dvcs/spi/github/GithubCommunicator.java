@@ -126,7 +126,6 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-
         UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
@@ -140,7 +139,6 @@ public class GithubCommunicator implements DvcsCommunicator
                     accountName);
         }
         return null;
-
     }
 
     @Override
@@ -152,7 +150,6 @@ public class GithubCommunicator implements DvcsCommunicator
         // We don't know if this is team account or standard account. Let's
         // first get repositories
         // by calling getOrgRepositories
-
         List<org.eclipse.egit.github.core.Repository> repositoriesFromOrganization;
         try
         {
@@ -255,7 +252,6 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
@@ -267,6 +263,14 @@ public class GithubCommunicator implements DvcsCommunicator
             changeset.setFileDetails(GithubChangesetFactory.transformToFileDetails(commit.getFiles()));
 
             return changeset;
+        }
+        catch (RequestException e)
+        {
+            if (e.getStatus() == 403)
+            {
+                verifyRateLimitExceeded(commitService.getClient());
+            }
+            throw new SourceControlException("could not get result", e);
         }
         catch (IOException e)
         {
@@ -501,9 +505,10 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
+        UserService userService = null;
         try
         {
-            UserService userService = githubClientProvider.getUserService(repository);
+            userService = githubClientProvider.getUserService(repository);
             User ghUser = userService.getUser(username);
             String login = ghUser.getLogin();
             String name = ghUser.getName();
@@ -521,9 +526,11 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
+        UserService userService = null;
         try
         {
-            UserService userService = githubClientProvider.getUserService(organization);
+            userService = githubClientProvider.getUserService(organization);
+
             User ghUser = userService.getUser();
             String login = ghUser.getLogin();
             String name = ghUser.getName();
@@ -569,9 +576,22 @@ public class GithubCommunicator implements DvcsCommunicator
                 }
             }
         }
+        catch (RequestException e)
+        {
+            log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
+
+            if (e.getStatus() == 403)
+            {
+                verifyRateLimitExceeded(repositoryService.getClient());
+            }
+
+            // we need tip changeset of the branch
+            throw new SourceControlException("Could not retrieve list of branches", e);
+        }
         catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
+
             // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
@@ -623,45 +643,52 @@ public class GithubCommunicator implements DvcsCommunicator
         final boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-        String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
-        if (changestesSync)
+        try
         {
-            Date synchronizationStartedAt = new Date();
-            List<Branch> branches = getBranches(repo);
-            for (Branch branch : branches)
+            String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
+            if (changestesSync)
             {
-                for (BranchHead branchHead : branch.getHeads())
+                Date synchronizationStartedAt = new Date();
+                List<Branch> branches = getBranches(repo);
+                for (Branch branch : branches)
                 {
-                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
-                            branch.getName(), branchHead.getHead(), //
-                            synchronizationStartedAt, //
-                            null, softSync, auditId, webHookSync);
-                    MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
-                            SynchronizeChangesetMessage.class, //
-                            GithubSynchronizeChangesetMessageConsumer.ADDRESS //
+                    for (BranchHead branchHead : branch.getHeads())
+                    {
+                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
+                                branch.getName(), branchHead.getHead(), //
+                                synchronizationStartedAt, //
+                                null, softSync, auditId, webHookSync);
+                        MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
+                                SynchronizeChangesetMessage.class, //
+                                GithubSynchronizeChangesetMessageConsumer.ADDRESS //
+                        );
+                        messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+                    }
+                }
+                List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
+                branchService.updateBranchHeads(repo, branches, oldBranchHeads);
+                branchService.updateBranches(repo, branches);
+            }
+            if (pullRequestSync)
+            {
+                if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+                {
+                    gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
+                }
+                else
+                {
+                    GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
+                    MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
+                            GitHubPullRequestPageMessage.class,
+                            GitHubPullRequestPageMessageConsumer.ADDRESS
                     );
-                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+                    messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                 }
             }
-            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
-            branchService.updateBranchHeads(repo, branches, oldBranchHeads);
-            branchService.updateBranches(repo, branches);
         }
-        if (pullRequestSync)
+        catch (GithubRateLimitExceededException e)
         {
-            if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
-            {
-                gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
-            }
-            else
-            {
-                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
-                MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
-                        GitHubPullRequestPageMessage.class,
-                        GitHubPullRequestPageMessageConsumer.ADDRESS
-                );
-                messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
-            }
+            throw e;
         }
     }
 
@@ -669,15 +696,6 @@ public class GithubCommunicator implements DvcsCommunicator
     public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
         return syncDisabledHelper.isGithubSyncDisabled();
-    }
-
-    private String getRef(String slug, String branch)
-    {
-        if (slug != null)
-        {
-            return slug + ":" + branch;
-        }
-        return branch;
     }
 
     @Override
@@ -690,5 +708,23 @@ public class GithubCommunicator implements DvcsCommunicator
     public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
     {
 
+    }
+
+    private String getRef(String slug, String branch)
+    {
+        if (slug != null)
+        {
+            return slug + ":" + branch;
+        }
+        return branch;
+    }
+
+    private void verifyRateLimitExceeded(final GitHubClient githubClient)
+    {
+        RateLimit rateLimit = ((GithubClientWithTimeout) githubClient).getRateLimit();
+        if (rateLimit != null && rateLimit.getRemainingRequests() == 0)
+        {
+            throw new GithubRateLimitExceededException(rateLimit);
+        }
     }
 }

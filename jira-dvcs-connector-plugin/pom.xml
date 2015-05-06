@@ -60,6 +60,10 @@
             <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-software-api</artifactId>
         </dependency>

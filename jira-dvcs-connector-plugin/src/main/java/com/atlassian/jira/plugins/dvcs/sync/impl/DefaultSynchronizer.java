@@ -22,12 +22,15 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubRateLimitExceededException;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ import java.util.EnumSet;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GENERIC_ERROR_KEY;
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -85,6 +90,10 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
+
+    @Resource
+    @ComponentImport
+    private I18nHelper i18nHelper;
 
     private final ClusterLockService clusterLockService;
 
@@ -173,10 +182,15 @@ public class DefaultSynchronizer implements Synchronizer
 
                 communicator.startSynchronisation(repo, flags, auditId);
             }
+            catch (GithubRateLimitExceededException e)
+            {
+                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY, e.getRateLimit().getRateLimitResetInMinutes(new DateTime())));
+                LOG.error(e.getMessage());
+            }
             catch (Throwable t)
             {
                 LOG.error(t.getMessage(), t);
-                progress.setError("Error during sync. See server logs.");
+                progress.setError(i18nHelper.getText(GENERIC_ERROR_KEY));
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }
