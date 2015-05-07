@@ -46,6 +46,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final String COMMIT_AUTHOR = "Jira DvcsConnector";
     private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com"; // fake email
 
+    private static final String TEST_DATA = "test-dvcs.zip";
+
     /**
      * Fork repository owner.
      */
@@ -86,6 +88,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     @BeforeClass
     public void beforeEachPullRequestTestClass()
     {
+        getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
         beforeEachTestClassInitialisation(getJiraTestedProduct());
