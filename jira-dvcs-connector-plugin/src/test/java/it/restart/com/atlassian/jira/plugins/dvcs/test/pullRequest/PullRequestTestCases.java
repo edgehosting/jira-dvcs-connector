@@ -11,9 +11,11 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
+import it.util.TestAccounts;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -44,19 +46,19 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final String TEST_PROJECT_KEY = "TST";
 
     protected static final String COMMIT_AUTHOR = "Jira DvcsConnector";
-    private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com"; // fake email
+    private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT + "@atlassian.com"; // fake email
 
     private static final String TEST_DATA = "test-dvcs.zip";
 
     /**
      * Fork repository owner.
      */
-    protected static final String FORK_ACCOUNT_NAME = "dvcsconnectortest";
+    protected static final String FORK_ACCOUNT_NAME = TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 
     /**
      * Appropriate {@link #FORK_ACCOUNT_NAME} password.
      */
-    protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
+    protected static final String FORK_ACCOUNT_PASSWORD = PasswordUtil.getPassword(TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT);
 
     protected Dvcs dvcs;
     protected PullRequestClient<T> pullRequestClient;
@@ -112,8 +114,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     }
 
     /**
-     * Note that we are moving some of the common code from this into #RepositoryTestHelper, Github and GHE are not
-     * done at this stage.
+     * Note that we are moving some of the common code from this into #RepositoryTestHelper, Github and GHE are not done
+     * at this stage.
      */
     protected abstract void cleanupAfterClass();
 

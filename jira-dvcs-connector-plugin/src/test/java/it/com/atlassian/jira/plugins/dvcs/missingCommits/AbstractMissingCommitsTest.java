@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
+import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static java.lang.Thread.sleep;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -37,8 +38,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage> extends BaseOrganizationTest<T>
 {
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
-    static final String DVCS_REPO_OWNER = "dvcsconnectortest";
-    static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
+    static final String DVCS_REPO_OWNER = DVCS_CONNECTOR_TEST_ACCOUNT;
+    static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword(DVCS_CONNECTOR_TEST_ACCOUNT);
     protected static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
     private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 
