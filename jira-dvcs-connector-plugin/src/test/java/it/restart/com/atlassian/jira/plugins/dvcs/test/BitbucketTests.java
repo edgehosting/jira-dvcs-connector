@@ -59,10 +59,11 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     private OAuth oAuth;
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList("public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo");
     private static final String GADGET_ID = "gadget-10001";
-
+    private static final String TEST_DATA = "test-dvcs.zip";
     @BeforeClass
     public void beforeClass()
     {
+        jira.backdoor().restoreDataFromResource(TEST_DATA);
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to Bitbucket
