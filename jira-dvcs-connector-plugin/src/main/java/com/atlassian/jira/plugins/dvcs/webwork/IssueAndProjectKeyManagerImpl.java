@@ -99,7 +99,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
             throw new IllegalArgumentException("The issue cannot be null");
         }
 
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         return permissionManager.hasPermission(permissionKey, issue, user);
     }
 
@@ -111,7 +111,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
             throw new IllegalArgumentException("The project cannot be null");
         }
 
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         return permissionManager.hasPermission(permissionKey, project, user);
     }
 }

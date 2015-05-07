@@ -103,12 +103,9 @@ public class RestCommitsTest
     private int issueIdSequence;
     private int projectIdSequence;
 
-    private interface UnifiedUser extends User, ApplicationUser
-    {
-    }
 
     @Mock
-    private UnifiedUser mockUser;
+    private ApplicationUser mockUser;
 
     @BeforeMethod (alwaysRun=true)
     public void setup()
@@ -118,7 +115,7 @@ public class RestCommitsTest
 
         issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager, projectManager, permissionManager, jiraAuthenticationContext);
 
-        when(jiraAuthenticationContext.getLoggedInUser()).thenReturn(mockUser);
+        when(jiraAuthenticationContext.getUser()).thenReturn(mockUser);
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(true);
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(false);
 
