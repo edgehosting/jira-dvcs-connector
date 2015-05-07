@@ -115,7 +115,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         while (!isSyncFinished());
         if(!isSyncFinished())
         {
-            throw new RuntimeException("Syncing with repos exceeds " + MAX_WAITING_TIME + " seconds");
+            throw new RuntimeException("Syncing with repos exceeds " + MAX_WAITING_TIME + " milliseconds");
         }
     }
 
