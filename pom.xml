@@ -52,16 +52,27 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.4.2</jira.compile.version>
+        <!-- jira 6 variables -->
+        <jira6.version>6.4-OD-16-005</jira6.version>
+        <jira6.software.version>0.29-D20150428T010945</jira6.software.version>
+        <jira6.testkit.version>6.4.9</jira6.testkit.version>
+        <!-- end -->
+        <!-- jira7 variables -->
+        <jira7.version>7.0-20150423.110436</jira7.version>
+        <jira7.software.version>1.15</jira7.software.version>
+        <jira7.testkit.version>7.0.32</jira7.testkit.version>
+        <!-- end -->
+        <jira.compile.version>${jira6.version}</jira.compile.version>
+        <jira.software.version>${jira6.software.version}</jira.software.version>
+        <testkit.version>${jira6.testkit.version}</testkit.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
-
+        <!-- these two versions might be overwritten by test profiles -->
         <ao.version>0.28.9</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
         <greenhopper.version>6.6.0-D20140904T040435</greenhopper.version>
-        <testkit.version>6.0.41</testkit.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
@@ -237,7 +248,7 @@
             <dependency>
                 <groupId>com.atlassian.jira.plugins</groupId>
                 <artifactId>jira-software-api</artifactId>
-                <version>1.13</version>
+                <version>${jira.software.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -498,7 +509,9 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0-20150401.155513</jira.compile.version>
+                <jira.compile.version>${jira7.version}</jira.compile.version>
+                <jira.software.version>${jira7.software.version}</jira.software.version>
+                <testkit.version>${jira7.testkit.version}</testkit.version>
             </properties>
         </profile>
         <profile>
