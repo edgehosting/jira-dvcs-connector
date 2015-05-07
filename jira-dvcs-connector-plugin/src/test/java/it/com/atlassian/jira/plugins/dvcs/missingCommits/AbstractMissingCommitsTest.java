@@ -53,6 +53,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         removeOldDvcsRepository();
         jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
+
         removeJiraProject();
 
         createRemoteDvcsRepository();
