@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
-    private static final String BB_ACCOUNT_NAME = TestAccounts.FIRST_ACCOUNT;
+    private static final String BB_ACCOUNT_NAME = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
     /**
      * Name of tested account.
      */

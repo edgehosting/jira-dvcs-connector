@@ -28,7 +28,7 @@ public class GitHubRESTClientImplTest extends DvcsWebDriverTestCase
     /**
      * Manually generated access token - only for test purposes.
      */
-    private static final String ACCESS_TOKEN = System.getProperty(TestAccounts.FIRST_ACCOUNT + ".accessToken");
+    private static final String ACCESS_TOKEN = System.getProperty(TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT + ".accessToken");
 
     /**
      * Tested object.
@@ -70,7 +70,7 @@ public class GitHubRESTClientImplTest extends DvcsWebDriverTestCase
         this.repository = Mockito.mock(Repository.class);
         Mockito.when(repository.getId()).thenReturn(1);
         Mockito.when(repository.getOrgHostUrl()).thenReturn("https://github.com");
-        Mockito.when(repository.getOrgName()).thenReturn(TestAccounts.SECOND_ACCOUNT);
+        Mockito.when(repository.getOrgName()).thenReturn(TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT);
         Mockito.when(repository.getSlug()).thenReturn("hooks");
 
         Credential credential = Mockito.mock(Credential.class);

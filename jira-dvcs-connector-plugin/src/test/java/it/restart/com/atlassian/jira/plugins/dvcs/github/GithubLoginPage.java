@@ -10,7 +10,7 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import javax.inject.Inject;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_URL;
-import static it.util.TestAccounts.FIRST_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 
 public class GithubLoginPage implements Page
 {
@@ -56,7 +56,7 @@ public class GithubLoginPage implements Page
 
     public void doLogin()
     {
-        doLogin(FIRST_ACCOUNT, PasswordUtil.getPassword(FIRST_ACCOUNT));
+        doLogin(JIRA_BB_CONNECTOR_ACCOUNT, PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT));
     }
     
     public void doLogin(String username, String password)

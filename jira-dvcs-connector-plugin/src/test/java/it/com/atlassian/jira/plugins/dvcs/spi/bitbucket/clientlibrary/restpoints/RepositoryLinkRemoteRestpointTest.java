@@ -16,7 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 
-import static it.util.TestAccounts.FIRST_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 
@@ -25,8 +25,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
  */
 public class RepositoryLinkRemoteRestpointTest
 {
-    private static final String BITBUCKET_REPO_OWNER = FIRST_ACCOUNT;
-    private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword(FIRST_ACCOUNT);
+    private static final String BITBUCKET_REPO_OWNER = JIRA_BB_CONNECTOR_ACCOUNT;
+    private static final String BITBUCKET_REPO_PASSWORD = PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT);
     private static final String BITBUCKET_REPO_SLUG = "public-hg-repo";
 
     private static final String BITBUCKET_REPO_LINK_HANDLER = "jira";
@@ -42,7 +42,7 @@ public class RepositoryLinkRemoteRestpointTest
     {
         HttpClientProvider httpClientProvider = new HttpClientProvider();
 
-        httpClientProvider.setUserAgent(TestAccounts.FIRST_ACCOUNT + "-test");
+        httpClientProvider.setUserAgent(TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT + "-test");
 
         BitbucketRemoteClient bitbucketRemoteClient =
                 new BitbucketRemoteClient(new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,

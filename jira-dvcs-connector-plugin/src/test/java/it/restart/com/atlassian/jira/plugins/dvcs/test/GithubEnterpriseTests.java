@@ -32,8 +32,8 @@ import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntries
 import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType.getGHEAccountType;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.REPOSITORY_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
-import static it.util.TestAccounts.FIRST_ACCOUNT;
-import static it.util.TestAccounts.SECOND_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
+import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
@@ -184,7 +184,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void testPostCommitHookAddedAndRemoved()
     {
         RepositoriesPageController.AccountType gheAccountType = getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        testPostCommitHookAddedAndRemoved(FIRST_ACCOUNT, gheAccountType, REPOSITORY_NAME, jira, getOAuthCredentials());
+        testPostCommitHookAddedAndRemoved(JIRA_BB_CONNECTOR_ACCOUNT, gheAccountType, REPOSITORY_NAME, jira, getOAuthCredentials());
     }
 
     @Override
@@ -199,10 +199,10 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        rpc.addOrganization(accountType, SECOND_ACCOUNT, getOAuthCredentials(), false);
+        rpc.addOrganization(accountType, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, SECOND_ACCOUNT);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
         AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
 
         // check that repository is enabled
@@ -231,10 +231,10 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GITHUB_ENTERPRISE_URL);
-        rpc.addOrganization(accountType, SECOND_ACCOUNT, getOAuthCredentials(), true);
+        rpc.addOrganization(accountType, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, SECOND_ACCOUNT);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
 
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {

@@ -46,17 +46,17 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final String TEST_PROJECT_KEY = "TST";
 
     protected static final String COMMIT_AUTHOR = "Jira DvcsConnector";
-    private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.FIRST_ACCOUNT + "@atlassian.com"; // fake email
+    private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT + "@atlassian.com"; // fake email
 
     /**
      * Fork repository owner.
      */
-    protected static final String FORK_ACCOUNT_NAME = TestAccounts.SECOND_ACCOUNT;
+    protected static final String FORK_ACCOUNT_NAME = TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 
     /**
      * Appropriate {@link #FORK_ACCOUNT_NAME} password.
      */
-    protected static final String FORK_ACCOUNT_PASSWORD = PasswordUtil.getPassword(TestAccounts.SECOND_ACCOUNT);
+    protected static final String FORK_ACCOUNT_PASSWORD = PasswordUtil.getPassword(TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT);
 
     protected Dvcs dvcs;
     protected PullRequestClient<T> pullRequestClient;

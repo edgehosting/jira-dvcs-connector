@@ -17,7 +17,7 @@ import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUse
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
-    private static final String BB_ACCOUNT_NAME = TestAccounts.FIRST_ACCOUNT;
+    private static final String BB_ACCOUNT_NAME = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 
     private RepositoryTestHelper repositoryTestHelper;
     private RepositoryTestHelper forkRepositoryTestHelper;
