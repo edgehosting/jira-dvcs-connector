@@ -49,12 +49,12 @@ import java.util.List;
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
+import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
-    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
-    private static final String OTHER_ACCOUNT_NAME = "dvcsconnectortest";
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     private OAuth oAuth;
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList("public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo");
@@ -66,9 +66,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to Bitbucket
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
+        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(JIRA_BB_CONNECTOR_ACCOUNT, PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT));
         // setup up OAuth from bitbucket
-        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
+        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).addConsumer();
         // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
         jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
@@ -80,7 +80,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in bitbucket
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuth.applicationId);
+        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).removeConsumer(oAuth.applicationId);
         // log out from bitbucket
         new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
     }
@@ -182,16 +182,16 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        testPostCommitHookAddedAndRemoved(AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
+        testPostCommitHookAddedAndRemoved(JIRA_BB_CONNECTOR_ACCOUNT, AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
     }
 
     @Override
-    protected boolean postCommitHookExists(final String jiraCallbackUrl)
+    protected boolean postCommitHookExists(final String accountName, final String jiraCallbackUrl)
     {
-        String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/jirabitbucketconnector/public-hg-repo/services";
+        String bitbucketServiceConfigUrl = "https://bitbucket.org/!api/1.0/repositories/"+accountName+"/public-hg-repo/services";
 
         String postDeleteServicesConfig = HttpSenderUtils.makeHttpRequest(new GetMethod(bitbucketServiceConfigUrl),
-                BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
+                accountName, PasswordUtil.getPassword(accountName));
         return postDeleteServicesConfig.contains(jiraCallbackUrl);
     }
 
@@ -312,9 +312,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void linkingRepositoryWithoutAdminPermission()
     {
-        addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), false);
+        addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
-        AccountsPageAccountRepository repository = enableRepository(OTHER_ACCOUNT_NAME, "testemptyrepo", true);
+        AccountsPageAccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -338,10 +338,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        addOrganization(AccountType.BITBUCKET, OTHER_ACCOUNT_NAME, getOAuthCredentials(), true);
+        addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, OTHER_ACCOUNT_NAME);
+        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
 
         for (AccountsPageAccountRepository repository : account.getRepositories())
         {

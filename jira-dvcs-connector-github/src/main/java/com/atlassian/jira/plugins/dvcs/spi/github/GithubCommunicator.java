@@ -505,10 +505,9 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getUser(Repository repository, String username)
     {
-        UserService userService = null;
         try
         {
-            userService = githubClientProvider.getUserService(repository);
+            UserService userService = githubClientProvider.getUserService(repository);
             User ghUser = userService.getUser(username);
             String login = ghUser.getLogin();
             String name = ghUser.getName();
@@ -526,11 +525,9 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
-        UserService userService = null;
         try
         {
-            userService = githubClientProvider.getUserService(organization);
-
+            UserService userService = githubClientProvider.getUserService(organization);
             User ghUser = userService.getUser();
             String login = ghUser.getLogin();
             String name = ghUser.getName();
@@ -691,18 +688,6 @@ public class GithubCommunicator implements DvcsCommunicator
         return syncDisabledHelper.isGithubSyncDisabled();
     }
 
-    @Override
-    public void linkRepository(Repository repository, Set<String> withProjectkeys)
-    {
-
-    }
-
-    @Override
-    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
-    {
-
-    }
-
     private String getRef(String slug, String branch)
     {
         if (slug != null)
@@ -710,6 +695,12 @@ public class GithubCommunicator implements DvcsCommunicator
             return slug + ":" + branch;
         }
         return branch;
+    }
+
+    @Override
+    public void linkRepository(Repository repository, Set<String> withProjectkeys)
+    {
+
     }
 
     private void verifyRateLimitExceeded(final GitHubClient githubClient)

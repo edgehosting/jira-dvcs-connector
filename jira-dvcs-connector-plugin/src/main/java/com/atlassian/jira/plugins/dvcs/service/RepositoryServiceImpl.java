@@ -108,7 +108,8 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     @VisibleForTesting
-    public void setThreadPoolExecutor(ThreadPoolExecutor executor) {
+    public void setThreadPoolExecutor(ThreadPoolExecutor executor)
+    {
         this.repositoryDeletionExecutor = checkNotNull(executor);
     }
 
@@ -195,7 +196,8 @@ public class RepositoryServiceImpl implements RepositoryService
             try
             {
                 remoteRepositories = communicator.getRepositories(organization, storedRepositories);
-            } catch (SourceControlException.UnauthorisedException e)
+            }
+            catch (SourceControlException.UnauthorisedException e)
             {
                 // we could not load repositories, we can't continue
                 // mark the organization as invalid
@@ -250,7 +252,8 @@ public class RepositoryServiceImpl implements RepositoryService
             {
                 log.warn("Repository " + organization.getName() + "/" + slug + " is duplicated. Will be deleted.");
                 remove(repository);
-            } else
+            }
+            else
             {
                 existingRepositories.add(slug);
             }
@@ -262,7 +265,7 @@ public class RepositoryServiceImpl implements RepositoryService
      *
      * @param storedRepositories the stored repositories
      * @param remoteRepositories the remote repositories
-     * @param organization       the organization
+     * @param organization the organization
      */
     private Set<String> addNewReposReturnNewSlugs(List<Repository> storedRepositories, List<Repository> remoteRepositories, Organization organization)
     {
@@ -315,10 +318,8 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * Removes the deleted repositories.
      *
-     * @param storedRepositories
-     *            the stored repositories
-     * @param remoteRepositories
-     *            the remote repositories
+     * @param storedRepositories the stored repositories
+     * @param remoteRepositories the remote repositories
      */
     private void removeDeletedRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -337,14 +338,10 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     /**
-     * Updates existing repositories
-     * - undelete existing deleted
-     * - updates names.
+     * Updates existing repositories - undelete existing deleted - updates names.
      *
-     * @param storedRepositories
-     *            the stored repositories
-     * @param remoteRepositories
-     *            the remote repositories
+     * @param storedRepositories the stored repositories
+     * @param remoteRepositories the remote repositories
      */
     private void updateExistingRepositories(List<Repository> storedRepositories, List<Repository> remoteRepositories)
     {
@@ -370,8 +367,7 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * Converts collection of repository objects into map where key is repository slug and value is repository object.
      *
-     * @param repositories
-     *            the repositories
+     * @param repositories the repositories
      * @return the map< string, repository>
      */
     private Map<String, Repository> makeRepositoryMap(Collection<Repository> repositories)
@@ -396,7 +392,8 @@ public class RepositoryServiceImpl implements RepositoryService
         if (repository != null && !repository.isDeleted())
         {
             doSync(repository, flags);
-        } else
+        }
+        else
         {
             log.warn("Sync requested but repository with id {} does not exist anymore.", repositoryId);
         }
@@ -425,7 +422,8 @@ public class RepositoryServiceImpl implements RepositoryService
                 {
                     // ignoring
                 }
-            } else
+            }
+            else
             {
                 // it is a new repo, we force to hard sync
                 // to disable smart commits on it, make sense
@@ -517,7 +515,7 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public RepositoryRegistration  enableRepository(int repoId, boolean linked)
+    public RepositoryRegistration enableRepository(int repoId, boolean linked)
     {
         RepositoryRegistration registration = new RepositoryRegistration();
 
@@ -542,7 +540,7 @@ public class RepositoryServiceImpl implements RepositoryService
             }
             catch (SourceControlException.PostCommitHookRegistrationException e)
             {
-                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                log.warn("Error when " + (linked ? "adding" : "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
                 registration.setCallBackUrlInstalled(!linked);
                 updateAdminPermission(repository, false);
             }
@@ -595,7 +593,8 @@ public class RepositoryServiceImpl implements RepositoryService
             communicator.ensureHookPresent(repository, postCommitCallbackUrl);
             // TODO: move linkRepository to setupPostcommitHook if possible
             communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
-        } else
+        }
+        else
         {
             communicator.removePostcommitHook(repository, postCommitCallbackUrl);
         }
@@ -604,8 +603,7 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * Gets the post commit url.
      *
-     * @param repo
-     *            the repo
+     * @param repo the repo
      * @return the post commit url
      */
     private String getPostCommitUrl(Repository repo)
@@ -673,8 +671,7 @@ public class RepositoryServiceImpl implements RepositoryService
     /**
      * Removes the postcommit hook.
      *
-     * @param repository
-     *            the repository
+     * @param repository the repository
      */
     private void removePostcommitHook(Repository repository)
     {
@@ -683,7 +680,8 @@ public class RepositoryServiceImpl implements RepositoryService
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
             String postCommitUrl = getPostCommitUrl(repository);
             communicator.removePostcommitHook(repository, postCommitUrl);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
                     + repository.getRepositoryUrl(), e);
@@ -733,7 +731,8 @@ public class RepositoryServiceImpl implements RepositoryService
             if (enableLinkers && repository.isLinked())
             {
                 communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
-            } else
+            }
+            else
             {
                 communicator.linkRepository(repository, new HashSet<String>());
             }
@@ -761,12 +760,14 @@ public class RepositoryServiceImpl implements RepositoryService
             try
             {
                 user = communicator.getUser(repository, author);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 if (log.isDebugEnabled())
                 {
                     log.debug("Could not load user [" + author + ", " + rawAuthor + "]", e);
-                } else
+                }
+                else
                 {
                     log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage(), e);
                 }
@@ -777,6 +778,16 @@ public class RepositoryServiceImpl implements RepositoryService
         return user != null ? user : getUnknownUser(repository, author, rawAuthor);
     }
 
+    public void setPreviouslyLinkedProjects(Repository repository, Set<String> projects)
+    {
+        repositoryDao.setPreviouslyLinkedProjects(repository.getId(), projects);
+    }
+
+    public List<String> getPreviouslyLinkedProjects(Repository repository)
+    {
+        return repositoryDao.getPreviouslyLinkedProjects(repository.getId());
+    }
+
     @Override
     public Set<String> getEmails(Repository repository, DvcsUser user)
     {
@@ -784,15 +795,12 @@ public class RepositoryServiceImpl implements RepositoryService
     }
 
     /**
-     * Creates user, which is unknown - it means he does not exist as real user inside a repository. But we still want to provide some
-     * information about him.
-     * 
-     * @param repository
-     *            system, which should know, who is the provided user
-     * @param username
-     *            of user or null/empty string if does not exist
-     * @param rawUser
-     *            DVCS representation of user, for git/mercurial is it: <i>Full Name &lt;email&gt;</i>
+     * Creates user, which is unknown - it means he does not exist as real user inside a repository. But we still want
+     * to provide some information about him.
+     *
+     * @param repository system, which should know, who is the provided user
+     * @param username of user or null/empty string if does not exist
+     * @param rawUser DVCS representation of user, for git/mercurial is it: <i>Full Name &lt;email&gt;</i>
      * @return "unknown" user
      */
     private UnknownUser getUnknownUser(Repository repository, String username, String rawUser)

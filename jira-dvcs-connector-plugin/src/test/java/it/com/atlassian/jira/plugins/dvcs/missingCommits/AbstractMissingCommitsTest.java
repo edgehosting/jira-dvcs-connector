@@ -3,20 +3,18 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
-import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
-import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
-import com.atlassian.pageobjects.PageBinder;
-import com.google.common.collect.Lists;
-import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
+import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
+import com.google.common.collect.Lists;
+import it.com.atlassian.jira.plugins.dvcs.BaseOrganizationTest;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.List;
 
+import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static java.lang.Thread.sleep;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -41,8 +38,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganizationsPage> extends BaseOrganizationTest<T>
 {
     private static final Logger log = LoggerFactory.getLogger(AbstractMissingCommitsTest.class);
-    static final String DVCS_REPO_OWNER = "dvcsconnectortest";
-    static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword("dvcsconnectortest");
+    static final String DVCS_REPO_OWNER = DVCS_CONNECTOR_TEST_ACCOUNT;
+    static final String DVCS_REPO_PASSWORD = PasswordUtil.getPassword(DVCS_CONNECTOR_TEST_ACCOUNT);
     protected static final String MISSING_COMMITS_REPOSITORY_NAME_PREFIX = "missingcommitstest";
     private static final int MISSING_COMMITS_REPOSITORY_EXPIRATION_DURATION = 30 * 60 * 1000;
 

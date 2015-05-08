@@ -64,7 +64,7 @@ public class OrganizationDaoTest
             }
         });
         when(activeObjectsMock.create(eq(OrganizationMapping.class), isA(Map.class))).thenReturn(organizationMapping);
-        when(activeObjectsMock.find(eq(OrganizationMapping.class), anyString(), any())).thenReturn(
+        when(activeObjectsMock.find(eq(OrganizationMapping.class), anyString(), any(Object.class))).thenReturn(
                 new OrganizationMapping[] { organizationMapping });
 
         organizationAOFacade.save(organization);

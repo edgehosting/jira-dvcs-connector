@@ -6,8 +6,8 @@ package com.atlassian.jira.plugins.dvcs.event;
 public interface RepositorySync
 {
     /**
-     * Stores all captured events and destroys this RepositorySync instance. Calling this method will guarantee that
-     * the sync stops listening to thread events.
+     * Stores all captured events and stops capturing new events. Calling this method will guarantee that
+     * the sync stops listening to thread events. Once this meth
      */
     void finish();
 }
