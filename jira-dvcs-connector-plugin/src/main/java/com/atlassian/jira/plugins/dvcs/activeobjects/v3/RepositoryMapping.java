@@ -26,7 +26,7 @@ public interface RepositoryMapping extends Entity
     public static final String FORK_OF_SLUG = "FORK_OF_SLUG";
     public static final String FORK_OF_NAME = "FORK_OF_NAME";
     public static final String FORK_OF_OWNER = "FORK_OF_OWNER";
-    public static final String UPDATE_LINK_AUTHORISED = "UPDATE_LINK_AUTHORIZED";
+    public static final String UPDATE_LINK_AUTHORISED = "UPDATE_LINK_AUTHORISED";
 
 
     @OneToMany (reverse = "getRepository")

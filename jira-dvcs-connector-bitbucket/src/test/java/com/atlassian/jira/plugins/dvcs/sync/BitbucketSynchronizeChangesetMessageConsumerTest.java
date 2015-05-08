@@ -195,7 +195,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null); //changeset is not already in the database
         when(changesetService.findReferencedProjects(repoId)).thenReturn(referencedProjects);
         messageConsumer.onReceive(message, secondToLastmessage);
-        
+
         verify(cachingCommunicator, never()).linkRepository(any(Repository.class), any(Set.class));
         verifyNoMoreInteractions(messagingService);
     }
