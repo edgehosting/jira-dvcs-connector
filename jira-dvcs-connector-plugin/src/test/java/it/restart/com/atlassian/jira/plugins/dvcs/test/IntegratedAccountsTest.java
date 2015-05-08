@@ -18,6 +18,7 @@ import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
+import it.util.TestAccounts;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -46,7 +47,7 @@ import javax.annotation.Nullable;
 public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
-    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String BB_ACCOUNT_NAME = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
     /**
      * Name of tested account.
      */

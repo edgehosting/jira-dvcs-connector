@@ -15,20 +15,23 @@ import java.util.List;
  */
 public class GithubTestHelper
 {
-    private static final String ACCOUNT_NAME = "jirabitbucketconnector";
+    public static final String GITHUB_URL = "https://github.com";
+    public static final String GITHUB_API_URL = "https://api.github.com";
 
-    public static List<String> getHookUrls(String gitUrl, String project)
+    public static final String REPOSITORY_NAME = "test-project";
+
+    public static List<String> getHookUrls(final String accountName, final String gitUrl, final String project)
     {
         final GitHubRESTClientImpl restClient = new GitHubRESTClientImpl();
         final Repository repository = new Repository();
         repository.setOrgHostUrl(gitUrl);
-        repository.setOrgName(ACCOUNT_NAME);
+        repository.setOrgName(accountName);
         repository.setSlug(project);
         final Credential credential = new Credential();
         credential.setAccessToken("bogus");
         repository.setCredential(credential);
 
-        List<GitHubRepositoryHook> hooks = restClient.getHooks(repository, ACCOUNT_NAME, PasswordUtil.getPassword(ACCOUNT_NAME));
+        List<GitHubRepositoryHook> hooks = restClient.getHooks(repository, accountName, PasswordUtil.getPassword(accountName));
 
         return Lists.transform(hooks, new Function<GitHubRepositoryHook, String>()
         {
