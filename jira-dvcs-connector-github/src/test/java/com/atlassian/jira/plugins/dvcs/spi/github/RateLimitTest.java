@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class RateLimitTest
 {
@@ -13,7 +14,7 @@ public class RateLimitTest
     @Test
     public void testGetRateLimitReset() throws Exception
     {
-        assertEquals("2015-05-05T12:54:29.000+10:00", rateLimit.getRateLimitReset().toString());
+        assertTrue(rateLimit.getRateLimitReset().equals(new DateTime("2015-05-05T12:54:29.000+10:00")));
     }
 
     @Test
@@ -26,12 +27,12 @@ public class RateLimitTest
     @Test
     public void testGetRateLimitRequest() throws Exception
     {
-        assertEquals(10, rateLimit.getRateLimitRequest());
+        assertEquals(rateLimit.getRateLimitRequest(), 10);
     }
 
     @Test
     public void testGetRemainingRequests() throws Exception
     {
-        assertEquals(1, rateLimit.getRemainingRequests());
+        assertEquals(rateLimit.getRemainingRequests(), 1);
     }
 }

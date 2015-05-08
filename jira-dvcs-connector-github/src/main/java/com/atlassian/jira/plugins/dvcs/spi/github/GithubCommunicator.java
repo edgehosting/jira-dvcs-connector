@@ -643,52 +643,45 @@ public class GithubCommunicator implements DvcsCommunicator
         final boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
         final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
-        try
+        String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
+        if (changestesSync)
         {
-            String[] synchronizationTags = new String[] { messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId) };
-            if (changestesSync)
+            Date synchronizationStartedAt = new Date();
+            List<Branch> branches = getBranches(repo);
+            for (Branch branch : branches)
             {
-                Date synchronizationStartedAt = new Date();
-                List<Branch> branches = getBranches(repo);
-                for (Branch branch : branches)
+                for (BranchHead branchHead : branch.getHeads())
                 {
-                    for (BranchHead branchHead : branch.getHeads())
-                    {
-                        SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
-                                branch.getName(), branchHead.getHead(), //
-                                synchronizationStartedAt, //
-                                null, softSync, auditId, webHookSync);
-                        MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
-                                SynchronizeChangesetMessage.class, //
-                                GithubSynchronizeChangesetMessageConsumer.ADDRESS //
-                        );
-                        messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
-                    }
-                }
-                List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
-                branchService.updateBranchHeads(repo, branches, oldBranchHeads);
-                branchService.updateBranches(repo, branches);
-            }
-            if (pullRequestSync)
-            {
-                if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
-                {
-                    gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
-                }
-                else
-                {
-                    GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
-                    MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
-                            GitHubPullRequestPageMessage.class,
-                            GitHubPullRequestPageMessageConsumer.ADDRESS
+                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
+                            branch.getName(), branchHead.getHead(), //
+                            synchronizationStartedAt, //
+                            null, softSync, auditId, webHookSync);
+                    MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
+                            SynchronizeChangesetMessage.class, //
+                            GithubSynchronizeChangesetMessageConsumer.ADDRESS //
                     );
-                    messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY : MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
                 }
             }
+            List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
+            branchService.updateBranchHeads(repo, branches, oldBranchHeads);
+            branchService.updateBranches(repo, branches);
         }
-        catch (GithubRateLimitExceededException e)
+        if (pullRequestSync)
         {
-            throw e;
+            if (softSync || syncDisabledHelper.isGitHubUsePullRequestListDisabled())
+            {
+                gitHubEventService.synchronize(repo, softSync, synchronizationTags, webHookSync);
+            }
+            else
+            {
+                GitHubPullRequestPageMessage message = new GitHubPullRequestPageMessage(null, auditId, softSync, repo, PagedRequest.PAGE_FIRST, PULLREQUEST_PAGE_SIZE, null, webHookSync);
+                MessageAddress<GitHubPullRequestPageMessage> key = messagingService.get(
+                        GitHubPullRequestPageMessage.class,
+                        GitHubPullRequestPageMessageConsumer.ADDRESS
+                );
+                messagingService.publish(key, message, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+            }
         }
     }
 
