@@ -1,15 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
 
 public class RepositoryDiv
 {
     private final PageElement rootElement;
+    private final PageElement syncRadio;
 
     public RepositoryDiv(PageElement rootElement)
     {
         this.rootElement = rootElement;
+        this.syncRadio = rootElement.find(By.className("radio"));
     }
 
     public String getMessage()
@@ -41,4 +44,11 @@ public class RepositoryDiv
     {
         return elementId.substring(elementId.lastIndexOf("-") + 1);
     }
+
+    public void enableSync()
+    {
+        Poller.waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
+        syncRadio.click();
+    }
+
 }

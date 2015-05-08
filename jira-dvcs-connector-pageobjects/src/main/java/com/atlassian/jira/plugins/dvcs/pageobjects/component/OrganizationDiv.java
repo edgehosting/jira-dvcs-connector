@@ -4,6 +4,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAcco
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
+import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
@@ -147,4 +148,19 @@ public class OrganizationDiv
         return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
     }
 
+    public void sync()
+    {
+        // enable repos
+        for(RepositoryDiv repoDiv: getRepositories())
+        {
+            repoDiv.enableSync();
+        }
+        // click sync icon
+        for(RepositoryDiv repoDiv: getRepositories())
+        {
+            Poller.waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
+                    repoDiv.getSyncIcon().timed().isVisible()));
+            repoDiv.getSyncIcon().click();
+        }
+    }
 }
