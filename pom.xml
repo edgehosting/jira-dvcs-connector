@@ -61,7 +61,7 @@
         <jira7.version>7.0-20150504.154833</jira7.version>
         <jira7.software.version>1.15</jira7.software.version>
         <jira7.testkit.version>7.0.32</jira7.testkit.version>
-        <greenhopper7.version>6.7-breakit-4</greenhopper7.version>
+        <greenhopper7.version>6.7-breakit-6</greenhopper7.version>
         <!-- end -->
         <jira.compile.version>${jira6.version}</jira.compile.version>
         <jira.software.version>${jira6.software.version}</jira.software.version>
