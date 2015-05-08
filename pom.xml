@@ -61,10 +61,12 @@
         <jira7.version>7.0-20150504.154833</jira7.version>
         <jira7.software.version>1.15</jira7.software.version>
         <jira7.testkit.version>7.0.32</jira7.testkit.version>
+        <greenhopper7.version>6.7-breakit-4</greenhopper7.version>
         <!-- end -->
         <jira.compile.version>${jira6.version}</jira.compile.version>
         <jira.software.version>${jira6.software.version}</jira.software.version>
         <testkit.version>${jira6.testkit.version}</testkit.version>
+        <greenhopper6.version>6.6.0-D20140904T040435</greenhopper6.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
@@ -72,7 +74,7 @@
         <ao.version>0.28.9</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.6.0-D20140904T040435</greenhopper.version>
+        <greenhopper.version>${greenhopper6.version}</greenhopper.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
