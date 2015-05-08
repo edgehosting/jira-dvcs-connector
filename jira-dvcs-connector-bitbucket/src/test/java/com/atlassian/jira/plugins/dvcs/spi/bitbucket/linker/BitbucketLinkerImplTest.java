@@ -127,7 +127,7 @@ public class BitbucketLinkerImplTest
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeys);
 
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
-        verify(repositoryLinkRemoteRestpoint, never()).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
+
     }
 
     @Test
@@ -138,7 +138,6 @@ public class BitbucketLinkerImplTest
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
         verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(eq(repository.getOrgName()), eq(repository.getSlug())
                 , eq(thisJiraURL + "browse/\\1"), anyString());
-
     }
 
     private BitbucketRepositoryLink createLink(String projectKey)

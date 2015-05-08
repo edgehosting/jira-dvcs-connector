@@ -45,7 +45,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
     private final ApplicationProperties applicationProperties;
-    private String baseUrl;
     RepositoryService repositoryService;
 
     @Autowired
@@ -257,22 +256,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         return linksToThisJira;
     }
 
-    /**
-     * Lazily initialises the baseURL for this instance of jira This method is necessary because at the time of
-     * construction the instance is not guaranteed to be tenanted (and therefore baseUrl is not guaranteed to be
-     * present)
-     *
-     * @return The baseUrl of this instance of jira
-     */
     private String getBaseUrl()
     {
-        if (baseUrl == null)
-        {
-            baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
-        }
-        return baseUrl;
+        return normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
     }
-
-
-
 }
