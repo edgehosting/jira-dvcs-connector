@@ -44,6 +44,7 @@ public class Repository implements Serializable
     
     @XmlElement
     private DefaultProgress sync;
+    public boolean linkUpdateAuthorised;
 
     public Repository()
     {
@@ -62,6 +63,7 @@ public class Repository implements Serializable
         this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
+        linkUpdateAuthorised= true;
     }
 
     public int getId()
@@ -298,6 +300,14 @@ public class Repository implements Serializable
     public void setActivityLastSync(Date activityLastSync)
     {
         this.activityLastSync = activityLastSync;
+    }
+
+    public void setLinkUpdateAuthorised(boolean linkUpdateAuthorised){
+        this.linkUpdateAuthorised = linkUpdateAuthorised;
+    }
+
+    public boolean getLinkUpdateAuthorised(){
+        return linkUpdateAuthorised;
     }
 
 }

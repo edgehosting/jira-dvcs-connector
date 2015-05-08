@@ -14,7 +14,6 @@ import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.UrlMode;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
@@ -29,10 +28,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -46,10 +41,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
-    private final String baseUrl;
+
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
-
+    private final ApplicationProperties applicationProperties;
+    private String baseUrl;
     RepositoryService repositoryService;
 
     @Autowired
@@ -59,7 +55,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
         this.projectManager = checkNotNull(projectManager);
         this.repositoryService = checkNotNull(repositoryService);
-        this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
+        this.applicationProperties = checkNotNull(applicationProperties);
     }
 
     /**
@@ -101,6 +97,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
+
         Set<String> previouslyLinkedProjects = new HashSet<String>();
         previouslyLinkedProjects.addAll(repositoryService.getPreviouslyLinkedProjects(repository));
 
@@ -126,9 +123,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         {
             addLink(repository, projectKeysToLink);
         }
-        repositoryService.setPreviouslyLinkedProjects(repository, projectKeysToLink);
     }
-
     /**
      * Creates a link in {@code repository} for the project keys in {@code forProjects}
      *
@@ -148,14 +143,24 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
 
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
-                    baseUrl + "/browse/\\1", constructProjectsRex(forProjects));
+                    getBaseUrl() + "/browse/\\1", constructProjectsRex(forProjects));
 
+            repositoryService.setPreviouslyLinkedProjects(repository, forProjects);
+            repository.setLinkUpdateAuthorised(true);
+            repositoryService.save(repository);
         }
-        catch (BitbucketRequestException e)
+        catch (BitbucketRequestException.Unauthorized_401 e)
         {
-            log.error("Error adding Repository Link [" + baseUrl + ", " + repository.getName() + "] to "
+            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
                     + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects));
+            repository.setLinkUpdateAuthorised(false);
+            repositoryService.save(repository);
         }
+        catch(BitbucketRequestException e){
+            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
+                    + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects), e);
+        }
+
     }
 
     private String constructProjectsRex(Collection<String> projectKeys)
@@ -175,6 +180,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             try
             {
                 repositoryLinkRemoteRestpoint.removeRepositoryLink(owner, slug, repositoryLink.getId());
+                repositoryService.setPreviouslyLinkedProjects(repository, new HashSet<String>());
             }
             catch (BitbucketRequestException e)
             {
@@ -241,7 +247,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             {
                 BitbucketRepositoryLinkHandler handler = repositoryLink.getHandler();
                 String displayTo = handler.getDisplayTo();
-                if (displayTo != null && displayTo.toLowerCase().startsWith(baseUrl.toLowerCase()))
+                if (displayTo != null && displayTo.toLowerCase().startsWith(getBaseUrl().toLowerCase()))
                 {
                     // remove links just to OUR jira instance
                     linksToThisJira.add(repositoryLink);
@@ -250,5 +256,23 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         }
         return linksToThisJira;
     }
+
+    /**
+     * Lazily initialises the baseURL for this instance of jira This method is necessary because at the time of
+     * construction the instance is not guaranteed to be tenanted (and therefore baseUrl is not guaranteed to be
+     * present)
+     *
+     * @return The baseUrl of this instance of jira
+     */
+    private String getBaseUrl()
+    {
+        if (baseUrl == null)
+        {
+            baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
+        }
+        return baseUrl;
+    }
+
+
 
 }

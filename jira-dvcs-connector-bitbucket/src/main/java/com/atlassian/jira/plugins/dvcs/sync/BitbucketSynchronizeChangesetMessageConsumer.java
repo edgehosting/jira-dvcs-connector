@@ -120,7 +120,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         }
         else
         {
-            cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+            if(repo.linkUpdateAuthorised){
+                cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+            }
         }
     }
 

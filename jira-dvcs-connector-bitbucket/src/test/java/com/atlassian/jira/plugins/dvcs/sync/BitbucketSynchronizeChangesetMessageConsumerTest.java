@@ -103,6 +103,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         repository = new Repository();
         repository.setId(repoId);
+        repository.setLinkUpdateAuthorised(true);
         progress = new DefaultProgress();
         refreshAfterSynchronizedAt = new Date();
         secondToLastmessage = setUpChangesetMessage(secondToLastChangesetPage);
@@ -114,6 +115,8 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(messagingService.get(eq(BitbucketSynchronizeChangesetMessage.class), anyString())).thenReturn(messageAddress);
         when(communicator.getNextPage(eq(repository),
                 eq(includeNodes), eq(excludeNodes), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
+
+
     }
 
     @Test
