@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -126,7 +125,7 @@ public class MessageExecutorTest
         setupDataForMessageRunnable(payload, message);
 
         doThrow(new GithubRateLimitExceededException(rateLimit)).when(consumer).onReceive(message, payload);
-        when(i18nHelper.getText(eq(DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), anyLong())).thenReturn(GITHUB_RATE_LIMIT_REACHED_ERROR);
+        when(i18nHelper.getText(DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY)).thenReturn(GITHUB_RATE_LIMIT_REACHED_ERROR);
                 // get the consumer to check the queue
                 messageExecutor.notify(MSG_ADDRESS.getId());
 

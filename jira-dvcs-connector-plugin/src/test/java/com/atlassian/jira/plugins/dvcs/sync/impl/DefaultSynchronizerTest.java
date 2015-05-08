@@ -124,7 +124,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -300,7 +299,7 @@ public class DefaultSynchronizerTest
 
         when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
 
-        when(i18nHelper.getText(eq(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), anyLong())).thenReturn("GITHUB_RATE_LIMIT_REACHED_ERROR");
+        when(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY)).thenReturn("GITHUB_RATE_LIMIT_REACHED_ERROR");
         when(i18nHelper.getText(GENERIC_ERROR_KEY)).thenReturn("GENERIC_ERROR");
 
         // wire up the DefaultSynchronizer with our mock ThreadEvents
@@ -1245,7 +1244,7 @@ public class DefaultSynchronizerTest
 
         EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SOFT_SYNC);
         doThrow(new GithubRateLimitExceededException(rateLimit)).when(communicatorMock).startSynchronisation(eq(repositoryMock), any(EnumSet.class), anyInt());
-        when(i18nHelper.getText(eq(DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), anyLong())).thenReturn(GITHUB_RATE_LIMIT_REACHED_ERROR);
+        when(i18nHelper.getText(DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY)).thenReturn(GITHUB_RATE_LIMIT_REACHED_ERROR);
 
         defaultSynchronizer.doSync(repositoryMock, flags);
 

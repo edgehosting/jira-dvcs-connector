@@ -20,7 +20,6 @@ import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -378,7 +377,7 @@ public class MessageExecutor
                 {
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
-                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY, e.getRateLimit().getRateLimitResetInMinutes(new DateTime())));
+                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY));
                 LOGGER.error(e.getMessage());
             }
             catch (Throwable t)

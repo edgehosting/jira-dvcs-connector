@@ -30,7 +30,6 @@ import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,7 +183,7 @@ public class DefaultSynchronizer implements Synchronizer
             }
             catch (GithubRateLimitExceededException e)
             {
-                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY, e.getRateLimit().getRateLimitResetInMinutes(new DateTime())));
+                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY));
                 LOG.error(e.getMessage());
             }
             catch (Throwable t)
