@@ -1,8 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.google.common.base.Preconditions;
 
-public class GithubRateLimitExceededException extends RuntimeException
+public class GithubRateLimitExceededException extends SourceControlException
 {
     private RateLimit rateLimit;
 

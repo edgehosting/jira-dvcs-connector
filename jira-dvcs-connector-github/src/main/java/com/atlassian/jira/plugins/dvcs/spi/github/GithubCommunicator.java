@@ -68,6 +68,9 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
 
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+
 @Component
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -218,7 +221,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         catch (RequestException e)
         {
-            if (e.getStatus() == 401)
+            if (e.getStatus() == UNAUTHORIZED.getStatusCode())
             {
                 throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
             }
@@ -266,7 +269,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         catch (RequestException e)
         {
-            if (e.getStatus() == 403)
+            if (e.getStatus() == FORBIDDEN.getStatusCode())
             {
                 verifyRateLimitExceeded(commitService.getClient());
             }
@@ -577,19 +580,15 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
 
-            if (e.getStatus() == 403)
+            if (e.getStatus() == FORBIDDEN.getStatusCode())
             {
                 verifyRateLimitExceeded(repositoryService.getClient());
             }
-
-            // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
         catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
-
-            // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
         return branches;
