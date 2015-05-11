@@ -34,7 +34,8 @@ public class GithubOAuthApplicationPage implements Page
     @Override
     public String getUrl()
     {
-        return hostUrl + "/settings/applications";
+        // appUri is not found in /settings/applications instead it is found in /settings/developers
+        return hostUrl + "/settings/developers";
     }
 
     public void removeConsumer(final OAuth oAuth)
@@ -44,19 +45,42 @@ public class GithubOAuthApplicationPage implements Page
 
     public void removeConsumer(final String appUri)
     {
-        pageElementFinder.find(By.xpath("//a[@href='" + appUri + "']")).click();
-        pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        removeConsumer(this, By.xpath("//a[@href='" + appUri + "']"));
     }
 
     public void removeConsumerForAppName(final String appName)
     {
-        PageElement link = pageElementFinder.find(By.linkText(appName));
-        link.click();
-        pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        removeConsumer(this, By.linkText(appName));
     }
 
     public List<PageElement> findOAthApplications(final String partialLinkText)
     {
         return pageElementFinder.findAll(By.partialLinkText(partialLinkText));
+    }
+
+    private static void removeConsumer(final GithubOAuthApplicationPage page, final By by)
+    {
+        final PageElement link = page.pageElementFinder.find(by);
+        if (link.isPresent() && link.isVisible())
+        {
+            link.click();
+            page.pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        }
+        else
+        {
+            // get next link
+            final PageElement nextPageLink = page.pageElementFinder.find(By.className("next_page"));
+            if (nextPageLink.isPresent() && nextPageLink.isVisible() && nextPageLink.getTagName().equalsIgnoreCase("a")
+                    && nextPageLink.isEnabled())
+            {
+                nextPageLink.click();
+                final GithubOAuthApplicationPage nextPage = page.pageBinder.bind(GithubOAuthApplicationPage.class);
+                removeConsumer(nextPage, by);
+            }
+            else
+            {
+                throw new RuntimeException("Can not find consumer application link");
+            }
+        }
     }
 }
