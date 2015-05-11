@@ -2,6 +2,8 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
+import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
+import com.atlassian.jira.plugins.dvcs.ProgressUtil;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
@@ -377,7 +379,8 @@ public class MessageExecutor
                 {
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
-                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY));
+                ProgressUtil.setErrorMessage(progress, i18nHelper.getText(DvcsErrorMessages.DVCS_SYNC_PAUSED_KEY),
+                        i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), true);
                 LOGGER.error(e.getMessage());
             }
             catch (Throwable t)

@@ -5,6 +5,8 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
+import com.atlassian.jira.plugins.dvcs.ProgressUtil;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
@@ -183,7 +185,8 @@ public class DefaultSynchronizer implements Synchronizer
             }
             catch (GithubRateLimitExceededException e)
             {
-                progress.setError(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY));
+                ProgressUtil.setErrorMessage(progress, i18nHelper.getText(DvcsErrorMessages.DVCS_SYNC_PAUSED_KEY),
+                        i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), true);
                 LOG.error(e.getMessage());
             }
             catch (Throwable t)
