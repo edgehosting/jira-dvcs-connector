@@ -108,15 +108,12 @@ function updateSyncStatus(repo) {
             if (repo.sync.error) {
                 syncStatusHtml = "";
                 var syncTitle = repo.sync.errorTitle && repo.sync.errorTitle != '' ? repo.sync.errorTitle : 'Sync Failed:';
+                syncIcon = repo.sync.warning === true ? "info" : "error";
 
-                if (repo.sync.warning == true) {
-                    syncIcon = "info";
-                    syncErrorDiv.html("<span class='info'><strong>"+syncTitle+"</strong> " + repo.sync.error + "</span>");
-                }
-                else {
-                    syncIcon = "error";
-                    syncErrorDiv.html("<span class='error'><strong>"+syncTitle+"</strong> " + repo.sync.error + "</span>");
-                }
+                syncErrorDiv.html("<span class='@syncIcon'><strong>@syncTitle</strong>@syncError</span>"
+                        .replace("@syncIcon", syncIcon)
+                        .replace("@syncTitle", syncTitle)
+                        .replace("@syncError", repo.sync.error));
             }
             else {
                 syncErrorDiv.html("");
