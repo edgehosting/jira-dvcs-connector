@@ -150,10 +150,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         }
         catch (BitbucketRequestException.Unauthorized_401 e)
         {
-            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
-                    + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects));
+            log.info("Bitbucket Account not authorised to install Repository Link on " + repository.getRepositoryUrl());
+
+            if(repository.getLinkUpdateAuthorised()==false){
+                throw new AssertionError("If unauthorised linkupdate shouldn not be called");
+            }
             repository.setLinkUpdateAuthorised(false);
+
             repositoryService.save(repository);
+            return;
         }
         catch(BitbucketRequestException e){
             log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "

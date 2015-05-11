@@ -52,7 +52,7 @@ public class Repository implements Serializable
     }
 
     public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-             boolean linked, boolean deleted, Credential credential)
+             boolean linked, boolean deleted, Credential credential, boolean linkUpdateAuthorised)
     {
         this.id = id;
         this.organizationId = organizationId;
@@ -63,7 +63,7 @@ public class Repository implements Serializable
         this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
-        linkUpdateAuthorised= true;
+        this.linkUpdateAuthorised = linkUpdateAuthorised;
     }
 
     public int getId()
