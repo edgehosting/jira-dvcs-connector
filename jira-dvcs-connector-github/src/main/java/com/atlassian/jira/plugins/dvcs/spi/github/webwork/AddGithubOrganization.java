@@ -50,6 +50,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final ApplicationProperties applicationProperties;
     private final FeatureManager featureManager;
     private final GithubCommunicator githubCommunicator;
+    private AccountInfo accountInfo;
 
     @Autowired
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
@@ -103,8 +104,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
         if (!featureManager.isEnabled(DISABLE_USERNAME_VALIDATION))
         {
-            AccountInfo accountInfo = githubCommunicator.getAccountInfo(url, organization);
-            if (accountInfo == null && githubCommunicator.hasRemainingRequests(url))
+            if (githubCommunicator.isErrorInUsername(url, organization))
             {
                 addErrorMessage("Invalid user/team account.");
             }

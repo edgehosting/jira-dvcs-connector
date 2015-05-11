@@ -75,6 +75,7 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
     public static final int PULLREQUEST_PAGE_SIZE = 30;
+    private int lastKnowNumberOfRemainingRequests;
 
     @Resource
     private MessagingService messagingService;
@@ -140,6 +141,29 @@ public class GithubCommunicator implements DvcsCommunicator
                     accountName);
         }
         return null;
+
+    }
+
+    public boolean isErrorInUsername(String hostUrl, String accountName){
+        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
+        User user;
+        try
+        {
+          user = userService.getUser(accountName);
+        }
+        catch (IOException e)
+        {
+            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
+                    accountName);
+        }
+        if(user != null)
+        {
+            return true;
+        }
+        else{
+            return hasExceededRateLimit(userService.getClient());
+        }
+
 
     }
 
@@ -686,9 +710,8 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
-    public boolean hasRemainingRequests(String hostUrl){
-        GitHubClient gitHubClient =  githubClientProvider.createClient(hostUrl);
-        return gitHubClient.getRemainingRequests() > 0;
+    private boolean hasExceededRateLimit(GitHubClient client){
+        return client.getRemainingRequests() != -1;
     }
 
 }
