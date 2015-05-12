@@ -48,8 +48,6 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final String COMMIT_AUTHOR = "Jira DvcsConnector";
     private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT + "@atlassian.com"; // fake email
 
-    private static final String TEST_DATA = "test-dvcs.zip";
-
     /**
      * Fork repository owner.
      */
