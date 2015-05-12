@@ -7,11 +7,14 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.utils.WebDriverUtil;
+import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 
 import java.util.List;
 import javax.inject.Inject;
+
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_URL;
 
 public class GithubOAuthApplicationPage implements Page
 {
@@ -25,7 +28,7 @@ public class GithubOAuthApplicationPage implements Page
 
     public GithubOAuthApplicationPage()
     {
-        this("https://github.com");
+        this(GITHUB_URL);
     }
 
     public GithubOAuthApplicationPage(String hostUrl)
@@ -36,7 +39,16 @@ public class GithubOAuthApplicationPage implements Page
     @Override
     public String getUrl()
     {
-        return hostUrl + "/settings/applications";
+        // if github then we need to visit /settings/developers
+        if (hostUrl.equalsIgnoreCase(GITHUB_URL))
+        {
+            return hostUrl + "/settings/developers";
+        }
+        else // github enterprise
+        {
+            return hostUrl + "/settings/applications";
+        }
+
     }
 
     public void removeConsumer(final OAuth oAuth)
@@ -56,21 +68,7 @@ public class GithubOAuthApplicationPage implements Page
 
     public void removeConsumer(By bySelector)
     {
-        // try to find the developer tab and click on it
-        // if it is found we are in github so we need to use developers tab instead of applications tab
-        // if not we are in github enterprise we do not have developers tab
-        // TODO change this test
-        // it is better to use /settings/developers for github tests
-        // and /settings/applications for github enterprise
-        GithubOAuthApplicationPage page = this;
-        PageElement developerTabLink = pageElementFinder.find(By.cssSelector(".tabnav-tabs a[href='/settings/developers']"));
-        if (developerTabLink.isPresent() && developerTabLink.isEnabled())
-        {
-           developerTabLink.click();
-           page = pageBinder.bind(GithubOAuthApplicationPage.class);
-           Poller.waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
-        }
-        removeConsumer(page, bySelector);
+        removeConsumer(this, bySelector);
     }
 
     public List<PageElement> findOAthApplications(final String partialLinkText)
