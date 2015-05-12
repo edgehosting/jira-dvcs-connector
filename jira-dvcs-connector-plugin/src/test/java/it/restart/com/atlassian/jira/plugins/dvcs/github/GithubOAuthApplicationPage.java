@@ -36,8 +36,7 @@ public class GithubOAuthApplicationPage implements Page
     @Override
     public String getUrl()
     {
-        // appUri is not found in /settings/applications instead it is found in /settings/developers
-        return hostUrl + "/settings/developers";
+        return hostUrl + "/settings/applications";
     }
 
     public void removeConsumer(final OAuth oAuth)
@@ -47,12 +46,31 @@ public class GithubOAuthApplicationPage implements Page
 
     public void removeConsumer(final String appUri)
     {
-        removeConsumer(this, By.xpath("//a[@href='" + appUri + "']"));
+        removeConsumer(By.xpath("//a[@href='" + appUri + "']"));
     }
 
     public void removeConsumerForAppName(final String appName)
     {
-        removeConsumer(this, By.linkText(appName));
+        removeConsumer(By.linkText(appName));
+    }
+
+    public void removeConsumer(By bySelector)
+    {
+        // try to find the developer tab and click on it
+        // if it is found we are in github so we need to use developers tab instead of applications tab
+        // if not we are in github enterprise we do not have developers tab
+        // TODO change this test
+        // it is better to use /settings/developers for github tests
+        // and /settings/applications for github enterprise
+        GithubOAuthApplicationPage page = this;
+        PageElement developerTabLink = pageElementFinder.find(By.cssSelector(".tabnav-tabs a[href='/settings/developers']"));
+        if (developerTabLink.isPresent() && developerTabLink.isEnabled())
+        {
+           developerTabLink.click();
+           page = pageBinder.bind(GithubOAuthApplicationPage.class);
+           Poller.waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
+        }
+        removeConsumer(page, bySelector);
     }
 
     public List<PageElement> findOAthApplications(final String partialLinkText)
@@ -60,9 +78,9 @@ public class GithubOAuthApplicationPage implements Page
         return pageElementFinder.findAll(By.partialLinkText(partialLinkText));
     }
 
-    private static void removeConsumer(final GithubOAuthApplicationPage page, final By by)
+    private static void removeConsumer(final GithubOAuthApplicationPage page, final By bySelector)
     {
-        final PageElement link = page.pageElementFinder.find(by);
+        final PageElement link = page.pageElementFinder.find(bySelector);
         if (link.isPresent() && link.isVisible())
         {
             link.click();
@@ -78,7 +96,7 @@ public class GithubOAuthApplicationPage implements Page
                 nextPageLink.click();
                 Poller.waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
                 final GithubOAuthApplicationPage nextPage = page.pageBinder.bind(GithubOAuthApplicationPage.class);
-                removeConsumer(nextPage, by);
+                removeConsumer(nextPage, bySelector);
             }
             else
             {
