@@ -2,7 +2,6 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Conditions;
-import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
@@ -56,7 +55,7 @@ public class RepositoryDiv
     {
         if (syncRadio != null)
         {
-            Poller.waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
+            waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
             syncRadio.click();
         }
     }
@@ -64,7 +63,7 @@ public class RepositoryDiv
     public void sync()
     {
         final PageElement syncIcon = getSyncIcon();
-        Poller.waitUntilTrue(Conditions.and(syncIcon.timed().isEnabled(),
+        waitUntilTrue(Conditions.and(syncIcon.timed().isEnabled(),
                 syncIcon.timed().isVisible()));
         syncIcon.click();
         waitUntilTrue(Conditions.and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
