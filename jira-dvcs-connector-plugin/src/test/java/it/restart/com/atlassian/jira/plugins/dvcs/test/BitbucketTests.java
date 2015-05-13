@@ -110,7 +110,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void addOrganizationWaitForSync()
     {
-        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -118,6 +118,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         final String expectedMessage = "Fri Mar 02 2012";
 
         RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
+
         assertThat(repositoryDiv).isNotNull();
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
@@ -338,7 +341,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
+        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
+        organization.enableAllRepos();
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
@@ -353,7 +357,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithAdminPermission()
     {
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
+        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        organization.enableAllRepos();
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);

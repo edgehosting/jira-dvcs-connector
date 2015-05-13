@@ -231,7 +231,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         buildOnDemandProperties();
         refreshIntegratedAccounts();
-        // Poller instead
+        // TODO Poller instead
         new WebDriverWait(jira.getTester().getDriver(), 30).until(new Predicate<WebDriver>()
         {
 

@@ -16,6 +16,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static org.hamcrest.Matchers.is;
 
 public class OrganizationDiv
@@ -139,7 +140,7 @@ public class OrganizationDiv
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
+        waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
 
     private AccountsPageAccountControlsDialog findControlDialog()
@@ -150,18 +151,23 @@ public class OrganizationDiv
 
     public void sync()
     {
-        // enable repos
-        for(RepositoryDiv repoDiv: getRepositories())
-        {
-            repoDiv.enableSync();
-            dismissNotificationDialogIfExist();
-        }
+        enableAllRepos();
         // click sync icon
         for(RepositoryDiv repoDiv: getRepositories())
         {
             Poller.waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
                     repoDiv.getSyncIcon().timed().isVisible()));
             repoDiv.getSyncIcon().click();
+        }
+    }
+
+    public void enableAllRepos()
+    {
+        // enable repos
+        for(RepositoryDiv repoDiv: getRepositories())
+        {
+            repoDiv.enableSync();
+            dismissNotificationDialogIfExist();
         }
     }
 
