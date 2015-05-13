@@ -4,6 +4,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElementFinder;
+import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.AtlassianWebDriver;
 import org.openqa.selenium.By;
 
@@ -48,6 +49,7 @@ public class AccountsPage implements Page
      */
     public AccountsPageAccount getAccount(AccountsPageAccount.AccountType accountType, String accountName)
     {
+        Poller.waitUntilTrue(pageElementFinder.find(By.className("aui-page-panel-content")).timed().isPresent());
         return pageElementFinder.find(
                 By.xpath("//h4[contains(concat(' ', @class, ' '), '" + accountType.getLogoClassName() + "')]/a[text() = '" + accountName
                         + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]"), AccountsPageAccount.class);
