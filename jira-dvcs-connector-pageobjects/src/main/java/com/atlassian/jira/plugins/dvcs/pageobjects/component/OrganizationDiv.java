@@ -168,8 +168,8 @@ public class OrganizationDiv
     private void dismissNotificationDialogIfExist()
     {
         PageElement button = elementFinder.find(By.cssSelector("div.dialog-components .submit"));
-        button.timed().isVisible().byDefaultTimeout();
-        if (button.isVisible())
+        button.timed().isPresent().byDefaultTimeout();
+        if (button.isPresent() && button.isVisible())
         {
             button.click();
             Poller.waitUntilFalse("dialog should be dismissed",
