@@ -261,7 +261,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         try
         {
-           String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reloadSync";
+            String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reloadSync";
             GetMethod getMethod = new GetMethod(restUrl);
             Assert.assertEquals(200, new HttpClient().executeMethod(getMethod));
         } catch (IOException e)
