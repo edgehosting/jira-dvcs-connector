@@ -154,6 +154,7 @@ public class OrganizationDiv
         for(RepositoryDiv repoDiv: getRepositories())
         {
             repoDiv.enableSync();
+            dismissNotificationDialogIfExist();
         }
         // click sync icon
         for(RepositoryDiv repoDiv: getRepositories())
@@ -161,6 +162,18 @@ public class OrganizationDiv
             Poller.waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
                     repoDiv.getSyncIcon().timed().isVisible()));
             repoDiv.getSyncIcon().click();
+        }
+    }
+
+    private void dismissNotificationDialogIfExist()
+    {
+        PageElement button = elementFinder.find(By.cssSelector("div.dialog-components .submit"));
+        button.timed().isVisible().byDefaultTimeout();
+        if (button.isVisible())
+        {
+            button.click();
+            Poller.waitUntilFalse("dialog should be dismissed",
+                    elementFinder.find(By.className("dialog-components")).timed().isVisible());
         }
     }
 }
