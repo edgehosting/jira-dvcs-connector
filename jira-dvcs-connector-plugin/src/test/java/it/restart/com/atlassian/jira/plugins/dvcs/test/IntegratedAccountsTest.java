@@ -153,7 +153,6 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         removeAllIntegratedAccounts();
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
-
     }
 
     /**

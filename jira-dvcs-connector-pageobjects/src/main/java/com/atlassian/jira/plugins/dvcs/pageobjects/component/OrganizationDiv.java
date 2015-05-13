@@ -164,7 +164,6 @@ public class OrganizationDiv
 
     public void enableAllRepos()
     {
-        // enable repos
         for(RepositoryDiv repoDiv: getRepositories())
         {
             repoDiv.enableSync();
