@@ -4,14 +4,13 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 
 import java.util.List;
-import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -20,9 +19,6 @@ import static org.hamcrest.Matchers.is;
  */
 public class GreenHopperBoardPage implements Page
 {
-    @Inject
-    WebDriver driver;
-
     @ElementBy(cssSelector="a[data-link-id='com.pyxis.greenhopper.jira:project-sidebar-plan-scrum'], #plan-toggle")
     PageElement boardPlanToggleViewButton;
 
@@ -38,7 +34,7 @@ public class GreenHopperBoardPage implements Page
 
     public void goToQABoardPlan()
     {
-        Poller.waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
+        waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
     }
 
     public void assertCommitsAppearOnIssue(String issueKey, int expectedNumberOfAssociatedCommits)
@@ -51,7 +47,7 @@ public class GreenHopperBoardPage implements Page
         qa1Link.click();
 
         PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
-        Poller.waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15000));
+        waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15000));
         PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();
