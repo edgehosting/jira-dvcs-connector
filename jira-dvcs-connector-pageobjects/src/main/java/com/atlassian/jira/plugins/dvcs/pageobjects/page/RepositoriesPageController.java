@@ -22,7 +22,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
-    private final long MAX_WAITING_TIME = 60*1000*3; // 180 seconds
+    private final long MAX_WAITING_TIME = 60*1000*2; // 180 seconds
     private final Logger log = LoggerFactory.getLogger(RepositoriesPageController.class);
 
     public RepositoriesPageController(JiraTestedProduct jira)
@@ -119,7 +119,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             catch (InterruptedException e)
             {
                 // ignore
-                log.debug("Failed to complete sync in " + MAX_WAITING_TIME + " milliseconds");
+                log.error("Failed to complete sync in " + MAX_WAITING_TIME + " milliseconds");
             }
         }
         while (!isSyncFinished());
