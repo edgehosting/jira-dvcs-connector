@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.1.3-breakit-3</version>
+        <version>3.1.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-github</artifactId>
