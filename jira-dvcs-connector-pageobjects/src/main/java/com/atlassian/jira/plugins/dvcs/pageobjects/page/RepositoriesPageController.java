@@ -1,7 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
@@ -11,6 +9,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.github.GithubGrantAccessPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
-    private final long MAX_WAITING_TIME = 60*1000*2; // 180 seconds
+    private final long MAX_WAITING_TIME = 60*1000*2; // 120 seconds
     private final Logger log = LoggerFactory.getLogger(RepositoriesPageController.class);
 
     public RepositoriesPageController(JiraTestedProduct jira)
@@ -118,7 +118,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
             catch (InterruptedException e)
             {
-                // ignore
                 log.error("Failed to complete sync in " + MAX_WAITING_TIME + " milliseconds");
             }
         }

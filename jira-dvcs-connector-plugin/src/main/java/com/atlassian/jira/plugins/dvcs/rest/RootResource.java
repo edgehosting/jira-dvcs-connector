@@ -587,7 +587,6 @@ public class RootResource
         }
     }
 
-
     @GET
     @AnonymousAllowed
     @Path("/integrated-accounts/reloadSync")

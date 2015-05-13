@@ -5,15 +5,13 @@ import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.webdriver.utils.WebDriverUtil;
-import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 
 import java.util.List;
 import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_URL;
 
 public class GithubOAuthApplicationPage implements Page
@@ -92,7 +90,7 @@ public class GithubOAuthApplicationPage implements Page
                     && nextPageLink.isEnabled())
             {
                 nextPageLink.click();
-                Poller.waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
+                waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
                 final GithubOAuthApplicationPage nextPage = page.pageBinder.bind(GithubOAuthApplicationPage.class);
                 removeConsumer(nextPage, bySelector);
             }

@@ -5,7 +5,6 @@ import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Conditions;
-import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -17,6 +16,8 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static org.hamcrest.Matchers.is;
 
 public class OrganizationDiv
@@ -134,7 +135,7 @@ public class OrganizationDiv
         // wait for popup to show up
         try
         {
-            Poller.waitUntilTrue(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible());
+            waitUntilTrue(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible());
         }
         catch (AssertionError e)
         {
@@ -155,7 +156,7 @@ public class OrganizationDiv
         // click sync icon
         for(RepositoryDiv repoDiv: getRepositories())
         {
-            Poller.waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
+            waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
                     repoDiv.getSyncIcon().timed().isVisible()));
             repoDiv.getSyncIcon().click();
         }
@@ -178,7 +179,7 @@ public class OrganizationDiv
         if (button.isPresent() && button.isVisible())
         {
             button.click();
-            Poller.waitUntilFalse("dialog should be dismissed",
+            waitUntilFalse("dialog should be dismissed",
                     elementFinder.find(By.className("dialog-components")).timed().isVisible());
         }
     }

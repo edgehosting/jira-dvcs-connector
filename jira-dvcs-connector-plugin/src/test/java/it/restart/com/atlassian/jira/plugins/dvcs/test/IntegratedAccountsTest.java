@@ -267,7 +267,6 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         } catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 
