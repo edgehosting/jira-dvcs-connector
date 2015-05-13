@@ -57,8 +57,8 @@
         <jira6.testkit.version>6.4.9</jira6.testkit.version>
         <!-- end -->
         <!-- jira7 variables -->
-        <jira7.version>7.0-SNAPSHOT</jira7.version>
-        <!--<jira7.version>7.0-20150504.154833</jira7.version>-->
+        <!--<jira7.version>7.0-SNAPSHOT</jira7.version>-->
+        <jira7.version>7.0-20150504.154833</jira7.version>
         <jira7.software.version>1.15</jira7.software.version>
         <jira7.testkit.version>7.0.32</jira7.testkit.version>
         <greenhopper7.version>6.7-breakit-6</greenhopper7.version>
