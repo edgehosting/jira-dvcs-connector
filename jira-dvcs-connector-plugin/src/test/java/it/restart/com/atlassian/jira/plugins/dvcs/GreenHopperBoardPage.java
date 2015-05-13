@@ -36,6 +36,7 @@ public class GreenHopperBoardPage implements Page
     {
         Poller.waitUntil(boardPlanToggleViewButton.timed().isVisible(), is(true), by(15, SECONDS));
         boardPlanToggleViewButton.click();
+        Poller.waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
     }
 
     public void assertCommitsAppearOnIssue(String issueKey, int expectedNumberOfAssociatedCommits)
