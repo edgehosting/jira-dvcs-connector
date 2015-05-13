@@ -49,8 +49,8 @@ import java.util.List;
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
-import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
