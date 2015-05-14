@@ -54,6 +54,7 @@
         <jira.compile.version>6.5-OD-03-002</jira.compile.version>
         <jira.software.version>0.29-D20150428T010945</jira.software.version>
         <testkit.version>6.4.9</testkit.version>
+        <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>6.5-OD-03-002</jira.version>
         <jira.data.version>6.5-OD-03-002</jira.data.version>
@@ -498,7 +499,7 @@
                 <jira.software.version>1.15</jira.software.version>
                 <testkit.version>7.0.32</testkit.version>
                 <greenhopper.version>6.7-breakit-6</greenhopper.version>
-                <productDataPath></productDataPath>
+                <jira.data.path></jira.data.path>
             </properties>
         </profile>
         <profile>

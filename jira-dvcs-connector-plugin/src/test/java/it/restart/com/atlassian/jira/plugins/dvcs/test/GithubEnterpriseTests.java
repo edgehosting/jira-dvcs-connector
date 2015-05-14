@@ -64,7 +64,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void afterClass()
     {
         // delete all organizations
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
         // remove OAuth in github enterprise
         new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class, GITHUB_ENTERPRISE_URL).removeConsumer(oAuth);
@@ -75,7 +75,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @BeforeMethod
     public void beforeMethod()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.getPage().deleteAllOrganizations();
     }
 
@@ -84,8 +84,9 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
     {
         // we should see 'private-dvcs-connector-test' repo
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "atlassian", new OAuthCredentials(oAuth.key, oAuth.secret), false);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL),
+                "atlassian", new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization.containsRepository("private-dvcs-connector-test"));
     }
@@ -94,8 +95,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Override
     public void addOrganization()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization).isNotNull();
@@ -106,8 +107,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Override
     public void addOrganizationWaitForSync()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), true);
 
         assertThat(organization).isNotNull();
@@ -125,7 +126,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\n.*Error retrieving list of repositories.*")
     public void addOrganizationInvalidAccount()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "I_AM_SURE_THIS_ACCOUNT_IS_INVALID",
                 getOAuthCredentials(), false, true);
     }
@@ -134,7 +135,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), "https://nonexisting.org/someaccount",
                 getOAuthCredentials(), false, true);
     }
@@ -143,7 +144,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials("xxx", "yyy"), true, true);
     }
@@ -152,7 +153,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @Override
     public void testCommitStatistics()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
         final OrganizationDiv organizationDiv = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
                 new OAuthCredentials(oAuth.key, oAuth.secret), false);
         RepositoryDiv repositoryDiv = organizationDiv.findRepository(REPOSITORY_NAME);

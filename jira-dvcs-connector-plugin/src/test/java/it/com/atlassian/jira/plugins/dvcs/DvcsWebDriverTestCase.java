@@ -47,10 +47,10 @@ public abstract class DvcsWebDriverTestCase
     protected void testPostCommitHookAddedAndRemoved(final String accountName, final AccountType accountType,
             final String repositoryName, final JiraTestedProduct jira, final OAuthCredentials oAuthCredentials)
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, false);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, false);
 
-        RepositoryDiv repositoryDiv = organisation.findRepository(repositoryName);
+        final RepositoryDiv repositoryDiv = organisation.findRepository(repositoryName);
         repositoryDiv.enableSync();
         repositoryDiv.sync();
 

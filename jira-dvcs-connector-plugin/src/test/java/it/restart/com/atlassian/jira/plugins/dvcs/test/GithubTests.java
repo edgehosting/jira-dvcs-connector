@@ -80,8 +80,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void addOrganization()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -91,14 +91,14 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void addOrganizationWaitForSync()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         final String expectedMessage = "Mon Feb 06 2012";
-        RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
+        final RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
         assertThat(repositoryDiv).isNotNull();
         repositoryDiv.enableSync();
         repositoryDiv.sync();
