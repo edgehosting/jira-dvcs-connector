@@ -48,7 +48,11 @@ public abstract class DvcsWebDriverTestCase
             final String repositoryName, final JiraTestedProduct jira, final OAuthCredentials oAuthCredentials)
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, true);
+        OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, false);
+
+        RepositoryDiv repositoryDiv = organisation.findRepository(repositoryName);
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
 
         // check postcommit hook is there
         String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), repositoryName);
