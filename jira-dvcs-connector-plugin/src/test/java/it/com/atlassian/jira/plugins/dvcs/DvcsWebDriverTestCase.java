@@ -29,6 +29,7 @@ import static org.testng.Assert.assertTrue;
 @Listeners ({ WebDriverScreenshotListener.class })
 public abstract class DvcsWebDriverTestCase
 {
+    protected static final String TEST_DATA = "test-dvcs.zip";
     protected String getJiraCallbackUrlForRepository(OrganizationDiv organisation, ProductInstance productInstance, String repositoryName)
     {
         // Always on the path bitbucket

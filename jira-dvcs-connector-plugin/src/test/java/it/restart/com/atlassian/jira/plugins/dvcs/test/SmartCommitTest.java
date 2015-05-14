@@ -45,6 +45,7 @@ public class SmartCommitTest extends AbstractDVCSTest
     @BeforeClass
     public void beforeClass()
     {
+        getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
@@ -54,7 +55,7 @@ public class SmartCommitTest extends AbstractDVCSTest
         timePage.activateTimeTrackingWithDefaults();
 
         final Backdoor backdoor = getJiraTestedProduct().backdoor();
-        backdoor.usersAndGroups().addUser(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
+        backdoor.usersAndGroups().addUserEvenIfUserExists(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
         backdoor.usersAndGroups().addUserToGroup(COMMIT_AUTHOR, "jira-developers");
     }
 

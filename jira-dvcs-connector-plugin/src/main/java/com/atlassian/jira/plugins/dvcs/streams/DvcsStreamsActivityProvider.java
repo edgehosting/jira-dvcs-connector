@@ -349,7 +349,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         @Override
         public boolean apply(@Nullable Project project)
         {
-            return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getLoggedInUser());
+            return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getUser());
         }
     };
 

@@ -357,6 +357,10 @@
                             <groupId>com.atlassian.pocketknife</groupId>
                             <artifactId>atlassian-pocketknife-querydsl</artifactId>
                         </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.compat</groupId>
+                            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                        </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
                 </configuration>
@@ -379,7 +383,6 @@
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-                    <productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
                     <log4jProperties>target/test-classes/log4j.properties</log4jProperties>
                     <pluginArtifacts>
                         <pluginArtifact>

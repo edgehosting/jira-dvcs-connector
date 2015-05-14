@@ -587,6 +587,24 @@ public class RootResource
         }
     }
 
+    @GET
+    @AnonymousAllowed
+    @Path("/integrated-accounts/reloadSync")
+    @Consumes({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED })
+    @Produces({ MediaType.TEXT_PLAIN })
+    public Response reloadSynchronousIntegratedAccountConfig()
+    {
+        try
+        {
+            ondemandAccountConfig.reload();
+            return Response.ok("OK").build();
+        } catch (Exception e)
+        {
+            log.error("Failed to reload config.", e);
+            return Response.serverError().build();
+        }
+    }
+
     @DELETE
     @Path("/organization/{id}")
     @AdminOnly

@@ -38,6 +38,8 @@ public abstract class AbstractDVCSTest
 
     protected Backdoor testKit;
 
+    protected static final String TEST_DATA = "test-dvcs.zip";
+
     /**
      * Prepares common test environment.
      */
