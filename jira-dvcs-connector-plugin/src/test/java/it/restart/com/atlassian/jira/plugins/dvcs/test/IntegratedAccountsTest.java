@@ -16,7 +16,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAcco
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountOAuthDialog;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.util.TestAccounts;
 import junit.framework.Assert;
@@ -24,8 +23,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.json.JSONException;
 import org.json.JSONWriter;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -36,7 +33,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
-import javax.annotation.Nullable;
+
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Tests integrated accounts functionality.
@@ -201,7 +200,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
+        assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
 
     /**
@@ -220,7 +219,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
+        assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
 
     /**
@@ -230,27 +229,12 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         buildOnDemandProperties();
         refreshIntegratedAccounts();
-        // TODO Poller instead
-        new WebDriverWait(jira.getTester().getDriver(), 30).until(new Predicate<WebDriver>()
+        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        Iterator<AccountsPageAccount> accounts = accountsPage.getAccounts().iterator();
+        while (accounts.hasNext())
         {
-
-            @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                AccountsPage accountsPage = jira.visit(AccountsPage.class);
-                Iterator<AccountsPageAccount> accounts = accountsPage.getAccounts().iterator();
-                while (accounts.hasNext())
-                {
-                    if (accounts.next().isOnDemand())
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-        });
+            assertFalse(accounts.next().isOnDemand());
+        }
     }
 
     /**

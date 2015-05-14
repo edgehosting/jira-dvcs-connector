@@ -56,7 +56,11 @@ public class RepositoryDiv
         if (syncRadio != null)
         {
             waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
-            syncRadio.click();
+            if (!syncRadio.isSelected())
+            {
+                syncRadio.click();
+                waitUntilTrue(syncRadio.timed().isSelected());
+            }
         }
     }
 

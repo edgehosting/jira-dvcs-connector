@@ -33,7 +33,7 @@ public class SmartCommitTest extends AbstractDVCSTest
     private static final String COMMIT_AUTHOR = "Jira DvcsConnector";
     private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT +"@atlassian.com";
     private static final String TEST_PROJECT_KEY = "TST";
-    
+
     private TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
 
     private String issueKey;
