@@ -13,7 +13,10 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientWithTimeout;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubRateLimitExceededException;
+import com.atlassian.jira.plugins.dvcs.spi.github.RateLimit;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
@@ -29,7 +32,9 @@ import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.RequestError;
 import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -38,6 +43,9 @@ import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -55,6 +63,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -62,6 +71,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.fail;
 
 /**
  * @author Martin Skurla
@@ -94,24 +104,37 @@ public class GithubCommunicatorTest
     private MessagingService messagingService;
     @Mock
     private GitHubEventService gitHubEventService;
+    @Spy
+    private GithubClientWithTimeout gitHubClient = new GithubClientWithTimeout("localhost", 8080, "http");
 
     // tested object
     private GithubCommunicator communicator;
 
+    private static final RequestError requestError = new RequestError()
+    {
+        @Override
+        public String getMessage()
+        {
+            return "API rate limit exceeded for account1. (403)";
+        }
+    };
+
+    private static final RateLimit rateLimit = new RateLimit(10, 0, System.currentTimeMillis());
+
     @Test
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings ("deprecation")
     public void testSetupPostHookShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
         when(repositoryMock.getSlug()).thenReturn("slug");
-        
+
         when(gitHubRESTClient.getHooks(repositoryMock)).thenReturn(sampleHooks());
-        
+
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
-        
+
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
         communicator.ensureHookPresent(repositoryMock, hookUrl);
-        
+
         verify(gitHubRESTClient, times(2)).addHook(isA(Repository.class), hookCaptor.capture());
         verify(gitHubRESTClient, times(2)).deleteHook(eq(repositoryMock), hookCaptor.capture());
 
@@ -127,24 +150,24 @@ public class GithubCommunicatorTest
 
         assertEquals(hookCaptor.getAllValues().get(3).getId(), Long.valueOf(101));
     }
-    
+
     @Test
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings ("deprecation")
     public void testSetupPostHookAlreadySetUpShouldDeleteOrphan() throws IOException
     {
         when(repositoryMock.getOrgName()).thenReturn("owner");
         when(repositoryMock.getSlug()).thenReturn("slug");
-        
+
         List<GitHubRepositoryHook> hooks = sampleHooks();
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
         hooks.add(samplePullRequestHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
         when(gitHubRESTClient.getHooks(repositoryMock)).thenReturn(hooks);
-        
+
         when(applicationPropertiesMock.getBaseUrl()).thenReturn("http://jira.example.com");
-        
+
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
         communicator.ensureHookPresent(repositoryMock, hookUrl);
-        
+
         verify(gitHubRESTClient, never()).addHook(isA(Repository.class), isA(GitHubRepositoryHook.class));
         verify(gitHubRESTClient, times(2)).deleteHook(eq(repositoryMock), hookCaptor.capture());
 
@@ -205,7 +228,7 @@ public class GithubCommunicatorTest
 
 
     @BeforeMethod
-	public void initializeMocksAndGithubCommunicator()
+    public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
 
@@ -219,14 +242,28 @@ public class GithubCommunicatorTest
         when(githubClientProviderMock.getRepositoryService(repositoryMock)).thenReturn(repositoryServiceMock);
         when(githubClientProviderMock.getUserService(repositoryMock)).thenReturn(userServiceMock);
         when(githubClientProviderMock.getCommitService(repositoryMock)).thenReturn(commitServiceMock);
-	}
 
-	@Test
-	public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
+        when(commitServiceMock.getClient()).thenReturn(gitHubClient);
+        when(repositoryServiceMock.getClient()).thenReturn(gitHubClient);
+        when(userServiceMock.getClient()).thenReturn(gitHubClient);
+
+        doAnswer(new Answer<RateLimit>()
+        {
+            @Override
+            public RateLimit answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return rateLimit;
+            }
+        }).when(gitHubClient).getRateLimit();
+
+        when(repositoryMock.getSlug()).thenReturn("SLUG");
+        when(repositoryMock.getOrgName()).thenReturn("ORG");
+    }
+
+    @Test
+    public void settingUpPostcommitHook_ShouldSendPOSTRequestToGithub() throws IOException
     {
         when(gitHubRESTClient.getHooks(any(Repository.class))).thenReturn(new LinkedList<GitHubRepositoryHook>());
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
 
         String hookUrl = "POST-COMMIT-URL";
         communicator.ensureHookPresent(repositoryMock, hookUrl);
@@ -234,7 +271,7 @@ public class GithubCommunicatorTest
         // two times - one for changesets hook and one for pull requests hook
         ArgumentCaptor<GitHubRepositoryHook> hooks = ArgumentCaptor.forClass(GitHubRepositoryHook.class);
         verify(gitHubRESTClient, times(2)).addHook(any(Repository.class), hooks.capture());
-        
+
         GitHubRepositoryHook hook;
         hook = hooks.getAllValues().get(0);
         Assert.assertEquals(hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL), hookUrl);
@@ -257,9 +294,6 @@ public class GithubCommunicatorTest
     public void settingUpPostcommitHook_alreadyExisting() throws Exception
     {
         String postCommitUrl = "postCommitUrl";
-
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        when(repositoryMock.getSlug()).thenReturn("SLUG");
 
         GitHubRepositoryHook changesetsHook = mock(GitHubRepositoryHook.class);
         when(changesetsHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl));
@@ -286,16 +320,15 @@ public class GithubCommunicatorTest
 
         DvcsUser githubUser = communicator.getUser(repositoryMock, "USER-NAME");
 
-        assertThat(githubUser.getAvatar())  .isEqualTo("https://secure.gravatar.com/avatar/gravatarId?s=60");
+        assertThat(githubUser.getAvatar()).isEqualTo("https://secure.gravatar.com/avatar/gravatarId?s=60");
         assertThat(githubUser.getUsername()).isEqualTo("Test GitHub user login");
         assertThat(githubUser.getFullName()).isEqualTo("Test GitHub user name");
     }
 
     @Test
-    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult() throws ResponseException, IOException
+    public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult()
+            throws ResponseException, IOException
     {
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
         when(commitServiceMock.getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString())).thenReturn(repositoryCommit);
         Commit commit = mock(Commit.class);
@@ -304,17 +337,46 @@ public class GithubCommunicatorTest
 
         Changeset detailChangeset = communicator.getChangeset(repositoryMock, "abcde");
 
-        verify(commitServiceMock).getCommit(Matchers.<IRepositoryIdProvider>anyObject(),anyString());
+        verify(commitServiceMock).getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString());
 
         assertThat(detailChangeset.getMessage()).isEqualTo("ABC-123 fix");
+    }
+
+    @Test
+    public void getChangesetShouldHitGithubRateLimit() throws ResponseException, IOException
+    {
+        when(commitServiceMock.getCommit(any(IRepositoryIdProvider.class), anyString())).thenThrow(new RequestException(requestError, 403));
+        try
+        {
+            communicator.getChangeset(repositoryMock, "abcde");
+            fail("GithubRateLimitExceededException expected");
+        }
+        catch (GithubRateLimitExceededException e)
+        {
+            assertThat(e.getRateLimit()).isSameAs(rateLimit);
+            verify(commitServiceMock).getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString());
+        }
+    }
+
+    @Test
+    public void getBranchesShouldHitGithubRateLimit() throws IOException
+    {
+        try
+        {
+            when(repositoryServiceMock.getBranches(any(IRepositoryIdProvider.class))).thenThrow(new RequestException(requestError, 403));
+            communicator.getBranches(repositoryMock);
+            fail("GithubRateLimitExceededException expected");
+        }
+        catch (GithubRateLimitExceededException e)
+        {
+            assertThat(e.getRateLimit()).isSameAs(rateLimit);
+        }
     }
 
     @Test
     public void getFileDetailsShouldFetchCommitsFromGitHub() throws Exception
     {
         // Repository
-        when(repositoryMock.getSlug())   .thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repositoryMock.getOrgName(), repositoryMock.getSlug());
 
         final Changeset cs = mock(Changeset.class);

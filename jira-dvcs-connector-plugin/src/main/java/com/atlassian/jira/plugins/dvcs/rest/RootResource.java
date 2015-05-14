@@ -365,7 +365,7 @@ public class RootResource
             return Response.ok(currentUser).build();
         } catch (Exception e)
         {
-            log.warn("Error retrieving token owner: " + e.getMessage());
+            log.warn("Error retrieving token owner: " + e.getMessage(), e);
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
