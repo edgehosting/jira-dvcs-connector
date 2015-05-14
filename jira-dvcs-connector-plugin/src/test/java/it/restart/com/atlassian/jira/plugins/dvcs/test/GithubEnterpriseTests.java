@@ -6,6 +6,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
@@ -152,8 +153,11 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
-                new OAuthCredentials(oAuth.key, oAuth.secret), true);
+        final OrganizationDiv organizationDiv = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL), ACCOUNT_NAME,
+                new OAuthCredentials(oAuth.key, oAuth.secret), false);
+        RepositoryDiv repositoryDiv = organizationDiv.findRepository(REPOSITORY_NAME);
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = getCommitsForIssue("QA-3", 1);
