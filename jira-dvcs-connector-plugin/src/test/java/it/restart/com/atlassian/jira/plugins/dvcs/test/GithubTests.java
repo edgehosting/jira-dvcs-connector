@@ -18,12 +18,10 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAcco
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -157,7 +155,11 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), true);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
+        final RepositoryDiv repositoryDiv = organization.findRepository("test-project");
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = new JiraViewIssuePageController(jira, "QA-3").getCommits(1); // throws AssertionError with other than 1 message
