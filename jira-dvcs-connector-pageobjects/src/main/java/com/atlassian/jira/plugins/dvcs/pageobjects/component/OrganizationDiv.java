@@ -5,7 +5,6 @@ import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Conditions;
-import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.openqa.selenium.By;
@@ -18,6 +17,8 @@ import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.DIALOG_LOAD;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.is;
 
 public class OrganizationDiv
@@ -57,7 +58,7 @@ public class OrganizationDiv
         PageElement deleteLink = elementFinder.find(By.id(dropDownMenuId)).find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
 
-        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
+        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, DIALOG_LOAD);
         dialog.confirm();
         dialog.waitUntilVisible();
     }
@@ -141,7 +142,7 @@ public class OrganizationDiv
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
+        waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30, SECONDS));
     }
 
     private AccountsPageAccountControlsDialog findControlDialog()
@@ -174,12 +175,13 @@ public class OrganizationDiv
     private void dismissNotificationDialogIfExist()
     {
         PageElement button = elementFinder.find(By.cssSelector("div.dialog-components .submit"));
+        // we want to dismiss the dialog if it is shown and if not no error just continue
         button.timed().isPresent().byDefaultTimeout();
         if (button.isPresent() && button.isVisible())
         {
             button.click();
             waitUntilFalse("dialog should be dismissed",
-                    elementFinder.find(By.className("dialog-components")).timed().isVisible());
+                    elementFinder.find(By.className("dialog-components")).withTimeout(DIALOG_LOAD).timed().isVisible());
         }
     }
 }
