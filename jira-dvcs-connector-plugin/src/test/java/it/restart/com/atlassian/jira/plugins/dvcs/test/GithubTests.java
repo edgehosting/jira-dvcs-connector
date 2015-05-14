@@ -99,8 +99,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
-        //Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
-
         final String expectedMessage = "Mon Feb 06 2012";
         RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
         assertThat(repositoryDiv).isNotNull();
