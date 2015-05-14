@@ -592,7 +592,7 @@ public class RootResource
     @Path("/integrated-accounts/reloadSync")
     @Consumes({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED })
     @Produces({ MediaType.TEXT_PLAIN })
-    public Response reloadIntegratedAccountConfigSync()
+    public Response reloadSynchronousIntegratedAccountConfig()
     {
         try
         {

@@ -11,6 +11,7 @@ import java.util.List;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -47,7 +48,7 @@ public class GreenHopperBoardPage implements Page
         qa1Link.click();
 
         PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
-        waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15000));
+        waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15, SECONDS));
         PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();
