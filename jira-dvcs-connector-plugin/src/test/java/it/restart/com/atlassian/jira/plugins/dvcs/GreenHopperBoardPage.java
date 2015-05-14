@@ -8,12 +8,9 @@ import org.openqa.selenium.By;
 
 import java.util.List;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.COMPONENT_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 
 /**
  * @author Martin Skurla
@@ -43,12 +40,12 @@ public class GreenHopperBoardPage implements Page
         PageElement backlogContainerDiv = bodyElement.find(By.className("ghx-backlog-container"));
 
         PageElement qa1Div  = PageElementUtils.findTagWithAttributeValue(backlogContainerDiv, "div", "data-issue-key", issueKey);
-        PageElement qa1Link = PageElementUtils.findTagWithAttributeValue(qa1Div,              "a",   "title",          issueKey);
+        PageElement qa1Link = PageElementUtils.findTagWithAttributeValue(qa1Div, "a", "title", issueKey);
 
         qa1Link.click();
 
         PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
-        waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15, SECONDS));
+        waitUntilTrue(openIssueTabsMenu.withTimeout(COMPONENT_LOAD).timed().isVisible());
         PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();
