@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
 
 import static com.atlassian.pageobjects.elements.query.Conditions.and;
@@ -67,8 +68,8 @@ public class RepositoryDiv
     public void sync()
     {
         final PageElement syncIcon = getSyncIcon();
-        waitUntilTrue(and(syncIcon.timed().isEnabled(),
-                syncIcon.timed().isVisible()));
+        waitUntil(and(syncIcon.timed().isPresent(), syncIcon.timed().isEnabled(),
+                syncIcon.timed().isVisible()), is(true), Poller.by(20, SECONDS));
         syncIcon.click();
         waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
         waitUntil(syncIcon.timed().hasClass("running"), is(false), by(60, SECONDS));
