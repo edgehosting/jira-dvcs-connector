@@ -43,7 +43,7 @@ public interface PullRequestService
     /**
      * Creates a {@link RepositoryPullRequestMapping} in the database and raises a {@link com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent}.
      *
-     *  This should really work with {@link PullRequest} but there's currently no straightforward way to convert one of
+     * This should really work with {@link PullRequest} but there's currently no straightforward way to convert one of
      * those into a RepositoryPullRequestMapping.
      *
      * @param repositoryPullRequestMapping the RepositoryPullRequestMapping to create
