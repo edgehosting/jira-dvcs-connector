@@ -10,14 +10,11 @@ import java.io.Serializable;
  *           "username": "baratrion",
  *           "first_name": "Mehmet S",
  *           "last_name": "Catalbas",
- *           "avatar": "https://secure.gravatar.com/avatar/55a1369161d3a648729b59cabf160e70?d=identicon&s=32",
+ *           "avatar": "https://secure.gravatar.com/avatar/55a1369161d3a648729b59cabf160e70?d=identicon&amp;s=32",
  *           "resource_uri": "/1.0/users/baratrion"
  *       }
  * </pre>
- * 
- * <br /><br />
- * Created on 12.7.2012, 16:43:13
- * <br /><br />
+ *
  * @author jhocman@atlassian.com
  *
  */

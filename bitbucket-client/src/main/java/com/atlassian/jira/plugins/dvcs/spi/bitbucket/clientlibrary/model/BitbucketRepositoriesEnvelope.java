@@ -21,19 +21,13 @@ import java.util.List;
  * ],
  * "user": {
  *   "username": "jespern",
- *   "avatar": "https://secure.gravatar.com/avatar/b658715b9635ef057daf2a22d4a8f36e?d=identicon&s=32",
+ *   "avatar": "https://secure.gravatar.com/avatar/b658715b9635ef057daf2a22d4a8f36e?d=identicon&amp;s=32",
  *   "resource_uri": "/1.0/users/jespern/",
  *   "last_name": "Noehr",
  *   "first_name": "Jesper"
  *  }
  * }
  * </pre>
- * 
- * <br /><br />
- * Created on 12.7.2012, 16:51:50
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class BitbucketRepositoriesEnvelope implements Serializable
 {

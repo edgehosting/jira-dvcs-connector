@@ -3,14 +3,8 @@ package com.atlassian.jira.plugins.dvcs.service.message;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 
 /**
- * Consumes a received message.
- * 
- * @author Stanislav Dvorscak
- * 
- * @param <K>
- *            type of key
- * @param <P>
- *            type of payload
+ * Consumes a received message
+ * @param <P> type of payload
  */
 public interface MessageConsumer<P extends HasProgress>
 {

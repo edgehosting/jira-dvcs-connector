@@ -18,11 +18,7 @@ import java.io.Serializable;
                     }
                 },
  * 
- * <br /><br />
- * Created on 11.12.2012, 14:02:57
- * <br /><br />
  * @author jhocman@atlassian.com
- *
  */
 public class BitbucketPullRequestUpdateActivity extends BitbucketPullRequestBaseActivity implements Serializable
 {

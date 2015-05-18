@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * 
  * Listens to user events (just for <code>CREATED</code> type).
  * 
  * Handler methods run asynchronously and are safe to fail. That means that it
@@ -36,13 +35,6 @@ import java.util.Set;
  * 
  * @see #onUserAddViaInterface(UserAddedEvent)
  * @see #onUserAttributeStore(UserAttributeStoredEvent)
- * 
- * <br />
- * <br />
- *      Created on 21.6.2012, 14:07:34 <br />
- * <br />
- * @author jhocman@atlassian.com
- * 
  */
 public class DvcsAddUserListener
 {

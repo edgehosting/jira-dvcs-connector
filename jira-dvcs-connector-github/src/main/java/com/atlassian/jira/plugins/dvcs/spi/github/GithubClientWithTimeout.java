@@ -11,8 +11,6 @@ import static java.lang.Long.parseLong;
 
 /**
  * Github Client with the connection and read timeout set up
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public class GithubClientWithTimeout extends GitHubClient
 {

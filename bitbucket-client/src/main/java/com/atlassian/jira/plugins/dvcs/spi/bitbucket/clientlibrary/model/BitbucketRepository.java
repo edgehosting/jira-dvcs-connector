@@ -15,11 +15,6 @@ import java.io.Serializable;
  *     "description": "Piston is a Django mini-framework creating APIs."
  *   }
  * </pre>
- * <br /><br />
- * Created on 12.7.2012, 16:51:23
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class BitbucketRepository implements Serializable
 {

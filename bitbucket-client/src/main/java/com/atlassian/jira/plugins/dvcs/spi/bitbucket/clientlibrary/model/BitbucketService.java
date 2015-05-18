@@ -17,12 +17,6 @@ import java.util.List;
  *       "type": "POST"
  *   }
  * </pre>
- * 
- * <br /><br />
- * Created on 12.7.2012, 17:00:19
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class BitbucketService implements Serializable
 {

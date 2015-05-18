@@ -13,17 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-/**
- * RepositoryRemoteRestpoint
- *
- * 
- * <br /><br />
- * Created on 13.7.2012, 17:28:55
- * <br /><br />
- * @author jhocman@atlassian.com
- *
- */
 public class RepositoryRemoteRestpoint
 {
 	private final RemoteRequestor requestor;

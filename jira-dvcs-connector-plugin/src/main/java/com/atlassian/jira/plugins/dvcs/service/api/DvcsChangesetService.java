@@ -72,7 +72,7 @@ public interface DvcsChangesetService
      *
      * @param repository the repository to find
      * @param changeset the changeset to get all the file changesets and urls
-     * @return {@link Map<ChangesetFile, String>} a mapping of the file changeset to changeset url
+     * @return {@link Map} a mapping of the file changeset to changeset url
      */
     Map<ChangesetFile, String> getFileChangesets(Repository repository, Changeset changeset);
 

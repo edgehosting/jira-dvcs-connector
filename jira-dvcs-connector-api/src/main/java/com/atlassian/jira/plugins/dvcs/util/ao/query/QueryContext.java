@@ -39,7 +39,7 @@ public interface QueryContext
     void pushParameter(String parameterName);
 
     /**
-     * Push parameter name & value into the context.
+     * Push parameter name and value into the context.
      * 
      * @param parameterName
      * @param parameterValue
