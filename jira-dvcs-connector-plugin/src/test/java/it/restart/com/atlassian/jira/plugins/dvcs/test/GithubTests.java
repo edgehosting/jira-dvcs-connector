@@ -80,8 +80,9 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void addOrganization()
     {
-        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -91,8 +92,9 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @Test
     public void addOrganizationWaitForSync()
     {
-        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
