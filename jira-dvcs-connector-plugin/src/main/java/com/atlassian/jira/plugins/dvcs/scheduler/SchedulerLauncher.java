@@ -83,7 +83,7 @@ public class SchedulerLauncher implements LifecycleAware
     /**
      * Schedule a job to be run after all events have been received.
      * The job will be run immediately in the current thread, if all events have already been received.
-     *
+     * <p>
      * This is {@code synchronized} so that we could keep {@code jobs} in a consistent state
      *  when this method and {@link #onLifecycleEvent(LifecycleEvent)} are accessed from multiple threads.
      */
@@ -106,7 +106,7 @@ public class SchedulerLauncher implements LifecycleAware
     /**
      * The latch which ensures all of the plugin/application lifecycle progress is completed before we call
      * {@code launch()}.
-     * <p/>
+     * <p>
      * This is {@code synchronized} so that we could keep {@code jobs} in a consistent state
      *  when this method and {@link #runWhenReady(SchedulerLauncherJob)} are accessed from multiple threads.
      */

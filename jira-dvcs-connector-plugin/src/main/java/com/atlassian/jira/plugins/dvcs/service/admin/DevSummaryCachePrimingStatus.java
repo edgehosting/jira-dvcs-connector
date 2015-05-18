@@ -145,7 +145,7 @@ public class DevSummaryCachePrimingStatus
     /**
      * Signals that the caller wants to start indexing, if successful (returns true) then this status instance will be
      * zeroed to the initial state.
-     *
+     * <p>
      * Users of this class should call this method prior to performing any other operations.
      *
      * @return true if the operation can start

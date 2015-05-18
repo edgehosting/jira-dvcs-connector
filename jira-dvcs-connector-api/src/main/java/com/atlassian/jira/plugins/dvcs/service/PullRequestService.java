@@ -56,7 +56,7 @@ public interface PullRequestService
      *
      * This should really take a {@link PullRequest} as its parameter but there's currently no straightforward way to
      * convert one of those into a RepositoryPullRequestMapping.
-     *
+     * <p>
      * Note that this method does not attempt to compare the previous and current state of the pull request mapping: it
      * always performs the update and always raises an event.
      *

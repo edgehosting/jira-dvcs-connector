@@ -67,7 +67,7 @@ public class SyncConfig
     /**
      * Returns the sync interval that should be used. This defaults to 1 hour and can be overridden by setting the
      * {@value #PROPERTY_KEY} system property to a value in milliseconds.
-     *
+     * <p>
      * Note that changing the system property after the plugin has started has no effect.
      */
     public long scheduledSyncIntervalMillis()
