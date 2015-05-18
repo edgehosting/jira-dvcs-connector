@@ -123,6 +123,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             addLink(repository, projectKeysToLink);
         }
     }
+
     /**
      * Creates a link in {@code repository} for the project keys in {@code forProjects}
      *

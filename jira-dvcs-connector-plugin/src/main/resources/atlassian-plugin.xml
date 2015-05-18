@@ -56,6 +56,7 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_11_AddKeyAndSecretToBBAccounts</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_12_SplitUpChangesetsMigrator</upgradeTask>
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_13_RemoveFutureChangesets</upgradeTask>
+        <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_15_LinkUpdateAuthorisedInitialise</upgradeTask>
     </ao>
 
     <!-- Integrated account -->
