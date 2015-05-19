@@ -370,7 +370,7 @@
                 <artifactId>maven-jira-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
+                    <jvmArgs>-Xmx1024m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
                         <baseurl.jira>http://localhost:2990/jira</baseurl.jira>

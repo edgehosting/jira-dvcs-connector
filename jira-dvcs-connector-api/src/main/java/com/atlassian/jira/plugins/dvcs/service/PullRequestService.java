@@ -42,7 +42,7 @@ public interface PullRequestService
 
     /**
      * Creates a {@link RepositoryPullRequestMapping} in the database and raises a {@link com.atlassian.jira.plugins.dvcs.event.PullRequestCreatedEvent}.
-     * <p/>
+     *
      * This should really work with {@link PullRequest} but there's currently no straightforward way to convert one of
      * those into a RepositoryPullRequestMapping.
      *
@@ -53,10 +53,10 @@ public interface PullRequestService
 
     /**
      * Updates a {@link RepositoryPullRequestMapping} in the database and raises {@link com.atlassian.jira.plugins.dvcs.event.PullRequestUpdatedEvent}.
-     * <p/>
+     *
      * This should really take a {@link PullRequest} as its parameter but there's currently no straightforward way to
      * convert one of those into a RepositoryPullRequestMapping.
-     * <p/>
+     * <p>
      * Note that this method does not attempt to compare the previous and current state of the pull request mapping: it
      * always performs the update and always raises an event.
      *

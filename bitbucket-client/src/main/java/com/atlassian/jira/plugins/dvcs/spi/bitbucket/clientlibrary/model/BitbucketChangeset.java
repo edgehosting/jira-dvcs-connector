@@ -21,7 +21,7 @@ import java.util.List;
  *             "file": "Readme"
  *         }
  *     ],
- *     "raw_author": "Mary Anthony <manthony@172-28-13-105.staff.sf.atlassian.com>",
+ *     "raw_author": "Mary Anthony &lt;manthony@172-28-13-105.staff.sf.atlassian.com&gt;",
  *     "utctimestamp": "2012-07-23 22:26:36+00:00",
  *     "author": "Mary Anthony",
  *     "timestamp": "2012-07-24 00:26:36",
@@ -36,12 +36,7 @@ import java.util.List;
  * }, ...
  * </pre>
  *
- * 
- * <br /><br />
- * Created on 12.7.2012, 16:30:43
- * <br /><br />
  * @author jhocman@atlassian.com
- *
  */
 public class BitbucketChangeset implements Serializable
 {

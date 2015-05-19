@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 
 /**
  * Class to assist with constructing urls when querying rest resources during integration tests.
- * <p/>
+ *
  * If the constructor {@code RestUrlBuilder(String)} is used, then an JIRA base url of "http://" + hostname + ":2990/jira"
  * is assumed, and this is returned from {@code getBaseUrlFast()}. If the constructor
  * {@code RestUrlBuilder(JiraTestedProduct, String)} is used, then the {@code JiraTestedProduct} is queried to get the

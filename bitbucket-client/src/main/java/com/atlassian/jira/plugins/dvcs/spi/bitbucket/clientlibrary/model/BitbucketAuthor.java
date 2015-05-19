@@ -3,14 +3,13 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
 import java.io.Serializable;
 
 /**
+ * <pre>
  * BitbucketAuthor
  * {
- *   "raw": "John Doe <john.doe@gmail.com>",
+ *   "raw": "John Doe &lt;john.doe@gmail.com&gt;",
  *   "user": {...}
  * }
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
- *
+ * </pre>
  */
 public class BitbucketAuthor implements Serializable
 {

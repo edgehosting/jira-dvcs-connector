@@ -32,8 +32,6 @@ import static com.atlassian.jira.plugins.dvcs.spi.github.CustomPullRequestServic
 
 /**
  * Message consumer for {@link com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubPullRequestPageMessage}
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 @Component
 public class GitHubPullRequestPageMessageConsumer implements MessageConsumer<GitHubPullRequestPageMessage>

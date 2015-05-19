@@ -9,18 +9,6 @@ import org.apache.http.impl.auth.BasicScheme;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- * BasicAuthRemoteRequestor
- *
- *
- * <br />
- * <br />
- * Created on 13.7.2012, 10:26:31 <br />
- * <br />
- *
- * @author jhocman@atlassian.com
- *
- */
 public class BasicAuthRemoteRequestor extends BaseRemoteRequestor
 {
 

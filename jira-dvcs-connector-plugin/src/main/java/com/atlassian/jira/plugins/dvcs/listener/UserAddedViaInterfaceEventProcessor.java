@@ -17,21 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
- * {@link Runnable} processor that handles logic beside
- * invitations for user added to JIRA via
+ * {@link Runnable} processor that handles logic beside invitations for user added to JIRA via
  * user interface.
- *
- * 
- * <br /><br />
- * Created on 21.6.2012, 15:32:33
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
-
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
 
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";

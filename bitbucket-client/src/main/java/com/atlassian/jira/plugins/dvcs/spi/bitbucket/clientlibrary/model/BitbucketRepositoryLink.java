@@ -18,12 +18,6 @@ import java.io.Serializable;
  *       "id": 1
  *   }
  * </pre>
- * 
- * <br /><br />
- * Created on 12.7.2012, 16:56:07
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class BitbucketRepositoryLink implements Serializable
 {

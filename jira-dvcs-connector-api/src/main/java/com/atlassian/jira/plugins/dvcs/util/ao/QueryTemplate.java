@@ -71,7 +71,7 @@ public abstract class QueryTemplate
     }
 
     /**
-     * @return Responsible for query building.
+     * Responsible for query building.
      */
     protected abstract void build();
 

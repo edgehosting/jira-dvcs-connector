@@ -8,8 +8,6 @@ import java.util.Set;
 
 /**
  * Interface to retrieve historical issue a project keys for issue
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public interface IssueAndProjectKeyManager
 {
