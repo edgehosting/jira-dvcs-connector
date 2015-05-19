@@ -42,7 +42,7 @@ public class SmartCommitTest extends AbstractDVCSTest
 
     private RepositoryTestHelper repositoryTestHelper;
 
-    @BeforeClass
+    @BeforeClass (dependsOnMethods = "onTestsEnvironmentSetup")
     public void beforeClass()
     {
         new JiraLoginPageController(getJiraTestedProduct()).login();
