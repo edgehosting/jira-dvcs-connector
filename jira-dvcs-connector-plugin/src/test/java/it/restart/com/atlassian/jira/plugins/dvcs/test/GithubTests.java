@@ -18,12 +18,10 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAcco
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
-import org.hamcrest.Matchers;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -35,8 +33,8 @@ import java.util.List;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_API_URL;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.REPOSITORY_NAME;
-import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
@@ -83,7 +81,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -94,16 +93,17 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), true);
+        OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
-        Poller.waitUntil(organization.getRepositories(true).get(3).getSyncIcon().timed().hasClass("running"), Matchers.is(false), Poller.by(2000));
-
         final String expectedMessage = "Mon Feb 06 2012";
-        RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
+        final RepositoryDiv repositoryDiv = organization.findRepository(REPOSITORY_NAME);
         assertThat(repositoryDiv).isNotNull();
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
         ChangesetLocalRestpoint changesetLocalRestpoint = new ChangesetLocalRestpoint();
@@ -157,7 +157,11 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void testCommitStatistics()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), true);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT,
+                getOAuthCredentials(), false);
+        final RepositoryDiv repositoryDiv = organization.findRepository("test-project");
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
 
         // QA-2
         List<BitBucketCommitEntry> commitMessages = new JiraViewIssuePageController(jira, "QA-3").getCommits(1); // throws AssertionError with other than 1 message
@@ -225,7 +229,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
+        organization.enableAllRepos();
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, DVCS_CONNECTOR_TEST_ACCOUNT);
@@ -240,7 +245,8 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     public void autoLinkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), true);
+        final OrganizationDiv organization = rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
+        organization.enableAllRepos();
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB, JIRA_BB_CONNECTOR_ACCOUNT);

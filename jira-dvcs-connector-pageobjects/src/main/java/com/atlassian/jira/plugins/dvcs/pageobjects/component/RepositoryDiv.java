@@ -67,8 +67,7 @@ public class RepositoryDiv
     public void sync()
     {
         final PageElement syncIcon = getSyncIcon();
-        waitUntilTrue(and(syncIcon.timed().isEnabled(),
-                syncIcon.timed().isVisible()));
+        waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isEnabled(), syncIcon.timed().isVisible()));
         syncIcon.click();
         waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
         waitUntil(syncIcon.timed().hasClass("running"), is(false), by(60, SECONDS));
