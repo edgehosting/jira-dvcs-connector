@@ -102,6 +102,9 @@ public class GithubCommunicator implements DvcsCommunicator
     @ComponentImport
     private ApplicationProperties applicationProperties;
 
+    @Resource
+    private UserServiceFactory userServiceFactory;
+
     protected final GithubClientProvider githubClientProvider;
     protected final OAuthStore oAuthStore;
 
@@ -144,9 +147,9 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
-    public boolean isErrorInUsername(String hostUrl, String accountName){
-        UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
-        User user;
+    public boolean isUsernameCorrect(String hostUrl, String accountName){
+        UserService userService = userServiceFactory.createUserService(githubClientProvider.createClient(hostUrl));
+        User user = null;
         try
         {
           user = userService.getUser(accountName);
@@ -161,10 +164,9 @@ public class GithubCommunicator implements DvcsCommunicator
             return true;
         }
         else{
+            //if we have blown the rate limit, we give them the benefit of the doubt
             return hasExceededRateLimit(userService.getClient());
         }
-
-
     }
 
     @Override
@@ -711,7 +713,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     private boolean hasExceededRateLimit(GitHubClient client){
-        return client.getRemainingRequests() != -1;
+        return client.getRemainingRequests() == -1;
     }
 
 }

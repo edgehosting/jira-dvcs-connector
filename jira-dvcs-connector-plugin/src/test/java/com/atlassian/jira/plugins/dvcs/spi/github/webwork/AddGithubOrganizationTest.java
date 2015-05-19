@@ -237,10 +237,10 @@ public class AddGithubOrganizationTest {
     @Test
     public void testDoValidationAnalyticsNoError() throws Exception
     {
-        addGithubOrganization.setSource(SAMPLE_SOURCE);
+        addGithubOrganization.setUrl(SAMPLE_SOURCE);
         addGithubOrganization.setOrganization("org");
         final AccountInfo accountInfo = mock(AccountInfo.class);
-        when(organizationService.getAccountInfo(anyString(), anyString(), Mockito.eq(GithubCommunicator.GITHUB))).thenReturn(accountInfo);
+        when(githubCommunicator.isUsernameCorrect(SAMPLE_SOURCE, "org")).thenReturn(true);
         addGithubOrganization.doValidation();
         verifyNoMoreInteractions(eventPublisher);
     }
@@ -257,16 +257,4 @@ public class AddGithubOrganizationTest {
         verifyNoMoreInteractions(eventPublisher);
     }
 
-    @Test
-    public void checkRateLimitWorkaroundWithNoRemainingRequests(){
-        final String organization = "org";
-        addGithubOrganization.setSource(SAMPLE_SOURCE);
-        addGithubOrganization.setOrganization(organization);
-        when(githubCommunicator.getAccountInfo("", organization)).thenReturn(null);
-        when(githubCommunicator.hasRemainingRequests(SAMPLE_SOURCE)).thenReturn(false);
-
-        addGithubOrganization.doValidation();
-
-        verifyNoMoreInteractions(eventPublisher);
-    }
 }

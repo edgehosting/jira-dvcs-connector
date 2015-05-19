@@ -104,7 +104,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
         if (!featureManager.isEnabled(DISABLE_USERNAME_VALIDATION))
         {
-            if (githubCommunicator.isErrorInUsername(url, organization))
+            if (!githubCommunicator.isUsernameCorrect(url, organization))
             {
                 addErrorMessage("Invalid user/team account.");
             }
