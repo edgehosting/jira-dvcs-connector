@@ -39,7 +39,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
 {
-    private static final String ATLASSIAN = "atlassian";
+    private static final String ATLASSIAN_TEAM_ACCOUNT = "atlassian";
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
     public static final String GITHUB_ENTERPRISE_URL = System.getProperty("githubenterprise.url", "http://192.168.2.214");
     private OAuth oAuth;
@@ -87,7 +87,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         // we should see 'private-dvcs-connector-test' repo
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         OrganizationDiv organization = rpc.addOrganization(getGHEAccountType(GITHUB_ENTERPRISE_URL),
-                ATLASSIAN, new OAuthCredentials(oAuth.key, oAuth.secret), false);
+                ATLASSIAN_TEAM_ACCOUNT, new OAuthCredentials(oAuth.key, oAuth.secret), false);
 
         assertThat(organization.containsRepository("private-dvcs-connector-test"));
     }
