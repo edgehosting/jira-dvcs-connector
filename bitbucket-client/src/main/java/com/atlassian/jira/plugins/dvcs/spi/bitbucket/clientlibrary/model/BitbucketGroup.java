@@ -16,14 +16,14 @@ import java.util.List;
  *               "username": "jstepka",
  *               "first_name": "Justen",
  *               "last_name": "Stepka",
- *               "avatar": "https://secure.gravatar.com/avatar/12e5043280f67465b68ac42985082498?d=identicon&s=32",
+ *               "avatar": "https://secure.gravatar.com/avatar/12e5043280f67465b68ac42985082498?d=identicon&amp;s=32",
  *               "resource_uri": "/1.0/users/jstepka"
  *           },
  *           {
  *               "username": "detkin",
  *               "first_name": "Dylan",
  *               "last_name": "Etkin",
- *               "avatar": "https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=identicon&s=32",
+ *               "avatar": "https://secure.gravatar.com/avatar/e1ef8ef737e394a17ffbc27c889c2b22?d=identicon&amp;s=32",
  *               "resource_uri": "/1.0/users/detkin"
  *           }
  *       ],
@@ -31,19 +31,14 @@ import java.util.List;
  *           "username": "baratrion",
  *           "first_name": "Mehmet S",
  *           "last_name": "Catalbas",
- *           "avatar": "https://secure.gravatar.com/avatar/55a1369161d3a648729b59cabf160e70?d=identicon&s=32",
+ *           "avatar": "https://secure.gravatar.com/avatar/55a1369161d3a648729b59cabf160e70?d=identicon&amp;s=32",
  *           "resource_uri": "/1.0/users/baratrion"
  *       },
  *       "slug": "developers"
  *   }
  * </pre>
  *
- * 
- * <br /><br />
- * Created on 12.7.2012, 16:45:40
- * <br /><br />
  * @author jhocman@atlassian.com
- *
  */
 public class BitbucketGroup implements Serializable
 {

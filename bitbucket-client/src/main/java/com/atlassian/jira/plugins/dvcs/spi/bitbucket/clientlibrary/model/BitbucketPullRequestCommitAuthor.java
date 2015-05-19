@@ -6,7 +6,7 @@ import java.io.Serializable;
 *
 * <pre>
 *     "author": {
-*               "raw": "Erik van Zijst <erik.van.zijst@gmail.com>",
+*               "raw": "Erik van Zijst &lt;erik.van.zijst@gmail.com&gt;",
 *               "user": {
 *                   "username": "erik",
 *                   "href": "/api/1.0/users/erik",

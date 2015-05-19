@@ -8,8 +8,6 @@ import java.util.Set;
 
 /**
  * Message for a particular GitHub pull request page
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public class GitHubPullRequestPageMessage extends BaseProgressEnabledMessage
 {

@@ -11,15 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Need for reflection of hierarchy of
- * {@link BitbucketPullRequestBaseActivity}.
- *
- * 
- * <br /><br />
- * Created on 14.1.2013, 16:34:53
- * <br /><br />
- * @author jhocman@atlassian.com
- *
+ * Need for reflection of hierarchy of {@link BitbucketPullRequestBaseActivity}.
  */
 public class BitbucketPullRequestActivityEnvelopeDeserializer implements JsonDeserializer<BitbucketPullRequestActivityInfo>
 {

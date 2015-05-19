@@ -17,14 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The Class UserAddedExternallyEventProcessor.
- * <p/>
- * {@link Runnable} processor that handles logic beside invitations for user added to JIRA i.e. via crowd so not via
+ * A {@link Runnable} processor that handles logic beside invitations for user added to JIRA i.e. via crowd so not via
  * user interface.
- * <p/>
- * <br /> <br /> Created on 21.6.2012, 15:22:43 <br /> <br />
- *
- * @author jhocman@atlassian.com
  */
 public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {

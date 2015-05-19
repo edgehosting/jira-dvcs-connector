@@ -4,14 +4,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/**
- * BitbucketPullRequest
- * <p/>
- * <p/>
- * <br /> <br /> Created on 11.12.2012, 14:02:57 <br /> <br />
- *
- * @author jhocman@atlassian.com
- */
 public class BitbucketPullRequest implements Serializable
 {
     private static final long serialVersionUID = 846355472211323786L;

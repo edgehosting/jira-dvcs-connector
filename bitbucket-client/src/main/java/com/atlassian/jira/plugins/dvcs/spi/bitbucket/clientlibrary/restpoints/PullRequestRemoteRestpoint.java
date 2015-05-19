@@ -28,14 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * PullRequestRemoteRestpoint
- * <p/>
- * <p/>
- * <br /><br /> Created on 11.12.2012, 13:14:31 <br /><br />
- *
- * @author jhocman@atlassian.com
- */
 public class PullRequestRemoteRestpoint
 {
 

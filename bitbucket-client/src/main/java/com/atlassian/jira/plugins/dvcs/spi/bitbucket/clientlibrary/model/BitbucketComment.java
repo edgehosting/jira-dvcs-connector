@@ -17,14 +17,14 @@ import java.util.Date;
  *            "first_name": "Julius",
  *            "last_name": "Hocman",
  *            "is_team": false,
- *            "avatar": "http://www.gravatar.com/avatar/23d0d498ca487a87a56289478380dd85?d=http%3A%2F%2Fcentos-6-vagrant.vagrantup.com%3A8000%2Fm%2Fdev%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&s=32",
+ *            "avatar": "http://www.gravatar.com/avatar/23d0d498ca487a87a56289478380dd85?d=http%3A%2F%2Fcentos-6-vagrant.vagrantup.com%3A8000%2Fm%2Fdev%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&amp;s=32",
  *            "resource_uri": "/1.0/users/jhocman"
  *       },
  *        "pr_repo": {
  *            "owner": "jhocman",
  *            "slug": "hgrepoindahouse"
  *        },
- *        "content_rendered": "<p>Comment on pull request.</p>",
+ *        "content_rendered": "&lt;p&gt;Comment on pull request.&lt;p&gt;",
  *        "deleted": false,
  *        "utc_last_updated": "2012-12-05 09:45:36+00:00",
  *        "comment_id": 1,
@@ -56,8 +56,8 @@ import java.util.Date;
  *       "filename_hash": null,
  *       "filename": null,
  *       "content": "This is a very good change. Been waiting for it.",
- *       "content_rendered": "<p>This is a very good change. Been waiting for it.</p>\n",
- *        "user_avatar_url": "https://secure.gravatar.com/avatar/0bc5bd490000b8e63c35c0f54e667b9e?d=identicon&s=32",
+ *       "content_rendered": "&lt;p&gt;This is a very good change. Been waiting for it.&lt;/p&gt;\n",
+ *        "user_avatar_url": "https://secure.gravatar.com/avatar/0bc5bd490000b8e63c35c0f54e667b9e?d=identicon&amp;s=32",
  *       "line_from": null,
  *       "line_to": null,
  *       "utc_created_on": "2012-07-23 23:17:01+00:00",

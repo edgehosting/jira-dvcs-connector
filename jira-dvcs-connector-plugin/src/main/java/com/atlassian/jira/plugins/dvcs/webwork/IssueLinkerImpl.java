@@ -34,7 +34,7 @@ public class IssueLinkerImpl implements IssueLinker
     }
 
     /**
-     * Code copied mostly from {@link AbstractAppLinkRendererComponent#linkText} (applinks-linker plugin)
+     * Code copied mostly from the AbstractAppLinkRendererComponent.linkText in the applinks-linker plugin
      * @param text
      * @return
      */
