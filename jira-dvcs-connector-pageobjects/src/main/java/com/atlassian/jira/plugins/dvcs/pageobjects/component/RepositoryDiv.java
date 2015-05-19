@@ -7,6 +7,7 @@ import static com.atlassian.pageobjects.elements.query.Conditions.and;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.AJAX_ACTION;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.is;
 
@@ -67,8 +68,9 @@ public class RepositoryDiv
     public void sync()
     {
         final PageElement syncIcon = getSyncIcon();
-        waitUntil(and(syncIcon.timed().isPresent(), syncIcon.timed().isEnabled(),
-                syncIcon.timed().isVisible()), is(true), by(20, SECONDS));
+        waitUntilTrue(and(syncIcon.withTimeout(AJAX_ACTION).timed().isPresent(),
+                syncIcon.withTimeout(AJAX_ACTION).timed().isEnabled(),
+                syncIcon.withTimeout(AJAX_ACTION).timed().isVisible()));
         syncIcon.click();
         waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
         waitUntil(syncIcon.timed().hasClass("running"), is(false), by(60, SECONDS));
