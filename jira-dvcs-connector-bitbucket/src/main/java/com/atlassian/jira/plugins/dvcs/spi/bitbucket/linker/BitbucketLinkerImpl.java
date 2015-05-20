@@ -149,12 +149,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
                 log.debug("No projects to link");
                 return;
             }
-
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
-
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
                    getRepositoryLinkUrl() , constructProjectsRex(forProjects));
-
             repositoryService.setPreviouslyLinkedProjects(repository, forProjects);
             repository.setUpdateLinkAuthorised(true);
             repositoryService.save(repository);
@@ -163,14 +160,12 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         {
             log.info("Bitbucket Account not authorised to install Repository Link on " + repository.getRepositoryUrl());
             repository.setUpdateLinkAuthorised(false);
-
             repositoryService.save(repository);
         }
         catch(BitbucketRequestException e){
             log.info("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
                     + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects), e);
         }
-
     }
 
     private String getRepositoryLinkUrl(){
