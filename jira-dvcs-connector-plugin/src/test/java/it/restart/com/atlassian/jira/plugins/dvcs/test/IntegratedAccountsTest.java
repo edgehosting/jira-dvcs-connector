@@ -2,11 +2,14 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount.AccountType;
@@ -15,9 +18,6 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
 import it.util.TestAccounts;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
@@ -153,6 +153,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         removeAllIntegratedAccounts();
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+
     }
 
     /**
@@ -230,6 +231,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         buildOnDemandProperties();
         refreshIntegratedAccounts();
+        // Poller instead
         new WebDriverWait(jira.getTester().getDriver(), 30).until(new Predicate<WebDriver>()
         {
 
@@ -259,18 +261,9 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         try
         {
-            String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reload";
+           String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reloadSync";
             GetMethod getMethod = new GetMethod(restUrl);
             Assert.assertEquals(200, new HttpClient().executeMethod(getMethod));
-
-            try
-            {
-                Thread.sleep(5000);
-            } catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-
-            }
         } catch (IOException e)
         {
             throw new RuntimeException(e);
