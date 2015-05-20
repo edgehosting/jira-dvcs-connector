@@ -13,13 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.DIALOG_LOAD;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.Matchers.is;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
 public class OrganizationDiv
 {
@@ -142,7 +139,7 @@ public class OrganizationDiv
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30, SECONDS));
+        waitUntilFalse(elementFinder.find(By.id("refreshing-account-dialog")).withTimeout(PAGE_LOAD).timed().isVisible());
     }
 
     private AccountsPageAccountControlsDialog findControlDialog()
