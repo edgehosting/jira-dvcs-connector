@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.1.3-SNAPSHOT</version>
+        <version>3.2.0-SNAPSHOT</version>
     </parent>
     <organization>
         <name>Atlassian</name>
@@ -58,6 +58,10 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
