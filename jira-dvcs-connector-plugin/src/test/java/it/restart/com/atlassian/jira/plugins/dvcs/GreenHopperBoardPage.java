@@ -6,8 +6,11 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 
 import java.util.List;
+import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -19,6 +22,9 @@ import static org.hamcrest.Matchers.is;
  */
 public class GreenHopperBoardPage implements Page
 {
+    @Inject
+    WebDriver driver;
+
     @ElementBy(cssSelector="a[data-link-id='com.pyxis.greenhopper.jira:project-sidebar-plan-scrum'], #plan-toggle")
     PageElement boardPlanToggleViewButton;
 
@@ -34,8 +40,8 @@ public class GreenHopperBoardPage implements Page
 
     public void goToQABoardPlan()
     {
-        Poller.waitUntil(boardPlanToggleViewButton.timed().isVisible(), is(true), by(15, SECONDS));
-        boardPlanToggleViewButton.click();
+        Poller.waitUntil(boardPlanToggleViewButton.timed().isVisible(), is(true), by(30, SECONDS));
+        driver.findElement(By.tagName("body")).sendKeys(Keys.NUMPAD1);
         Poller.waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
     }
 
