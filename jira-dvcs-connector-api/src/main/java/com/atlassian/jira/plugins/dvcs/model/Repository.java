@@ -11,8 +11,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
-@XmlRootElement(name = "repository")
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement (name = "repository")
+@XmlAccessorType (XmlAccessType.FIELD)
 public class Repository implements Serializable
 {
     private int id;
@@ -25,26 +25,26 @@ public class Repository implements Serializable
     private boolean deleted;
     private boolean smartcommitsEnabled;
     private String owner;
-    
+
     private Date activityLastSync;
-    
+
     /**
      * Last activity date, either last commit or last PR activity
      */
     private Date lastActivityDate;
-    
+
     private String repositoryUrl;
     private String logo;
     private boolean fork;
     private Repository forkOf;
-    
+
     private transient Credential credential;
     private transient String orgHostUrl;
     private transient String orgName;
-    
+
     @XmlElement
     private DefaultProgress sync;
-    public boolean linkUpdateAuthorised;
+    private transient boolean updateLinkAuthorised;
 
     public Repository()
     {
@@ -52,7 +52,7 @@ public class Repository implements Serializable
     }
 
     public Repository(int id, int organizationId, String dvcsType, String slug, String name, Date lastCommitDate,
-             boolean linked, boolean deleted, Credential credential, boolean linkUpdateAuthorised)
+            boolean linked, boolean deleted, Credential credential, boolean updateLinkAuthorised)
     {
         this.id = id;
         this.organizationId = organizationId;
@@ -63,7 +63,7 @@ public class Repository implements Serializable
         this.linked = linked;
         this.deleted = deleted;
         this.credential = credential;
-        this.linkUpdateAuthorised = linkUpdateAuthorised;
+        this.updateLinkAuthorised = updateLinkAuthorised;
     }
 
     public int getId()
@@ -125,7 +125,7 @@ public class Repository implements Serializable
     {
         this.lastCommitDate = lastCommitDate;
     }
-    
+
     public Date getLastActivityDate()
     {
         return lastActivityDate;
@@ -165,7 +165,7 @@ public class Repository implements Serializable
     {
         this.deleted = deleted;
     }
-    
+
     public String getOrgHostUrl()
     {
         return orgHostUrl;
@@ -209,9 +209,9 @@ public class Repository implements Serializable
     @Override
     public boolean equals(Object obj)
     {
-        if (obj == null) return false;
-        if (this==obj) return true;
-        if (this.getClass()!=obj.getClass()) return false;
+        if (obj == null) { return false; }
+        if (this == obj) { return true; }
+        if (this.getClass() != obj.getClass()) { return false; }
         Repository that = (Repository) obj;
         return new EqualsBuilder()
                 .append(organizationId, that.organizationId)
@@ -220,6 +220,7 @@ public class Repository implements Serializable
                 .append(name, that.name)
                 .append(linked, that.linked)
                 .append(deleted, that.deleted)
+                .append(updateLinkAuthorised, that.updateLinkAuthorised)
                 .isEquals();
     }
 
@@ -233,6 +234,7 @@ public class Repository implements Serializable
                 .append(name)
                 .append(linked)
                 .append(deleted)
+                .append(updateLinkAuthorised)
                 .toHashCode();
     }
 
@@ -290,7 +292,7 @@ public class Repository implements Serializable
     public String toString()
     {
         return repositoryUrl + ", " + name + ", " + linked + ", " + deleted + ", " + smartcommitsEnabled;
-	}
+    }
 
     public Date getActivityLastSync()
     {
@@ -302,12 +304,14 @@ public class Repository implements Serializable
         this.activityLastSync = activityLastSync;
     }
 
-    public void setLinkUpdateAuthorised(boolean linkUpdateAuthorised){
-        this.linkUpdateAuthorised = linkUpdateAuthorised;
+    public void setUpdateLinkAuthorised(boolean updateLinkAuthorised)
+    {
+        this.updateLinkAuthorised = updateLinkAuthorised;
     }
 
-    public boolean getLinkUpdateAuthorised(){
-        return linkUpdateAuthorised;
+    public boolean getUpdateLinkAuthorised()
+    {
+        return updateLinkAuthorised;
     }
 
 }

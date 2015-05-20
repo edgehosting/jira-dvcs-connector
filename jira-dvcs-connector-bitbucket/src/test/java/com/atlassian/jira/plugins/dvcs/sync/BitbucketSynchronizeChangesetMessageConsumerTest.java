@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -103,7 +102,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         repository = new Repository();
         repository.setId(repoId);
-        repository.setLinkUpdateAuthorised(true);
+        repository.setUpdateLinkAuthorised(true);
         progress = new DefaultProgress();
         refreshAfterSynchronizedAt = new Date();
         secondToLastmessage = setUpChangesetMessage(secondToLastChangesetPage);
@@ -190,9 +189,9 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     }
 
     @Test
-    public void testOnReceiveLastMessageWhenUnauthorizedToInstallLinks() throws Exception
+    public void testOnReceiveLastMessageWhenUnauthorisedToInstallLinks() throws Exception
     {
-        repository.setLinkUpdateAuthorised(false);
+        repository.setUpdateLinkAuthorised(false);
         when(communicator.getNextPage(any(Repository.class),
                 eq(includeNodes), eq(excludeNodes), eq(secondToLastChangesetPage))).thenReturn(lastChangesetPage);
         when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null); //changeset is not already in the database
@@ -202,8 +201,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         verify(cachingCommunicator, never()).linkRepository(any(Repository.class), any(Set.class));
         verifyNoMoreInteractions(messagingService);
     }
-
-
+    
     private void setUpChangesetPages()
     {
         newChangeset1 = new BitbucketNewChangeset();

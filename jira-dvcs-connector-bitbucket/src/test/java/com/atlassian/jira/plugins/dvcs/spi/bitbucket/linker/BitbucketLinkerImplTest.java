@@ -102,7 +102,7 @@ public class BitbucketLinkerImplTest
         when(repositoryLinkRemoteRestpoint.getRepositoryLinks
                 (repository.getOrgName(), repository.getSlug())).thenReturn(links);
         bitbucketLinker.unlinkRepository(repository);
-        verify(repositoryLinkRemoteRestpoint).getRepositoryLinks(repository.getOrgName(),repository.getSlug());
+        verify(repositoryLinkRemoteRestpoint).getRepositoryLinks(repository.getOrgName(), repository.getSlug());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link2.getId());
         verifyNoMoreInteractions(repositoryLinkRemoteRestpoint);
@@ -125,8 +125,8 @@ public class BitbucketLinkerImplTest
     public void testLinkRepositoryWhenNoNewKeys() throws Exception
     {
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeys);
-
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
+        verify(repositoryLinkRemoteRestpoint, never()).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
 
     }
 

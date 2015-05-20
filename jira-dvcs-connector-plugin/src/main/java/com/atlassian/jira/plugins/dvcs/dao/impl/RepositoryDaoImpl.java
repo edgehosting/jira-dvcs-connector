@@ -302,7 +302,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setActivityLastSync(repository.getActivityLastSync());
                     rm.setLogo(repository.getLogo());
                     rm.setFork(repository.isFork());
-                    rm.setUpdateLinkAuthorised(repository.getLinkUpdateAuthorised());
+                    rm.setUpdateLinkAuthorised(repository.getUpdateLinkAuthorised());
                     if (repository.getForkOf() != null)
                     {
                         rm.setForkOfName(repository.getForkOf().getName());

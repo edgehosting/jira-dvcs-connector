@@ -107,7 +107,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Override
     public void linkRepository(Repository repository, Set<String> projectKeysToLink)
     {
-
         Set<String> previouslyLinkedProjects = new HashSet<String>();
         previouslyLinkedProjects.addAll(repositoryService.getPreviouslyLinkedProjects(repository));
 
@@ -154,24 +153,28 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
 
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
-                    getBaseUrl() + "/browse/\\1", constructProjectsRex(forProjects));
+                   getRepositoryLinkUrl() , constructProjectsRex(forProjects));
 
             repositoryService.setPreviouslyLinkedProjects(repository, forProjects);
-            repository.setLinkUpdateAuthorised(true);
+            repository.setUpdateLinkAuthorised(true);
             repositoryService.save(repository);
         }
         catch (BitbucketRequestException.Forbidden_403 e)
         {
             log.info("Bitbucket Account not authorised to install Repository Link on " + repository.getRepositoryUrl());
-            repository.setLinkUpdateAuthorised(false);
+            repository.setUpdateLinkAuthorised(false);
 
             repositoryService.save(repository);
         }
         catch(BitbucketRequestException e){
-            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
+            log.info("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
                     + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects), e);
         }
 
+    }
+
+    private String getRepositoryLinkUrl(){
+        return getBaseUrl() + "/browse/\\1";
     }
 
     private String constructProjectsRex(Collection<String> projectKeys)
