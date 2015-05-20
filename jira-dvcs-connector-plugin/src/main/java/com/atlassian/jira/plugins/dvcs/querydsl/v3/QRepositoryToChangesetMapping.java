@@ -15,7 +15,7 @@ import static com.mysema.query.types.PathMetadataFactory.forVariable;
  * Changes made by hand:
  *    Map and FK mappings to integers
  *    Map Booleans to BooleanPaths
- *    Map Dates as DateTimePath<Date>
+ *    Map Dates as DateTimePath&lt;Date&gt;
  *
  * Future approach is documented at https://extranet.atlassian.com/x/AAuQj
  */

@@ -29,6 +29,7 @@ import static org.testng.Assert.assertTrue;
 @Listeners ({ WebDriverScreenshotListener.class })
 public abstract class DvcsWebDriverTestCase
 {
+    protected static final String TEST_DATA = "test-dvcs.zip";
     protected String getJiraCallbackUrlForRepository(OrganizationDiv organisation, ProductInstance productInstance, String repositoryName)
     {
         // Always on the path bitbucket
@@ -46,8 +47,12 @@ public abstract class DvcsWebDriverTestCase
     protected void testPostCommitHookAddedAndRemoved(final String accountName, final AccountType accountType,
             final String repositoryName, final JiraTestedProduct jira, final OAuthCredentials oAuthCredentials)
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
-        OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, true);
+        final RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        final OrganizationDiv organisation = rpc.addOrganization(accountType, accountName, oAuthCredentials, false);
+
+        final RepositoryDiv repositoryDiv = organisation.findRepository(repositoryName);
+        repositoryDiv.enableSync();
+        repositoryDiv.sync();
 
         // check postcommit hook is there
         String jiraCallbackUrl = getJiraCallbackUrlForRepository(organisation, jira.getProductInstance(), repositoryName);

@@ -67,6 +67,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 @Component("githubCommunicator")
 public class GithubCommunicator implements DvcsCommunicator
@@ -130,7 +132,6 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
     {
-
         UserService userService = new UserService(githubClientProvider.createClient(hostUrl));
         try
         {
@@ -144,7 +145,6 @@ public class GithubCommunicator implements DvcsCommunicator
                     accountName);
         }
         return null;
-
     }
 
     public boolean isUsernameCorrect(String hostUrl, String accountName){
@@ -178,7 +178,6 @@ public class GithubCommunicator implements DvcsCommunicator
         // We don't know if this is team account or standard account. Let's
         // first get repositories
         // by calling getOrgRepositories
-
         List<org.eclipse.egit.github.core.Repository> repositoriesFromOrganization;
         try
         {
@@ -247,7 +246,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         catch (RequestException e)
         {
-            if (e.getStatus() == 401)
+            if (e.getStatus() == UNAUTHORIZED.getStatusCode())
             {
                 throw new SourceControlException.UnauthorisedException("Invalid credentials", e);
             }
@@ -281,7 +280,6 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
-
         try
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, node);
@@ -293,6 +291,14 @@ public class GithubCommunicator implements DvcsCommunicator
             changeset.setFileDetails(GithubChangesetFactory.transformToFileDetails(commit.getFiles()));
 
             return changeset;
+        }
+        catch (RequestException e)
+        {
+            if (e.getStatus() == FORBIDDEN.getStatusCode())
+            {
+                verifyRateLimitExceeded(commitService.getClient());
+            }
+            throw new SourceControlException("could not get result", e);
         }
         catch (IOException e)
         {
@@ -595,10 +601,19 @@ public class GithubCommunicator implements DvcsCommunicator
                 }
             }
         }
+        catch (RequestException e)
+        {
+            log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
+
+            if (e.getStatus() == FORBIDDEN.getStatusCode())
+            {
+                verifyRateLimitExceeded(repositoryService.getClient());
+            }
+            throw new SourceControlException("Could not retrieve list of branches", e);
+        }
         catch (IOException e)
         {
             log.info("Can not obtain branches list from repository [ " + repository.getSlug() + " ]", e);
-            // we need tip changeset of the branch
             throw new SourceControlException("Could not retrieve list of branches", e);
         }
         return branches;
@@ -716,4 +731,12 @@ public class GithubCommunicator implements DvcsCommunicator
         return client.getRemainingRequests() == -1;
     }
 
+    private void verifyRateLimitExceeded(final GitHubClient githubClient)
+    {
+        RateLimit rateLimit = ((GithubClientWithTimeout) githubClient).getRateLimit();
+        if (rateLimit != null && rateLimit.getRemainingRequests() == 0)
+        {
+            throw new GithubRateLimitExceededException(rateLimit);
+        }
+    }
 }

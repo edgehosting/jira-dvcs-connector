@@ -31,16 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * TODO implement sec. checks so int. account can not be i.e. deleted
  *
- * BitbucketAccountsConfigService
- *
- *
- * <br />
- * <br />
- * Created on 1.8.2012, 13:41:20 <br />
- * <br />
- *
  * @author jhocman@atlassian.com
- *
  */
 @ExportAsService (AccountsConfigService.class)
 @Component

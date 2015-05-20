@@ -12,8 +12,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>3.1.3-SNAPSHOT</version>
-
+    <version>3.3.1-SNAPSHOT</version>
     <licenses>
         <license>
             <name>BSD 2-Clause License</name>
@@ -52,16 +51,17 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.4.2</jira.compile.version>
+        <jira.compile.version>6.5-OD-03-002</jira.compile.version>
+        <jira.software.version>0.29-D20150428T010945</jira.software.version>
+        <testkit.version>6.4.9</testkit.version>
+        <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <!-- these two versions might be overwritten by test profiles -->
-        <jira.version>${jira.compile.version}</jira.version>
-        <jira.data.version>${jira.compile.version}</jira.data.version>
-
+        <jira.version>6.5-OD-03-002</jira.version>
+        <jira.data.version>6.5-OD-03-002</jira.data.version>
         <ao.version>0.28.9</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.6.0-D20140904T040435</greenhopper.version>
-        <testkit.version>6.0.41</testkit.version>
+        <greenhopper.version>6.7-breakit-6</greenhopper.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
@@ -232,7 +232,7 @@
             <dependency>
                 <groupId>com.atlassian.jira.plugins</groupId>
                 <artifactId>jira-software-api</artifactId>
-                <version>1.13</version>
+                <version>${jira.software.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -493,7 +493,13 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0-20150401.155513</jira.compile.version>
+                <jira.compile.version>7.0-OD-02-207</jira.compile.version>
+                <jira.version>7.0-OD-02-207</jira.version>
+                <jira.data.version>7.0-OD-02-207</jira.data.version>
+                <jira.software.version>1.15</jira.software.version>
+                <testkit.version>7.0.32</testkit.version>
+                <greenhopper.version>6.7-breakit-6</greenhopper.version>
+                <jira.data.path></jira.data.path>
             </properties>
         </profile>
         <profile>

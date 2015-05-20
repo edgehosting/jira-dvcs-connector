@@ -11,6 +11,9 @@ import org.openqa.selenium.By;
 import java.util.List;
 import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_URL;
+
 public class GithubOAuthApplicationPage implements Page
 {
     @Inject
@@ -23,7 +26,7 @@ public class GithubOAuthApplicationPage implements Page
 
     public GithubOAuthApplicationPage()
     {
-        this("https://github.com");
+        this(GITHUB_URL);
     }
 
     public GithubOAuthApplicationPage(String hostUrl)
@@ -34,7 +37,16 @@ public class GithubOAuthApplicationPage implements Page
     @Override
     public String getUrl()
     {
-        return hostUrl + "/settings/applications";
+        // if github then we need to visit /settings/developers
+        if (hostUrl.equalsIgnoreCase(GITHUB_URL))
+        {
+            return hostUrl + "/settings/developers";
+        }
+        else // github enterprise
+        {
+            return hostUrl + "/settings/applications";
+        }
+
     }
 
     public void removeConsumer(final OAuth oAuth)
@@ -44,19 +56,48 @@ public class GithubOAuthApplicationPage implements Page
 
     public void removeConsumer(final String appUri)
     {
-        pageElementFinder.find(By.xpath("//a[@href='" + appUri + "']")).click();
-        pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        removeConsumer(By.xpath("//a[@href='" + appUri + "']"));
     }
 
     public void removeConsumerForAppName(final String appName)
     {
-        PageElement link = pageElementFinder.find(By.linkText(appName));
-        link.click();
-        pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        removeConsumer(By.linkText(appName));
+    }
+
+    public void removeConsumer(By bySelector)
+    {
+        removeConsumer(this, bySelector);
     }
 
     public List<PageElement> findOAthApplications(final String partialLinkText)
     {
         return pageElementFinder.findAll(By.partialLinkText(partialLinkText));
+    }
+
+    private static void removeConsumer(final GithubOAuthApplicationPage page, final By bySelector)
+    {
+        final PageElement link = page.pageElementFinder.find(bySelector);
+        if (link.isPresent() && link.isVisible())
+        {
+            link.click();
+            page.pageBinder.bind(GithubOAuthPage.class).removeConsumer();
+        }
+        else
+        {
+            // get next link
+            final PageElement nextPageLink = page.pageElementFinder.find(By.className("next_page"));
+            if (nextPageLink.isPresent() && nextPageLink.isVisible() && nextPageLink.getTagName().equalsIgnoreCase("a")
+                    && nextPageLink.isEnabled())
+            {
+                nextPageLink.click();
+                waitUntilTrue(page.pageElementFinder.find(By.className("table-list-bordered")).timed().isPresent());
+                final GithubOAuthApplicationPage nextPage = page.pageBinder.bind(GithubOAuthApplicationPage.class);
+                removeConsumer(nextPage, bySelector);
+            }
+            else
+            {
+                throw new RuntimeException("Can not find consumer application link");
+            }
+        }
     }
 }

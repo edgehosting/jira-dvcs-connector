@@ -13,9 +13,6 @@ import java.util.Map;
 /**
  * Custom PullRequestService
  * We need to rewrite some methods to support more functionality from GitHub REST API
- *
- * @author Miroslav Stencel <mstencel@atlassian.com>
- *
  */
 public class CustomPullRequestService extends PullRequestService
 {

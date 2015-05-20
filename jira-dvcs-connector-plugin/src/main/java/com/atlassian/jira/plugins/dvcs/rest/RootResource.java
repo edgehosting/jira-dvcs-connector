@@ -365,7 +365,7 @@ public class RootResource
             return Response.ok(currentUser).build();
         } catch (Exception e)
         {
-            log.warn("Error retrieving token owner: " + e.getMessage());
+            log.warn("Error retrieving token owner: " + e.getMessage(), e);
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
@@ -579,6 +579,24 @@ public class RootResource
         try
         {
             ondemandAccountConfig.reloadAsync();
+            return Response.ok("OK").build();
+        } catch (Exception e)
+        {
+            log.error("Failed to reload config.", e);
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
+    @AnonymousAllowed
+    @Path("/integrated-accounts/reloadSync")
+    @Consumes({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_FORM_URLENCODED })
+    @Produces({ MediaType.TEXT_PLAIN })
+    public Response reloadSynchronousIntegratedAccountConfig()
+    {
+        try
+        {
+            ondemandAccountConfig.reload();
             return Response.ok("OK").build();
         } catch (Exception e)
         {

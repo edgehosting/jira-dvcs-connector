@@ -13,8 +13,8 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.UrlMode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
@@ -29,10 +29,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,16 +46,25 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
 
-    RepositoryService repositoryService;
+    @Autowired
+    private RepositoryService repositoryService;
 
     @Autowired
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager, RepositoryService repositoryService)
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
     {
         this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
         this.projectManager = checkNotNull(projectManager);
-        this.repositoryService = checkNotNull(repositoryService);
         this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
+    }
+
+    @VisibleForTesting
+    public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager,
+            final RepositoryService repositoryService)
+    {
+        this(bitbucketClientBuilderFactory, applicationProperties, projectManager);
+        this.repositoryService = repositoryService;
     }
 
     /**

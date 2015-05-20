@@ -101,7 +101,7 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
     }
 
     /**
-     * Calculate the url parameter string of the form "&source=xxx" for source parameter.
+     * Calculate the url parameter string of the form "&amp;source=xxx" for source parameter.
      *
      * If source is null, empty string "" is returned.
      *
@@ -113,11 +113,11 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
     }
 
     /**
-     * Calculate the url parameter string of the form "&source=xxx" for source parameter.
+     * Calculate the url parameter string of the form "&amp;source=xxx" for source parameter.
      *
      * If source is null, empty string "" is returned.
      *
-     * @param paramSeparator either "&" or "?" depending on whether there are other url params.
+     * @param paramSeparator either "&amp;" or "?" depending on whether there are other url params.
      * @return
      */
     protected String getSourceAsUrlParam(String paramSeparator)

@@ -118,10 +118,12 @@ public interface MessagingService
     <P extends HasProgress> void discard(final MessageConsumer<P> consumer, Message<P> message, final DiscardReason discardReason);
 
     /**
-     * @param address
-     *            {@link Message#getAddress()}
-     * @param consumerId
-     *            {@link MessageConsumer#getQueue()}
+     * Get the next message to consume.
+     *
+     * @param consumer {@link MessageConsumer#getQueue()}
+     * @param address {@link Message#getAddress()}
+     * @param <P> The type of message we are processing
+     *
      * @return next message for consuming or null, if queue is already empty
      */
     public <P extends HasProgress> Message<P> getNextMessageForConsuming(MessageConsumer<P> consumer, String address);

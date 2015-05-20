@@ -6,6 +6,7 @@ import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.memory.MemoryCacheManager;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
@@ -55,12 +56,15 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubRateLimitExceededException;
+import com.atlassian.jira.plugins.dvcs.spi.github.RateLimit;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.util.SameThreadExecutor;
+import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -85,12 +89,14 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.TypedResource;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -110,6 +116,8 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GENERIC_ERROR_KEY;
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -120,18 +128,22 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 
 /**
  * Integration test of the DefaultSynchronizer.
  */
 public class DefaultSynchronizerTest
 {
+    private static final String GITHUB_RATE_LIMIT_REACHED_ERROR = "GITHUB_RATE_LIMIT_REACHED_ERROR";
+
     @Mock
     private EventPublisher eventPublisher;
 
@@ -176,6 +188,7 @@ public class DefaultSynchronizerTest
     private BranchService branchService;
 
     @InjectMocks
+    @Spy
     private MessagingService messagingService = new MessagingServiceImplMock();
 
     private BranchDao branchDao;
@@ -261,6 +274,9 @@ public class DefaultSynchronizerTest
     @Mock
     private SyncDisabledHelper syncDisabledHelper;
 
+    @Mock
+    private I18nHelper i18nHelper;
+
     private final CacheManager cacheManager = new MemoryCacheManager();
 
     @InjectMocks
@@ -283,8 +299,12 @@ public class DefaultSynchronizerTest
 
         when(smartCommitsProcessor.startProcess(any(Progress.class), any(Repository.class), any(ChangesetService.class))).thenReturn(Promises.<Void>promise(null));
 
+        when(i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY)).thenReturn("GITHUB_RATE_LIMIT_REACHED_ERROR");
+        when(i18nHelper.getText(GENERIC_ERROR_KEY)).thenReturn("GENERIC_ERROR");
+
         // wire up the DefaultSynchronizer with our mock ThreadEvents
         ReflectionTestUtils.setField(defaultSynchronizer, "repoSyncHelper", repoSyncHelper);
+        ReflectionTestUtils.setField(defaultSynchronizer, "i18nHelper", i18nHelper);
     }
 
     private static class BuilderAnswer implements Answer<Object>
@@ -1208,6 +1228,29 @@ public class DefaultSynchronizerTest
         defaultSynchronizer.doSync(repositoryMock, flags);
 
         verify(communicatorMock).startSynchronisation(repositoryMock, EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS), syncAuditLogMock.getID());
+    }
+
+    @Test
+    public void shouldHandleGithubRateLimitExceededError()
+    {
+        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+
+        GithubCommunicator communicatorMock = mock(GithubCommunicator.class);
+        CachingCommunicator cachingCommunicator = new CachingCommunicator(cacheManager);
+        cachingCommunicator.setDelegate(communicatorMock);
+        when(dvcsCommunicatorProvider.getCommunicator(eq(GithubCommunicator.GITHUB))).thenReturn(cachingCommunicator);
+
+        final RateLimit rateLimit = new RateLimit(10, 0, System.currentTimeMillis());
+
+        EnumSet<SynchronizationFlag> flags = EnumSet.of(SynchronizationFlag.SYNC_CHANGESETS, SynchronizationFlag.SOFT_SYNC);
+        doThrow(new GithubRateLimitExceededException(rateLimit)).when(communicatorMock).startSynchronisation(eq(repositoryMock), any(EnumSet.class), anyInt());
+        when(i18nHelper.getText(DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY)).thenReturn(GITHUB_RATE_LIMIT_REACHED_ERROR);
+
+        defaultSynchronizer.doSync(repositoryMock, flags);
+
+        ArgumentCaptor<Progress> progressCaptor = ArgumentCaptor.forClass(Progress.class);
+        verify(messagingService).tryEndProgress(any(Repository.class), progressCaptor.capture(), any(MessageConsumer.class), anyInt());
+        assertEquals(GITHUB_RATE_LIMIT_REACHED_ERROR, progressCaptor.getValue().getError());
     }
 
     private void checkSynchronization(Graph graph, boolean softSync)

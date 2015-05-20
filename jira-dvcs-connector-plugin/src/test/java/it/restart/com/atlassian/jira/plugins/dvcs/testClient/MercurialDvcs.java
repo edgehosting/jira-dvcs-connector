@@ -244,7 +244,7 @@ public class MercurialDvcs implements Dvcs
             writer = new BufferedWriter(new FileWriter(hgRc));
             writer.write("[hostfingerprints]");
             writer.newLine();
-            writer.write("bitbucket.org = 45:ad:ae:1a:cf:0e:73:47:06:07:e0:88:f5:cc:10:e5:fa:1c:f7:99");
+            writer.write("bitbucket.org = 46:de:34:e7:9b:18:cd:7f:ae:fd:8b:e3:bc:f4:1a:5e:38:d7:ac:24");
             writer.flush();
 
             final String hgRcPath = hgRc.getCanonicalPath();

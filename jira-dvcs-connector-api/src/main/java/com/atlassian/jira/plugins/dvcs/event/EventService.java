@@ -10,8 +10,7 @@ public interface EventService
     /**
      * Stores the given sync event object against a repository. This method uses Jackson to serialise {@code event} into
      * JSON.
-     * <p/>
-     * <p/>
+     *
      * This method delegates to {@link #storeEvent(com.atlassian.jira.plugins.dvcs.model.Repository, SyncEvent,
      * boolean)} passing {@code scheduled=false}.
      *
@@ -27,7 +26,7 @@ public interface EventService
     /**
      * Stores the given sync event object against a repository. This method uses Jackson to serialise {@code event} into
      * JSON.
-     * <p/>
+     *
      * The {@code scheduled} parameter governs how event limits are applied when dispatching this event (limits are
      * higher for event raised during a scheduled sync).
      *
@@ -48,7 +47,7 @@ public interface EventService
      * Dispatches all pending events for the given Repository on the JIRA EventPublisher. This method deletes events as
      * they are published. Note that this method <b>schedules dispatching for asynchronously execution</b> and returns
      * immediately.
-     * <p/>
+     *
      * Synchronisation events may be subjected to limits. See {@link com.atlassian.jira.plugins.dvcs.event.EventLimit}.
      *
      * @param repository a Repository

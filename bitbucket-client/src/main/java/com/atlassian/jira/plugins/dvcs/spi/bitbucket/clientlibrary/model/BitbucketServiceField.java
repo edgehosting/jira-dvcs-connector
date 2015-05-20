@@ -11,12 +11,6 @@ import java.io.Serializable;
  *               "value": "https://bitbucket.org/post"
  *           }
  * </pre>
- * 
- * <br /><br />
- * Created on 12.7.2012, 17:00:19
- * <br /><br />
- * @author jhocman@atlassian.com
- *
  */
 public class BitbucketServiceField implements Serializable
 {

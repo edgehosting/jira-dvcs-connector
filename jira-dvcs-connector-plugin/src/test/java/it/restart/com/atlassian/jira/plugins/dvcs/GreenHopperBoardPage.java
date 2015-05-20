@@ -4,22 +4,20 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
 
 import java.util.List;
 
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.COMPONENT_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 
 /**
  * @author Martin Skurla
  */
 public class GreenHopperBoardPage implements Page
 {
-    @ElementBy(id="plan-toggle")
+    @ElementBy(cssSelector="a[data-link-id='com.pyxis.greenhopper.jira:project-sidebar-plan-scrum'], #plan-toggle")
     PageElement boardPlanToggleViewButton;
 
     @ElementBy(tagName="body")
@@ -29,13 +27,12 @@ public class GreenHopperBoardPage implements Page
     @Override
     public String getUrl()
     {
-        return "/secure/RapidBoard.jspa?rapidView=1&useStoredSettings=true";
+        return "/secure/RapidBoard.jspa?rapidView=1&useStoredSettings=true&view=planning";
     }
 
     public void goToQABoardPlan()
     {
-        Poller.waitUntil(boardPlanToggleViewButton.timed().isVisible(), is(true), by(15, SECONDS));
-        boardPlanToggleViewButton.click();
+        waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
     }
 
     public void assertCommitsAppearOnIssue(String issueKey, int expectedNumberOfAssociatedCommits)
@@ -43,12 +40,12 @@ public class GreenHopperBoardPage implements Page
         PageElement backlogContainerDiv = bodyElement.find(By.className("ghx-backlog-container"));
 
         PageElement qa1Div  = PageElementUtils.findTagWithAttributeValue(backlogContainerDiv, "div", "data-issue-key", issueKey);
-        PageElement qa1Link = PageElementUtils.findTagWithAttributeValue(qa1Div,              "a",   "title",          issueKey);
+        PageElement qa1Link = PageElementUtils.findTagWithAttributeValue(qa1Div, "a", "title", issueKey);
 
         qa1Link.click();
 
         PageElement openIssueTabsMenu = bodyElement.find(By.className("ghx-detail-nav-menu"));
-        Poller.waitUntil(openIssueTabsMenu.timed().isVisible(), is(true), by(15000));
+        waitUntilTrue(openIssueTabsMenu.withTimeout(COMPONENT_LOAD).timed().isVisible());
         PageElement commitsTabLink = PageElementUtils.findTagWithAttributeValue(openIssueTabsMenu, "a", "title", "Commits");
 
         commitsTabLink.click();

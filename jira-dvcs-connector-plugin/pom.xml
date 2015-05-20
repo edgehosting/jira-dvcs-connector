@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.1.3-SNAPSHOT</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
     <organization>
         <name>Atlassian</name>
@@ -58,6 +58,10 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
@@ -353,6 +357,10 @@
                             <groupId>com.atlassian.pocketknife</groupId>
                             <artifactId>atlassian-pocketknife-querydsl</artifactId>
                         </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.compat</groupId>
+                            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                        </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
                 </configuration>
@@ -362,7 +370,7 @@
                 <artifactId>maven-jira-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
+                    <jvmArgs>-Xmx1024m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
                         <baseurl.jira>http://localhost:2990/jira</baseurl.jira>
@@ -375,7 +383,7 @@
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-                    <productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
+                    <productDataPath>${jira.data.path}</productDataPath>
                     <log4jProperties>target/test-classes/log4j.properties</log4jProperties>
                     <pluginArtifacts>
                         <pluginArtifact>
