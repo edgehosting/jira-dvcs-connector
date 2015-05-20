@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
  */
 public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgradeTask
 {
-
     private static final Logger log = LoggerFactory.getLogger(To_14_NewRepositoryColumn.class);
     @Override
     public ModelVersion getModelVersion()
@@ -26,14 +25,11 @@ public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgrad
     public void upgrade(final ModelVersion currentVersion, final ActiveObjects activeObjects)
     {
         log.info("upgrade [ " + getModelVersion() + " ]");
-
         activeObjects.migrate(RepositoryMapping.class);
-
         RepositoryMapping[] repositoryMappings = activeObjects.find(RepositoryMapping.class);
         for(RepositoryMapping repositoryMapping: repositoryMappings){
             initialiseSyncAuthorisation(activeObjects,repositoryMapping);
         }
-
         log.info("upgrade [ " + getModelVersion() + " ]: finished");
     }
 
