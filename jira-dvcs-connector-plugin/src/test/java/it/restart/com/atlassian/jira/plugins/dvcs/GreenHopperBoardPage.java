@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.is;
  */
 public class GreenHopperBoardPage implements Page
 {
-    @ElementBy(id="plan-toggle")
+    @ElementBy(cssSelector="a[data-link-id='com.pyxis.greenhopper.jira:project-sidebar-plan-scrum'], #plan-toggle")
     PageElement boardPlanToggleViewButton;
 
     @ElementBy(tagName="body")
