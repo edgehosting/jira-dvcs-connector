@@ -12,7 +12,8 @@ public class RepositoryDiv
     public RepositoryDiv(PageElement rootElement)
     {
         this.rootElement = rootElement;
-        this.syncRadio = rootElement.find(By.className("radio"));
+        this.syncRadio = rootElement != null? rootElement.find(By.className("radio")) : null;
+
     }
 
     public String getMessage()
@@ -47,8 +48,11 @@ public class RepositoryDiv
 
     public void enableSync()
     {
-        Poller.waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
-        syncRadio.click();
+        if (syncRadio != null)
+        {
+            Poller.waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
+            syncRadio.click();
+        }
     }
 
 }
