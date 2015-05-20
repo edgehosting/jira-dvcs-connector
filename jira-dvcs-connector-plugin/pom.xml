@@ -505,7 +505,7 @@
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <testGroups>integration_tests_without_ghe</testGroups>
         <skipTests>false</skipTests>
-        <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
+        <atlassian.selenium.version>2.2.1-m01-jira-1</atlassian.selenium.version>
         <selenium.version>2.41.0</selenium.version>
         <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
         <devtoolbox.version>2.0.16</devtoolbox.version>
