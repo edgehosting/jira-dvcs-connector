@@ -35,7 +35,6 @@ import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.RequestError;
 import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -113,6 +112,8 @@ public class GithubCommunicatorTest
     @Spy
     private GithubClientWithTimeout gitHubClient = new GithubClientWithTimeout("localhost", 8080, "http");
 
+    private final String HOST_URL = "hostURL";
+    private final String ACCOUNT_Name = "ACCOUNT_Name";
 
     // tested object
     private GithubCommunicator communicator;
@@ -132,11 +133,7 @@ public class GithubCommunicatorTest
     @SuppressWarnings ("deprecation")
     public void testSetupPostHookShouldDeleteOrphan() throws IOException
     {
-        when(repository.getOrgName()).thenReturn("owner");
-        when(repository.getSlug()).thenReturn("slug");
-        
         when(gitHubRESTClient.getHooks(repository)).thenReturn(sampleHooks());
-        
         when(applicationProperties.getBaseUrl()).thenReturn("http://jira.example.com");
         
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
@@ -162,9 +159,7 @@ public class GithubCommunicatorTest
     @SuppressWarnings ("deprecation")
     public void testSetupPostHookAlreadySetUpShouldDeleteOrphan() throws IOException
     {
-        when(repository.getOrgName()).thenReturn("owner");
-        when(repository.getSlug()).thenReturn("slug");
-        
+
         List<GitHubRepositoryHook> hooks = sampleHooks();
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
         hooks.add(samplePullRequestHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
@@ -254,6 +249,10 @@ public class GithubCommunicatorTest
         when(commitService.getClient()).thenReturn(gitHubClient);
         when(repositoryService.getClient()).thenReturn(gitHubClient);
         when(userService.getClient()).thenReturn(gitHubClient);
+        
+        when(githubClientProvider.createClient(HOST_URL)).thenReturn(gitHubClient);
+        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
+        when(userService.getClient()).thenReturn(gitHubClient);
 
         doAnswer(new Answer<RateLimit>()
         {
@@ -304,9 +303,6 @@ public class GithubCommunicatorTest
     public void settingUpPostcommitHook_alreadyExisting() throws Exception
     {
         String postCommitUrl = "postCommitUrl";
-
-        when(repository.getOrgName()).thenReturn("ORG");
-        when(repository.getSlug()).thenReturn("SLUG");
 
         GitHubRepositoryHook changesetsHook = mock(GitHubRepositoryHook.class);
         when(changesetsHook.getConfig()).thenReturn(MapBuilder.build("url", postCommitUrl));
@@ -444,50 +440,38 @@ public class GithubCommunicatorTest
 
     @Test
     public void TestIsUsernameCorrect(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
+        when(githubClientProvider.createClient(HOST_URL)).thenReturn(gitHubClient);
         when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
         try{
-            when(userService.getUser(accountName)).thenReturn(githubUser);
+            when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
         }catch (Exception e)
         {
             throw new RuntimeException(e);
         }
-        assertTrue(communicator.isUsernameCorrect(hostUrl, accountName));
+        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 
     @Test
     public void TestIsUsernameIncorrect(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
-        when(userService.getClient()).thenReturn(gitHubClient);
         when(gitHubClient.getRemainingRequests()).thenReturn(1);
         try{
-            when(userService.getUser(accountName)).thenReturn(null);
+            when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         }catch (Exception e)
         {
             throw new RuntimeException(e);
         }
-        assertFalse(communicator.isUsernameCorrect(hostUrl, accountName));
+        assertFalse(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 
     @Test
     public void TestIsUsernameIncorrectAndBlownRateLimit(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
-        when(userService.getClient()).thenReturn(gitHubClient);
-        when(gitHubClient.getRemainingRequests()).thenReturn(-1);
+        when(gitHubClient.getRemainingRequests()).thenReturn(0);
         try{
-            when(userService.getUser(accountName)).thenReturn(null);
+            when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         }catch (Exception e)
         {
             throw new RuntimeException(e);
         }
-        assertTrue(communicator.isUsernameCorrect(hostUrl, accountName));
+        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 }

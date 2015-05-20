@@ -164,7 +164,7 @@ public class GithubCommunicator implements DvcsCommunicator
             return true;
         }
         else{
-            //if we have blown the rate limit, we give them the benefit of the doubt
+            // if we have blown the rate limit, we give them the benefit of the doubt
             return hasExceededRateLimit(userService.getClient());
         }
     }
@@ -728,7 +728,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     private boolean hasExceededRateLimit(GitHubClient client){
-        return client.getRemainingRequests() == -1;
+        return client.getRemainingRequests() <= 0;
     }
 
     private void verifyRateLimitExceeded(final GitHubClient githubClient)
