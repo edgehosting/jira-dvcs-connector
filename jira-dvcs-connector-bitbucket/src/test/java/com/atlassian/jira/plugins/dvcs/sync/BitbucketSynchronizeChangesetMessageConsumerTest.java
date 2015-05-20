@@ -114,9 +114,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(messagingService.get(eq(BitbucketSynchronizeChangesetMessage.class), anyString())).thenReturn(messageAddress);
         when(communicator.getNextPage(eq(repository),
                 eq(includeNodes), eq(excludeNodes), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
-
         when(repositoryService.get(repoId)).thenReturn(repository);
-
     }
 
     @Test
