@@ -58,7 +58,7 @@
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>6.5-OD-03-002</jira.version>
         <jira.data.version>6.5-OD-03-002</jira.data.version>
-        <ao.version>0.28.9</ao.version>
+        <ao.version>0.29.3</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
         <greenhopper.version>6.7-breakit-6</greenhopper.version>
