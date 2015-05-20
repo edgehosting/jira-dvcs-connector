@@ -20,6 +20,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
+    private final long MAX_WAITING_TIME = 60*1000; // 60 seconds
 
     public RepositoriesPageController(JiraTestedProduct jira)
     {
@@ -93,11 +94,18 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
      */
     public void waitForSyncToFinish()
     {
+        long startTime = System.currentTimeMillis();
         do
         {
             try
             {
                 Thread.sleep(1000l);
+
+                long waitTime = System.currentTimeMillis() - startTime;
+                if (waitTime > MAX_WAITING_TIME)
+                {
+                    break;
+                }
             }
             catch (InterruptedException e)
             {
@@ -105,6 +113,10 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
         }
         while (!isSyncFinished());
+        if(!isSyncFinished())
+        {
+            throw new RuntimeException("Syncing with repos exceeds " + MAX_WAITING_TIME + " seconds");
+        }
     }
 
     private boolean isSyncFinished()
