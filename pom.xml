@@ -484,11 +484,11 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0-OD-02-207</jira.compile.version>
+                <jira.compile.version>7.0.0-SNAPSHOT</jira.compile.version>
                 <jira.data.path></jira.data.path>
-                <jira.data.version>7.0-OD-02-207</jira.data.version>
-                <jira.software.version>1.15</jira.software.version>
-                <jira.version>7.0-OD-02-207</jira.version>
+                <jira.data.version>7.0.0-SNAPSHOT</jira.data.version>
+                <jira.software.version>1.17</jira.software.version>
+                <jira.version>7.0.0-SNAPSHOT</jira.version>
                 <testkit.version>7.0.32</testkit.version>
             </properties>
         </profile>

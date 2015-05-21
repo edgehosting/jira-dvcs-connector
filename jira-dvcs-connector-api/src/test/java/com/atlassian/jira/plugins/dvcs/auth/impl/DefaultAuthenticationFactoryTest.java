@@ -72,21 +72,4 @@ public final class DefaultAuthenticationFactoryTest {
 
         assertThat(authentication).isInstanceOf(OAuthAuthentication.class);
     }
-
-    @Test
-    public void repositoryWithNotNullAdminUserName_ShouldReturnBasicAuthentication()
-    {
-        when(repositoryMock.getCredential()).thenReturn(credentialMock);
-        when(repositoryMock.getOrgName())   .thenReturn("orgName");
-        when(repositoryMock.getOrgHostUrl()).thenReturn("orgHostUrl");
-
-        when(credentialMock.getAccessToken())  .thenReturn(null);
-        when(credentialMock.getAdminUsername()).thenReturn("admimUserName");
-        when(credentialMock.getAdminPassword()).thenReturn("adminPassword");
-
-        AuthenticationFactory authenticationFactory = new DefaultAuthenticationFactory(encryptorMock);
-        Authentication authentication = authenticationFactory.getAuthentication(repositoryMock);
-
-        assertThat(authentication).isInstanceOf(BasicAuthentication.class);
-    }
 }
