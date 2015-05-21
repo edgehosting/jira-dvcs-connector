@@ -45,7 +45,6 @@ public class SmartCommitTest extends AbstractDVCSTest
     @BeforeClass (dependsOnMethods = "onTestsEnvironmentSetup")
     public void beforeClass()
     {
-        getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
