@@ -44,14 +44,14 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
-                BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+                BitbucketRepositoryTestHelper.DvcsType.GIT);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
         forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD,
-                getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+                getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.GIT);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
         MockitoAnnotations.initMocks(this);
