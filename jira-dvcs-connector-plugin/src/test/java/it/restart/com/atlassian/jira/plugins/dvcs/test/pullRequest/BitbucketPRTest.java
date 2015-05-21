@@ -11,6 +11,8 @@ import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepository
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
 import it.util.TestAccounts;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
@@ -24,6 +26,18 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 
     public BitbucketPRTest()
     {
+    }
+
+    @BeforeClass
+    public void beforeClass()
+    {
+        onTestsEnvironmentSetup();
+    }
+
+    @AfterMethod
+    public void afterMethod()
+    {
+        onTestCleanUp();
     }
 
     @Override

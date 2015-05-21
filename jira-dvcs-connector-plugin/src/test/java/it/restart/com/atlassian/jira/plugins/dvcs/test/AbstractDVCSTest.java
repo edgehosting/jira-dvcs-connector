@@ -43,7 +43,6 @@ public abstract class AbstractDVCSTest
     /**
      * Prepares common test environment.
      */
-    @BeforeClass()
     public void onTestsEnvironmentSetup()
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
@@ -54,7 +53,6 @@ public abstract class AbstractDVCSTest
     /**
      * Destroys test environment.
      */
-    @AfterMethod (alwaysRun = true)
     public void onTestCleanUp()
     {
         for (String createdIssueKey : createdIssueKeys)

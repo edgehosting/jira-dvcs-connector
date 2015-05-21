@@ -45,6 +45,8 @@ public class SmartCommitTest extends AbstractDVCSTest
     @BeforeClass
     public void beforeClass()
     {
+        onTestsEnvironmentSetup();
+
         getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
@@ -81,6 +83,7 @@ public class SmartCommitTest extends AbstractDVCSTest
     protected void afterTest()
     {
         repositoryTestHelper.cleanupLocalRepositories(timestampNameTestResource);
+        onTestCleanUp();
     }
 
     @Test
