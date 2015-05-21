@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
@@ -11,6 +11,7 @@
 
     <artifactId>jira-dvcs-connector-github-enterprise</artifactId>
     <packaging>jar</packaging>
+
     <name>Jira DVCS Connector GitHub Enterprise module</name>
     <description>Jira DVCS Connector GitHub Enterprise module</description>
 
@@ -42,6 +43,7 @@
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
     </dependencies>
+
     <profiles>
         <profile>
             <id>sonar</id>

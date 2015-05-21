@@ -2,19 +2,34 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
         <version>3.3.1-SNAPSHOT</version>
     </parent>
+
+    <artifactId>jira-dvcs-connector-plugin</artifactId>
+    <packaging>atlassian-plugin</packaging>
+
+    <name>JIRA DVCS Connector Plugin</name>
+    <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
     <organization>
         <name>Atlassian</name>
         <url>http://www.atlassian.com/</url>
     </organization>
-    <artifactId>jira-dvcs-connector-plugin</artifactId>
-    <name>JIRA DVCS Connector Plugin</name>
-    <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
-    <packaging>atlassian-plugin</packaging>
+
+    <properties>
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
+        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
+        <testGroups>integration_tests_without_ghe</testGroups>
+        <skipTests>false</skipTests>
+        <atlassian.selenium.version>2.2.1-m01-jira-1</atlassian.selenium.version>
+        <selenium.version>2.41.0</selenium.version>
+        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
+        <devtoolbox.version>2.0.16</devtoolbox.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -317,6 +332,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -509,16 +525,7 @@
             </plugin>
         </plugins>
     </build>
-    <properties>
-        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
-        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
-        <testGroups>integration_tests_without_ghe</testGroups>
-        <skipTests>false</skipTests>
-        <atlassian.selenium.version>2.2.1-m01-jira-1</atlassian.selenium.version>
-        <selenium.version>2.41.0</selenium.version>
-        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
-        <devtoolbox.version>2.0.16</devtoolbox.version>
-    </properties>
+
     <profiles>
         <profile>
             <id>skipTests</id>
