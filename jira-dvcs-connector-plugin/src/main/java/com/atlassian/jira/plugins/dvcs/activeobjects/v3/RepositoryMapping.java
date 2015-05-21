@@ -95,7 +95,7 @@ public interface RepositoryMapping extends Entity
 
     void setForkOfOwner(String owner);
 
-    void setUpdateLinkAuthorised(Boolean authorised);
+    void setUpdateLinkAuthorised(boolean authorised);
 
-    Boolean getUpdateLinkAuthorised();
+    boolean getUpdateLinkAuthorised();
 }

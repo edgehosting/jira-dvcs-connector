@@ -279,7 +279,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
                     map.put(RepositoryMapping.LOGO, repository.getLogo());
                     map.put(RepositoryMapping.IS_FORK, repository.isFork());
-                    map.put(RepositoryMapping.UPDATE_LINK_AUTHORISED, true);
+                    map.put(RepositoryMapping.UPDATE_LINK_AUTHORISED, repository.isUpdateLinkAuthorised());
                     if (repository.getForkOf() != null)
                     {
                         map.put(RepositoryMapping.FORK_OF_NAME, repository.getForkOf().getName());
@@ -302,7 +302,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setActivityLastSync(repository.getActivityLastSync());
                     rm.setLogo(repository.getLogo());
                     rm.setFork(repository.isFork());
-                    rm.setUpdateLinkAuthorised(repository.getUpdateLinkAuthorised());
+                    rm.setUpdateLinkAuthorised(repository.isUpdateLinkAuthorised());
                     if (repository.getForkOf() != null)
                     {
                         rm.setForkOfName(repository.getForkOf().getName());

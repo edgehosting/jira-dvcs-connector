@@ -8,13 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO: Document this class / interface here
- *
- * @since v6.3
+ * This upgrade task is to initialise the updateLinkAuthorised column to true (for existing rows) so that a link update
+ * will be attempted at least once
  */
 public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgradeTask
 {
     private static final Logger log = LoggerFactory.getLogger(To_14_NewRepositoryColumn.class);
+
     @Override
     public ModelVersion getModelVersion()
     {
@@ -27,13 +27,15 @@ public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgrad
         log.info("upgrade [ " + getModelVersion() + " ]");
         activeObjects.migrate(RepositoryMapping.class);
         RepositoryMapping[] repositoryMappings = activeObjects.find(RepositoryMapping.class);
-        for(RepositoryMapping repositoryMapping: repositoryMappings){
-            initialiseSyncAuthorisation(activeObjects,repositoryMapping);
+        for (RepositoryMapping repositoryMapping : repositoryMappings)
+        {
+            initialiseSyncAuthorisation(activeObjects, repositoryMapping);
         }
         log.info("upgrade [ " + getModelVersion() + " ]: finished");
     }
 
-    private void initialiseSyncAuthorisation(ActiveObjects activeObjects, RepositoryMapping repositoryMapping){
+    private void initialiseSyncAuthorisation(ActiveObjects activeObjects, RepositoryMapping repositoryMapping)
+    {
         repositoryMapping.setUpdateLinkAuthorised(true);
         repositoryMapping.save();
     }
