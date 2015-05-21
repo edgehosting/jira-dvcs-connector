@@ -157,7 +157,7 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         catch (IOException e)
         {
-            log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
+            log.warn("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
                     accountName);
         }
         if (user != null)
