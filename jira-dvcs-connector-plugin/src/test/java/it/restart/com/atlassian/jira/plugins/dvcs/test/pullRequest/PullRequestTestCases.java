@@ -88,7 +88,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     @BeforeClass
     public void beforeEachPullRequestTestClass()
     {
-        onTestsEnvironmentSetup();
+        setUpEnvironment();
 
         getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
@@ -138,7 +138,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected void afterEachPullRequestTest()
     {
         cleanupLocalTestRepository();
-        onTestCleanUp();
+        deleteCreatedIssues();
     }
 
     /**

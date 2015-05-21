@@ -31,13 +31,13 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @BeforeClass
     public void beforeClass()
     {
-        onTestsEnvironmentSetup();
+        setUpEnvironment();
     }
 
     @AfterMethod
     public void afterMethod()
     {
-        onTestCleanUp();
+        deleteCreatedIssues();
     }
 
     @Override

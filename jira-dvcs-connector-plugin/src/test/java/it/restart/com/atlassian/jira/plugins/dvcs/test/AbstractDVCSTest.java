@@ -40,20 +40,14 @@ public abstract class AbstractDVCSTest
 
     protected static final String TEST_DATA = "test-dvcs.zip";
 
-    /**
-     * Prepares common test environment.
-     */
-    public void onTestsEnvironmentSetup()
+    public void setUpEnvironment()
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
         jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
         new JiraLoginPageController(jiraTestedProduct).login();
     }
 
-    /**
-     * Destroys test environment.
-     */
-    public void onTestCleanUp()
+    public void deleteCreatedIssues()
     {
         for (String createdIssueKey : createdIssueKeys)
         {
