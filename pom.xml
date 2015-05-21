@@ -61,7 +61,7 @@
         <ao.version>0.29.3</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>6.7-breakit-6</greenhopper.version>
+        <greenhopper.version>6.7-breakit-8</greenhopper.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
@@ -498,7 +498,6 @@
                 <jira.data.version>7.0-OD-02-207</jira.data.version>
                 <jira.software.version>1.15</jira.software.version>
                 <testkit.version>7.0.32</testkit.version>
-                <greenhopper.version>6.7-breakit-6</greenhopper.version>
                 <jira.data.path></jira.data.path>
             </properties>
         </profile>
