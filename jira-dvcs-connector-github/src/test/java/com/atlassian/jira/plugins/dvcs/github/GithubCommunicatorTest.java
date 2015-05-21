@@ -439,39 +439,25 @@ public class GithubCommunicatorTest
     }
 
     @Test
-    public void TestIsUsernameCorrect(){
-        when(githubClientProvider.createClient(HOST_URL)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
-        try{
-            when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
-        }catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+    public void TestIsUsernameCorrect() throws Exception{
+        when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
+
         assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 
     @Test
-    public void TestIsUsernameIncorrect(){
+    public void TestIsUsernameIncorrect() throws Exception{
+        when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(1);
-        try{
-            when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
-        }catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+
         assertFalse(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 
     @Test
-    public void TestIsUsernameIncorrectAndBlownRateLimit(){
+    public void TestIsUsernameIncorrectAndBlownRateLimit() throws Exception{
+        when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(0);
-        try{
-            when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
-        }catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+
         assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 }

@@ -77,7 +77,6 @@ public class GithubCommunicator implements DvcsCommunicator
 
     public static final String GITHUB = "github";
     public static final int PULLREQUEST_PAGE_SIZE = 30;
-    private int lastKnowNumberOfRemainingRequests;
 
     @Resource
     private MessagingService messagingService;
