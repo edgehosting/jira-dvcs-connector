@@ -20,14 +20,13 @@
     </organization>
 
     <properties>
-        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
-        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
-        <testGroups>integration_tests_without_ghe</testGroups>
-        <skipTests>false</skipTests>
         <atlassian.selenium.version>2.2.1-m01-jira-1</atlassian.selenium.version>
+        <devtoolbox.version>2.0.16</devtoolbox.version> <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
+        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
         <selenium.version>2.41.0</selenium.version>
-        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
-        <devtoolbox.version>2.0.16</devtoolbox.version>
+        <skipTests>false</skipTests>
+        <testGroups>integration_tests_without_ghe</testGroups>
     </properties>
 
     <dependencies>
@@ -544,11 +543,11 @@
             <id>dev-mysql</id>
             <properties>
                 <!-- Default: MySQL properties values feel free to customize it via -Dmysql.xxx=xxx -->
-                <mysql.host>localhost</mysql.host>
-                <mysql.port>3306</mysql.port>
                 <mysql.database>jira</mysql.database>
-                <mysql.username>jira</mysql.username>
+                <mysql.host>localhost</mysql.host>
                 <mysql.password>jira</mysql.password>
+                <mysql.port>3306</mysql.port>
+                <mysql.username>jira</mysql.username>
             </properties>
             <build>
                 <plugins>
@@ -590,11 +589,11 @@
             <properties>
                 <!-- Default: Postgres properties values feel free to customize it via
                     -Dpostgres.xxx=xxx -->
-                <postgres.host>localhost</postgres.host>
-                <postgres.port>5432</postgres.port>
                 <postgres.database>jira</postgres.database>
-                <postgres.username>jira</postgres.username>
+                <postgres.host>localhost</postgres.host>
                 <postgres.password>jira</postgres.password>
+                <postgres.port>5432</postgres.port>
+                <postgres.username>jira</postgres.username>
             </properties>
             <build>
                 <plugins>
@@ -636,11 +635,11 @@
             <properties>
                 <!-- Default: Oracle properties values feel free to customize it via
                     -Doracle.xxx=xxx -->
-                <oracle.host>localhost</oracle.host>
-                <oracle.port>1521</oracle.port>
                 <oracle.database>jira</oracle.database>
-                <oracle.username>jira</oracle.username>
+                <oracle.host>localhost</oracle.host>
                 <oracle.password>jira</oracle.password>
+                <oracle.port>1521</oracle.port>
+                <oracle.username>jira</oracle.username>
             </properties>
             <build>
                 <plugins>
@@ -682,11 +681,11 @@
             <properties>
                 <!-- Default: MS SQL properties values feel free to customize it via
                     -Dmssql.xxx=xxx -->
-                <mssql.host>localhost</mssql.host>
-                <mssql.port>1433</mssql.port>
                 <mssql.database>jira</mssql.database>
-                <mssql.username>jira</mssql.username>
+                <mssql.host>localhost</mssql.host>
                 <mssql.password>jira</mssql.password>
+                <mssql.port>1433</mssql.port>
+                <mssql.username>jira</mssql.username>
             </properties>
             <build>
                 <plugins>
