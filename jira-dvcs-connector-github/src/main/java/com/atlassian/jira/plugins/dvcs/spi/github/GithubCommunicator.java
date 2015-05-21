@@ -67,10 +67,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
+
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
-@Component("githubCommunicator")
+@Component ("githubCommunicator")
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
@@ -146,23 +147,25 @@ public class GithubCommunicator implements DvcsCommunicator
         return null;
     }
 
-    public boolean isUsernameCorrect(String hostUrl, String accountName){
+    public boolean isUsernameCorrect(String hostUrl, String accountName)
+    {
         UserService userService = userServiceFactory.createUserService(githubClientProvider.createClient(hostUrl));
         User user = null;
         try
         {
-          user = userService.getUser(accountName);
+            user = userService.getUser(accountName);
         }
         catch (IOException e)
         {
             log.debug("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
                     accountName);
         }
-        if(user != null)
+        if (user != null)
         {
             return true;
         }
-        else{
+        else
+        {
             // if we have blown the rate limit, we give them the benefit of the doubt
             return hasExceededRateLimit(userService.getClient());
         }
@@ -726,7 +729,8 @@ public class GithubCommunicator implements DvcsCommunicator
 
     }
 
-    private boolean hasExceededRateLimit(GitHubClient client){
+    private boolean hasExceededRateLimit(GitHubClient client)
+    {
         return client.getRemainingRequests() <= 0;
     }
 

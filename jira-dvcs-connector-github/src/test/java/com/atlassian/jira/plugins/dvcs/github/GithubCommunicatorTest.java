@@ -135,7 +135,7 @@ public class GithubCommunicatorTest
     {
         when(gitHubRESTClient.getHooks(repository)).thenReturn(sampleHooks());
         when(applicationProperties.getBaseUrl()).thenReturn("http://jira.example.com");
-        
+
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
         communicator.ensureHookPresent(repository, hookUrl);
 
@@ -164,9 +164,9 @@ public class GithubCommunicatorTest
         hooks.add(sampleHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
         hooks.add(samplePullRequestHook("http://jira.example.com/rest/bitbucket/1.0/repository/5/sync", 1L));
         when(gitHubRESTClient.getHooks(repository)).thenReturn(hooks);
-        
+
         when(applicationProperties.getBaseUrl()).thenReturn("http://jira.example.com");
-        
+
         String hookUrl = "http://jira.example.com" + DvcsCommunicator.POST_HOOK_SUFFIX + "5/sync";
         communicator.ensureHookPresent(repository, hookUrl);
 
@@ -249,7 +249,7 @@ public class GithubCommunicatorTest
         when(commitService.getClient()).thenReturn(gitHubClient);
         when(repositoryService.getClient()).thenReturn(gitHubClient);
         when(userService.getClient()).thenReturn(gitHubClient);
-        
+
         when(githubClientProvider.createClient(HOST_URL)).thenReturn(gitHubClient);
         when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
         when(userService.getClient()).thenReturn(gitHubClient);
@@ -272,7 +272,7 @@ public class GithubCommunicatorTest
     {
         when(gitHubRESTClient.getHooks(any(Repository.class))).thenReturn(new LinkedList<GitHubRepositoryHook>());
         when(repository.getOrgName()).thenReturn("ORG");
-        when(repository.getSlug())   .thenReturn("SLUG");
+        when(repository.getSlug()).thenReturn("SLUG");
 
         String hookUrl = "POST-COMMIT-URL";
         communicator.ensureHookPresent(repository, hookUrl);
@@ -338,7 +338,7 @@ public class GithubCommunicatorTest
     public void gettingDetailChangeset_ShouldSendGETRequestToGithub_AndParseJsonResult()
             throws ResponseException, IOException
     {
-        when(repository.getSlug())   .thenReturn("SLUG");
+        when(repository.getSlug()).thenReturn("SLUG");
         when(repository.getOrgName()).thenReturn("ORG");
 
         RepositoryCommit repositoryCommit = mock(RepositoryCommit.class);
@@ -436,14 +436,16 @@ public class GithubCommunicatorTest
     }
 
     @Test
-    public void TestIsUsernameCorrect() throws Exception {
+    public void TestIsUsernameCorrect() throws Exception
+    {
         when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
 
         assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
     }
 
     @Test
-    public void TestIsUsernameIncorrect() throws Exception{
+    public void TestIsUsernameIncorrect() throws Exception
+    {
         when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(1);
 
@@ -451,7 +453,8 @@ public class GithubCommunicatorTest
     }
 
     @Test
-    public void TestIsUsernameIncorrectAndBlownRateLimit() throws Exception{
+    public void TestIsUsernameIncorrectAndBlownRateLimit() throws Exception
+    {
         when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(0);
 
