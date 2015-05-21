@@ -439,7 +439,7 @@ public class GithubCommunicatorTest
     }
 
     @Test
-    public void TestIsUsernameCorrect() throws Exception{
+    public void TestIsUsernameCorrect() throws Exception {
         when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
 
         assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
