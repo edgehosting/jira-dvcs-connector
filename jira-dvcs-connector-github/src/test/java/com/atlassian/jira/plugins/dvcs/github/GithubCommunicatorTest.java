@@ -388,9 +388,6 @@ public class GithubCommunicatorTest
     @Test
     public void getFileDetailsShouldFetchCommitsFromGitHub() throws Exception
     {
-        // Repository
-        when(repository.getSlug())   .thenReturn("SLUG");
-        when(repository.getOrgName()).thenReturn("ORG");
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
 
         final Changeset cs = mock(Changeset.class);
