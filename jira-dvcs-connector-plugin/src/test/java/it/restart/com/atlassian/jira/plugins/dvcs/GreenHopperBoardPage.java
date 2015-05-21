@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 
 import java.util.List;
 
+import static com.atlassian.pageobjects.elements.query.Conditions.and;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.COMPONENT_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -32,7 +33,10 @@ public class GreenHopperBoardPage implements Page
 
     public void goToQABoardPlan()
     {
-        waitUntilTrue(bodyElement.find(By.id("ghx-plan")).timed().isVisible());
+        waitUntilTrue(and(boardPlanToggleViewButton.timed().isPresent(), boardPlanToggleViewButton.timed().isVisible()));
+        boardPlanToggleViewButton.click();
+        waitUntilTrue(and(bodyElement.find(By.id("ghx-plan")).timed().isPresent(),
+                bodyElement.find(By.id("ghx-plan")).timed().isVisible()));
     }
 
     public void assertCommitsAppearOnIssue(String issueKey, int expectedNumberOfAssociatedCommits)
