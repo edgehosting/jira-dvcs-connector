@@ -85,7 +85,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         return this.getClass().getSimpleName().toLowerCase();
     }
 
-    @BeforeClass
+    @BeforeClass (dependsOnMethods = "onTestsEnvironmentSetup")
     public void beforeEachPullRequestTestClass()
     {
         new JiraLoginPageController(getJiraTestedProduct()).login();
