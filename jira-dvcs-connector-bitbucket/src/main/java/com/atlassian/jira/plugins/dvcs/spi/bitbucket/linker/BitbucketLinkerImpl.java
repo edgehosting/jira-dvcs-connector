@@ -33,9 +33,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * <p>
- * Implementation of BitbucketLinker that configures repository links on bitbucket repositories
- * </p>
+ * <p> Implementation of BitbucketLinker that configures repository links on bitbucket repositories </p>
  * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
  */
 @Component ("bitbucketLinker")
@@ -99,7 +97,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Removes existing links to this jira, adds a link for the keys in {@code projectKeysToLink} that exist in this jira
+     * Removes existing links to this jira, adds a link for the keys in {@code projectKeysToLink} that exist in this
+     * jira
      *
      * @param repository repository to replace links to
      * @param projectKeysToLink a set of project keys to be linked
@@ -151,7 +150,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             }
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
-                   getRepositoryLinkUrl() , constructProjectsRex(forProjects));
+                    getRepositoryLinkUrl(), constructProjectsRex(forProjects));
             repositoryService.setPreviouslyLinkedProjects(repository, forProjects);
             repository.setUpdateLinkAuthorised(true);
             repositoryService.save(repository);
@@ -162,13 +161,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             repository.setUpdateLinkAuthorised(false);
             repositoryService.save(repository);
         }
-        catch(BitbucketRequestException e){
+        catch (BitbucketRequestException e)
+        {
             log.info("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
                     + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects), e);
         }
     }
 
-    private String getRepositoryLinkUrl(){
+    private String getRepositoryLinkUrl()
+    {
         return getBaseUrl() + "/browse/\\1";
     }
 

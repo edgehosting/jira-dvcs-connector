@@ -309,7 +309,7 @@ public class Repository implements Serializable
         this.updateLinkAuthorised = updateLinkAuthorised;
     }
 
-    public boolean getUpdateLinkAuthorised()
+    public boolean isUpdateLinkAuthorised()
     {
         return updateLinkAuthorised;
     }

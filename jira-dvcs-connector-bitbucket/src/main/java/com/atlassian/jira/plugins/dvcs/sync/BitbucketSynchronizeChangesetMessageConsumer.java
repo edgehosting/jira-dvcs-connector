@@ -121,7 +121,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         else
         {
             repo = repositoryService.get(repo.getId());
-            if(repo.getUpdateLinkAuthorised()){
+            if(repo.isUpdateLinkAuthorised())
+            {
                 cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
             }
         }
