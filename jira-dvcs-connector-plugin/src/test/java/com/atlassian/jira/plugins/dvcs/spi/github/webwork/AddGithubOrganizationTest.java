@@ -95,6 +95,9 @@ public class AddGithubOrganizationTest {
     @Mock
     private FeatureManager featureManager;
 
+    @Mock
+    private GithubCommunicator githubCommunicator;
+
     private AddGithubOrganization addGithubOrganization;
 
     @BeforeMethod(alwaysRun=true)
@@ -131,7 +134,7 @@ public class AddGithubOrganizationTest {
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
-        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService)
+        addGithubOrganization = new AddGithubOrganization(ap, eventPublisher, featureManager, oAuthStore, organizationService, githubCommunicator)
         {
             @Override
             GithubOAuthUtils getGithubOAuthUtils() {
@@ -234,10 +237,10 @@ public class AddGithubOrganizationTest {
     @Test
     public void testDoValidationAnalyticsNoError() throws Exception
     {
-        addGithubOrganization.setSource(SAMPLE_SOURCE);
+        addGithubOrganization.setUrl(SAMPLE_SOURCE);
         addGithubOrganization.setOrganization("org");
         final AccountInfo accountInfo = mock(AccountInfo.class);
-        when(organizationService.getAccountInfo(anyString(), anyString(), Mockito.eq(GithubCommunicator.GITHUB))).thenReturn(accountInfo);
+        when(githubCommunicator.isUsernameCorrect(SAMPLE_SOURCE, "org")).thenReturn(true);
         addGithubOrganization.doValidation();
         verifyNoMoreInteractions(eventPublisher);
     }
@@ -253,4 +256,5 @@ public class AddGithubOrganizationTest {
 
         verifyNoMoreInteractions(eventPublisher);
     }
+
 }
