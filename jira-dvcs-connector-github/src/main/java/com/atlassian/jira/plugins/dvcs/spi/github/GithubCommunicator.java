@@ -71,7 +71,7 @@ import javax.annotation.Resource;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
-@Component
+@Component ("githubCommunicator")
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
@@ -103,6 +103,9 @@ public class GithubCommunicator implements DvcsCommunicator
     @Resource
     @ComponentImport
     private ApplicationProperties applicationProperties;
+
+    @Resource
+    private UserServiceFactory userServiceFactory;
 
     protected final GithubClientProvider githubClientProvider;
     protected final OAuthStore oAuthStore;
@@ -142,6 +145,30 @@ public class GithubCommunicator implements DvcsCommunicator
                     accountName);
         }
         return null;
+    }
+
+    public boolean isUsernameCorrect(String hostUrl, String accountName)
+    {
+        UserService userService = userServiceFactory.createUserService(githubClientProvider.createClient(hostUrl));
+        User user = null;
+        try
+        {
+            user = userService.getUser(accountName);
+        }
+        catch (IOException e)
+        {
+            log.warn("Unable to retrieve account information. hostUrl: {}, account: {} " + e.getMessage(), hostUrl,
+                    accountName);
+        }
+        if (user != null)
+        {
+            return true;
+        }
+        else
+        {
+            // if we have blown the rate limit, we give them the benefit of the doubt
+            return hasExceededRateLimit(userService.getClient());
+        }
     }
 
     @Override
@@ -700,6 +727,11 @@ public class GithubCommunicator implements DvcsCommunicator
     public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
 
+    }
+
+    private boolean hasExceededRateLimit(GitHubClient client)
+    {
+        return client.getRemainingRequests() <= 0;
     }
 
     private void verifyRateLimitExceeded(final GitHubClient githubClient)

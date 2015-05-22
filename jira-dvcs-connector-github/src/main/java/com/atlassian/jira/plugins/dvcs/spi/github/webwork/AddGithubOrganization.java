@@ -20,6 +20,8 @@ import com.atlassian.sal.api.ApplicationProperties;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
@@ -47,18 +49,23 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
     private final FeatureManager featureManager;
+    private final GithubCommunicator githubCommunicator;
+    private AccountInfo accountInfo;
 
+    @Autowired
     public AddGithubOrganization(@ComponentImport ApplicationProperties applicationProperties,
             @ComponentImport EventPublisher eventPublisher,
             @ComponentImport FeatureManager featureManager,
             OAuthStore oAuthStore,
-            OrganizationService organizationService)
+            OrganizationService organizationService,
+            @Qualifier ("githubCommunicator") GithubCommunicator githubCommunicator)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
         this.featureManager = featureManager;
+        this.githubCommunicator = githubCommunicator;
     }
 
     @Override
@@ -97,8 +104,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
         if (!featureManager.isEnabled(DISABLE_USERNAME_VALIDATION))
         {
-            AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
-            if (accountInfo == null)
+            if (!githubCommunicator.isUsernameCorrect(url, organization))
             {
                 addErrorMessage("Invalid user/team account.");
             }
