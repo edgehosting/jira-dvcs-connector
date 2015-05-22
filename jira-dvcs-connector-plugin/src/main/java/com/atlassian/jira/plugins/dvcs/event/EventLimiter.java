@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.sync.SyncConfig;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
@@ -25,7 +25,7 @@ class EventLimiter
      * The number of permits remaining for each limit. The cache values are mutable as they need to be decremented as
      * events come in.
      */
-    private final Cache<LimitKey, AtomicLong> remainingPermits = CacheBuilder.newBuilder().build(new CacheLoader<LimitKey, AtomicLong>()
+    private final LoadingCache<LimitKey, AtomicLong> remainingPermits = CacheBuilder.newBuilder().build(new CacheLoader<LimitKey, AtomicLong>()
     {
         @Override
         public AtomicLong load(@Nonnull LimitKey key) throws Exception

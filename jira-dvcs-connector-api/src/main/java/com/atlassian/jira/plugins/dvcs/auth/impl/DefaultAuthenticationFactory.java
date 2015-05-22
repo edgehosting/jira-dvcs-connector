@@ -35,13 +35,6 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 			return new OAuthAuthentication(credential.getAccessToken());
 		}
 
-		// basic
-		if (StringUtils.isNotBlank(credential.getAdminUsername()))
-		{
-			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
-					repository.getOrgName(), repository.getOrgHostUrl()));
-		}
-
 		// none
 		return Authentication.ANONYMOUS;
 	}
@@ -54,13 +47,6 @@ public class DefaultAuthenticationFactory implements AuthenticationFactory
 		if (StringUtils.isNotBlank(credential.getAccessToken()))
 		{
 			return new OAuthAuthentication(credential.getAccessToken());
-		}
-
-		// basic
-		if (StringUtils.isNotBlank(credential.getAdminUsername()))
-		{
-			return new BasicAuthentication(credential.getAdminUsername(), decryptPassword(credential,
-					organization.getName(), organization.getHostUrl()));
 		}
 
 		// none
