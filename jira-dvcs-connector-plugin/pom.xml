@@ -24,6 +24,10 @@
         <devtoolbox.version>2.0.16</devtoolbox.version> <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
         <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
         <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
+        <!--
+            We depend on a relatively new version of selenium-java that will bring in a newer firefox-driver to work with FF 31
+            as well as a newer selenium-api that works with this driver.
+        -->
         <selenium.version>2.41.0</selenium.version>
         <skipTests>false</skipTests>
         <testGroups>integration_tests_without_ghe</testGroups>
@@ -91,8 +95,6 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
-        <!-- use atlassian-selenium 2.2.0 so that FF 31 is used instead of FF 12
-             We need FF 31 as GitHub the delete oauth page now does not support FF 12 -->
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-api</artifactId>
@@ -116,6 +118,10 @@
                     <groupId>com.atlassian.annotations</groupId>
                     <artifactId>atlassian-annotations</artifactId>
                 </exclusion>
+                <!--
+                    We're excluding selenium-api here because we have a newer version that is brought in by selenium-java
+                    that works well with FF31 and the newer firefox-driver.
+                -->
                 <exclusion>
                     <groupId>org.seleniumhq.selenium</groupId>
                     <artifactId>selenium-api</artifactId>
@@ -168,6 +174,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--
+            Explicitly declare this dependency so we get a relative new version of FF.
+            2.6 brings in FF 31.
+        -->
         <dependency>
             <groupId>com.atlassian.browsers</groupId>
             <artifactId>atlassian-browsers-auto</artifactId>
