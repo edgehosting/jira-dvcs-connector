@@ -60,6 +60,7 @@
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-8</greenhopper.version>
+        <guava.version>18.0</guava.version>
         <jira.compile.version>6.5-OD-03-002</jira.compile.version>
         <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <jira.data.version>6.5-OD-03-002</jira.data.version>
@@ -196,8 +197,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>18.0</version>
-                <scope>provided</scope>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
