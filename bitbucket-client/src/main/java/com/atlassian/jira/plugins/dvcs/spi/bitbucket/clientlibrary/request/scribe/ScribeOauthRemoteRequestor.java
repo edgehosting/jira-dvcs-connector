@@ -15,13 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-/**
- * ScribeOauthRemoteRequestor
- *
- * Created on 13.7.2012, 10:25:16 <br />
- *
- * @author jhocman@atlassian.com
- */
 public abstract class ScribeOauthRemoteRequestor extends BaseRemoteRequestor
 {
     protected static Logger log = LoggerFactory.getLogger(ScribeOauthRemoteRequestor.class);

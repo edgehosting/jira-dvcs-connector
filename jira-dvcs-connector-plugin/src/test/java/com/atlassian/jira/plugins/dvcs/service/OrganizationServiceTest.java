@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import org.mockito.ArgumentMatcher;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -17,13 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 /**
  * The Class OrganizationServiceTest.
  */
 public class OrganizationServiceTest
 {
-
     @Mock
     private RepositoryService repositoryService;
 
@@ -36,8 +39,12 @@ public class OrganizationServiceTest
     @Mock
     private DvcsCommunicator bitbucketCommunicator;
 
+    @Mock
+    private Repository repository;
+
     // tested object
-    private OrganizationService organizationService;
+    @InjectMocks
+    private OrganizationServiceImpl organizationService;
 
     /**
      * The Constructor.
@@ -51,7 +58,6 @@ public class OrganizationServiceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        organizationService = new OrganizationServiceImpl(organizationDao, dvcsCommunicatorProvider, repositoryService);
     }
 
     @Test
@@ -59,16 +65,15 @@ public class OrganizationServiceTest
     {
         Organization sampleOrganization = createSampleOrganization();
 
-        Mockito.when(organizationDao.getByHostAndName("https://bitbucket.org", "doesnotmatter")).thenReturn(null);
-        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-        Mockito.when(organizationDao.save(sampleOrganization)).thenReturn(sampleOrganization);
+        when(organizationDao.getByHostAndName("https://bitbucket.org", "doesnotmatter")).thenReturn(null);
+        when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        when(organizationDao.save(sampleOrganization)).thenReturn(sampleOrganization);
 
         Organization saved = organizationService.save(sampleOrganization);
 
         assertThat(saved).isSameAs(sampleOrganization);
 
-        Mockito.verify(repositoryService, Mockito.times(1)).syncRepositoryList(sampleOrganization, false);
-
+        verify(repositoryService, Mockito.times(1)).syncRepositoryList(sampleOrganization, false);
     }
 
     @Test
@@ -85,7 +90,6 @@ public class OrganizationServiceTest
         assertThat(all.get(0)).isSameAs(sampleOrganization);
 
         Mockito.verify(organizationDao).getAllByType("bitbucket");
-
     }
 
     @Test
@@ -100,22 +104,19 @@ public class OrganizationServiceTest
 
         organizationService.getAll(true, "bitbucket");
 
-        //
         Mockito.verify(organizationDao).getAllByType("bitbucket");
         Mockito.verify(repositoryService).getAllByOrganization(0);
-
     }
 
     @Test
     public void testEnableAutolinkNewRepos()
     {
         Organization sampleOrganization = createSampleOrganization();
-        Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
+        when(organizationDao.get(0)).thenReturn(sampleOrganization);
 
         organizationService.enableAutolinkNewRepos(0, true);
 
-        //
-        Mockito.verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
+        verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
         {
             @Override
             public boolean matches(Object argument)
@@ -131,12 +132,11 @@ public class OrganizationServiceTest
     public void testDisableAutolinkNewRepos()
     {
         Organization sampleOrganization = createSampleOrganization();
-        Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
+        when(organizationDao.get(0)).thenReturn(sampleOrganization);
 
         organizationService.enableAutolinkNewRepos(0, false);
 
-        //
-        Mockito.verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
+        verify(organizationDao).save(Mockito.argThat(new ArgumentMatcher<Organization>()
         {
             @Override
             public boolean matches(Object argument)
@@ -151,12 +151,12 @@ public class OrganizationServiceTest
     public void testUpdateCredentialsAccessToken()
     {
         Organization sampleOrganization = createSampleOrganization();
-        Mockito.when(organizationDao.get(0)).thenReturn(sampleOrganization);
-        Mockito.when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        when(organizationDao.get(0)).thenReturn(sampleOrganization);
+        when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
 
         organizationService.updateCredentialsAccessToken(0, "doesnotmatter_AT");
 
-        Mockito.verify(organizationDao).save(sampleOrganization);
+        verify(organizationDao).save(sampleOrganization);
         assertThat(sampleOrganization.getCredential().getAccessToken().equals("doesnotmatter_AT"));
     }
 

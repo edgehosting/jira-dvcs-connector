@@ -11,6 +11,8 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -25,6 +27,8 @@ import java.net.URL;
 @Test
 public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubConfigureOrganizationsPage>
 {
+    private static final Logger log = LoggerFactory.getLogger(MissingCommitsGithubTest.class);
+
     private static final String GITHUB_URL = "api.github.com";
     private static final String USER_AGENT = "DVCS Connector Test/X.x";
 
@@ -34,7 +38,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     private static GithubRepositoriesRemoteRestpoint githubRepositoriesREST;
 
     @BeforeClass
-    public static void initializeGithubRepositoriesREST()
+    public static void setup()
     {
         GitHubClient gitHubClient = new GitHubClient(GITHUB_URL);
         gitHubClient.setUserAgent(USER_AGENT);
@@ -46,24 +50,37 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     @Override
     void removeOldDvcsRepository()
     {
-        githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        // This method is executed in @AfterClass context by super class and we do not want to break further logic
+        // if the service is null (e.g. login failed in Github due to network issue)
+        if (githubRepositoriesREST != null)
+        {
+            githubRepositoriesREST.removeExistingRepository(MISSING_COMMITS_REPOSITORY_NAME_PREFIX, DVCS_REPO_OWNER);
+        }
     }
 
     @Override
     void removeRemoteDvcsRepository()
     {
-        // githubRepositoriesREST might not be initialized if AbstractMissingCommitsTest#beforeClass() failed
+        // This method is executed in @AfterClass context by super class and we do not want to break further logic
+        // if the service is null (e.g. login failed in Github due to network issue)
         if (githubRepositoriesREST != null)
         {
             githubRepositoriesREST.removeExistingRepository(getMissingCommitsRepositoryName(), DVCS_REPO_OWNER);
 
             // remove expired repositories
-            for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
+            try
             {
-                if (timestampNameTestResource.isExpired(repository.getName()))
+                for (Repository repository : githubRepositoriesREST.getRepositories(DVCS_REPO_OWNER))
                 {
-                    githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                    if (timestampNameTestResource.isExpired(repository.getName()))
+                    {
+                        githubRepositoriesREST.removeExistingRepository(repository.getName(), DVCS_REPO_OWNER);
+                    }
                 }
+            }
+            catch (IOException e)
+            {
+                log.warn("removeRemoteDvcsRepository() failed", e);
             }
         }
     }
@@ -156,7 +173,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
             if (oAuth != null)
             {
                 // remove OAuth in github
-                new MagicVisitor(jira).visit(oAuth.applicationId, GithubOAuthPage.class).removeConsumer();
+                removeConsumer(oAuth.applicationId);
             }
         }
         finally
@@ -170,5 +187,10 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     protected AccountsPageAccount.AccountType getAccountType()
     {
         return AccountsPageAccount.AccountType.GIT_HUB;
+    }
+
+    private void removeConsumer(final String applicationUrl)
+    {
+        new MagicVisitor(jira).visit(applicationUrl, GithubOAuthPage.class).removeConsumer();
     }
 }

@@ -22,10 +22,10 @@ public class To_11_AddKeyAndSecretToBBAccounts implements ActiveObjectsUpgradeTa
     }
 
     /**
-	 * BBC-479 Add key/secret to the organization
-	 *
-	 * @param organization
-	 */
+     * BBC-479 Add key/secret to the organization
+     * @param currentVersion
+     * @param activeObjects
+     */
 	@Override
     public void upgrade(ModelVersion currentVersion, final ActiveObjects activeObjects)
     {

@@ -31,7 +31,7 @@ public class ThreadEvents
     /**
      * Returns an EventsCapture instance that can be used to capture and publish events on the current thread. Captured
      * events can be processed using {@link ThreadEventsCaptor#processEach(ThreadEventsCaptor.Closure)}.
-     * <p/>
+     * <p>
      * Remember to <b>call {@code ThreadEventsCaptor.stopCapturing()} to terminate the capture</b> or risk leaking memory.
      *
      * @return a new EventsCapture

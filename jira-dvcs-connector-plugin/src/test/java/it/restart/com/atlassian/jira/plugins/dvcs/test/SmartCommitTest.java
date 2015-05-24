@@ -14,6 +14,7 @@ import com.atlassian.jira.testkit.client.restclient.WorklogWithPaginationBean;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepositoryTestHelper;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
+import it.util.TestAccounts;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -30,8 +31,7 @@ public class SmartCommitTest extends AbstractDVCSTest
 {
     private static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
     private static final String COMMIT_AUTHOR = "Jira DvcsConnector";
-    private static final String COMMIT_AUTHOR_EMAIL = "jirabitbucketconnector@atlassian.com";
-
+    private static final String COMMIT_AUTHOR_EMAIL = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT +"@atlassian.com";
     private static final String TEST_PROJECT_KEY = "TST";
 
     private TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
@@ -45,6 +45,9 @@ public class SmartCommitTest extends AbstractDVCSTest
     @BeforeClass
     public void beforeClass()
     {
+        setUpEnvironment();
+
+        getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
@@ -54,7 +57,7 @@ public class SmartCommitTest extends AbstractDVCSTest
         timePage.activateTimeTrackingWithDefaults();
 
         final Backdoor backdoor = getJiraTestedProduct().backdoor();
-        backdoor.usersAndGroups().addUser(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
+        backdoor.usersAndGroups().addUserEvenIfUserExists(COMMIT_AUTHOR, "pass", COMMIT_AUTHOR, COMMIT_AUTHOR_EMAIL, false);
         backdoor.usersAndGroups().addUserToGroup(COMMIT_AUTHOR, "jira-developers");
     }
 
@@ -80,6 +83,7 @@ public class SmartCommitTest extends AbstractDVCSTest
     protected void afterTest()
     {
         repositoryTestHelper.cleanupLocalRepositories(timestampNameTestResource);
+        deleteCreatedIssues();
     }
 
     @Test

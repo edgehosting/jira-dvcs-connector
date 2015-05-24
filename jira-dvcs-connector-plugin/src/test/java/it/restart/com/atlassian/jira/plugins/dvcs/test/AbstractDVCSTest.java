@@ -38,22 +38,16 @@ public abstract class AbstractDVCSTest
 
     protected Backdoor testKit;
 
-    /**
-     * Prepares common test environment.
-     */
-    @BeforeClass()
-    public void onTestsEnvironmentSetup()
+    protected static final String TEST_DATA = "test-dvcs.zip";
+
+    public void setUpEnvironment()
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
         jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
         new JiraLoginPageController(jiraTestedProduct).login();
     }
 
-    /**
-     * Destroys test environment.
-     */
-    @AfterMethod (alwaysRun = true)
-    public void onTestCleanUp()
+    public void deleteCreatedIssues()
     {
         for (String createdIssueKey : createdIssueKeys)
         {

@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Used as arguments of rest methods instead of {@link javax.ws.rs.FormParam}.
+ * Used as arguments of rest methods instead of javax.ws.rs.FormParam
  * Handles i.e. checkbox checked value.
  *
  */

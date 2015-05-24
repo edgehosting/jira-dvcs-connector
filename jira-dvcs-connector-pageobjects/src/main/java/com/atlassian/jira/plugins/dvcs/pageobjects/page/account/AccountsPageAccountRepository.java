@@ -11,7 +11,6 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -128,7 +127,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // check that dialog appears
             try
             {
-                Poller.waitUntil(linkingRepositoryDialog.timed().isVisible(), Matchers.is(true), Poller.by(500));
+                Poller.waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
                 linkingRepositoryDialog.clickOk();
             }
             catch (AssertionError e)

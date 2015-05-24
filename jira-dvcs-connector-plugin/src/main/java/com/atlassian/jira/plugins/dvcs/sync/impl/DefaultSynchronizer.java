@@ -5,6 +5,8 @@ import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.cache.Cache;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
+import com.atlassian.jira.plugins.dvcs.ProgressUtil;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
@@ -22,9 +24,11 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubRateLimitExceededException;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -39,6 +43,8 @@ import java.util.EnumSet;
 import java.util.concurrent.locks.Lock;
 import javax.annotation.Resource;
 
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GENERIC_ERROR_KEY;
+import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -85,6 +91,10 @@ public class DefaultSynchronizer implements Synchronizer
 
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
+
+    @Resource
+    @ComponentImport
+    private I18nHelper i18nHelper;
 
     private final ClusterLockService clusterLockService;
 
@@ -173,10 +183,16 @@ public class DefaultSynchronizer implements Synchronizer
 
                 communicator.startSynchronisation(repo, flags, auditId);
             }
+            catch (GithubRateLimitExceededException e)
+            {
+                ProgressUtil.setErrorMessage(progress, i18nHelper.getText(DvcsErrorMessages.DVCS_SYNC_PAUSED_KEY),
+                        i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), true);
+                LOG.error(e.getMessage());
+            }
             catch (Throwable t)
             {
                 LOG.error(t.getMessage(), t);
-                progress.setError("Error during sync. See server logs.");
+                progress.setError(i18nHelper.getText(GENERIC_ERROR_KEY));
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }

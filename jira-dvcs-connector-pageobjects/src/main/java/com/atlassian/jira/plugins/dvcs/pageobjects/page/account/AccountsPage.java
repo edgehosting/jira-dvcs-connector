@@ -9,6 +9,8 @@ import org.openqa.selenium.By;
 
 import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+
 /**
  * Holds available DVCS accounts.
  *
@@ -48,6 +50,7 @@ public class AccountsPage implements Page
      */
     public AccountsPageAccount getAccount(AccountsPageAccount.AccountType accountType, String accountName)
     {
+        waitUntilTrue(pageElementFinder.find(By.className("aui-page-panel-content")).timed().isPresent());
         return pageElementFinder.find(
                 By.xpath("//h4[contains(concat(' ', @class, ' '), '" + accountType.getLogoClassName() + "')]/a[text() = '" + accountName
                         + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]"), AccountsPageAccount.class);

@@ -9,18 +9,6 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
-/**
- * GroupRemoteRestpoint
- * 
- * 
- * <br />
- * <br />
- * Created on 13.7.2012, 17:29:24 <br />
- * <br />
- * 
- * @author jhocman@atlassian.com
- * 
- */
 public class GroupRemoteRestpoint
 {
     private RemoteRequestor requestor;

@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -24,7 +25,8 @@ import static org.mockito.Mockito.when;
  *
  * @since v6.0
  */
-public class PanelVisibilityManagerTest {
+public class PanelVisibilityManagerTest
+{
 
     private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
     private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
@@ -48,7 +50,7 @@ public class PanelVisibilityManagerTest {
     private Issue issue;
 
     @Mock
-    private User user;
+    private ApplicationUser user;
 
     @BeforeClass
     public void initMocks()
@@ -60,7 +62,7 @@ public class PanelVisibilityManagerTest {
     @Test
     public void visibleWhenFusionPluginDisabled() throws Exception
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager,pluginAccessor,featureManager);
+        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
 
         //given
         // the fusion plugin is disabled
@@ -73,7 +75,7 @@ public class PanelVisibilityManagerTest {
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL,issue,user)).thenReturn(true);
+        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -82,7 +84,7 @@ public class PanelVisibilityManagerTest {
     @Test
     public void visibleWhenNoLabsFlag() throws Exception
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager,pluginAccessor,featureManager);
+        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
 
         //given
         // the no labs flags disabled
@@ -95,7 +97,7 @@ public class PanelVisibilityManagerTest {
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL,issue,user)).thenReturn(true);
+        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -104,7 +106,7 @@ public class PanelVisibilityManagerTest {
     @Test
     public void visibleWhenPluginTooOld() throws Exception
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager,pluginAccessor,featureManager);
+        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
 
         //given
         // the version number is too old
@@ -117,7 +119,7 @@ public class PanelVisibilityManagerTest {
         when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL,issue,user)).thenReturn(true);
+        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -126,7 +128,7 @@ public class PanelVisibilityManagerTest {
     @Test
     void hiddenWithPermissionButAllOthersSayHide()
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager,pluginAccessor,featureManager);
+        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
 
         // All other settings tell the tab to hide
         when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);
@@ -136,7 +138,7 @@ public class PanelVisibilityManagerTest {
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.1");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL,issue,user)).thenReturn(true);
+        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(false)));
@@ -146,11 +148,11 @@ public class PanelVisibilityManagerTest {
     @Test
     public void hiddenWhenNoPermissionButAllOthersSayShow()
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager,pluginAccessor,featureManager);
+        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
 
         //given
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL,issue,user)).thenReturn(false);
+        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(false);
 
         // but all other settings tell the tab to show
         when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);

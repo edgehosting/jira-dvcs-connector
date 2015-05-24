@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.model;
 
 
 /**
- * Describes the type of file action within a {@link com.atlassian.jira.plugins.bitbucket.api.Changeset changeset}.
+ * Describes the type of file action within a {@link Changeset changeset}.
  */
 public enum ChangesetFileAction
 {

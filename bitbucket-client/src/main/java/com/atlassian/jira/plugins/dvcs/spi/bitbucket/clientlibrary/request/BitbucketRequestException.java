@@ -1,15 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
-/**
- * RequestFailedException
- *
- * 
- * <br /><br />
- * Created on 12.7.2012, 17:18:48
- * <br /><br />
- * @author jhocman@atlassian.com
- *
- */
 public class BitbucketRequestException extends RuntimeException
 {
 

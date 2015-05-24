@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import com.atlassian.core.util.collection.EasyList;
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.collect.Sets;
 import org.mockito.ArgumentCaptor;
@@ -29,92 +29,90 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings ("unchecked")
 public class UserAddedExternallyEventProcessorTest
 {
     @Mock
-    User userMock;
+    ApplicationUser userMock;
 
-	@Mock
-	OrganizationService organizationServiceMock;
+    @Mock
+    OrganizationService organizationServiceMock;
 
-	@Mock
-	DvcsCommunicatorProvider communicatorProviderMock;
+    @Mock
+    DvcsCommunicatorProvider communicatorProviderMock;
 
-	@Mock
-	UserManager userManager;
+    @Mock
+    UserManager userManager;
 
-	@Mock
-	GroupManager groupManager;
+    @Mock
+    GroupManager groupManager;
 
-	@Mock
-	DvcsCommunicator communicatorMock;
+    @Mock
+    DvcsCommunicator communicatorMock;
 
-	@Captor
-	ArgumentCaptor<String> emailCaptor;
+    @Captor
+    ArgumentCaptor<String> emailCaptor;
 
-	@Captor
-	ArgumentCaptor<Collection<String>> slugsCaptor;
+    @Captor
+    ArgumentCaptor<Collection<String>> slugsCaptor;
 
-	// tested object
-	private UserAddedExternallyEventProcessor processor;
+    // tested object
+    private UserAddedExternallyEventProcessor processor;
 
-	public UserAddedExternallyEventProcessorTest()
-	{
+    public UserAddedExternallyEventProcessorTest()
+    {
 
-	}
+    }
 
-	@BeforeMethod
+    @BeforeMethod
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
 
         when(userMock.getEmailAddress()).thenReturn(sampleEmail());
-        when(userManager.getUser(eq(sampleUsername()))).thenReturn(userMock);
+        when(userManager.getUserByName(eq(sampleUsername()))).thenReturn(userMock);
 
-		processor = new UserAddedExternallyEventProcessor(sampleUsername(), organizationServiceMock, communicatorProviderMock, userManager, groupManager);
+        processor = new UserAddedExternallyEventProcessor(sampleUsername(), organizationServiceMock, communicatorProviderMock, userManager, groupManager);
 
-		when(communicatorProviderMock.getCommunicator(anyString())).thenReturn(communicatorMock);
-	}
+        when(communicatorProviderMock.getCommunicator(anyString())).thenReturn(communicatorMock);
+    }
 
-	@Test
+    @Test
     public void testRunShouldInvite()
     {
+        when(organizationServiceMock.getAll(false)).thenReturn(sampleOrganizations());
 
-		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(sampleOrganizations());
+        processor.run();
 
-		processor.run();
-
-		verify(communicatorMock).inviteUser(isA(Organization.class), slugsCaptor.capture(), emailCaptor.capture());
+        verify(communicatorMock).inviteUser(isA(Organization.class), slugsCaptor.capture(), emailCaptor.capture());
 
         assertThat(slugsCaptor.getAllValues()).hasSize(1);
         assertThat(slugsCaptor.getAllValues().get(0)).contains("A", "B");
 
         assertThat(emailCaptor.getAllValues()).hasSize(1);
         assertThat(emailCaptor.getAllValues().get(0)).isEqualTo(sampleEmail());
-	}
+    }
 
 
-	@Test
+    @Test
     public void testRunNoDefaultGroupsShouldntInvite()
     {
+        when(organizationServiceMock.getAll(false)).thenReturn(Collections.EMPTY_LIST);
 
-		when(organizationServiceMock.getAutoInvitionOrganizations()).thenReturn(Collections.EMPTY_LIST);
+        processor.run();
 
-		processor.run();
-
-		verifyNoMoreInteractions(communicatorMock);
-	}
+        verifyNoMoreInteractions(communicatorMock);
+    }
 
 
-	private List<Organization> sampleOrganizations()
-	{
-		Organization org = new Organization();
+    private List<Organization> sampleOrganizations()
+    {
+        Organization org = new Organization();
         org.setDefaultGroups(Sets.newHashSet(new Group("A"), new Group("B")));
-		return EasyList.build(org);
-	}
+        return EasyList.build(org);
+    }
 
-	private String sampleUsername()
+    private String sampleUsername()
     {
         return "principal";
     }

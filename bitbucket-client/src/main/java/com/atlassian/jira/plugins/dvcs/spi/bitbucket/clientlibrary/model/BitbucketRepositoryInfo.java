@@ -11,7 +11,6 @@ import java.io.Serializable;
  *   "full_name": "bitbucket/bitbucket"
  * },
  * </pre>
- * <br /><br />
  *
  * @author Miroslav Stencel mstencel@atlassian.com
  *

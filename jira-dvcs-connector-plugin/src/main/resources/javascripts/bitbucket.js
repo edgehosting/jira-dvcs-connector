@@ -104,12 +104,18 @@ function updateSyncStatus(repo) {
               title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
             }
             syncRepoIconElement.attr("title", title);
+
             if (repo.sync.error) {
                 syncStatusHtml = "";
-                syncIcon = "error";
-                syncErrorDiv.html("<span class=\"error\"><strong>Sync Failed:</strong> " + repo.sync.error + "</span>" +
-                        "<span style='color:#000;'> &nbsp; &ndash; &nbsp;</span>");
-            } else {
+                var syncTitle = repo.sync.errorTitle && repo.sync.errorTitle != '' ? repo.sync.errorTitle : 'Sync Failed:';
+                syncIcon = repo.sync.warning === true ? "info" : "error";
+
+                syncErrorDiv.html("<span class='@syncIcon'><strong>@syncTitle</strong>@syncError</span>"
+                        .replace("@syncIcon", syncIcon)
+                        .replace("@syncTitle", syncTitle)
+                        .replace("@syncError", repo.sync.error));
+            }
+            else {
                 syncErrorDiv.html("");
             }
         }/* else if (repo.sync.startTime === 0) {
@@ -144,7 +150,7 @@ function updateSyncStatus(repo) {
     	if (repo.lastActivityDate)
         syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
     }
-    syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").addClass(syncIcon);
+    syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").removeClass("info").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").removeClass("syncrepoiconqueue").addClass(syncRepoIcon);
     syncRepoIconElement.tooltip({aria:true});
     syncStatusDiv.html(syncStatusHtml);

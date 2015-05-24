@@ -26,7 +26,7 @@ public class DefaultCommitMessageParser implements CommitMessageParser {
      * <pre>
      *     .-----------------------------.
      *     v                             |
-     * >>----| svn-commit-message-line |-+--><
+     * &gt;&gt;----| svn-commit-message-line |-+--&lt;&gt;
      *
      * svn-commit-message-line:
      * |---| non-issue-key-text |-+---------------------------+--newline--|
@@ -40,7 +40,7 @@ public class DefaultCommitMessageParser implements CommitMessageParser {
      * trigger-message:
      *     .-------------.
      *     v             |
-     * |-----<issue-key>-+--+------------------+---+-------------------+----|
+     * |-----&lt;issue-key&gt;-+--+------------------+---+-------------------+----|
      *                      '-| ignored-text |-'   | .---------------. |
      *                                             | v               | |
      *                                             '----| command |--+-+
@@ -49,7 +49,7 @@ public class DefaultCommitMessageParser implements CommitMessageParser {
      * Any text that doesn't contain an issue key, or a # followed by a command name.
      *
      * command:
-     * |--hash---<command>--+-----------------+----|
+     * |--hash---&lt;command&gt;--+-----------------+----|
      *                      '--| arguments |--'
      *
      * arguments:

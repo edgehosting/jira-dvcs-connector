@@ -141,4 +141,10 @@ public interface Progress
 
     boolean isWebHookSync();
     void setWebHookSync(boolean webHookSync);
+
+    boolean isWarning();
+    void setWarning(boolean value);
+
+    String getErrorTitle();
+    void setErrorTitle(final String errorTitle);
 }

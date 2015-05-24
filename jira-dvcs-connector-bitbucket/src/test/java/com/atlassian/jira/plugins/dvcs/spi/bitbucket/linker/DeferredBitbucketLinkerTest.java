@@ -118,23 +118,6 @@ public class DeferredBitbucketLinkerTest
         verifyNoMoreInteractions(mockBitbucketLinker, mockLock);
     }
 
-    @Test
-    public void shouldLinkRepositoryIncrememtallyWhenLinkersEnabledIsEmpty()
-    {
-        // Set up
-        setUpLinkersEnabled("");
-        when(mockClusterLockService.getLockForName(lockName)).thenReturn(mockLock);
-
-        // Invoke
-        linkerUnderTest.linkRepositoryIncremental(mockRepository, PROJECT_KEYS);
-
-        // Check
-        verify(mockLock).lock();
-        verify(mockBitbucketLinker).linkRepositoryIncremental(mockRepository, PROJECT_KEYS);
-        verify(mockLock).unlock();
-        verifyNoMoreInteractions(mockBitbucketLinker, mockLock);
-    }
-
     private void setUpLinkersEnabled(final String linkersEnabled)
     {
         when(mockPluginSettings.get(LINKERS_ENABLED_SETTINGS_PARAM)).thenReturn(linkersEnabled);

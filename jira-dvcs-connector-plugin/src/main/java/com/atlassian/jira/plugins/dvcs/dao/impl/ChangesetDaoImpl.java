@@ -61,7 +61,7 @@ public class ChangesetDaoImpl
     {
         this.activeObjects = checkNotNull(activeObjects);
         this.queryHelper = checkNotNull(queryHelper);
-        this.transformer = new ChangesetTransformer(activeObjects, this);
+        this.transformer = new ChangesetTransformer(this);
     }
 
     private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)

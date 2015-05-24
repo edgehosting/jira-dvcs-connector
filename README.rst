@@ -39,9 +39,9 @@ Basically new work should go on master.
 +-----------------+-------------------------------------+-------------------------+
 |Branch           | Versions                            | Supported JIRA Versions |
 +=================+=====================================+=========================+
-| default         | 2.3.x                               | 6.5 and above           |
+| default         | 3.3.x                               | 6.5 and above           |
 +-----------------+-------------------------------------+-------------------------+
-| jira6.4.x       | 2.2.x                               | 6.4                     |
+| jira6.4.x       | 3.2.x                               | 6.4                     |
 +-----------------+-------------------------------------+-------------------------+
 | jira6.3.x       | 2.1.x                               | 6.3.x                   |
 +-----------------+-------------------------------------+-------------------------+
@@ -54,4 +54,8 @@ Basically new work should go on master.
 
 Building the code
 ========
-The integration tests use a specific user account in Bitbucket whose credentials are not available, also they take around an hour to run. If you want to compile the code you can use mvn clean install -DskipITs=true which will run the unit test suite.
+The integration tests use a specific user account in Bitbucket whose credentials are not available, also they take around an hour to run. If you want to compile the code you can use ```mvn clean install -DskipITs=true``` which will run the unit test suite.
+
+Releasing
+=======
+Skip the tests as they take too long - ```mvn release:clean release:prepare release:perform -DskipTests -Darguments="-DskipTests" -DautoVersionSubmodules=true```

@@ -2,19 +2,37 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
+
+    <artifactId>jira-dvcs-connector-plugin</artifactId>
+    <packaging>atlassian-plugin</packaging>
+
+    <name>JIRA DVCS Connector Plugin</name>
+    <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
     <organization>
         <name>Atlassian</name>
         <url>http://www.atlassian.com/</url>
     </organization>
-    <artifactId>jira-dvcs-connector-plugin</artifactId>
-    <name>JIRA DVCS Connector Plugin</name>
-    <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
-    <packaging>atlassian-plugin</packaging>
+
+    <properties>
+        <atlassian.selenium.version>2.2.1-m01-jira-1</atlassian.selenium.version>
+        <devtoolbox.version>2.0.16</devtoolbox.version> <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
+        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
+        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
+        <!--
+            We depend on a relatively new version of selenium-java that will bring in a newer firefox-driver to work with FF 31
+            as well as a newer selenium-api that works with this driver.
+        -->
+        <selenium.version>2.41.0</selenium.version>
+        <skipTests>false</skipTests>
+        <testGroups>integration_tests_without_ghe</testGroups>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -60,13 +78,23 @@
             <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-software-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.compat</groupId>
+            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
-        <!-- use atlassian-selenium 2.2.0 so that FF 31 is used instead of FF 12
-             We need FF 31 as GitHub the delete oauth page now does not support FF 12 -->
         <dependency>
             <groupId>com.atlassian.selenium</groupId>
             <artifactId>atlassian-pageobjects-api</artifactId>
@@ -90,6 +118,14 @@
                     <groupId>com.atlassian.annotations</groupId>
                     <artifactId>atlassian-annotations</artifactId>
                 </exclusion>
+                <!--
+                    We're excluding selenium-api here because we have a newer version that is brought in by selenium-java
+                    that works well with FF31 and the newer firefox-driver.
+                -->
+                <exclusion>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -104,7 +140,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- downgrade selenium-java bundled in atlassian-selenium as it requires guava 14 to be bundled -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -138,6 +173,16 @@
                     <artifactId>gson</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!--
+            Explicitly declare this dependency so we get a relative new version of FF.
+            2.6 brings in FF 31.
+        -->
+        <dependency>
+            <groupId>com.atlassian.browsers</groupId>
+            <artifactId>atlassian-browsers-auto</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
         </dependency>
         <!-- httpclient is explicitly excluded in the pageobjects dependency to avoid it being bundled, due to maven bug
              we add it here with test scope so that it could still be included in test
@@ -215,6 +260,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
@@ -275,6 +321,11 @@
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.annotations</groupId>
             <artifactId>atlassian-annotations</artifactId>
             <version>0.6</version>
@@ -291,6 +342,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -340,6 +392,10 @@
                             <groupId>com.atlassian.pocketknife</groupId>
                             <artifactId>atlassian-pocketknife-querydsl</artifactId>
                         </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.compat</groupId>
+                            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                        </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
                 </configuration>
@@ -349,7 +405,7 @@
                 <artifactId>maven-jira-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <jvmArgs>-Xmx1024m -XX:MaxPermSize=512m</jvmArgs>
+                    <jvmArgs>-Xmx1024m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
                         <baseurl.jira>http://localhost:2990/jira</baseurl.jira>
@@ -362,7 +418,7 @@
                     </systemPropertyVariables>
                     <productVersion>${jira.version}</productVersion>
                     <testResourcesVersion>${jira.data.version}</testResourcesVersion>
-                    <productDataPath>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</productDataPath>
+                    <productDataPath>${jira.data.path}</productDataPath>
                     <log4jProperties>target/test-classes/log4j.properties</log4jProperties>
                     <pluginArtifacts>
                         <pluginArtifact>
@@ -428,6 +484,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.jira.plugin.webfragment.conditions,
+                            com.atlassian.activeobjects.external,
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
@@ -436,16 +493,9 @@
                             com.atlassian.refapp.api;resolution:="optional",
                             com.atlassian.refapp.api.*;resolution:="optional",
                             oracle.sql;resolution:="optional",
-                            oracle.spatial.geometry;resolution:="optional",
-                            com.mysema.query.spatial.path;resolution:="optional",
-                            com.mysema.query.spatial;resolution:="optional",
                             com.vividsolutions.jts.io;resolution:="optional",
                             com.vividsolutions.jts;resolution:="optional",
                             net.sf.cglib.proxy;resolution:="optional",
-                            org.geolatte.geom;resolution:="optional",
-                            org.geolatte.geom.codec;resolution:="optional",
-                            org.geolatte.geom.crs;resolution:="optional",
-                            org.postgis;resolution:="optional",
                             org.jvnet.hudson.annotation_indexer;resolution:="optional",
                             org.apache.log4j;resolution:="optional",
                             !com.google.gson.stream,
@@ -458,6 +508,14 @@
                             !org.apache.avalon.framework*,
                             !org.apache.log,
                             !sun.security.util,
+                            !com.mysema.query.*,
+                            !com.mysema.query.spatial.path,
+                            !com.mysema.query.spatial,
+                            !org.postgis,
+                            !oracle.spatial.geometry,
+                            !org.geolatte.geom,
+                            !org.geolatte.geom.codec,
+                            !org.geolatte.geom.crs,
                             *
                         </Import-Package>
                     </instructions>
@@ -477,16 +535,7 @@
             </plugin>
         </plugins>
     </build>
-    <properties>
-        <jirabitbucketconnector.password>Im here so AMPS wont fail when just building stuff</jirabitbucketconnector.password>
-        <dvcsconnectortest.password>Im here so AMPS wont fail when just building stuff</dvcsconnectortest.password>
-        <testGroups>integration_tests_without_ghe</testGroups>
-        <skipTests>false</skipTests>
-        <atlassian.selenium.version>2.2.0</atlassian.selenium.version>
-        <selenium.version>2.41.0</selenium.version>
-        <!-- temp fix to avoid the toolbar.js error until the default version is included in amps -->
-        <devtoolbox.version>2.0.16</devtoolbox.version>
-    </properties>
+
     <profiles>
         <profile>
             <id>skipTests</id>
@@ -505,11 +554,11 @@
             <id>dev-mysql</id>
             <properties>
                 <!-- Default: MySQL properties values feel free to customize it via -Dmysql.xxx=xxx -->
-                <mysql.host>localhost</mysql.host>
-                <mysql.port>3306</mysql.port>
                 <mysql.database>jira</mysql.database>
-                <mysql.username>jira</mysql.username>
+                <mysql.host>localhost</mysql.host>
                 <mysql.password>jira</mysql.password>
+                <mysql.port>3306</mysql.port>
+                <mysql.username>jira</mysql.username>
             </properties>
             <build>
                 <plugins>
@@ -551,11 +600,11 @@
             <properties>
                 <!-- Default: Postgres properties values feel free to customize it via
                     -Dpostgres.xxx=xxx -->
-                <postgres.host>localhost</postgres.host>
-                <postgres.port>5432</postgres.port>
                 <postgres.database>jira</postgres.database>
-                <postgres.username>jira</postgres.username>
+                <postgres.host>localhost</postgres.host>
                 <postgres.password>jira</postgres.password>
+                <postgres.port>5432</postgres.port>
+                <postgres.username>jira</postgres.username>
             </properties>
             <build>
                 <plugins>
@@ -597,11 +646,11 @@
             <properties>
                 <!-- Default: Oracle properties values feel free to customize it via
                     -Doracle.xxx=xxx -->
-                <oracle.host>localhost</oracle.host>
-                <oracle.port>1521</oracle.port>
                 <oracle.database>jira</oracle.database>
-                <oracle.username>jira</oracle.username>
+                <oracle.host>localhost</oracle.host>
                 <oracle.password>jira</oracle.password>
+                <oracle.port>1521</oracle.port>
+                <oracle.username>jira</oracle.username>
             </properties>
             <build>
                 <plugins>
@@ -643,11 +692,11 @@
             <properties>
                 <!-- Default: MS SQL properties values feel free to customize it via
                     -Dmssql.xxx=xxx -->
-                <mssql.host>localhost</mssql.host>
-                <mssql.port>1433</mssql.port>
                 <mssql.database>jira</mssql.database>
-                <mssql.username>jira</mssql.username>
+                <mssql.host>localhost</mssql.host>
                 <mssql.password>jira</mssql.password>
+                <mssql.port>1433</mssql.port>
+                <mssql.username>jira</mssql.username>
             </properties>
             <build>
                 <plugins>
@@ -680,6 +729,21 @@
                                 </product>
                             </products>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sonar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

@@ -46,19 +46,6 @@ import javax.annotation.Nullable;
 import static com.atlassian.jira.plugins.dvcs.dao.impl.DAOConstants.MAXIMUM_ENTITIES_PER_ISSUE_KEY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/**
- *
- * DefaultRepositoryActivityDao
- *
- *
- * <br />
- * <br />
- * Created on 15.1.2013, 15:17:03 <br />
- * <br />
- *
- * @author jhocman@atlassian.com
- *
- */
 @Component
 public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
 {

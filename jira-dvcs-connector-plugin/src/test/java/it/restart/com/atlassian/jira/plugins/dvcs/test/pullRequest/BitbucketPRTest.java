@@ -9,14 +9,17 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepositoryTestHelper;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
+import it.util.TestAccounts;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
-    private static final String BB_ACCOUNT_NAME = "jirabitbucketconnector";
+    private static final String BB_ACCOUNT_NAME = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 
     private RepositoryTestHelper repositoryTestHelper;
     private RepositoryTestHelper forkRepositoryTestHelper;
@@ -25,18 +28,30 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     {
     }
 
+    @BeforeClass
+    public void beforeClass()
+    {
+        setUpEnvironment();
+    }
+
+    @AfterMethod
+    public void afterMethod()
+    {
+        deleteCreatedIssues();
+    }
+
     @Override
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
-                BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+                BitbucketRepositoryTestHelper.DvcsType.GIT);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
-        forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, PASSWORD,
-                getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+        forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD,
+                getJiraTestedProduct(), BitbucketRepositoryTestHelper.DvcsType.GIT);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
         MockitoAnnotations.initMocks(this);

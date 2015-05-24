@@ -9,17 +9,6 @@ import org.scribe.services.TimestampServiceImpl;
 
 import java.util.UUID;
 
-/**
- * OAuthBitbucket10aApi
- * 
- * <br />
- * <br />
- * Created on 14.6.2012, 13:40:17 <br />
- * <br />
- * 
- * @author jhocman@atlassian.com
- * 
- */
 public class OAuthBitbucket10aApi extends DefaultApi10a
 {
 

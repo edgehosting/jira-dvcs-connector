@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 import com.atlassian.jira.plugins.dvcs.auth.AuthenticationFactory;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientWithTimeout;
+import com.atlassian.jira.plugins.dvcs.spi.github.RateLimit;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.Gson;
@@ -36,6 +37,8 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.HOST_GISTS;
 @Component ("githubEnterpriseClientProvider")
 public class GithubEnterpriseClientProvider extends GithubClientProvider
 {
+    private static final String RATE_LIMIT_URI = "/api/v3/rate_limit";
+
     @Autowired
     public GithubEnterpriseClientProvider(AuthenticationFactory authenticationFactory,
             @ComponentImport PluginAccessor pluginAccessor)
@@ -89,6 +92,14 @@ public class GithubEnterpriseClientProvider extends GithubClientProvider
             if (serializeNulls)
                 builder.serializeNulls();
             return builder.create();
+        }
+
+        /**
+         * @return null for GHE because there is no rate limits
+         */
+        @Override
+        public RateLimit getRateLimit() {
+            return null;
         }
     }
 

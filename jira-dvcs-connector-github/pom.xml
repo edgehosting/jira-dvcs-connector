@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-github</artifactId>
     <packaging>jar</packaging>
+
     <name>Jira DVCS Connector GitHub module</name>
     <description>Jira DVCS Connector GitHub module</description>
 
@@ -94,4 +95,22 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -45,14 +45,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
-/**
- * BaseRemoteRequestor
- * <p/>
- * <p/>
- * <br /> <br /> Created on 13.7.2012, 10:25:24 <br /> <br />
- *
- * @author jhocman@atlassian.com
- */
 public class BaseRemoteRequestor implements RemoteRequestor
 {
     private final Logger log = LoggerFactory.getLogger(BaseRemoteRequestor.class);

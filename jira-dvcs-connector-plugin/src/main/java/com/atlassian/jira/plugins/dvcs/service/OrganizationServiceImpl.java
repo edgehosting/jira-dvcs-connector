@@ -24,20 +24,14 @@ public class OrganizationServiceImpl implements OrganizationService
 {
     private static final Logger log = LoggerFactory.getLogger(OrganizationServiceImpl.class);
 
-    private final OrganizationDao organizationDao;
-
-    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
-
-    private final RepositoryService repositoryService;
+    @Autowired
+    private OrganizationDao organizationDao;
 
     @Autowired
-    public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
-            RepositoryService repositoryService)
-    {
-        this.organizationDao = organizationDao;
-        this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
-        this.repositoryService = repositoryService;
-    }
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -60,8 +54,7 @@ public class OrganizationServiceImpl implements OrganizationService
         {
             for (Organization organization : organizations)
             {
-                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-                organization.setRepositories(repositories);
+                retrieveRepositories(organization);
             }
         }
         return organizations;
@@ -76,8 +69,7 @@ public class OrganizationServiceImpl implements OrganizationService
         {
             for (Organization organization : organizations)
             {
-                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
-                organization.setRepositories(repositories);
+                retrieveRepositories(organization);
             }
         }
 
@@ -100,8 +92,7 @@ public class OrganizationServiceImpl implements OrganizationService
 
         if (loadRepositories && organization != null)
         {
-            List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
-            organization.setRepositories(repositories);
+            retrieveRepositories(organization);
         }
 
         return organization;
@@ -186,12 +177,6 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAutoInvitionOrganizations()
-    {
-        return organizationDao.getAutoInvitionOrganizations();
-    }
-
-    @Override
     public List<Organization> getAllByIds(Collection<Integer> ids)
     {
         if (CollectionUtils.isNotEmpty(ids))
@@ -227,8 +212,7 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         Organization organization = get(organizationId, false);
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-        DvcsUser currentUser = communicator.getTokenOwner(organization);
-        return currentUser;
+        return communicator.getTokenOwner(organization);
     }
 
     /**
@@ -244,5 +228,11 @@ public class OrganizationServiceImpl implements OrganizationService
     public boolean existsOrganizationWithType(final String... types)
     {
         return organizationDao.existsOrganizationWithType(types);
+    }
+
+    private void retrieveRepositories(Organization org)
+    {
+        List<Repository> repositories = repositoryService.getAllByOrganization(org.getId());
+        org.setRepositories(repositories);
     }
 }
