@@ -122,8 +122,6 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         assertThat(commitsForQA3).contains("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
     }
 
-
-    @Override
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\n.*Error retrieving list of repositories.*")
     public void addOrganizationInvalidAccount()
     {

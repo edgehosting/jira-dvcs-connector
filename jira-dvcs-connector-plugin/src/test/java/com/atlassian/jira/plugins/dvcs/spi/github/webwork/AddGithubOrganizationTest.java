@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
@@ -17,13 +18,13 @@ import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.sal.api.ApplicationProperties;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import webwork.action.Action;
 
+import java.net.URLEncoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -35,14 +36,18 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 import static com.atlassian.jira.plugins.dvcs.spi.github.webwork.AddGithubOrganization.EVENT_TYPE_GITHUB;
 import static com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction.DEFAULT_SOURCE;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -100,6 +105,9 @@ public class AddGithubOrganizationTest {
 
     private AddGithubOrganization addGithubOrganization;
 
+    private final String githubURL = "https://github.com/";
+    private final String badAccountName = "I_AM_SURE_THIS_ACCOUNT_IS_INVALID";
+
     @BeforeMethod(alwaysRun=true)
     public void setup()
     {
@@ -121,16 +129,6 @@ public class AddGithubOrganizationTest {
         when(request.getParameter("oauth_verifier")).thenReturn("verifier");
         HttpSession session = mock(HttpSession.class);
         when(request.getSession()).thenReturn(session);
-//        Token requestToken = mock(Token.class);
-//        when(session.getAttribute(AddBitbucketOrganization.SESSION_KEY_REQUEST_TOKEN)).thenReturn(requestToken);
-//        when(requestToken.getToken()).thenReturn("requestToken");
-//        when(requestToken.getSecret()).thenReturn("secret");
-
-//        final Token accessToken = mock(Token.class);
-//        when(accessToken.getToken()).thenReturn("accessToken");
-//        when(accessToken.getSecret()).thenReturn("accessSecret");
-//        when(oAuthService.getAccessToken(eq(requestToken), any(Verifier.class))).thenReturn(accessToken);
-//        when(oAuthService.getRequestToken()).thenReturn(requestToken);
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
@@ -141,7 +139,6 @@ public class AddGithubOrganizationTest {
                 return githubOAuthUtils;
             }
         };
-        addGithubOrganization.setUrl("http://url.com");
     }
 
     @AfterMethod
@@ -160,8 +157,8 @@ public class AddGithubOrganizationTest {
         assertThat(ret, equalTo(Action.NONE));
         verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB));
         verifyNoMoreInteractions(eventPublisher);
-//        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL + "&t=2)); ??
-//        verifyNoMoreInteractions(response);
+        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL + URLEncoder.encode("&t=2", "utf8")));
+        verifyNoMoreInteractions(response);
     }
     @Test
     public void testDoExecuteAnalyticsDefaultSource() throws Exception
@@ -171,8 +168,8 @@ public class AddGithubOrganizationTest {
         assertThat(ret, equalTo(Action.NONE));
         verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(DEFAULT_SOURCE, EVENT_TYPE_GITHUB));
         verifyNoMoreInteractions(eventPublisher);
-//        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
-//        verifyNoMoreInteractions(response);
+        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL + URLEncoder.encode("&t=2", "utf8")));
+        verifyNoMoreInteractions(response);
     }
 
     @Test
@@ -239,7 +236,6 @@ public class AddGithubOrganizationTest {
     {
         addGithubOrganization.setUrl(SAMPLE_SOURCE);
         addGithubOrganization.setOrganization("org");
-        final AccountInfo accountInfo = mock(AccountInfo.class);
         when(githubCommunicator.isUsernameCorrect(SAMPLE_SOURCE, "org")).thenReturn(true);
         addGithubOrganization.doValidation();
         verifyNoMoreInteractions(eventPublisher);
@@ -250,6 +246,7 @@ public class AddGithubOrganizationTest {
     {
         addGithubOrganization.setSource(SAMPLE_SOURCE);
         addGithubOrganization.setOrganization("org");
+        addGithubOrganization.setUrl(githubURL);
         when(featureManager.isEnabled(AddGithubOrganization.DISABLE_USERNAME_VALIDATION)).thenReturn(true);
 
         addGithubOrganization.doValidation();
@@ -257,4 +254,16 @@ public class AddGithubOrganizationTest {
         verifyNoMoreInteractions(eventPublisher);
     }
 
+    @Test()
+    public void addOrganizationInvalidAccount(){
+        addGithubOrganization.setOrganization(badAccountName);
+        addGithubOrganization.setUrl(githubURL);
+        when(githubCommunicator.isUsernameCorrect(githubURL, badAccountName)).thenReturn(false);
+        when(featureManager.isEnabled(AddGithubOrganization.DISABLE_USERNAME_VALIDATION)).thenReturn(false);
+
+        addGithubOrganization.doValidation();
+
+        assertThat(addGithubOrganization.getErrorMessages(), hasSize(1));
+        assertThat(addGithubOrganization.getErrorMessages().iterator().next(), is("Invalid user/team account."));
+    }
 }
