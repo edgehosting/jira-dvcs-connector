@@ -35,7 +35,6 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
 
 import java.util.Arrays;
-
 public class BitbucketLinkerImplTest
 {
     @Mock
@@ -81,11 +80,9 @@ public class BitbucketLinkerImplTest
         links = new ArrayList<BitbucketRepositoryLink>();
         links.add(link1);
         links.add(link2);
-
         projectList = setUpProjectList();
         when(repositoryLinkRemoteRestpoint.getRepositoryLinks
                 (repository.getOrgName(), repository.getSlug())).thenReturn(new ArrayList<BitbucketRepositoryLink>());
-
         when(applicationProperties.getBaseUrl(UrlMode.CANONICAL)).thenReturn(thisJiraURL);
         bitbucketLinker = new BitbucketLinkerImpl(builderFactory, applicationProperties, projectManager, repositoryService);
         when(builderFactory.forRepository(repository).
@@ -102,7 +99,7 @@ public class BitbucketLinkerImplTest
         when(repositoryLinkRemoteRestpoint.getRepositoryLinks
                 (repository.getOrgName(), repository.getSlug())).thenReturn(links);
         bitbucketLinker.unlinkRepository(repository);
-        verify(repositoryLinkRemoteRestpoint).getRepositoryLinks(repository.getOrgName(),repository.getSlug());
+        verify(repositoryLinkRemoteRestpoint).getRepositoryLinks(repository.getOrgName(), repository.getSlug());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link1.getId());
         verify(repositoryLinkRemoteRestpoint).removeRepositoryLink(repository.getOrgName(), repository.getSlug(), link2.getId());
         verifyNoMoreInteractions(repositoryLinkRemoteRestpoint);
@@ -113,7 +110,6 @@ public class BitbucketLinkerImplTest
     {
         when(repositoryLinkRemoteRestpoint.getRepositoryLinks
                 (repository.getOrgName(), repository.getSlug())).thenReturn(links);
-
         List<String> projectKeysSubset = Arrays.asList(projectKeys.get(0));
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeysSubset);
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
@@ -125,7 +121,6 @@ public class BitbucketLinkerImplTest
     public void testLinkRepositoryWhenNoNewKeys() throws Exception
     {
         when(repositoryService.getPreviouslyLinkedProjects(repository)).thenReturn(projectKeys);
-
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys)); //necessary because link repository mutates the set it works on
         verify(repositoryLinkRemoteRestpoint, never()).addCustomRepositoryLink(anyString(), anyString(), anyString(), anyString());
     }
@@ -138,7 +133,6 @@ public class BitbucketLinkerImplTest
         bitbucketLinker.linkRepository(repository, new HashSet<String>(projectKeys));
         verify(repositoryLinkRemoteRestpoint).addCustomRepositoryLink(eq(repository.getOrgName()), eq(repository.getSlug())
                 , eq(thisJiraURL + "browse/\\1"), anyString());
-
     }
 
     private BitbucketRepositoryLink createLink(String projectKey)
@@ -172,7 +166,6 @@ public class BitbucketLinkerImplTest
         projectList = new ArrayList<Project>();
         when(project1.getKey()).thenReturn("ASDF");
         when(project2.getKey()).thenReturn("TEST");
-
         projectList.add(project1);
         projectList.add(project2);
         return projectList;

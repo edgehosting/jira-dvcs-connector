@@ -33,37 +33,41 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * <p>
- * Implementation of BitbucketLinker that configures repository links on bitbucket repositories
- * </p>
+ * <p> Implementation of BitbucketLinker that configures repository links on bitbucket repositories </p>
  * https://confluence.atlassian.com/display/BITBUCKET/Repository+links
  */
 @Component ("bitbucketLinker")
 public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
-    private final String baseUrl;
-    private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
-    private final ProjectManager projectManager;
 
     @Autowired
     private RepositoryService repositoryService;
 
     @Autowired
-    public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
+    @ComponentImport
+    private ApplicationProperties applicationProperties;
+
+    @Autowired
+    @ComponentImport
+    private ProjectManager projectManager;
+
+    @Autowired
+    private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+
+    //Empty default constructor to keep Spring happy
+    public BitbucketLinkerImpl()
     {
-        this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
-        this.projectManager = checkNotNull(projectManager);
-        this.baseUrl = normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
+
     }
 
-    @VisibleForTesting
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager,
+            ApplicationProperties applicationProperties, ProjectManager projectManager,
             final RepositoryService repositoryService)
     {
-        this(bitbucketClientBuilderFactory, applicationProperties, projectManager);
+        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
+        this.applicationProperties = applicationProperties;
+        this.projectManager = projectManager;
         this.repositoryService = repositoryService;
     }
 
@@ -98,7 +102,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     }
 
     /**
-     * Removes existing links to this jira, adds a link for the keys in {@code projectKeysToLink} that exist in this jira
+     * Removes existing links to this jira, adds a link for the keys in {@code projectKeysToLink} that exist in this
+     * jira
      *
      * @param repository repository to replace links to
      * @param projectKeysToLink a set of project keys to be linked
@@ -131,7 +136,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         {
             addLink(repository, projectKeysToLink);
         }
-        repositoryService.setPreviouslyLinkedProjects(repository, projectKeysToLink);
     }
 
     /**
@@ -149,18 +153,29 @@ public class BitbucketLinkerImpl implements BitbucketLinker
                 log.debug("No projects to link");
                 return;
             }
-
             RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = bitbucketClientBuilderFactory.forRepository(repository).closeIdleConnections().build().getRepositoryLinksRest();
-
             repositoryLinkRemoteRestpoint.addCustomRepositoryLink(repository.getOrgName(), repository.getSlug(),
-                    baseUrl + "/browse/\\1", constructProjectsRex(forProjects));
-
+                    getRepositoryLinkUrl(), constructProjectsRex(forProjects));
+            repositoryService.setPreviouslyLinkedProjects(repository, forProjects);
+            repository.setUpdateLinkAuthorised(true);
+            repositoryService.save(repository);
+        }
+        catch (BitbucketRequestException.Forbidden_403 e)
+        {
+            log.info("Bitbucket Account not authorised to install Repository Link on {}", repository.getRepositoryUrl());
+            repository.setUpdateLinkAuthorised(false);
+            repositoryService.save(repository);
         }
         catch (BitbucketRequestException e)
         {
-            log.error("Error adding Repository Link [" + baseUrl + ", " + repository.getName() + "] to "
-                    + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects));
+            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
+                    + repository.getRepositoryUrl() + ":  REX: " + constructProjectsRex(forProjects), e);
         }
+    }
+
+    private String getRepositoryLinkUrl()
+    {
+        return getBaseUrl() + "/browse/\\1";
     }
 
     private String constructProjectsRex(Collection<String> projectKeys)
@@ -180,6 +195,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             try
             {
                 repositoryLinkRemoteRestpoint.removeRepositoryLink(owner, slug, repositoryLink.getId());
+                repositoryService.setPreviouslyLinkedProjects(repository, new HashSet<String>());
             }
             catch (BitbucketRequestException e)
             {
@@ -246,7 +262,7 @@ public class BitbucketLinkerImpl implements BitbucketLinker
             {
                 BitbucketRepositoryLinkHandler handler = repositoryLink.getHandler();
                 String displayTo = handler.getDisplayTo();
-                if (displayTo != null && displayTo.toLowerCase().startsWith(baseUrl.toLowerCase()))
+                if (displayTo != null && displayTo.toLowerCase().startsWith(getBaseUrl().toLowerCase()))
                 {
                     // remove links just to OUR jira instance
                     linksToThisJira.add(repositoryLink);
@@ -256,4 +272,8 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         return linksToThisJira;
     }
 
+    private String getBaseUrl()
+    {
+        return normaliseBaseUrl(applicationProperties.getBaseUrl(UrlMode.CANONICAL));
+    }
 }

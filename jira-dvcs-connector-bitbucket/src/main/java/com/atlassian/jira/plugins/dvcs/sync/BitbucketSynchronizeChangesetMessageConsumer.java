@@ -73,11 +73,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer
     /**
      * Loads changesets not already in the database from the page of changesets into the database
      *
-     * @param messageTags tags that are added to the messages when they are first created, used for tracing things (what sync this message was created for etc)
-     * @see {@link com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator#processBitbucketPrSync(Repository repo, boolean softSync, int auditId, boolean webHookSync)}
+     * @param messageTags tags that are added to the messages when they are first created, used for tracing things (what
+     * sync this message was created for etc)
      * @param page the page of changesets to be processed
      * @param payload an object that is passed around that contains information specific to the processing of all the
      * bitbucket pages
+     * @see {@link com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator#processBitbucketPrSync(Repository
+     * repo, boolean softSync, int auditId, boolean webHookSync)}
      */
     void process(String[] messageTags, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
@@ -120,17 +122,24 @@ public class BitbucketSynchronizeChangesetMessageConsumer
         }
         else
         {
-            cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+            repo = repositoryService.get(repo.getId());
+            if (repo.isUpdateLinkAuthorised())
+            {
+                cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
+            }
         }
     }
 
     /**
-     * Assigns the branch for this changeset to the branch assosciated with it in the {code nodesToBranches} map in originalMessage
-     * Note: originalMessage is a bit of a misnomer as it's mutated in this message to assosciate all parents of this commit which are new to jira as of this sync with this branch
-     * Because only one branch is stored against a commit it is incomplete when tracking commits with two parents,
+     * Sets the branch for this changeset to the branch associated with it in the {code nodesToBranches} map in
+     * originalMessage.
+     * Note: originalMessage is a bit of a misnomer as it's mutated in this message to associate all
+     * parents of this commit which are new to jira as of this sync with this branch. Because only one branch is stored
+     * against a commit this implementation is incomplete when tracking commits with two parents,
      * The branch of the oldest commit not yet loaded into the db is the one that is assigned to a parent of two commits
      * (unless if the parent has already been loaded into the database, in which case this method is never called on it and it is left alone).
-     * @param cset incomming Changeset
+     *
+     * @param cset incoming Changeset
      * @param originalMessage an object that holds state specific to the synchronisation of this repository
      */
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
