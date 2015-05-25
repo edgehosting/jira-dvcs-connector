@@ -13,7 +13,6 @@ import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabBranch;
-import org.gitlab.api.models.GitlabBranchCommit;
 import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabCommitDiff;
 import org.gitlab.api.models.GitlabProject;
@@ -320,12 +319,6 @@ public class GitlabCommunicator implements DvcsCommunicator {
 	@Override
 	public void linkRepository(Repository repository, Set<String> withProjectkeys) {
 		LOG.info("linkRepository: repo={}, withProjectKeys={}", repository, withProjectkeys);
-		// Do nothing
-	}
-
-	@Override
-	public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys) {
-		LOG.info("linkRepositoryIncremental: repo={}, withPossibleNewProjectKeys={}", repository, withPossibleNewProjectkeys);
 		// Do nothing
 	}
 
