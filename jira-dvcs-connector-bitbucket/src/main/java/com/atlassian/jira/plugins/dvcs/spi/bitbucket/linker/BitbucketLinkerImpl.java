@@ -55,13 +55,19 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     @Autowired
     private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
 
+    //Empty default constructor to keep Spring happy
+    public BitbucketLinkerImpl()
+    {
+
+    }
+
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
             ApplicationProperties applicationProperties, ProjectManager projectManager,
             final RepositoryService repositoryService)
     {
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.applicationProperties = applicationProperties;
-        this.projectManager =projectManager;
+        this.projectManager = projectManager;
         this.repositoryService = repositoryService;
     }
 
