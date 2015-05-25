@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -103,6 +102,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
     {
         repository = new Repository();
         repository.setId(repoId);
+        repository.setUpdateLinkAuthorised(true);
         progress = new DefaultProgress();
         refreshAfterSynchronizedAt = new Date();
         secondToLastmessage = setUpChangesetMessage(secondToLastChangesetPage);
@@ -114,6 +114,7 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         when(messagingService.get(eq(BitbucketSynchronizeChangesetMessage.class), anyString())).thenReturn(messageAddress);
         when(communicator.getNextPage(eq(repository),
                 eq(includeNodes), eq(excludeNodes), any(BitbucketChangesetPage.class))).thenReturn(lastChangesetPage);
+        when(repositoryService.get(repoId)).thenReturn(repository);
     }
 
     @Test
@@ -185,6 +186,20 @@ public class BitbucketSynchronizeChangesetMessageConsumerTest
         verify(changesetService, never()).create(any(Changeset.class), any(Set.class));
     }
 
+    @Test
+    public void testOnReceiveLastMessageWhenUnauthorisedToInstallLinks() throws Exception
+    {
+        repository.setUpdateLinkAuthorised(false);
+        when(communicator.getNextPage(any(Repository.class),
+                eq(includeNodes), eq(excludeNodes), eq(secondToLastChangesetPage))).thenReturn(lastChangesetPage);
+        when(changesetService.getByNode(eq(repoId), anyString())).thenReturn(null); //changeset is not already in the database
+        when(changesetService.findReferencedProjects(repoId)).thenReturn(referencedProjects);
+        messageConsumer.onReceive(message, secondToLastmessage);
+
+        verify(cachingCommunicator, never()).linkRepository(any(Repository.class), any(Set.class));
+        verifyNoMoreInteractions(messagingService);
+    }
+    
     private void setUpChangesetPages()
     {
         newChangeset1 = new BitbucketNewChangeset();

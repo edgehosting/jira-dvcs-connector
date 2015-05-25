@@ -290,6 +290,7 @@ public class RepositoryServiceImpl implements RepositoryService
             // need for installing post commit hook
             repository.setOrgHostUrl(organization.getHostUrl());
             repository.setOrgName(organization.getName());
+            repository.setUpdateLinkAuthorised(true);
 
             Repository savedRepository = repositoryDao.save(repository);
             newRepoSlugs.add(savedRepository.getSlug());

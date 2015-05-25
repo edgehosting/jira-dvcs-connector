@@ -173,7 +173,7 @@ public class RestCommitsTest
 
         public void addRepository(int id, Integer forkOf)
         {
-            final Repository repository = new Repository(id, 0, "git", "SLUG_" + id, "REPOSITORY_NAME_" + id, new Date(), true, false, null);
+            final Repository repository = new Repository(id, 0, "git", "SLUG_" + id, "REPOSITORY_NAME_" + id, new Date(), true, false, null,true);
             if (forkOf != null)
             {
                 repository.setFork(true);
