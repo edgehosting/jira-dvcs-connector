@@ -18,6 +18,7 @@ import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabCommitDiff;
 import org.gitlab.api.models.GitlabProject;
 import org.gitlab.api.models.GitlabProjectHook;
+import org.gitlab.api.models.GitlabUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,9 @@ import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.gitlab.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.sync.GitlabSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class GitlabCommunicator implements DvcsCommunicator {
     public static final String GITLAB = "gitlab";
@@ -232,6 +236,16 @@ public class GitlabCommunicator implements DvcsCommunicator {
 	public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories) {
 		LOG.info("getRepositories: organization={}, storedRepositories={}", organization, storedRepositories);
 		
+        ImmutableMap<String, Repository> storedReposMap = Maps.uniqueIndex(storedRepositories, new Function<Repository, String>()
+        {
+            @Override
+            public String apply(Repository r)
+            {
+                return r.getSlug();
+            }
+        });
+
+		
 		GitlabAPI gitlabAPI = GitlabAPI.connect(organization.getHostUrl(), organization.getCredential().getAccessToken());
 		try {
 			List<GitlabProject> projects = gitlabAPI.getProjects();
@@ -239,12 +253,19 @@ public class GitlabCommunicator implements DvcsCommunicator {
 			List<Repository> repos = new ArrayList<Repository>();
 			
 			for (GitlabProject gitlabProject : projects) {
-				Repository repo = new Repository();
-				//repo.setSlug(String.valueOf(gitlabProject.getId()));
-				repo.setSlug(gitlabProject.getName());
-				repo.setName(gitlabProject.getName());
-				
-				repos.add(repo);
+				if (gitlabProject.getNamespace().getPath().equals(organization.getName())) {
+					if (storedReposMap.containsKey(gitlabProject.getName())) {
+						// Repo was already stored
+						repos.add(storedReposMap.get(gitlabProject.getName()));
+					} else {
+						// Repo is new
+						Repository repo = new Repository();
+						repo.setSlug(gitlabProject.getName());
+						repo.setName(gitlabProject.getName());
+						
+						repos.add(repo);
+					}
+				}
 			}
 			
 			return repos;
@@ -267,7 +288,23 @@ public class GitlabCommunicator implements DvcsCommunicator {
 	public DvcsUser getUser(Repository repository, String author) {
 		LOG.info("getUser: repo={}, author={}", repository, author);
 		
-		// TODO Auto-generated method stub
+		GitlabAPI gitlabAPI = GitlabAPI.connect(repository.getOrgHostUrl(), repository.getCredential().getAccessToken());
+
+		try {
+			List<GitlabUser> users = gitlabAPI.getUsers();
+			for (GitlabUser user : users) {
+				if (author.equals(user.getName())) {
+					String userUrl = repository.getOrgHostUrl() + "/u/" + user.getUsername();
+					
+					DvcsUser dvcsUser = new DvcsUser(user.getUsername(), user.getName(), user.getName(), user.getAvatarUrl(), userUrl);
+					return dvcsUser;
+				}
+			}
+			
+		} catch (IOException e) {
+			LOG.error("Problem while getUser", e);
+		}
+		
 		return null;
 	}
 
