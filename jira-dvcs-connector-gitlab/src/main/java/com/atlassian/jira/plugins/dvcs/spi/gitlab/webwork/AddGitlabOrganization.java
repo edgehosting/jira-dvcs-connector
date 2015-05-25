@@ -19,8 +19,10 @@ import com.atlassian.jira.plugins.dvcs.spi.gitlab.GitlabCommunicator;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
 import com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.sal.api.ApplicationProperties;
 
+@Scanned
 public class AddGitlabOrganization extends CommonDvcsConfigurationAction
 {
     private final Logger log = LoggerFactory.getLogger(AddGitlabOrganization.class);

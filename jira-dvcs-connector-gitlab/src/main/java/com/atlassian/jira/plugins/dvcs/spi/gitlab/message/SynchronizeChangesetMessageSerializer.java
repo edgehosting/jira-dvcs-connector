@@ -6,12 +6,15 @@ import com.atlassian.jira.util.json.JSONObject;
 
 import java.util.Date;
 
+import org.springframework.stereotype.Component;
+
 /**
  * An implementation of {@link MessagePayloadSerializer} over {@link SynchronizeChangesetMessage}.
  *
  * @author Stanislav Dvorscak
  *
  */
+@Component("gitlabSynchronizeChangesetMessageSerializer")
 public class SynchronizeChangesetMessageSerializer extends AbstractMessagePayloadSerializer<SynchronizeChangesetMessage>
 {
 

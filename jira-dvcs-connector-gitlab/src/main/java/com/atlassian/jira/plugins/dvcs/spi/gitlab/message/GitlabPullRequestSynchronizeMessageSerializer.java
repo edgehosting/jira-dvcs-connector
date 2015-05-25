@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.gitlab.message;
 
+import org.springframework.stereotype.Component;
+
 import com.atlassian.jira.plugins.dvcs.service.message.AbstractMessagePayloadSerializer;
 import com.atlassian.jira.util.json.JSONObject;
 
@@ -9,6 +11,7 @@ import com.atlassian.jira.util.json.JSONObject;
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class GitlabPullRequestSynchronizeMessageSerializer extends AbstractMessagePayloadSerializer<GitlabPullRequestSynchronizeMessage>
 {
 

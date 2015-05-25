@@ -1,9 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import org.springframework.stereotype.Component;
+
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.spi.gitlab.message.SynchronizeChangesetMessage;
 
+@Component
 public class GitlabSynchronizeChangesetMessageConsumer extends MessageConsumerSupport<SynchronizeChangesetMessage>
 {
 

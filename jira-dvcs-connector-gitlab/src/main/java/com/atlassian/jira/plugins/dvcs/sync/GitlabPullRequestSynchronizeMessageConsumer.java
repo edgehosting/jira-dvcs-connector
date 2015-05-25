@@ -1,16 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import com.atlassian.jira.plugins.dvcs.model.Message;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.spi.gitlab.message.GitlabPullRequestSynchronizeMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import javax.annotation.Resource;
 
 /**
  * Message consumer {@link GitlabPullRequestSynchronizeMessage}.
@@ -18,6 +18,7 @@ import javax.annotation.Resource;
  * @author Stanislav Dvorscak
  * 
  */
+@Component
 public class GitlabPullRequestSynchronizeMessageConsumer implements MessageConsumer<GitlabPullRequestSynchronizeMessage>
 {
 
