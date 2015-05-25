@@ -41,28 +41,27 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 {
     private final Logger log = LoggerFactory.getLogger(BitbucketLinkerImpl.class);
 
-    private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
-    private final ProjectManager projectManager;
-    private final ApplicationProperties applicationProperties;
-
     @Autowired
     private RepositoryService repositoryService;
 
     @Autowired
-    public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
-    {
-        this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
-        this.projectManager = checkNotNull(projectManager);
-        this.applicationProperties = checkNotNull(applicationProperties);
-    }
+    @ComponentImport
+    private ApplicationProperties applicationProperties;
 
-    @VisibleForTesting
+    @Autowired
+    @ComponentImport
+    private ProjectManager projectManager;
+
+    @Autowired
+    private BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
+
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager,
+            ApplicationProperties applicationProperties, ProjectManager projectManager,
             final RepositoryService repositoryService)
     {
-        this(bitbucketClientBuilderFactory, applicationProperties, projectManager);
+        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
+        this.applicationProperties = applicationProperties;
+        this.projectManager =projectManager;
         this.repositoryService = repositoryService;
     }
 
@@ -157,14 +156,14 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         }
         catch (BitbucketRequestException.Forbidden_403 e)
         {
-            log.info("Bitbucket Account not authorised to install Repository Link on " + repository.getRepositoryUrl());
+            log.info("Bitbucket Account not authorised to install Repository Link on {}", repository.getRepositoryUrl());
             repository.setUpdateLinkAuthorised(false);
             repositoryService.save(repository);
         }
         catch (BitbucketRequestException e)
         {
-            log.info("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
-                    + repository.getRepositoryUrl() + ": " + e.getMessage() + " REX: " + constructProjectsRex(forProjects), e);
+            log.error("Error adding Repository Link [" + getBaseUrl() + ", " + repository.getName() + "] to "
+                    + repository.getRepositoryUrl() + ":  REX: " + constructProjectsRex(forProjects), e);
         }
     }
 
