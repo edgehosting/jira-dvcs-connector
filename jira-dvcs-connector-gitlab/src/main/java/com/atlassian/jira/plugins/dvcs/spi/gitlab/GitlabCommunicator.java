@@ -20,6 +20,7 @@ import org.gitlab.api.models.GitlabProjectHook;
 import org.gitlab.api.models.GitlabUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -44,6 +45,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+@Component ("gitlabCommunicator")
 public class GitlabCommunicator implements DvcsCommunicator {
     public static final String GITLAB = "gitlab";
     
