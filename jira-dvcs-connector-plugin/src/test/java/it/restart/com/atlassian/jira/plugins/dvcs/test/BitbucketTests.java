@@ -136,7 +136,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false, true);
     }
 
-    @Override
+
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {

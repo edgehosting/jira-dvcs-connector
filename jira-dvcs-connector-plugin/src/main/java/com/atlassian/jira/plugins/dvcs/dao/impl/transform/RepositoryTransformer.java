@@ -27,7 +27,7 @@ public class RepositoryTransformer
 
         Repository repository = new Repository(repositoryMapping.getID(), repositoryMapping.getOrganizationId(), null,
                 repositoryMapping.getSlug(), repositoryMapping.getName(), repositoryMapping.getLastCommitDate(),
-                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null);
+                repositoryMapping.isLinked(), repositoryMapping.isDeleted(), null, repositoryMapping.getUpdateLinkAuthorised());
         repository.setSmartcommitsEnabled(repositoryMapping.isSmartcommitsEnabled());
         repository.setActivityLastSync(repositoryMapping.getActivityLastSync());
 

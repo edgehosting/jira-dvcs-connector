@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>3.3.1-SNAPSHOT</version>
+    <version>3.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>JIRA DVCS Connector Parent POM</name>
@@ -485,7 +485,7 @@
             <id>jira7</id>
             <properties>
                 <jira.compile.version>7.0.0-SNAPSHOT</jira.compile.version>
-                <jira.data.path></jira.data.path>
+                <jira.data.path />
                 <jira.data.version>7.0.0-SNAPSHOT</jira.data.version>
                 <jira.software.version>1.17</jira.software.version>
                 <jira.version>7.0.0-SNAPSHOT</jira.version>
